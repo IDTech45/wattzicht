@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:pages="clr-namespace:Wattzicht.App.Pages"
+       x:Class="Wattzicht.App.AppShell"
+       Shell.FlyoutBehavior="Disabled"
+       Shell.BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource NightSoft}}"
+       Shell.ForegroundColor="{AppThemeBinding Light={StaticResource Ink}, Dark={StaticResource InkDark}}"
+       Shell.TitleColor="{AppThemeBinding Light={StaticResource Ink}, Dark={StaticResource InkDark}}"
+       Shell.TabBarBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource NightSoft}}"
+       Shell.TabBarForegroundColor="{StaticResource Sun}"
+       Shell.TabBarTitleColor="{StaticResource Sun}"
+       Shell.TabBarUnselectedColor="{AppThemeBinding Light={StaticResource Muted}, Dark={StaticResource MutedDark}}">
+
+    <!-- Login staat buiten de tabs: geen TabBar zichtbaar -->
+    <ShellContent Route="login"
+                  Shell.NavBarIsVisible="False"
+                  Shell.TabBarIsVisible="False"
+                  ContentTemplate="{DataTemplate pages:LoginPage}" />
+
+    <TabBar Route="main">
+        <Tab Title="Home" Icon="home.png" Route="home">
+            <ShellContent ContentTemplate="{DataTemplate pages:DashboardPage}" />
+        </Tab>
+        <Tab Title="Apparaten" Icon="devices.png" Route="devices">
+            <ShellContent ContentTemplate="{DataTemplate pages:DevicesPage}" />
+        </Tab>
+        <Tab Title="Besparing" Icon="savings.png" Route="savings">
+            <ShellContent ContentTemplate="{DataTemplate pages:SavingsPage}" />
+        </Tab>
+        <Tab Title="Instellingen" Icon="settings.png" Route="settings">
+            <ShellContent ContentTemplate="{DataTemplate pages:SettingsPage}" />
+        </Tab>
+    </TabBar>
+
+</Shell>

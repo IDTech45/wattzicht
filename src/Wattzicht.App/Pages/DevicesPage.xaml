@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             xmlns:models="clr-namespace:Wattzicht.App.Models"
+             x:Class="Wattzicht.App.Pages.DevicesPage"
+             x:DataType="vm:DevicesViewModel"
+             Title="Apparaten">
+
+    <Grid>
+        <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
+            <CollectionView ItemsSource="{Binding Devices}"
+                            SelectionMode="None"
+                            Margin="0,0,0,0">
+
+                <CollectionView.Header>
+                    <VerticalStackLayout Padding="16,8,16,8" Spacing="8">
+                        <Label Text="Je apparaten" Style="{StaticResource PageTitle}" />
+                        <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
+                            <Label Text="{Binding ErrorMessage}" />
+                        </Border>
+                    </VerticalStackLayout>
+                </CollectionView.Header>
+
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Padding="32,48" Spacing="12" HorizontalOptions="Center">
+                        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+                        <VerticalStackLayout Spacing="8" IsVisible="{Binding HasLoaded}">
+                            <Label Text="Nog geen apparaten" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" Margin="0" />
+                            <Label Text="Koppel je omvormer, thuisbatterij, laadpaal of P1-meter."
+                                   Style="{StaticResource SubtitleLabel}" FontSize="14" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:DeviceItem">
+                        <SwipeView Margin="16,4">
+                            <SwipeView.RightItems>
+                                <SwipeItems Mode="Reveal">
+                                    <SwipeItem Text="Verwijderen"
+                                               BackgroundColor="{StaticResource Danger}"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DevicesViewModel}}, Path=DeleteCommand}"
+                                               CommandParameter="{Binding .}" />
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+
+                            <Border Style="{StaticResource Card}" Padding="12,12">
+                                <Grid ColumnDefinitions="48,*,Auto" ColumnSpacing="12" MinimumHeightRequest="56">
+
+                                    <!-- Merk-initiaal -->
+                                    <Border Grid.Column="0"
+                                            WidthRequest="48" HeightRequest="48"
+                                            StrokeThickness="0"
+                                            StrokeShape="Ellipse"
+                                            BackgroundColor="{Binding Brand, Converter={StaticResource BrandToColor}}"
+                                            VerticalOptions="Center">
+                                        <Label Text="{Binding Initial}"
+                                               FontSize="20" FontAttributes="Bold"
+                                               TextColor="{StaticResource White}"
+                                               HorizontalOptions="Center" VerticalOptions="Center" />
+                                    </Border>
+
+                                    <!-- Naam, type, laatst gezien -->
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding Name}" Style="{StaticResource CardTitle}" LineBreakMode="TailTruncation" />
+                                        <Label Text="{Binding Subtitle}" Style="{StaticResource SubtitleLabel}" />
+                                        <HorizontalStackLayout Spacing="6">
+                                            <Ellipse WidthRequest="8" HeightRequest="8" VerticalOptions="Center"
+                                                     Fill="{Binding IsOnline, Converter={StaticResource OnlineToColor}}" />
+                                            <Label Text="{Binding StatusText}" Style="{StaticResource StatCaption}" />
+                                            <Label Text="·" Style="{StaticResource StatCaption}" />
+                                            <Label Text="{Binding LastSeenText}" Style="{StaticResource StatCaption}" />
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+
+                                    <!-- Verwijder-knop (naast swipe, voor wie swipen niet ontdekt) -->
+                                    <Button Grid.Column="2"
+                                            Text="✕"
+                                            Style="{StaticResource LinkButton}"
+                                            TextColor="{AppThemeBinding Light={StaticResource Muted}, Dark={StaticResource MutedDark}}"
+                                            WidthRequest="48"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DevicesViewModel}}, Path=DeleteCommand}"
+                                            CommandParameter="{Binding .}"
+                                            SemanticProperties.Description="Apparaat verwijderen" />
+                                </Grid>
+                            </Border>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="96" Color="Transparent" />
+                </CollectionView.Footer>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- FAB-achtige knop -->
+        <Button Text="＋  Apparaat koppelen"
+                Style="{StaticResource PrimaryButton}"
+                Command="{Binding ConnectDeviceCommand}"
+                HorizontalOptions="Center"
+                VerticalOptions="End"
+                Margin="16,0,16,24"
+                Padding="24,0"
+                CornerRadius="26"
+                HeightRequest="52">
+            <Button.Shadow>
+                <Shadow Brush="Black" Offset="0,4" Radius="12" Opacity="0.2" />
+            </Button.Shadow>
+        </Button>
+    </Grid>
+</ContentPage>

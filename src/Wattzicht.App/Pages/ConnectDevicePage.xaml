@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             x:Class="Wattzicht.App.Pages.ConnectDevicePage"
+             x:DataType="vm:ConnectDeviceViewModel"
+             Title="Apparaat koppelen">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="16,8,16,24" Spacing="12">
+
+                <Label Text="{Binding StepText}" Style="{StaticResource SubtitleLabel}" />
+
+                <!-- Voortgang -->
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+                    <BoxView Grid.Column="0" HeightRequest="4" CornerRadius="2" Color="{StaticResource Sun}" />
+                    <BoxView Grid.Column="1" HeightRequest="4" CornerRadius="2"
+                             Color="{AppThemeBinding Light={StaticResource Line}, Dark={StaticResource LineDark}}">
+                        <BoxView.Triggers>
+                            <DataTrigger TargetType="BoxView" Binding="{Binding IsStep1}" Value="False">
+                                <Setter Property="Color" Value="{StaticResource Sun}" />
+                            </DataTrigger>
+                        </BoxView.Triggers>
+                    </BoxView>
+                    <BoxView Grid.Column="2" HeightRequest="4" CornerRadius="2"
+                             Color="{AppThemeBinding Light={StaticResource Line}, Dark={StaticResource LineDark}}">
+                        <BoxView.Triggers>
+                            <DataTrigger TargetType="BoxView" Binding="{Binding IsStep3}" Value="True">
+                                <Setter Property="Color" Value="{StaticResource Sun}" />
+                            </DataTrigger>
+                        </BoxView.Triggers>
+                    </BoxView>
+                </Grid>
+
+                <!-- Algemene fout -->
+                <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" FontSize="14" IsVisible="{Binding HasError}" />
+
+                <!-- ================= STAP 1: merk ================= -->
+                <VerticalStackLayout Spacing="12" IsVisible="{Binding IsStep1}">
+                    <Label Text="Welk merk heb je?" Style="{StaticResource PageTitle}" />
+                    <Label Text="Kies het merk van je omvormer, batterij of meter." Style="{StaticResource SubtitleLabel}" FontSize="14" />
+
+                    <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Brands}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:BrandOption">
+                                <Border Style="{StaticResource Card}" Padding="12" MinimumHeightRequest="64">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="Stroke" Value="{StaticResource Sun}" />
+                                            <Setter Property="StrokeThickness" Value="2" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ConnectDeviceViewModel}}, Path=SelectBrandCommand}"
+                                                              CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="44,*,Auto" ColumnSpacing="12">
+                                        <Border Grid.Column="0" WidthRequest="44" HeightRequest="44" StrokeThickness="0"
+                                                StrokeShape="Ellipse" BackgroundColor="{Binding Accent}" VerticalOptions="Center">
+                                            <Label Text="{Binding Initial}" FontSize="18" FontAttributes="Bold"
+                                                   TextColor="{StaticResource White}" HorizontalOptions="Center" VerticalOptions="Center" />
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                            <Label Text="{Binding Name}" Style="{StaticResource CardTitle}" />
+                                            <Label Text="{Binding Description}" Style="{StaticResource SubtitleLabel}" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="2" Text="✓" FontSize="22" FontAttributes="Bold"
+                                               TextColor="{StaticResource Sun}" VerticalOptions="Center"
+                                               IsVisible="{Binding IsSelected}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+
+                <!-- ================= STAP 2: gegevens ================= -->
+                <VerticalStackLayout Spacing="12" IsVisible="{Binding IsStep2}">
+                    <Label Text="{Binding BrandName, StringFormat='{0} koppelen'}" Style="{StaticResource PageTitle}" />
+
+                    <!-- Growatt -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding IsGrowatt}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="Je vindt je API-token in de ShinePhone-app: ga naar Ik → API Token en kopieer de code."
+                                   Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="API-token" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding ApiToken}" Placeholder="Plak hier je token" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" />
+                                </Border>
+                                <Label Text="{Binding ApiTokenError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasApiTokenError}" />
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Sessy -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding IsSessy}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="Gebruikersnaam en wachtwoord staan op de sticker van je Sessy-dongle. Het IP-adres vind je in je router of de Sessy-app."
+                                   Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="IP-adres van de dongle" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding IpAddress}" Placeholder="192.168.1.50" Keyboard="Url" />
+                                </Border>
+                                <Label Text="{Binding IpAddressError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasIpAddressError}" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Gebruikersnaam" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding Username}" Placeholder="Zie sticker" IsSpellCheckEnabled="False" />
+                                </Border>
+                                <Label Text="{Binding UsernameError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasUsernameError}" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Wachtwoord" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding Password}" Placeholder="Zie sticker" IsPassword="True" />
+                                </Border>
+                                <Label Text="{Binding PasswordError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasPasswordError}" />
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- HomeWizard -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding IsHomeWizard}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="Zet in de HomeWizard Energy-app de lokale API aan (Instellingen → Meters → P1-meter → Lokale API) en vul het IP-adres in."
+                                   Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="IP-adres van de P1-meter" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding IpAddress}" Placeholder="192.168.1.60" Keyboard="Url" />
+                                </Border>
+                                <Label Text="{Binding IpAddressError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasIpAddressError}" />
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Demo -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding IsDemo}">
+                        <Label Text="Je hoeft niets in te vullen. We voegen een voorbeeldomvormer, -batterij en -laadpaal toe met realistische data."
+                               Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- ================= STAP 3: bevestigen ================= -->
+                <VerticalStackLayout Spacing="12" IsVisible="{Binding IsStep3}">
+                    <Label Text="Klopt dit?" Style="{StaticResource PageTitle}" IsVisible="{Binding IsDone, Converter={StaticResource InvertedBool}}" />
+                    <Label Text="Gekoppeld" Style="{StaticResource PageTitle}" IsVisible="{Binding IsDone}" />
+
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding IsDone, Converter={StaticResource InvertedBool}}">
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                <Label Text="Merk" Style="{StaticResource FieldLabel}" WidthRequest="90" />
+                                <Label Grid.Column="1" Text="{Binding BrandName}" FontAttributes="Bold" />
+                            </Grid>
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                <Label Text="Gegevens" Style="{StaticResource FieldLabel}" WidthRequest="90" />
+                                <Label Grid.Column="1" Text="{Binding SummaryLine}" />
+                            </Grid>
+                            <Label Text="We controleren de gegevens en halen je apparaten op. Dit duurt een paar seconden."
+                                   Style="{StaticResource SubtitleLabel}" Margin="0,8,0,0" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding IsDone}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource BatterySoft}, Dark={StaticResource BatterySoftDark}}"
+                            Stroke="{StaticResource Battery}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="✓" FontSize="36" TextColor="{StaticResource Battery}" />
+                            <Label Text="{Binding DoneText}" FontSize="16" />
+                            <Label Text="Binnen een paar minuten zie je de eerste metingen op Home." Style="{StaticResource SubtitleLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Knoppenbalk -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="12" Padding="16,8,16,16"
+              BackgroundColor="{AppThemeBinding Light={StaticResource Paper}, Dark={StaticResource PaperDark}}">
+            <Button Grid.Column="0" Text="Terug" Style="{StaticResource SecondaryButton}" WidthRequest="110"
+                    Command="{Binding BackCommand}" IsEnabled="{Binding IsNotBusy}"
+                    IsVisible="{Binding IsDone, Converter={StaticResource InvertedBool}}" />
+            <Grid Grid.Column="1" IsVisible="{Binding IsDone, Converter={StaticResource InvertedBool}}">
+                <Button Text="{Binding PrimaryButtonText}" Style="{StaticResource PrimaryButton}"
+                        Command="{Binding NextCommand}" IsEnabled="{Binding IsNotBusy}" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                                   Color="{StaticResource Night}" HorizontalOptions="End" Margin="0,0,16,0" />
+            </Grid>
+            <Button Grid.ColumnSpan="2" Text="Klaar" Style="{StaticResource PrimaryButton}"
+                    Command="{Binding FinishCommand}" IsVisible="{Binding IsDone}" />
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             x:Class="Wattzicht.App.Pages.SavingsPage"
+             x:DataType="vm:SavingsViewModel"
+             Title="Besparing">
+
+    <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
+        <CollectionView ItemsSource="{Binding Rows}" SelectionMode="None">
+
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="16,8,16,8" Spacing="12">
+                    <Label Text="Besparing" Style="{StaticResource PageTitle}" />
+
+                    <!-- Segment Dag/Week/Maand/Jaar -->
+                    <Border Style="{StaticResource Card}" Padding="4" StrokeShape="RoundRectangle 14">
+                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="4">
+                            <Button Grid.Column="0" Text="Dag" Command="{Binding SetPeriodCommand}" CommandParameter="Day">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource SegmentButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger TargetType="Button" Binding="{Binding IsDay}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource Sun}" />
+                                                <Setter Property="TextColor" Value="{StaticResource Night}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Grid.Column="1" Text="Week" Command="{Binding SetPeriodCommand}" CommandParameter="Week">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource SegmentButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger TargetType="Button" Binding="{Binding IsWeek}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource Sun}" />
+                                                <Setter Property="TextColor" Value="{StaticResource Night}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Grid.Column="2" Text="Maand" Command="{Binding SetPeriodCommand}" CommandParameter="Month">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource SegmentButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger TargetType="Button" Binding="{Binding IsMonth}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource Sun}" />
+                                                <Setter Property="TextColor" Value="{StaticResource Night}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Grid.Column="3" Text="Jaar" Command="{Binding SetPeriodCommand}" CommandParameter="Year">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource SegmentButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger TargetType="Button" Binding="{Binding IsYear}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource Sun}" />
+                                                <Setter Property="TextColor" Value="{StaticResource Night}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
+                        <Label Text="{Binding ErrorMessage}" />
+                    </Border>
+
+                    <!-- Totaal + grafiek -->
+                    <Border Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding PeriodTitle}" Style="{StaticResource SubtitleLabel}" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding TotalSavedText}" Style="{StaticResource StatValueLarge}" TextColor="{StaticResource Sun}" />
+                                <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
+                            </Grid>
+                            <GraphicsView x:Name="ChartView"
+                                          Drawable="{Binding Chart}"
+                                          HeightRequest="160"
+                                          Margin="0,8,0,0"
+                                          SemanticProperties.Description="Staafgrafiek van je besparing per dag" />
+                            <BoxView Style="{StaticResource Divider}" Margin="0,8,0,0" />
+                            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                    <Label Text="Opgewekt" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{Binding TotalPvText}" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource Sun}" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                    <Label Text="Zelf gebruikt" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{Binding TotalSelfUseText}" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource Battery}" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="2" Spacing="2">
+                                    <Label Text="Teruggeleverd" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{Binding TotalExportText}" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource Export}" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="3" Spacing="2">
+                                    <Label Text="Geladen" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{Binding TotalChargedText}" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource Grid}" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Label Text="Per dag" Style="{StaticResource SectionTitle}" />
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="32,24" Spacing="8" HorizontalOptions="Center" IsVisible="{Binding HasLoaded}">
+                    <Label Text="Nog geen dagen" Style="{StaticResource CardTitle}" HorizontalTextAlignment="Center" />
+                    <Label Text="Zodra je apparaten een dag hebben gemeten, zie je hier je besparing." Style="{StaticResource SubtitleLabel}" HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:SummaryRow">
+                    <Border Style="{StaticResource Card}" Margin="16,4" Padding="14,12">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="6">
+                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding DateText}" Style="{StaticResource CardTitle}" />
+                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding SavedText}" FontAttributes="Bold" FontSize="16" TextColor="{StaticResource Sun}" />
+                            <HorizontalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="12">
+                                <Label Text="{Binding PvText, StringFormat='☀ {0}'}" Style="{StaticResource StatCaption}" />
+                                <Label Text="{Binding SelfUseText, StringFormat='⌂ {0}'}" Style="{StaticResource StatCaption}" />
+                                <Label Text="{Binding ExportText, StringFormat='▲ {0}'}" Style="{StaticResource StatCaption}" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.Footer>
+                <Label Text="☀ opgewekt · ⌂ zelf gebruikt · ▲ teruggeleverd" Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" Padding="16,12,16,32" />
+            </CollectionView.Footer>
+        </CollectionView>
+    </RefreshView>
+</ContentPage>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:Wattzicht.App.Views"
+             x:Class="Wattzicht.App.Views.EnergyFlowView"
+             x:Name="Root">
+
+    <!-- Vier stroomkaarten in een 2x2 raster; laadpaal als smalle rij eronder (alleen als aanwezig). -->
+    <Grid RowDefinitions="Auto,Auto,Auto"
+          ColumnDefinitions="*,*"
+          RowSpacing="12"
+          ColumnSpacing="12"
+          BindingContext="{x:Reference Root}">
+
+        <!-- Zon -->
+        <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}"
+                BackgroundColor="{AppThemeBinding Light={StaticResource SunSoft}, Dark={StaticResource SunSoftDark}}"
+                Stroke="{StaticResource Sun}">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Zon" Style="{StaticResource StatCaption}" />
+                <Label Text="{Binding PvKwText}" Style="{StaticResource StatValue}" TextColor="{StaticResource Sun}" />
+                <Label Text="{Binding PvHint}" Style="{StaticResource StatCaption}" />
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Huis -->
+        <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Huis" Style="{StaticResource StatCaption}" />
+                <Label Text="{Binding LoadKwText}" Style="{StaticResource StatValue}" />
+                <Label Text="{Binding LoadHint}" Style="{StaticResource StatCaption}" />
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Batterij -->
+        <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}"
+                BackgroundColor="{AppThemeBinding Light={StaticResource BatterySoft}, Dark={StaticResource BatterySoftDark}}"
+                Stroke="{StaticResource Battery}">
+            <VerticalStackLayout Spacing="4">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="Batterij" Style="{StaticResource StatCaption}" />
+                    <Label Grid.Column="1" Text="{Binding SocText}" Style="{StaticResource StatCaption}" FontAttributes="Bold" />
+                </Grid>
+                <Label Text="{Binding BatteryKwText}" Style="{StaticResource StatValue}" TextColor="{StaticResource Battery}" />
+                <Label Text="{Binding BatteryHint}" Style="{StaticResource StatCaption}" />
+                <ProgressBar Progress="{Binding SocFraction}"
+                             ProgressColor="{StaticResource Battery}"
+                             HeightRequest="6"
+                             Margin="0,4,0,0" />
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Net -->
+        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}"
+                BackgroundColor="{Binding GridCardBackground}"
+                Stroke="{Binding GridAccent}">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Net" Style="{StaticResource StatCaption}" />
+                <Label Text="{Binding GridKwText}" Style="{StaticResource StatValue}" TextColor="{Binding GridAccent}" />
+                <Label Text="{Binding GridHint}" Style="{StaticResource StatCaption}" />
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Laadpaal -->
+        <Border Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource Card}"
+                IsVisible="{Binding HasCharger}"
+                BackgroundColor="{AppThemeBinding Light={StaticResource GridSoft}, Dark={StaticResource GridSoftDark}}"
+                Stroke="{StaticResource Grid}">
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="Laadpaal" Style="{StaticResource StatCaption}" />
+                    <Label Text="{Binding ChargerHint}" Style="{StaticResource StatCaption}" />
+                </VerticalStackLayout>
+                <Label Grid.Column="1" Text="{Binding ChargerKwText}" Style="{StaticResource StatValue}" TextColor="{StaticResource Grid}" VerticalOptions="Center" />
+            </Grid>
+        </Border>
+    </Grid>
+</ContentView>

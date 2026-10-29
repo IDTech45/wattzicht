@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 160" width="560" height="160" role="img" aria-label="Wattzicht">
+  <defs>
+    <linearGradient id="sun" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFD166"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <!-- Beeldmerk: een oog (zicht) met de zon als iris en een bliksem als pupil (watt) -->
+  <g transform="translate(16,16)">
+    <path d="M64 10 C 96 10, 118 40, 128 64 C 118 88, 96 118, 64 118 C 32 118, 10 88, 0 64 C 10 40, 32 10, 64 10 Z" fill="#0F172A"/>
+    <circle cx="64" cy="64" r="36" fill="url(#sun)"/>
+    <path d="M70 36 L50 70 L64 70 L58 92 L80 58 L66 58 Z" fill="#0F172A"/>
+  </g>
+  <!-- Woordmerk -->
+  <text x="172" y="100" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="68" fill="#0F172A">
+    <tspan font-weight="800">Watt</tspan><tspan font-weight="400">zicht</tspan>
+  </text>
+</svg>

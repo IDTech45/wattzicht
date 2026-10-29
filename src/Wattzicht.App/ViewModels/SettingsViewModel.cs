@@ -1,0 +1,160 @@
+using System.Globalization;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Wattzicht.App.Services;
+using Wattzicht.Shared;
+
+namespace Wattzicht.App.ViewModels;
+
+public partial class SettingsViewModel : BaseViewModel
+{
+    private static readonly CultureInfo Nl = CultureInfo.GetCultureInfo("nl-NL");
+
+    private readonly ApiClient _api;
+    private readonly AuthService _auth;
+
+    // ---- Tarief ----
+    [ObservableProperty] private string _importTariff = "0,30";
+    [ObservableProperty] private string _exportTariff = "0,08";
+    [ObservableProperty] private bool _isDynamic;
+    [ObservableProperty] private bool _isSavingTariff;
+    [ObservableProperty] private string? _tariffSavedText;
+
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HasImportTariffError))] private string? _importTariffError;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HasExportTariffError))] private string? _exportTariffError;
+    public bool HasImportTariffError => !string.IsNullOrEmpty(ImportTariffError);
+    public bool HasExportTariffError => !string.IsNullOrEmpty(ExportTariffError);
+
+    // ---- Installateur ----
+    [ObservableProperty] private InstallerBrandingDto? _installer;
+    [ObservableProperty] private string _installerName = "Je installateur";
+    [ObservableProperty] private string? _installerPhone;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HasInstallerPhone))] private bool _hasPhone;
+    [ObservableProperty] private bool _hasQuoteUrl;
+    public bool HasInstallerPhone => HasPhone;
+
+    // ---- Account ----
+    public string HouseholdName => _auth.Household?.Name ?? "";
+    public string VersionText => $"Wattzicht {AppConfig.Version} ({AppConfig.Build})";
+    public string ApiText => AppConfig.ApiBaseUrl;
+
+    public SettingsViewModel(ApiClient api, AuthService auth)
+    {
+        _api = api;
+        _auth = auth;
+        Title = "Instellingen";
+    }
+
+    partial void OnImportTariffChanged(string value) { ImportTariffError = null; TariffSavedText = null; }
+    partial void OnExportTariffChanged(string value) { ExportTariffError = null; TariffSavedText = null; }
+    partial void OnIsDynamicChanged(bool value) => TariffSavedText = null;
+
+    [RelayCommand]
+    public async Task LoadAsync()
+    {
+        await RunSafeAsync(async () =>
+        {
+            // Tarief en installateur onafhankelijk ophalen; een 404 op één van beide mag de rest niet blokkeren.
+            try
+            {
+                var tariff = await _api.GetTariffAsync();
+                ImportTariff = tariff.ImportTariffEur.ToString("0.00", Nl);
+                ExportTariff = tariff.ExportTariffEur.ToString("0.00", Nl);
+                IsDynamic = tariff.IsDynamic;
+            }
+            catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
+
+            try
+            {
+                Installer = await _api.GetInstallerAsync();
+                InstallerName = string.IsNullOrWhiteSpace(Installer.Name) ? "Je installateur" : Installer.Name;
+                InstallerPhone = Installer.Phone;
+                HasPhone = !string.IsNullOrWhiteSpace(Installer.Phone);
+                HasQuoteUrl = Uri.TryCreate(Installer.QuoteUrl, UriKind.Absolute, out _);
+            }
+            catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
+
+            OnPropertyChanged(nameof(HouseholdName));
+        }, _auth);
+    }
+
+    [RelayCommand]
+    private async Task SaveTariffAsync()
+    {
+        ImportTariffError = ExportTariffError = null;
+
+        if (!TryParseEur(ImportTariff, out var import) || import <= 0 || import > 2)
+            ImportTariffError = "Vul een tarief in tussen € 0,01 en € 2,00 per kWh.";
+        if (!TryParseEur(ExportTariff, out var export) || export < 0 || export > 2)
+            ExportTariffError = "Vul een vergoeding in tussen € 0,00 en € 2,00 per kWh.";
+        if (HasImportTariffError || HasExportTariffError) return;
+
+        IsSavingTariff = true;
+        try
+        {
+            var saved = await _api.UpdateTariffAsync(new TariffDto(import, export, IsDynamic, DateOnly.FromDateTime(DateTime.Today)));
+            ImportTariff = saved.ImportTariffEur.ToString("0.00", Nl);
+            ExportTariff = saved.ExportTariffEur.ToString("0.00", Nl);
+            TariffSavedText = "Opgeslagen. Je besparing wordt vanaf vandaag met dit tarief berekend.";
+        }
+        catch (ApiException ex)
+        {
+            ImportTariffError = ex.Message;
+            if (ex.IsUnauthorized) await _auth.LogoutAsync();
+        }
+        finally
+        {
+            IsSavingTariff = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task CallInstallerAsync()
+    {
+        if (string.IsNullOrWhiteSpace(InstallerPhone)) return;
+        try
+        {
+            if (PhoneDialer.Default.IsSupported)
+                PhoneDialer.Default.Open(InstallerPhone);
+            else
+                await Clipboard.Default.SetTextAsync(InstallerPhone);
+        }
+        catch
+        {
+            await ShowAlertAsync("Bellen lukt niet", $"Bel zelf: {InstallerPhone}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task RequestQuoteAsync()
+    {
+        var url = Installer?.QuoteUrl;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            await ShowAlertAsync("Offerte", $"Neem contact op met {InstallerName} voor een offerte voor een thuisbatterij.");
+            return;
+        }
+        try
+        {
+            await Browser.Default.OpenAsync(uri, BrowserLaunchMode.SystemPreferred);
+        }
+        catch
+        {
+            await ShowAlertAsync("Openen lukt niet", "De offertepagina kon niet worden geopend.");
+        }
+    }
+
+    [RelayCommand]
+    private async Task LogoutAsync()
+    {
+        var confirmed = await ConfirmAsync("Uitloggen?", "Je kunt daarna opnieuw inloggen met je e-mail en wachtwoord.", "Uitloggen");
+        if (!confirmed) return;
+        await _auth.LogoutAsync();
+    }
+
+    private static bool TryParseEur(string? text, out decimal value)
+    {
+        var cleaned = (text ?? "").Replace("€", "").Trim().Replace(',', '.');
+        return decimal.TryParse(cleaned, NumberStyles.Number, CultureInfo.InvariantCulture, out value);
+    }
+}

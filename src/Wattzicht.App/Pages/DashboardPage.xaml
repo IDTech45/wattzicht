@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             xmlns:views="clr-namespace:Wattzicht.App.Views"
+             x:Class="Wattzicht.App.Pages.DashboardPage"
+             x:DataType="vm:DashboardViewModel"
+             Title="Home">
+
+    <Grid>
+        <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
+            <ScrollView>
+                <VerticalStackLayout Padding="16,8,16,32" Spacing="12">
+
+                    <!-- Kop -->
+                    <Label Text="{Binding Greeting}" Style="{StaticResource PageTitle}" />
+                    <Label Text="{Binding UpdatedAtText}" Style="{StaticResource SubtitleLabel}" />
+
+                    <!-- Foutmelding -->
+                    <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding ErrorMessage}" />
+                            <Button Text="Opnieuw proberen" Style="{StaticResource SecondaryButton}" Command="{Binding LoadCommand}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Lege staat -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding ShowEmptyState}" Padding="24">
+                        <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                            <Image Source="logo.png" HeightRequest="72" WidthRequest="72" Opacity="0.9" />
+                            <Label Text="Koppel je eerste apparaat" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" Margin="0" />
+                            <Label Text="Verbind je omvormer, thuisbatterij of laadpaal en zie meteen wat je opwekt en bespaart."
+                                   Style="{StaticResource SubtitleLabel}" FontSize="14" HorizontalTextAlignment="Center" />
+                            <Button Text="Apparaat koppelen" Style="{StaticResource PrimaryButton}" Command="{Binding ConnectDeviceCommand}" Margin="0,8,0,0" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Inhoud -->
+                    <VerticalStackLayout Spacing="12" IsVisible="{Binding ShowContent}">
+
+                        <!-- Alerts -->
+                        <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasAlerts}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding OpenAlertsCommand}" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
+                                <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12" Fill="{StaticResource Danger}" VerticalOptions="Center" />
+                                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                    <Label Text="{Binding AlertsSummary}" Style="{StaticResource CardTitle}" />
+                                    <Label Text="Een apparaat levert geen data of produceert niets." Style="{StaticResource SubtitleLabel}" />
+                                </VerticalStackLayout>
+                                <Label Grid.Column="2" Text="›" FontSize="24" VerticalOptions="Center" Style="{StaticResource SubtitleLabel}" />
+                            </Grid>
+                        </Border>
+
+                        <!-- Energiestroom -->
+                        <Label Text="Energiestroom nu" Style="{StaticResource SectionTitle}" />
+                        <views:EnergyFlowView Snapshot="{Binding Live}" />
+
+                        <!-- Stat-tiles -->
+                        <Label Text="Vandaag" Style="{StaticResource SectionTitle}" />
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                            <Border Grid.Column="0" Style="{StaticResource Card}" Padding="12">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="Bespaard" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{Binding SavedTodayText}" Style="{StaticResource StatValue}" FontSize="20" TextColor="{StaticResource Sun}" />
+                                </VerticalStackLayout>
+                            </Border>
+                            <Border Grid.Column="1" Style="{StaticResource Card}" Padding="12">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="Zelfverbruik" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{Binding SelfUsePercentText}" Style="{StaticResource StatValue}" FontSize="20" TextColor="{StaticResource Battery}" />
+                                </VerticalStackLayout>
+                            </Border>
+                            <Border Grid.Column="2" Style="{StaticResource Card}" Padding="12">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="Opgewekt" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{Binding PvTodayText}" Style="{StaticResource StatValue}" FontSize="20" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </Grid>
+
+                        <!-- Deze maand -->
+                        <Label Text="Deze maand" Style="{StaticResource SectionTitle}" />
+                        <Border Style="{StaticResource Card}">
+                            <VerticalStackLayout Spacing="12">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="Bespaard" Style="{StaticResource CardTitle}" VerticalOptions="Center" />
+                                    <Label Grid.Column="1" Text="{Binding MonthSavedText}" Style="{StaticResource StatValue}" TextColor="{StaticResource Sun}" />
+                                </Grid>
+                                <BoxView Style="{StaticResource Divider}" />
+                                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" RowSpacing="12" ColumnSpacing="12">
+                                    <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="2">
+                                        <Label Text="Opgewekt" Style="{StaticResource StatCaption}" />
+                                        <Label Text="{Binding MonthPvText}" FontAttributes="Bold" TextColor="{StaticResource Sun}" />
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="2">
+                                        <Label Text="Zelf gebruikt" Style="{StaticResource StatCaption}" />
+                                        <Label Text="{Binding MonthSelfUseText}" FontAttributes="Bold" TextColor="{StaticResource Battery}" />
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="2">
+                                        <Label Text="Teruggeleverd" Style="{StaticResource StatCaption}" />
+                                        <Label Text="{Binding MonthExportText}" FontAttributes="Bold" TextColor="{StaticResource Export}" />
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="2">
+                                        <Label Text="Geladen (auto)" Style="{StaticResource StatCaption}" />
+                                        <Label Text="{Binding MonthChargedText}" FontAttributes="Bold" TextColor="{StaticResource Grid}" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                                <BoxView Style="{StaticResource Divider}" />
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="Dit jaar bespaard" Style="{StaticResource SubtitleLabel}" VerticalOptions="Center" />
+                                    <Label Grid.Column="1" Text="{Binding YearSavedText}" FontAttributes="Bold" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+        <!-- Eerste keer laden -->
+        <ActivityIndicator IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding HasLoaded, Converter={StaticResource InvertedBool}}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+    </Grid>
+</ContentPage>

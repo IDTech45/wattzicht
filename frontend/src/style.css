@@ -1,0 +1,259 @@
+@layer base, primevue, app;
+
+@layer base {
+  :root {
+    /* BRAND.md tokens */
+    --wz-night: #0f172a;
+    --wz-night-soft: #1e293b;
+    --wz-sun: #f59e0b;
+    --wz-sun-light: #ffd166;
+    --wz-battery: #22c55e;
+    --wz-grid: #3b82f6;
+    --wz-export: #a855f7;
+    --wz-ink: #111827;
+    --wz-muted: #64748b;
+    --wz-paper: #f8fafc;
+    --wz-card: #ffffff;
+    --wz-danger: #dc2626;
+
+    /* Afgeleide rollen */
+    --wz-bg: var(--wz-paper);
+    --wz-surface: var(--wz-card);
+    --wz-surface-2: #f1f5f9;
+    --wz-text: var(--wz-ink);
+    --wz-text-soft: var(--wz-muted);
+    --wz-line: #e2e8f0;
+    --wz-line-strong: #cbd5e1;
+    --wz-brand-fg: var(--wz-night); /* woordmerk/koppen */
+    --wz-cta-bg: var(--wz-night);
+    --wz-cta-fg: #ffffff;
+    --wz-focus: var(--wz-sun);
+
+    --wz-font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+    --wz-radius-s: 6px;
+    --wz-radius-m: 12px;
+    --wz-radius-l: 22px;
+
+    --wz-maxw: 1120px;
+    --wz-gutter: clamp(16px, 4vw, 40px);
+
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --wz-bg: var(--wz-night);
+      --wz-surface: var(--wz-night-soft);
+      --wz-surface-2: #253146;
+      --wz-text: #f1f5f9;
+      --wz-text-soft: #94a3b8;
+      --wz-line: #2b3952;
+      --wz-line-strong: #3b4b66;
+      --wz-brand-fg: #f8fafc;
+      --wz-cta-bg: var(--wz-sun);
+      --wz-cta-fg: var(--wz-night);
+      color-scheme: dark;
+    }
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--wz-font);
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--wz-text);
+    background: var(--wz-bg);
+    font-feature-settings: 'cv11', 'ss01', 'tnum';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    color: var(--wz-brand-fg);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  h1 {
+    font-size: clamp(2.1rem, 5.2vw, 3.6rem);
+    letter-spacing: -0.03em;
+  }
+  h2 {
+    font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+  }
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  img,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--wz-focus);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer app {
+  /* Pagina-skelet */
+  .wz-wrap {
+    width: min(100% - 2 * var(--wz-gutter), var(--wz-maxw));
+    margin-inline: auto;
+  }
+
+  .wz-section {
+    padding-block: clamp(56px, 9vw, 112px);
+  }
+
+  .wz-section + .wz-section {
+    border-top: 1px solid var(--wz-line);
+  }
+
+  .wz-lead {
+    font-size: 1.15rem;
+    color: var(--wz-text-soft);
+    max-width: 58ch;
+  }
+
+  .wz-kicker {
+    font-weight: 600;
+    color: var(--wz-text-soft);
+    margin-bottom: 10px;
+  }
+
+  /* Knoppen */
+  .wz-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 22px;
+    border-radius: 999px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease;
+    white-space: nowrap;
+  }
+  .wz-btn:active {
+    transform: translateY(1px);
+  }
+  .wz-btn--primary {
+    background: var(--wz-cta-bg);
+    color: var(--wz-cta-fg);
+  }
+  .wz-btn--primary:hover {
+    filter: brightness(1.1);
+  }
+  .wz-btn--sun {
+    background: var(--wz-sun);
+    color: var(--wz-night);
+  }
+  .wz-btn--sun:hover {
+    background: #e18f06;
+  }
+  .wz-btn--ghost {
+    background: transparent;
+    color: var(--wz-text);
+    border-color: var(--wz-line-strong);
+  }
+  .wz-btn--ghost:hover {
+    border-color: var(--wz-text);
+  }
+  .wz-btn[disabled] {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  /* Vlakken */
+  .wz-panel {
+    background: var(--wz-surface);
+    border: 1px solid var(--wz-line);
+    border-radius: var(--wz-radius-l);
+  }
+
+  /* Formulieren (portal, demo) */
+  .wz-field {
+    display: grid;
+    gap: 6px;
+  }
+  .wz-field > label {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .wz-field .p-inputtext,
+  .wz-field .p-inputnumber,
+  .wz-field .p-select {
+    width: 100%;
+  }
+  .wz-help {
+    font-size: 0.9rem;
+    color: var(--wz-text-soft);
+  }
+
+  /* Energiestroomkleuren als utility */
+  .c-sun { color: var(--wz-sun); }
+  .c-battery { color: var(--wz-battery); }
+  .c-grid { color: var(--wz-grid); }
+  .c-export { color: var(--wz-export); }
+  .c-danger { color: var(--wz-danger); }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+}

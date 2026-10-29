@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             x:Class="Wattzicht.App.Pages.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             Title="Instellingen">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,8,16,32" Spacing="12">
+
+            <Label Text="Instellingen" Style="{StaticResource PageTitle}" />
+            <Label Text="{Binding HouseholdName}" Style="{StaticResource SubtitleLabel}" IsVisible="{Binding HouseholdName, Converter={StaticResource IsNotNullOrEmpty}}" />
+
+            <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
+                <Label Text="{Binding ErrorMessage}" />
+            </Border>
+
+            <!-- ===== Tarief ===== -->
+            <Label Text="Je energietarief" Style="{StaticResource SectionTitle}" />
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Hiermee rekenen we uit wat je bespaart. Je vindt het tarief op je energiecontract."
+                           Style="{StaticResource SubtitleLabel}" FontSize="14" />
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="Dynamisch contract" Style="{StaticResource CardTitle}" />
+                            <Label Text="Uurprijzen van de markt in plaats van een vast tarief" Style="{StaticResource SubtitleLabel}" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" IsToggled="{Binding IsDynamic}" VerticalOptions="Center" />
+                    </Grid>
+
+                    <VerticalStackLayout Spacing="4" IsVisible="{Binding IsDynamic, Converter={StaticResource InvertedBool}}">
+                        <Label Text="Leveringstarief (€ per kWh)" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource InputBorder}">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                <Label Text="€" VerticalOptions="Center" Style="{StaticResource SubtitleLabel}" FontSize="15" />
+                                <Entry Grid.Column="1" Text="{Binding ImportTariff}" Keyboard="Numeric" Placeholder="0,30" />
+                            </Grid>
+                        </Border>
+                        <Label Text="{Binding ImportTariffError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasImportTariffError}" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4" IsVisible="{Binding IsDynamic}">
+                        <Label Text="Gemiddeld leveringstarief (€ per kWh)" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource InputBorder}">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                <Label Text="€" VerticalOptions="Center" Style="{StaticResource SubtitleLabel}" FontSize="15" />
+                                <Entry Grid.Column="1" Text="{Binding ImportTariff}" Keyboard="Numeric" Placeholder="0,25" />
+                            </Grid>
+                        </Border>
+                        <Label Text="Bij dynamisch gebruiken we dit als schatting tot de uurprijzen worden gekoppeld." Style="{StaticResource StatCaption}" />
+                        <Label Text="{Binding ImportTariffError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasImportTariffError}" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Terugleververgoeding (€ per kWh)" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource InputBorder}">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                <Label Text="€" VerticalOptions="Center" Style="{StaticResource SubtitleLabel}" FontSize="15" />
+                                <Entry Grid.Column="1" Text="{Binding ExportTariff}" Keyboard="Numeric" Placeholder="0,08" />
+                            </Grid>
+                        </Border>
+                        <Label Text="Tot 31-12-2026 geldt saldering; dan telt teruglevering als je leveringstarief." Style="{StaticResource StatCaption}" />
+                        <Label Text="{Binding ExportTariffError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasExportTariffError}" />
+                    </VerticalStackLayout>
+
+                    <Label Text="{Binding TariffSavedText}" FontSize="13" TextColor="{StaticResource Battery}"
+                           IsVisible="{Binding TariffSavedText, Converter={StaticResource IsNotNullOrEmpty}}" />
+
+                    <Grid>
+                        <Button Text="Tarief opslaan" Style="{StaticResource PrimaryButton}" Command="{Binding SaveTariffCommand}"
+                                IsEnabled="{Binding IsSavingTariff, Converter={StaticResource InvertedBool}}" />
+                        <ActivityIndicator IsRunning="{Binding IsSavingTariff}" IsVisible="{Binding IsSavingTariff}"
+                                           Color="{StaticResource Night}" HorizontalOptions="End" Margin="0,0,16,0" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== Installateur ===== -->
+            <Label Text="Je installateur" Style="{StaticResource SectionTitle}" />
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="48,*" ColumnSpacing="12">
+                        <Border WidthRequest="48" HeightRequest="48" StrokeThickness="0" StrokeShape="RoundRectangle 12"
+                                BackgroundColor="{StaticResource Night}" VerticalOptions="Center">
+                            <Label Text="⚡" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" TextColor="{StaticResource Sun}" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="{Binding InstallerName}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{Binding InstallerPhone}" Style="{StaticResource SubtitleLabel}" IsVisible="{Binding HasInstallerPhone}" />
+                            <Label Text="Voor vragen over je installatie" Style="{StaticResource SubtitleLabel}" IsVisible="{Binding HasInstallerPhone, Converter={StaticResource InvertedBool}}" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Button Text="Bel installateur" Style="{StaticResource SecondaryButton}" Command="{Binding CallInstallerCommand}" IsVisible="{Binding HasInstallerPhone}" />
+
+                    <BoxView Style="{StaticResource Divider}" />
+
+                    <Label Text="Nog geen thuisbatterij? Sla je zonnestroom op en gebruik hem 's avonds zelf." FontSize="14" />
+                    <Button Text="Vraag offerte voor thuisbatterij" Style="{StaticResource PrimaryButton}" Command="{Binding RequestQuoteCommand}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== Account ===== -->
+            <Label Text="Account" Style="{StaticResource SectionTitle}" />
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Button Text="Uitloggen" Style="{StaticResource SecondaryButton}"
+                            TextColor="{AppThemeBinding Light={StaticResource Danger}, Dark={StaticResource DangerDark}}"
+                            BorderColor="{AppThemeBinding Light={StaticResource Danger}, Dark={StaticResource DangerDark}}"
+                            Command="{Binding LogoutCommand}" />
+                    <Label Text="{Binding VersionText}" Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" />
+                    <Label Text="{Binding ApiText}" Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" Opacity="0.7" />
+                </VerticalStackLayout>
+            </Border>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

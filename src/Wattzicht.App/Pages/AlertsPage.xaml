@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             x:Class="Wattzicht.App.Pages.AlertsPage"
+             x:DataType="vm:AlertsViewModel"
+             Title="Storingen">
+
+    <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
+        <CollectionView ItemsSource="{Binding Alerts}" SelectionMode="None">
+
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="16,8,16,8" Spacing="8">
+                    <Label Text="Storingen" Style="{StaticResource PageTitle}" />
+                    <Label Text="Apparaten die geen data leveren of niets opwekken." Style="{StaticResource SubtitleLabel}" />
+                    <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
+                        <Label Text="{Binding ErrorMessage}" />
+                    </Border>
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="32,48" Spacing="12" HorizontalOptions="Center">
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+                    <VerticalStackLayout Spacing="8" IsVisible="{Binding HasLoaded}">
+                        <Label Text="✓" FontSize="40" TextColor="{StaticResource Battery}" HorizontalTextAlignment="Center" />
+                        <Label Text="Alles werkt" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" Margin="0" />
+                        <Label Text="Er zijn op dit moment geen storingen." Style="{StaticResource SubtitleLabel}" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:AlertItem">
+                    <Border Style="{StaticResource DangerCard}" Margin="16,4">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12" Fill="{StaticResource Danger}" VerticalOptions="Start" Margin="0,5,0,0" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="{Binding DeviceName}" Style="{StaticResource CardTitle}" />
+                                    <Label Grid.Column="1" Text="{Binding SinceText}" Style="{StaticResource StatCaption}" />
+                                </Grid>
+                                <Label Text="{Binding TypeText}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource Danger}, Dark={StaticResource DangerDark}}" FontSize="14" />
+                                <Label Text="{Binding Message}" FontSize="14" />
+                                <Label Text="{Binding Advice}" Style="{StaticResource SubtitleLabel}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.Footer>
+                <BoxView HeightRequest="24" Color="Transparent" />
+            </CollectionView.Footer>
+        </CollectionView>
+    </RefreshView>
+</ContentPage>

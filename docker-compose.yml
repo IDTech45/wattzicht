@@ -1,0 +1,93 @@
+# Wattzicht – productie-compose voor Dokploy op de Leaseweb-VPS.
+# Secrets komen uit .env.production (maak die met scripts/generate-secrets.sh).
+# Traefik draait als onderdeel van Dokploy op het externe netwerk "dokploy-network".
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-wattzicht}
+      POSTGRES_USER: ${POSTGRES_USER:-wattzicht}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD ontbreekt}
+      TZ: Europe/Amsterdam
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wattzicht} -d ${POSTGRES_DB:-wattzicht}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - internal
+
+  api:
+    build:
+      context: .
+      dockerfile: src/Wattzicht.Api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB:-wattzicht};Username=${POSTGRES_USER:-wattzicht};Password=${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET ontbreekt}
+      WZ_PROTECTION_KEY: ${WZ_PROTECTION_KEY:?WZ_PROTECTION_KEY ontbreekt}
+      Cors__AllowedOrigins__0: https://${FRONTEND_HOST:-wattzicht.nl}
+      Cors__AllowedOrigins__1: https://www.${FRONTEND_HOST:-wattzicht.nl}
+      Seed__Enabled: ${SEED_ENABLED:-true}
+      Seed__InstallerPassword: ${SEED_INSTALLER_PASSWORD:-}
+      Seed__DemoPassword: ${SEED_DEMO_PASSWORD:-}
+      Swagger__Enabled: ${SWAGGER_ENABLED:-false}
+      TZ: Europe/Amsterdam
+    expose:
+      - "8080"
+    networks:
+      - internal
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.wattzicht-api.rule=Host(`${API_HOST:-api.wattzicht.nl}`)
+      - traefik.http.routers.wattzicht-api.entrypoints=websecure
+      - traefik.http.routers.wattzicht-api.tls=true
+      - traefik.http.routers.wattzicht-api.tls.certresolver=letsencrypt
+      - traefik.http.services.wattzicht-api.loadbalancer.server.port=8080
+      # http → https
+      - traefik.http.routers.wattzicht-api-http.rule=Host(`${API_HOST:-api.wattzicht.nl}`)
+      - traefik.http.routers.wattzicht-api-http.entrypoints=web
+      - traefik.http.routers.wattzicht-api-http.middlewares=redirect-to-https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+    expose:
+      - "80"
+    networks:
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.wattzicht-web.rule=Host(`${FRONTEND_HOST:-wattzicht.nl}`) || Host(`www.${FRONTEND_HOST:-wattzicht.nl}`)
+      - traefik.http.routers.wattzicht-web.entrypoints=websecure
+      - traefik.http.routers.wattzicht-web.tls=true
+      - traefik.http.routers.wattzicht-web.tls.certresolver=letsencrypt
+      - traefik.http.services.wattzicht-web.loadbalancer.server.port=80
+      - traefik.http.routers.wattzicht-web-http.rule=Host(`${FRONTEND_HOST:-wattzicht.nl}`) || Host(`www.${FRONTEND_HOST:-wattzicht.nl}`)
+      - traefik.http.routers.wattzicht-web-http.entrypoints=web
+      - traefik.http.routers.wattzicht-web-http.middlewares=redirect-to-https
+
+volumes:
+  postgres-data:
+
+networks:
+  internal:
+  dokploy-network:
+    external: true

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             x:Class="Wattzicht.App.Pages.LoginPage"
+             x:DataType="vm:LoginViewModel"
+             Title="Inloggen"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource Night}">
+
+    <ScrollView>
+        <Grid RowDefinitions="*,Auto,*" Padding="24" RowSpacing="24">
+
+            <!-- Logo en woordmerk -->
+            <VerticalStackLayout Grid.Row="0" Spacing="12" VerticalOptions="End" HorizontalOptions="Center">
+                <Image Source="logo.png" HeightRequest="96" WidthRequest="96"
+                       SemanticProperties.Description="Wattzicht-logo" />
+                <Label HorizontalTextAlignment="Center" FontSize="30" TextColor="{StaticResource InkDark}">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Watt" FontAttributes="Bold" />
+                            <Span Text="zicht" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+                <Label Text="Zie wat je bespaart"
+                       FontSize="15"
+                       TextColor="{StaticResource MutedDark}"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+
+            <!-- Formulier -->
+            <Border Grid.Row="1" Style="{StaticResource Card}" Padding="20">
+                <VerticalStackLayout Spacing="16">
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="E-mailadres" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource InputBorder}">
+                            <Entry Text="{Binding Email}"
+                                   Placeholder="naam@voorbeeld.nl"
+                                   Keyboard="Email"
+                                   ReturnType="Next"
+                                   IsSpellCheckEnabled="False"
+                                   IsTextPredictionEnabled="False"
+                                   AutomationId="EmailEntry" />
+                        </Border>
+                        <Label Text="{Binding EmailError}"
+                               Style="{StaticResource ErrorLabel}"
+                               IsVisible="{Binding HasEmailError}" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Wachtwoord" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource InputBorder}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Entry Grid.Column="0"
+                                       Text="{Binding Password}"
+                                       Placeholder="Je wachtwoord"
+                                       IsPassword="{Binding IsPasswordHidden}"
+                                       ReturnType="Go"
+                                       ReturnCommand="{Binding LoginCommand}"
+                                       AutomationId="PasswordEntry" />
+                                <Button Grid.Column="1"
+                                        Style="{StaticResource LinkButton}"
+                                        Text="Toon"
+                                        WidthRequest="56"
+                                        Command="{Binding TogglePasswordVisibilityCommand}"
+                                        SemanticProperties.Description="Wachtwoord tonen of verbergen" />
+                            </Grid>
+                        </Border>
+                        <Label Text="{Binding PasswordError}"
+                               Style="{StaticResource ErrorLabel}"
+                               IsVisible="{Binding HasPasswordError}" />
+                    </VerticalStackLayout>
+
+                    <Label Text="{Binding ErrorMessage}"
+                           Style="{StaticResource ErrorLabel}"
+                           IsVisible="{Binding HasError}" />
+
+                    <Grid>
+                        <Button Text="Inloggen"
+                                Style="{StaticResource PrimaryButton}"
+                                Command="{Binding LoginCommand}"
+                                IsEnabled="{Binding IsNotBusy}" />
+                        <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                           IsVisible="{Binding IsBusy}"
+                                           Color="{StaticResource Night}"
+                                           HorizontalOptions="End"
+                                           Margin="0,0,16,0" />
+                    </Grid>
+
+                    <Button Text="Nog geen account? Vraag je installateur"
+                            Style="{StaticResource LinkButton}"
+                            Command="{Binding NoAccountCommand}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <BoxView Grid.Row="2" HeightRequest="1" Color="Transparent" />
+        </Grid>
+    </ScrollView>
+</ContentPage>
