@@ -1,8 +1,8 @@
 # Wattzicht – productie-compose voor Dokploy op de Leaseweb-VPS (zelfde opzet als LaadCash).
 # Secrets komen uit .env.production (maak die met scripts/generate-secrets.sh) en plak je in
 # Dokploy → Environment. Domeinen hang je in Dokploy → Domains aan de services; Dokploy's Traefik
-# regelt HTTPS en bereikt de containers via het Docker-netwerk; er worden daarom geen host-poorten
-# gepubliceerd (geen conflicten met LaadCash of andere apps op dezelfde VPS).
+# regelt HTTPS en bereikt api en frontend via het externe netwerk "dokploy-network"; er worden geen
+# host-poorten gepubliceerd (geen conflicten met LaadCash of andere apps op dezelfde VPS).
 
 services:
   postgres:
@@ -18,6 +18,8 @@ services:
       - wattzicht-postgres-data:/var/lib/postgresql/data
     expose:
       - "5432"
+    networks:
+      - internal
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wattzicht} -d ${POSTGRES_DB:-wattzicht}"]
       interval: 10s
@@ -49,6 +51,9 @@ services:
       TZ: Europe/Amsterdam
     expose:
       - "8080"
+    networks:
+      - internal
+      - dokploy-network
 
   frontend:
     build:
@@ -60,6 +65,14 @@ services:
       - api
     expose:
       - "80"
+    networks:
+      - internal
+      - dokploy-network
 
 volumes:
   wattzicht-postgres-data:
+
+networks:
+  internal:
+  dokploy-network:
+    external: true
