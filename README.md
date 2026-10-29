@@ -58,4 +58,4 @@ Volledig marktonderzoek: zie `docs/MARKTONDERZOEK.md`.
 
 ## Deploy (Dokploy)
 
-Zie `DEPLOY.md`: zelfde VPS en Dokploy als LaadCash, eigen poorten (8090/8091), en zonder eigen domein via een gratis `…traefik.me`-adres met HTTPS.
+Zie `DEPLOY.md`: zelfde VPS en Dokploy als LaadCash, zonder host-poorten, en zonder eigen domein via een gratis `…traefik.me`-adres met HTTPS.

@@ -1,6 +1,6 @@
 # Wattzicht – deploy op de Leaseweb-VPS (Dokploy), zonder eigen domein
 
-Dezelfde VPS en dezelfde Dokploy als LaadCash. Wattzicht gebruikt andere localhost-poorten (8090/8091) en eigen containernamen, dus beide draaien naast elkaar. Je hebt nog geen domein; Dokploy kan zelf een gratis adres maken (`…traefik.me`) met werkende HTTPS. Later hang je `wattzicht.nl` er gewoon bij.
+Dezelfde VPS en dezelfde Dokploy als LaadCash. Wattzicht publiceert geen host-poorten (Traefik bereikt de containers intern) en heeft eigen containernamen, dus het draait naast LaadCash en Machinepas. Je hebt nog geen domein; Dokploy kan zelf een gratis adres maken (`…traefik.me`) met werkende HTTPS. Later hang je `wattzicht.nl` er gewoon bij.
 
 Totale tijd: ongeveer 10 minuten, alles via de Dokploy-webinterface.
 
