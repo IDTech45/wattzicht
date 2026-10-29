@@ -58,7 +58,4 @@ Volledig marktonderzoek: zie `docs/MARKTONDERZOEK.md`.
 
 ## Deploy (Dokploy)
 
-1. Project `wattzicht` → Compose-service → GitHub-repo, branch `main`, pad `./docker-compose.yml`.
-2. Environment: inhoud van `.env.production` plakken.
-3. Domeinen: `wattzicht.nl` → frontend (80), `api.wattzicht.nl` → api (8080).
-4. Deploy. Autodeploy on push staat aan.
+Zie `DEPLOY.md`: zelfde VPS en Dokploy als LaadCash, eigen poorten (8090/8091), en zonder eigen domein via een gratis `…traefik.me`-adres met HTTPS.
