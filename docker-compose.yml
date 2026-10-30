@@ -52,9 +52,11 @@ services:
       # Pushmeldingen: eigen Firebase-project 'wattzicht'. De servicesleutel staat als bestand op de server
       # en wordt alleen-lezen ingehangen: niet in de repo, niet in een env-variabele. Zonder bestand: push uit.
       Push__Fcm__ProjectId: ${FCM_PROJECT_ID:-wattzicht}
-      Push__Fcm__ServiceAccountFile: /run/secrets/fcm.json
+      Push__Fcm__ServiceAccountFile: /run/secrets/wattzicht/fcm.json
     volumes:
-      - /etc/dokploy/secrets/wattzicht-fcm.json:/run/secrets/fcm.json:ro
+      # Map i.p.v. los bestand: bestaat de sleutel nog niet, dan maakt Docker een lege map en staat push gewoon uit.
+      # Sleutel neerzetten: /etc/dokploy/secrets/wattzicht/fcm.json, daarna API herstarten.
+      - /etc/dokploy/secrets/wattzicht:/run/secrets/wattzicht:ro
     expose:
       - "8080"
     networks:
