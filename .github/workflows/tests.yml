@@ -16,6 +16,14 @@ jobs:
       - name: Test
         run: dotnet test tests/Wattzicht.Api.Tests/Wattzicht.Api.Tests.csproj -c Release --logger "console;verbosity=normal"
 
+  api-docker:
+    # Zelfde build als Dokploy bij elke deploy: draait alle tests in de image-build.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Docker build (met tests)
+        run: docker build -f src/Wattzicht.Api/Dockerfile -t wattzicht-api:ci .
+
   app-android:
     # Controleert dat de MAUI-app voor Android compileert (inclusief Firebase-push).
     runs-on: ubuntu-latest

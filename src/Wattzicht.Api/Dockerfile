@@ -9,10 +9,19 @@ WORKDIR /src
 COPY global.json ./
 COPY src/Wattzicht.Shared/Wattzicht.Shared.csproj src/Wattzicht.Shared/
 COPY src/Wattzicht.Api/Wattzicht.Api.csproj src/Wattzicht.Api/
-RUN dotnet restore src/Wattzicht.Api/Wattzicht.Api.csproj
+COPY tests/Wattzicht.Api.Tests/Wattzicht.Api.Tests.csproj tests/Wattzicht.Api.Tests/
+RUN dotnet restore src/Wattzicht.Api/Wattzicht.Api.csproj \
+    && dotnet restore tests/Wattzicht.Api.Tests/Wattzicht.Api.Tests.csproj
 
 COPY src/Wattzicht.Shared/ src/Wattzicht.Shared/
 COPY src/Wattzicht.Api/ src/Wattzicht.Api/
+COPY tests/Wattzicht.Api.Tests/ tests/Wattzicht.Api.Tests/
+
+# Bij elke deploy: alle tests, waaronder de scenario's voor elke koppeling (Growatt, SolaX, Sessy, demo).
+# Faalt er één, dan stopt de build en blijft de huidige versie gewoon draaien.
+RUN dotnet test tests/Wattzicht.Api.Tests/Wattzicht.Api.Tests.csproj -c Release --no-restore \
+    --logger "console;verbosity=normal"
+
 RUN dotnet publish src/Wattzicht.Api/Wattzicht.Api.csproj -c Release -o /app/publish --no-restore
 
 # ---- runtime --------------------------------------------------------------

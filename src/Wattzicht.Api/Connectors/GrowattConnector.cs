@@ -223,16 +223,41 @@ public sealed class GrowattConnector(IHttpClientFactory httpClientFactory, ILogg
 
     private static async Task<JsonDocument> GetAsync(HttpClient client, string path, CancellationToken ct)
     {
-        using var response = await client.GetAsync(path, ct);
+        HttpResponseMessage raw;
+        try
+        {
+            raw = await client.GetAsync(path, ct);
+        }
+        catch (TaskCanceledException ex) when (!ct.IsCancellationRequested)
+        {
+            throw new ConnectorException("Growatt reageert niet (time-out). Probeer het later opnieuw.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new ConnectorException("Growatt is op dit moment niet bereikbaar. Probeer het later opnieuw.", ex);
+        }
+
+        using var response = raw;
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == System.Net.HttpStatusCode.Forbidden)
         {
             throw new ConnectorException("Growatt-token is ongeldig of verlopen.");
         }
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new ConnectorException($"Growatt gaf HTTP {(int)response.StatusCode}.");
+        }
 
-        var stream = await response.Content.ReadAsStreamAsync(ct);
-        var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+        JsonDocument doc;
+        try
+        {
+            var stream = await response.Content.ReadAsStreamAsync(ct);
+            doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+        }
+        catch (JsonException ex)
+        {
+            throw new ConnectorException("Onverwacht antwoord van Growatt (geen geldige JSON).", ex);
+        }
 
         // Growatt geeft HTTP 200 met error_code != 0 bij fouten.
         var errorCode = doc.RootElement.GetDoubleOrNull("error_code", "errorCode");
@@ -288,18 +313,23 @@ public sealed class GrowattConnector(IHttpClientFactory httpClientFactory, ILogg
         return KindTlx;
     }
 
-    private static DateTimeOffset ParseTimestamp(JsonElement data)
+    /// <summary>
+    /// Growatt geeft lokale tijd zonder zone (<c>yyyy-MM-dd HH:mm:ss</c>). Voor Nederlandse installaties is dat Europe/Amsterdam.
+    /// Een tijd in de toekomst (klokafwijking van de datalogger) wordt "nu". Publiek voor tests.
+    /// </summary>
+    internal static DateTimeOffset ParseTimestamp(JsonElement data, DateTimeOffset? now = null)
     {
+        var utcNow = now ?? DateTimeOffset.UtcNow;
         var raw = data.GetStringOrNull("time", "lastUpdateTime", "last_update_time", "dataLogTime");
         if (raw is not null
-            && DateTime.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var parsed))
+            && DateTime.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
         {
-            // Growatt geeft lokale tijd zonder zone; we nemen de meting niet ouder dan "nu" aan.
-            var ts = new DateTimeOffset(parsed, TimeSpan.Zero);
-            return ts > DateTimeOffset.UtcNow ? DateTimeOffset.UtcNow : ts;
+            var local = DateTime.SpecifyKind(parsed, DateTimeKind.Unspecified);
+            var ts = new DateTimeOffset(local, Services.DutchTime.Zone.GetUtcOffset(local));
+            return ts > utcNow ? utcNow : ts;
         }
 
-        return DateTimeOffset.UtcNow;
+        return utcNow;
     }
 
     /// <summary>Growatt-tellers zijn in kWh; wij slaan Wh op.</summary>

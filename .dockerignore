@@ -12,6 +12,5 @@
 !.env.example
 docs/
 brand/
-tests/
 src/Wattzicht.App/
 *.md
