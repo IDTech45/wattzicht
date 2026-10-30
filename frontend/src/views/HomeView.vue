@@ -34,22 +34,14 @@ const features = [
     tone: 'danger',
     icon: 'pi-bell',
   },
+  {
+    title: 'Slim sturen',
+    text: 'Wattzicht kijkt naar de stroomprijs per uur en je eigen zon, en zegt wanneer je de auto laadt of de wasmachine aanzet. Met de besparing erbij in euro’s.',
+    tone: 'sun',
+    icon: 'pi-sliders-h',
+  },
 ]
 
-const installerPerks = [
-  {
-    title: 'Minder supportbellen',
-    text: 'Je klant ziet zelf of alles werkt. Bij een storing krijg jij de melding tegelijk, met het serienummer erbij.',
-  },
-  {
-    title: 'Zichtbaar bij je klant',
-    text: 'Jouw naam en logo op het scherm dat je klant elke dag opent. Niet het logo van de omvormerfabrikant.',
-  },
-  {
-    title: 'Batterij-leads',
-    text: 'Levert een klant veel terug aan het net? Dan ziet die precies wat een thuisbatterij oplevert, met jouw offerteknop eronder.',
-  },
-]
 </script>
 
 <template>
@@ -155,28 +147,6 @@ const installerPerks = [
     </div>
   </section>
 
-  <!-- Voor installateurs -->
-  <section class="wz-section installers" id="installateurs">
-    <div class="wz-wrap">
-      <div class="installers__card">
-        <div class="installers__copy">
-          <p class="wz-kicker">Voor installateurs</p>
-          <h2>Jouw naam, onze app</h2>
-          <p class="wz-lead">
-            Geef je klanten één app met jouw logo erop, voor alles wat je bij ze installeert. Wij bouwen de koppelingen,
-            jij houdt het klantcontact.
-          </p>
-          <RouterLink to="/installateurs" class="wz-btn wz-btn--sun">Bekijk hoe het werkt</RouterLink>
-        </div>
-        <ul class="perks">
-          <li v-for="p in installerPerks" :key="p.title">
-            <h3>{{ p.title }}</h3>
-            <p>{{ p.text }}</p>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </section>
 </template>
 
 <style scoped>
@@ -241,7 +211,7 @@ const installerPerks = [
 /* Kenmerken */
 .features {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
 }
 .feature {
@@ -301,52 +271,6 @@ const installerPerks = [
   color: var(--wz-text-soft);
 }
 
-/* Installateurs */
-.installers__card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  gap: clamp(28px, 5vw, 64px);
-  padding: clamp(28px, 5vw, 56px);
-  border-radius: var(--wz-radius-l);
-  background: var(--wz-night);
-  color: #e2e8f0;
-}
-.installers__card h2,
-.installers__card h3 {
-  color: #fff;
-}
-.installers__card .wz-kicker {
-  color: var(--wz-sun);
-}
-.installers__card .wz-lead {
-  color: #cbd5e1;
-}
-.installers__copy {
-  display: grid;
-  gap: 18px;
-  justify-items: start;
-  align-content: start;
-}
-.perks {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0;
-}
-.perks li {
-  padding: 20px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  display: grid;
-  gap: 6px;
-}
-.perks li:first-child {
-  border-top: 0;
-  padding-top: 0;
-}
-.perks p {
-  color: #cbd5e1;
-}
 
 @media (max-width: 980px) {
   .brands {
@@ -358,8 +282,7 @@ const installerPerks = [
 }
 @media (max-width: 820px) {
   .hero__grid,
-  .after__grid,
-  .installers__card {
+  .after__grid {
     grid-template-columns: 1fr;
   }
   .hero__art {

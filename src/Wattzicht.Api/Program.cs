@@ -63,6 +63,13 @@ builder.Services.AddSingleton<SavingsCalculator>();
 builder.Services.AddScoped<AlertService>();
 builder.Services.AddScoped<SummaryService>();
 builder.Services.AddScoped<HouseholdQueries>();
+builder.Services.AddHttpClient(EnergyZeroPriceProvider.HttpClientName, client =>
+{
+    client.BaseAddress = new Uri(configuration["Advice:PriceBaseUrl"] ?? EnergyZeroPriceProvider.DefaultBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(15);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Wattzicht/0.1");
+});
+builder.Services.AddSingleton<IPriceProvider, EnergyZeroPriceProvider>();
 builder.Services.AddHostedService<PollingWorker>();
 
 // CORS voor de Vue-frontend en lokale ontwikkeling
@@ -193,6 +200,7 @@ app.MapAuthEndpoints();
 app.MapHouseholdEndpoints();
 app.MapInstallerEndpoints();
 app.MapLeadEndpoints();
+app.MapAdviceEndpoints();
 
 app.Run();
 

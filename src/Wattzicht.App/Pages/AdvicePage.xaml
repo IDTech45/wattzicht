@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             x:Class="Wattzicht.App.Pages.AdvicePage"
+             x:DataType="vm:AdviceViewModel"
+             Title="Slim sturen">
+
+    <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
+        <CollectionView ItemsSource="{Binding Tips}" SelectionMode="None">
+
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="16,8,16,8" Spacing="12">
+                    <Label Text="Slim sturen · vandaag" Style="{StaticResource SubtitleLabel}" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="{Binding TotalText}" Style="{StaticResource StatValueLarge}" TextColor="{StaticResource Sun}" />
+                        <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
+                    </Grid>
+                    <Label Text="{Binding Subtitle}" Style="{StaticResource SubtitleLabel}" />
+
+                    <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
+                        <Label Text="{Binding ErrorMessage}" />
+                    </Border>
+
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding HasPrices}">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{Binding CheapestText}" FontAttributes="Bold" TextColor="{StaticResource Sun}" />
+                            <Label Text="{Binding ExpensiveText}" FontAttributes="Bold" TextColor="{StaticResource Export}" />
+                            <Label Text="Uurprijzen inclusief belasting (schatting)" Style="{StaticResource StatCaption}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="32,24" Spacing="8" HorizontalOptions="Center" IsVisible="{Binding HasLoaded}">
+                    <Label Text="Nog geen tips" Style="{StaticResource CardTitle}" HorizontalTextAlignment="Center" />
+                    <Label Text="Koppel je zonnepanelen, batterij of laadpaal, of zet bij Instellingen een dynamisch contract aan."
+                           Style="{StaticResource SubtitleLabel}" HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:AdviceTipRow">
+                    <Border Style="{StaticResource Card}" Margin="16,4" Padding="14,12">
+                        <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto" RowSpacing="2">
+                            <BoxView Grid.RowSpan="3" WidthRequest="4" CornerRadius="2" Color="{Binding AccentColor}" />
+                            <Label Grid.Column="1" Text="{Binding Title}" Style="{StaticResource CardTitle}" />
+                            <Label Grid.Column="1" Grid.Row="1" Text="{Binding Detail}" Style="{StaticResource StatCaption}" />
+                            <Label Grid.Column="1" Grid.Row="2" Text="{Binding Note}" IsVisible="{Binding HasNote}"
+                                   Style="{StaticResource StatCaption}" TextColor="{StaticResource Sun}" />
+                            <Label Grid.Column="2" Grid.RowSpan="3" Text="{Binding SavingText}" IsVisible="{Binding HasSaving}"
+                                   FontAttributes="Bold" FontSize="16" TextColor="{StaticResource Sun}" VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.Footer>
+                <Label Text="Automatisch sturen komt binnenkort voor laadpalen en batterijen."
+                       Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" Padding="16,12,16,32" />
+            </CollectionView.Footer>
+        </CollectionView>
+    </RefreshView>
+</ContentPage>

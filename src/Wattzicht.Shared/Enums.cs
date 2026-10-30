@@ -58,6 +58,22 @@ public enum UserRole
     Installer = 1
 }
 
+/// <summary>Soort slim-sturen-tip.</summary>
+public enum AdviceTipKind
+{
+    /// <summary>Auto laden op een goedkoop of zonnig moment.</summary>
+    Charger = 0,
+
+    /// <summary>Thuisbatterij goedkoop laden en duur ontladen.</summary>
+    Battery = 1,
+
+    /// <summary>Wasmachine, vaatwasser of droger verschuiven.</summary>
+    Appliance = 2,
+
+    /// <summary>Teruglevering vermijden bij een negatieve prijs.</summary>
+    Export = 3
+}
+
 /// <summary>
 /// Status van een huishouden zoals de installateur die ziet.
 /// Wordt in JSON als kleine letters geserialiseerd (<c>online</c>, <c>fault</c>, <c>nodata</c>) voor het portal.

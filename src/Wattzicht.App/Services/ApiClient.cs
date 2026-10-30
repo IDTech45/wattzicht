@@ -65,6 +65,11 @@ public sealed class ApiClient
     public Task DeleteDeviceAsync(Guid deviceId, CancellationToken ct = default) =>
         DeleteAsync($"/devices/{deviceId}", ct);
 
+    // ---------- Slim sturen ----------
+
+    public Task<AdviceDto> GetAdviceAsync(CancellationToken ct = default) =>
+        GetAsync<AdviceDto>("/advice", ct);
+
     // ---------- Tarief & installateur ----------
 
     public Task<TariffDto> GetTariffAsync(CancellationToken ct = default) =>

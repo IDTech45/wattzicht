@@ -325,3 +325,55 @@ public sealed record InstallerHouseholdDetailDto(
     DailySummaryDto Today,
     DailySummaryDto Month,
     IReadOnlyList<DailySummaryDto> LastDays);
+
+// ---------------------------------------------------------------------------
+// Slim sturen (advies op basis van uurprijzen en zon)
+// ---------------------------------------------------------------------------
+
+/// <summary>Stroomprijs voor één uur.</summary>
+/// <param name="Start">Begin van het uur (UTC).</param>
+/// <param name="MarketEur">Kale marktprijs (day-ahead, incl. btw) in euro per kWh; kan negatief zijn.</param>
+/// <param name="AllInEur">Geschatte prijs die een klant met dynamisch contract betaalt (markt + belasting + opslag).</param>
+public sealed record HourPriceDto(DateTimeOffset Start, decimal MarketEur, decimal AllInEur);
+
+/// <summary>Een aaneengesloten blok uren.</summary>
+/// <param name="From">Begin (UTC).</param>
+/// <param name="To">Einde (UTC, exclusief).</param>
+/// <param name="AverageAllInEur">Gemiddelde all-in prijs in dat blok.</param>
+public sealed record PriceWindowDto(DateTimeOffset From, DateTimeOffset To, decimal AverageAllInEur);
+
+/// <summary>Eén concrete tip.</summary>
+/// <param name="Kind">Soort tip (bepaalt de kleur in de app).</param>
+/// <param name="Title">Korte opdracht, bv. "Laad de auto 12:00–15:00".</param>
+/// <param name="Detail">Waarom, in één regel.</param>
+/// <param name="From">Begin van het advies-blok (UTC), als er een tijd bij hoort.</param>
+/// <param name="To">Einde van het advies-blok (UTC).</param>
+/// <param name="SavingEur">Wat het vandaag oplevert in euro (0 als het nu nog niets scheelt).</param>
+/// <param name="Note">Extra uitleg, bv. "Vanaf 2027 € 1,20 per dag".</param>
+public sealed record AdviceTipDto(
+    AdviceTipKind Kind,
+    string Title,
+    string Detail,
+    DateTimeOffset? From,
+    DateTimeOffset? To,
+    decimal SavingEur,
+    string? Note = null);
+
+/// <summary>Slim-sturen-advies voor vandaag (GET /advice).</summary>
+/// <param name="Date">Dag in Nederlandse tijd.</param>
+/// <param name="IsDynamic">Of het huishouden een dynamisch contract heeft.</param>
+/// <param name="Prices">Uurprijzen vanaf nu (vandaag en, na ±13:00, morgen).</param>
+/// <param name="Cheapest">Goedkoopste 3 uur vanaf nu.</param>
+/// <param name="MostExpensive">Duurste 3 uur vanaf nu.</param>
+/// <param name="Tips">Tips, hoogste besparing eerst.</param>
+/// <param name="TotalSavingEur">Som van de besparingen.</param>
+/// <param name="PriceSource">Bron van de prijzen, of <c>null</c> als die niet beschikbaar waren.</param>
+public sealed record AdviceDto(
+    DateOnly Date,
+    bool IsDynamic,
+    List<HourPriceDto> Prices,
+    PriceWindowDto? Cheapest,
+    PriceWindowDto? MostExpensive,
+    List<AdviceTipDto> Tips,
+    decimal TotalSavingEur,
+    string? PriceSource);
