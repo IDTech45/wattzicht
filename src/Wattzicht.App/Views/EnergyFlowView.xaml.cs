@@ -86,7 +86,7 @@ public partial class EnergyFlowView : ContentView
         bool exporting = grid < -50;
         bool importing = grid > 50;
         GridHint = exporting ? "▲ Teruglevering" : importing ? "▼ Afname" : "Geen uitwisseling";
-        GridAccent = exporting ? Res("Export") : importing ? Res("Grid") : Res("Muted");
+        GridAccent = exporting ? Res("Export") : importing ? Res("Export") : Res("Muted");
         GridCardBackground = exporting
             ? ThemeRes("ExportSoft", "ExportSoftDark")
             : importing

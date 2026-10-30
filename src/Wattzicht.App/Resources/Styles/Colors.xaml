@@ -2,25 +2,25 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- ============ Huisstijl-tokens (brand/BRAND.md) ============ -->
+    <!-- ============ Huisstijl: lacivert + geel (skill wattzicht-design). De app draait altijd donker (App.xaml.cs). ============ -->
 
     <!-- Merk -->
-    <Color x:Key="Night">#0F172A</Color>
-    <Color x:Key="NightSoft">#1E293B</Color>
+    <Color x:Key="Night">#0A1630</Color>
+    <Color x:Key="NightSoft">#12234A</Color>
 
-    <!-- Energiestromen: altijd dezelfde kleur in app én site -->
-    <Color x:Key="Sun">#F59E0B</Color>
-    <Color x:Key="SunLight">#FFD166</Color>
-    <Color x:Key="Battery">#22C55E</Color>
-    <Color x:Key="Grid">#3B82F6</Color>
-    <Color x:Key="Export">#A855F7</Color>
+    <!-- Energiestromen: zon geel, batterij teal, laadpaal oranje (key "Grid"), net/teruglevering paars (key "Export") -->
+    <Color x:Key="Sun">#FFE11A</Color>
+    <Color x:Key="SunLight">#FFEB66</Color>
+    <Color x:Key="Battery">#5EEAD4</Color>
+    <Color x:Key="Grid">#FF7A3D</Color>
+    <Color x:Key="Export">#B69CFF</Color>
 
     <!-- Tekst & vlakken (light) -->
     <Color x:Key="Ink">#111827</Color>
     <Color x:Key="Muted">#64748B</Color>
     <Color x:Key="Paper">#F8FAFC</Color>
     <Color x:Key="Surface">#FFFFFF</Color>
-    <Color x:Key="Danger">#DC2626</Color>
+    <Color x:Key="Danger">#FF6B6B</Color>
 
     <!-- Randen en zachte tinten (light) -->
     <Color x:Key="Line">#E2E8F0</Color>
@@ -31,16 +31,16 @@
     <Color x:Key="DangerSoft">#FEE2E2</Color>
 
     <!-- ============ Dark-varianten ============ -->
-    <Color x:Key="InkDark">#F8FAFC</Color>
-    <Color x:Key="MutedDark">#94A3B8</Color>
-    <Color x:Key="PaperDark">#0F172A</Color>
-    <Color x:Key="SurfaceDark">#1E293B</Color>
-    <Color x:Key="DangerDark">#F87171</Color>
-    <Color x:Key="LineDark">#334155</Color>
-    <Color x:Key="SunSoftDark">#3B2F0B</Color>
-    <Color x:Key="BatterySoftDark">#0F2F1C</Color>
-    <Color x:Key="GridSoftDark">#122A4D</Color>
-    <Color x:Key="ExportSoftDark">#2E1A4D</Color>
+    <Color x:Key="InkDark">#F4F6FB</Color>
+    <Color x:Key="MutedDark">#9AA8C4</Color>
+    <Color x:Key="PaperDark">#0A1630</Color>
+    <Color x:Key="SurfaceDark">#12234A</Color>
+    <Color x:Key="DangerDark">#FF6B6B</Color>
+    <Color x:Key="LineDark">#22365F</Color>
+    <Color x:Key="SunSoftDark">#2E2E1A</Color>
+    <Color x:Key="BatterySoftDark">#103A44</Color>
+    <Color x:Key="GridSoftDark">#3A2A2E</Color>
+    <Color x:Key="ExportSoftDark">#2A2A5A</Color>
     <Color x:Key="DangerSoftDark">#3F1414</Color>
 
     <!-- Hulpkleuren -->

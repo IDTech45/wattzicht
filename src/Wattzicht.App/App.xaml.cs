@@ -10,6 +10,8 @@ public partial class App : Application
     public App(AuthService auth, PushService push)
     {
         InitializeComponent();
+        // Huisstijl: altijd donker (lacivert), net als de website.
+        UserAppTheme = AppTheme.Dark;
         _auth = auth;
         _push = push;
         _auth.LoggedOut += OnLoggedOut;
