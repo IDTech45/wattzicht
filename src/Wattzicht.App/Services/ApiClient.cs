@@ -116,14 +116,14 @@ public sealed class ApiClient
 
     private async Task<T> GetAsync<T>(string path, CancellationToken ct)
     {
-        using var req = new HttpRequestMessage(HttpMethod.Get, path);
+        using var req = new HttpRequestMessage(HttpMethod.Get, Relative(path));
         await AuthorizeAsync(req);
         return await SendAsync<T>(req, ct);
     }
 
     private async Task<TOut> PostAsync<TIn, TOut>(string path, TIn? body, bool authenticated, CancellationToken ct)
     {
-        using var req = new HttpRequestMessage(HttpMethod.Post, path);
+        using var req = new HttpRequestMessage(HttpMethod.Post, Relative(path));
         if (body is not null)
             req.Content = JsonContent.Create(body, options: JsonOptions);
         if (authenticated)
@@ -133,7 +133,7 @@ public sealed class ApiClient
 
     private async Task<TOut> PutAsync<TIn, TOut>(string path, TIn body, CancellationToken ct)
     {
-        using var req = new HttpRequestMessage(HttpMethod.Put, path)
+        using var req = new HttpRequestMessage(HttpMethod.Put, Relative(path))
         {
             Content = JsonContent.Create(body, options: JsonOptions)
         };
@@ -143,7 +143,7 @@ public sealed class ApiClient
 
     private async Task PostNoContentAsync<TIn>(string path, TIn body, CancellationToken ct)
     {
-        using var req = new HttpRequestMessage(HttpMethod.Post, path)
+        using var req = new HttpRequestMessage(HttpMethod.Post, Relative(path))
         {
             Content = JsonContent.Create(body, options: JsonOptions)
         };
@@ -154,7 +154,7 @@ public sealed class ApiClient
 
     private async Task DeleteAsync(string path, CancellationToken ct)
     {
-        using var req = new HttpRequestMessage(HttpMethod.Delete, path);
+        using var req = new HttpRequestMessage(HttpMethod.Delete, Relative(path));
         await AuthorizeAsync(req);
         using var res = await SendRawAsync(req, ct);
         await EnsureSuccessAsync(res, ct);
@@ -234,4 +234,10 @@ public sealed class ApiClient
 
         throw ApiException.FromStatus(res.StatusCode, serverMessage);
     }
+
+    /// <summary>
+    /// Paden relatief aan de basis-URL maken. De API staat nu onder <c>https://wattzicht.laadcash.nl/api/</c>;
+    /// een pad met voorloop-slash zou dat <c>/api</c> overslaan.
+    /// </summary>
+    private static string Relative(string path) => path.TrimStart('/');
 }

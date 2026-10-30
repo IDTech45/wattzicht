@@ -18,14 +18,15 @@ public static class AppConfig
         {
 #if DEBUG
 #if ANDROID
-            return "http://10.0.2.2:8080";
+            return "http://10.0.2.2:8080/";
 #elif IOS
-            return "http://localhost:8080";
+            return "http://localhost:8080/";
 #else
-            return "http://localhost:8080";
+            return "http://localhost:8080/";
 #endif
 #else
-            return "https://api.wattzicht.nl";
+            // Tijdelijk via de testomgeving zolang er geen eigen domein is. Nieuw domein = alleen deze regel.
+            return "https://wattzicht.laadcash.nl/api/";
 #endif
         }
     }

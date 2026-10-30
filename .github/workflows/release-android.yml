@@ -1,0 +1,62 @@
+name: release-android
+
+# Bouwt een ondertekende .aab voor Google Play (interne test). Handmatig starten via Actions → release-android → Run workflow.
+# Benodigde GitHub-secrets (Settings → Secrets and variables → Actions), nooit in de repo:
+#   ANDROID_KEYSTORE_BASE64   upload-keystore als base64
+#   ANDROID_KEYSTORE_PASSWORD wachtwoord van de keystore (en van de sleutel)
+#   ANDROID_KEY_ALIAS         alias, bv. wattzicht-upload
+on:
+  workflow_dispatch:
+
+jobs:
+  aab:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+      - name: MAUI Android workload
+        run: dotnet workload install maui-android
+
+      - name: Keystore klaarzetten
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::Secret ANDROID_KEYSTORE_BASE64 ontbreekt. Zie de uitleg bovenin deze workflow."
+            exit 1
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.keystore"
+
+      - name: Bouwen en ondertekenen
+        env:
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        # Versiecode = runnummer, zodat elke upload naar Play hoger is dan de vorige.
+        run: >
+          dotnet publish src/Wattzicht.App/Wattzicht.App.csproj -c Release
+          -p:AndroidOnly=true
+          -p:AcceptAndroidSDKLicenses=true
+          -p:AndroidPackageFormats=aab
+          -p:ApplicationVersion=${{ github.run_number }}
+          -p:AndroidKeyStore=true
+          -p:AndroidSigningKeyStore=$RUNNER_TEMP/upload.keystore
+          -p:AndroidSigningKeyAlias=$KS_ALIAS
+          -p:AndroidSigningKeyPass=env:KS_PASS
+          -p:AndroidSigningStorePass=env:KS_PASS
+          -o out
+
+      - name: Keystore opruimen
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.keystore"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wattzicht-android-aab
+          path: out/*-Signed.aab
+          if-no-files-found: error
