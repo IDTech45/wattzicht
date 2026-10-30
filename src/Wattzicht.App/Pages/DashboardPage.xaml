@@ -18,12 +18,13 @@
                             <Label Text="{Binding Greeting}" Style="{StaticResource PageTitle}" />
                             <Label Text="{Binding UpdatedAtText}" Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>
-                        <Image Grid.Column="1"
-                               Source="{Binding InstallerLogo, Converter={StaticResource LogoSource}}"
-                               IsVisible="{Binding HasInstallerLogo}"
-                               HeightRequest="40" MaximumWidthRequest="120" Aspect="AspectFit"
-                               VerticalOptions="Center"
-                               SemanticProperties.Description="{Binding InstallerName}" />
+                        <!-- Jouw installateur: klein, op een wit plaatje. Wattzicht blijft het merk van de app. -->
+                        <Border Grid.Column="1" IsVisible="{Binding HasInstallerLogo}" BackgroundColor="{StaticResource White}"
+                                StrokeThickness="0" StrokeShape="RoundRectangle 10" Padding="8,4" VerticalOptions="Center">
+                            <Image Source="{Binding InstallerLogo, Converter={StaticResource LogoSource}}"
+                                   HeightRequest="32" MaximumWidthRequest="96" Aspect="AspectFit"
+                                   SemanticProperties.Description="{Binding InstallerName, StringFormat='Jouw installateur: {0}'}" />
+                        </Border>
                     </Grid>
 
                     <!-- Foutmelding -->

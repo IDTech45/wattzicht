@@ -18,6 +18,9 @@ public static class DbSeeder
     public const string DemoEmail = "demo@wattzicht.nl";
     public const string InstallerEmail = "installateur@triple-energie.nl";
 
+    /// <summary>Logo van Triple Energie (van hun eigen site) tot ze er zelf een uploaden in het portal.</summary>
+    public const string TripleEnergieLogoUrl = "https://www.triple-energie.nl/wp-content/uploads/2025/04/Triple-energie-logo-768x351.png";
+
     public static async Task SeedAsync(IServiceProvider services, CancellationToken ct = default)
     {
         using var scope = services.CreateScope();
@@ -40,12 +43,18 @@ public static class DbSeeder
                 PrimaryColor = "#0F172A",
                 AccentColor = "#F59E0B",
                 QuoteUrl = "https://www.triple-energie.nl/offerte",
+                LogoUrl = TripleEnergieLogoUrl,
                 ContactEmail = "info@triple-energie.nl",
                 CreatedAt = now
             };
             db.Installers.Add(installer);
             await db.SaveChangesAsync(ct); // installer eerst, zodat FK's van users/households kloppen
             logger.LogInformation("Installateur Triple Energie aangemaakt");
+        }
+        else if (string.IsNullOrEmpty(installer.LogoUrl))
+        {
+            installer.LogoUrl = TripleEnergieLogoUrl;
+            await db.SaveChangesAsync(ct);
         }
 
         if (!await db.Users.AnyAsync(u => u.Email == InstallerEmail, ct))

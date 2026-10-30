@@ -95,11 +95,12 @@
             <Label Text="Je installateur" Style="{StaticResource SectionTitle}" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12">
-                    <Grid ColumnDefinitions="48,*" ColumnSpacing="12">
-                        <Border WidthRequest="48" HeightRequest="48" StrokeThickness="0" StrokeShape="RoundRectangle 12"
-                                BackgroundColor="{StaticResource Night}" VerticalOptions="Center">
+                    <Grid ColumnDefinitions="72,*" ColumnSpacing="12">
+                        <!-- Logo's van installateurs zijn voor een lichte achtergrond gemaakt: wit plaatje. -->
+                        <Border WidthRequest="72" HeightRequest="48" StrokeThickness="0" StrokeShape="RoundRectangle 12"
+                                BackgroundColor="{StaticResource White}" VerticalOptions="Center">
                             <Grid>
-                                <Label Text="⚡" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" TextColor="{StaticResource Sun}"
+                                <Label Text="⚡" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" TextColor="{StaticResource Night}"
                                        IsVisible="{Binding HasInstallerLogo, Converter={StaticResource InvertedBool}}" />
                                 <Image Source="{Binding InstallerLogo, Converter={StaticResource LogoSource}}" Aspect="AspectFit" Margin="4"
                                        IsVisible="{Binding HasInstallerLogo}" />

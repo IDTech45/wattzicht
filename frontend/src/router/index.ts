@@ -53,7 +53,7 @@ const routes: RouteRecordRaw[] = [
         path: 'branding',
         name: 'portal-branding',
         component: () => import('@/views/portal/BrandingView.vue'),
-        meta: { title: 'Jouw huisstijl – Wattzicht portal' },
+        meta: { title: 'Jouw bedrijf – Wattzicht portal' },
       },
     ],
   },

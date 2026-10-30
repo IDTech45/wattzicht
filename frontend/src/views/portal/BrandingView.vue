@@ -29,7 +29,7 @@ onMounted(async () => {
     const b = await getBranding()
     Object.assign(form, b, { primaryColor: normalize(b.primaryColor) || '#FFE11A' })
   } catch {
-    loadError.value = 'De huidige huisstijl kon niet geladen worden. Je ziet de laatst bekende instellingen.'
+    loadError.value = 'Je bedrijfsgegevens konden niet geladen worden. Je ziet de laatst bekende instellingen.'
   }
 })
 
@@ -88,7 +88,7 @@ async function save() {
       primaryColor: saved.primaryColor,
       quoteUrl: saved.quoteUrl,
     })
-    toast.add({ severity: 'success', summary: 'Huisstijl opgeslagen', detail: 'Je klanten zien dit bij de volgende keer openen van de app.', life: 4000 })
+    toast.add({ severity: 'success', summary: 'Opgeslagen', detail: 'Je klanten zien dit bij de volgende keer openen van de app.', life: 4000 })
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Opslaan is niet gelukt', detail: e instanceof Error ? e.message : undefined, life: 5000 })
   } finally {
@@ -100,7 +100,7 @@ async function save() {
 <template>
   <div class="page">
     <header>
-      <h1>Jouw huisstijl</h1>
+      <h1>Jouw bedrijf in Wattzicht</h1>
       <p class="wz-help">Zo ziet de app eruit voor je klanten. Wijzigingen zie je rechts direct.</p>
     </header>
 
@@ -134,7 +134,7 @@ async function save() {
         </div>
 
         <div class="wz-field">
-          <label for="b-color">Primaire kleur</label>
+          <label for="b-color">Kleur van je offerteknop</label>
           <div class="color-row">
             <ColorPicker :model-value="form.primaryColor.replace('#', '')" input-id="b-color" format="hex" @update:model-value="onPicker" />
             <InputText
@@ -157,7 +157,7 @@ async function save() {
               ></button>
             </div>
           </div>
-          <span class="wz-help">Voor de kop van de app en de knoppen. Zon, batterij en net houden hun eigen kleur.</span>
+          <span class="wz-help">Wattzicht houdt zijn eigen stijl; jouw kleur zit op je eigen knop bij de klant.</span>
         </div>
 
         <div class="wz-field">
@@ -168,7 +168,7 @@ async function save() {
 
         <button type="submit" class="wz-btn wz-btn--primary save" :disabled="saving">
           <i v-if="saving" class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-          {{ saving ? 'Opslaan…' : 'Huisstijl opslaan' }}
+          {{ saving ? 'Opslaan…' : 'Opslaan' }}
         </button>
       </form>
 

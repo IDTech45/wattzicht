@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * Statische weergave van het app-startscherm in de huisstijl van een installateur.
- * Gebruikt in de brandingpagina (live preview) en op de downloadpagina.
+ * Statische weergave van het app-startscherm. Wattzicht blijft het merk; de installateur staat erin
+ * als "jouw installateur" (logo, naam, offerteknop). Gebruikt op de installateurspagina en in het portal.
  */
 import { computed } from 'vue'
 
@@ -50,11 +50,7 @@ const initials = computed(() =>
     <div class="phone__notch" aria-hidden="true"></div>
     <div class="screen">
       <header class="screen__top">
-        <div class="screen__brand">
-          <img v-if="logoDataUrl" :src="logoDataUrl" alt="" class="screen__logo" />
-          <span v-else class="screen__initials">{{ initials || 'W' }}</span>
-          <span class="screen__name">{{ name || 'Jouw bedrijf' }}</span>
-        </div>
+        <span class="screen__word">watt<span>zicht</span></span>
         <span class="screen__live">live</span>
       </header>
 
@@ -80,8 +76,14 @@ const initials = computed(() =>
       </section>
 
       <section class="screen__cta">
-        <span>Ook een thuisbatterij?</span>
-        <span class="screen__btn">Vraag offerte aan</span>
+        <div class="screen__installer">
+          <span class="screen__plate">
+            <img v-if="logoDataUrl" :src="logoDataUrl" alt="" class="screen__logo" />
+            <span v-else class="screen__initials">{{ initials || 'W' }}</span>
+          </span>
+          <span class="screen__inst-text"><small>Jouw installateur</small>{{ name || 'Jouw bedrijf' }}</span>
+        </div>
+        <span class="screen__btn">Offerte batterij</span>
       </section>
 
       <nav class="screen__tabs" aria-hidden="true">
@@ -136,8 +138,50 @@ const initials = computed(() =>
   justify-content: space-between;
   align-items: center;
   padding: 48px 18px 14px;
-  background: var(--brand);
-  color: var(--on-brand);
+  background: var(--wz-night);
+  color: var(--wz-ink);
+}
+.screen__word {
+  font-family: var(--wz-font-display);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.03em;
+}
+.screen__word span {
+  color: var(--wz-sun);
+}
+.screen__installer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.screen__plate {
+  flex: none;
+  width: 52px;
+  height: 30px;
+  border-radius: 8px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.screen__plate .screen__initials {
+  color: #0a1630;
+}
+.screen__inst-text {
+  display: grid;
+  font-weight: 700;
+  line-height: 1.2;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.screen__inst-text small {
+  font-weight: 500;
+  font-size: 10px;
+  color: var(--wz-muted);
 }
 .screen__brand {
   display: flex;
@@ -146,12 +190,10 @@ const initials = computed(() =>
   min-width: 0;
 }
 .screen__logo {
-  width: 26px;
-  height: 26px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  border-radius: 6px;
-  background: var(--wz-card);
-  padding: 2px;
+  padding: 3px;
 }
 .screen__initials {
   width: 26px;

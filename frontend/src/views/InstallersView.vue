@@ -5,6 +5,9 @@ import InputNumber from 'primevue/inputnumber'
 import Message from 'primevue/message'
 import PhonePreview from '@/components/PhonePreview.vue'
 import { useLeadsStore } from '@/stores/leads'
+import { partners } from '@/utils/partners'
+
+const featured = partners[0]!
 
 const leads = useLeadsStore()
 
@@ -33,16 +36,39 @@ async function send() {
 
 const steps = [
   {
-    title: 'Jij zet je huisstijl klaar',
-    text: 'Naam, logo, kleur en de link naar je offerteformulier. Kwartiertje werk in het portal.',
+    title: 'Je klant installeert Wattzicht',
+    text: 'Met jouw installateurscode. Jij staat er meteen in als "jouw installateur", met logo, telefoonnummer en offerteknop.',
   },
   {
     title: 'Je klant koppelt z’n apparaten',
-    text: 'De app vraagt om de token of inloggegevens van de omvormer, batterij of laadpaal. Daarna loopt alles vanzelf.',
+    text: 'Omvormer, batterij en laadpaal van elk merk, in twee minuten. De klant geeft zelf toestemming dat jij meekijkt.',
   },
   {
-    title: 'Jij ziet alles in één overzicht',
-    text: 'Welke installaties online zijn, welke een storing hebben en wie veel teruglevert. Met een melding als het misgaat.',
+    title: 'Jij ziet al je klanten in één overzicht',
+    text: 'Wat ze hebben, hoe het draait, waar een storing is en waar een kans ligt. En je kunt op afstand helpen.',
+  },
+]
+
+const scenarios = [
+  {
+    tone: 'danger',
+    title: 'Storing? Jij belt eerst',
+    text: 'Omvormer offline of levert niets terwijl de zon schijnt: jij krijgt de melding met merk en serienummer, vóór de klant belt.',
+  },
+  {
+    tone: 'sun',
+    title: 'Levert minder dan het weer toelaat',
+    text: 'Wattzicht vergelijkt de opwek met het weer van die dag. Structureel te laag? Tijd voor schoonmaken of een controle.',
+  },
+  {
+    tone: 'grid',
+    title: 'Hulp op afstand',
+    text: 'Opnieuw uitlezen, de laatste foutmelding van het merk zien en de klant een bericht sturen dat als melding in de app binnenkomt.',
+  },
+  {
+    tone: 'battery',
+    title: 'Kansen per klant',
+    text: 'Veel teruglevering: batterij. Auto ’s avonds laden: slim laden op zon. Je ziet het per klant, met wat het oplevert.',
   },
 ]
 </script>
@@ -52,10 +78,11 @@ const steps = [
     <div class="wz-wrap top__grid">
       <div class="top__copy">
         <p class="wz-kicker">Voor installateurs</p>
-        <h1>De app die je klanten openen draagt jouw naam</h1>
+        <h1>Al je klanten in <span class="c-sun">één overzicht</span></h1>
         <p class="wz-lead">
-          Je plaatst panelen van het ene merk, een batterij van het andere en een laadpaal van een derde. Je klant krijgt
-          drie apps en belt jou als er iets niet klopt. Wattzicht brengt het samen in één app, met jouw logo erop.
+          Je plaatst panelen van het ene merk, een batterij van het andere en een laadpaal van een derde. Je klant gebruikt
+          Wattzicht voor alles, met jou erin als vaste installateur. Jij ziet in het portal wat iedereen heeft, hoe het
+          draait en waar je kunt helpen.
         </p>
         <div class="top__cta">
           <a href="#demo" class="wz-btn wz-btn--primary">Plan een demo</a>
@@ -63,8 +90,34 @@ const steps = [
         </div>
       </div>
       <div class="top__phone">
-        <PhonePreview name="Triple Energie" primary-color="#0E7490" />
-        <p class="top__caption">Zo ziet de app eruit voor klanten van Triple Energie in Enschede.</p>
+        <PhonePreview :name="featured.name" :logo-data-url="featured.logo" />
+        <p class="top__caption">Wattzicht bij een klant van Triple Energie in Enschede.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wz-section partners" aria-labelledby="partners-title">
+    <div class="wz-wrap partners__row">
+      <p id="partners-title" class="wz-kicker partners__label">Installateurs die met Wattzicht werken</p>
+      <ul class="partners__list">
+        <li v-for="p in partners" :key="p.name">
+          <a :href="p.url" target="_blank" rel="noopener" class="partner">
+            <span class="partner__plate"><img :src="p.logo" :alt="p.name" loading="lazy" /></span>
+            <span class="partner__city">{{ p.city }}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="wz-section">
+    <div class="wz-wrap">
+      <h2 class="h2-tight">Wat jij ermee kunt</h2>
+      <div class="scenarios">
+        <article v-for="s in scenarios" :key="s.title" class="scenario" :class="`scenario--${s.tone}`">
+          <h3>{{ s.title }}</h3>
+          <p>{{ s.text }}</p>
+        </article>
       </div>
     </div>
   </section>
@@ -105,7 +158,7 @@ const steps = [
         <ul class="price__list">
           <li>Onbeperkt installaties in het portal</li>
           <li>Storingsmeldingen voor jou en je klant</li>
-          <li>Jouw huisstijl in de app, zonder meerprijs</li>
+          <li>Jouw logo, telefoon en offerteknop bij elke klant</li>
           <li>Nieuwe merkkoppelingen zonder extra kosten</li>
         </ul>
       </div>
@@ -117,8 +170,8 @@ const steps = [
       <div class="demo__copy">
         <h2>Plan een demo</h2>
         <p class="wz-lead">
-          In een half uur laten we het portal en de app zien, met jouw logo erin. Laat je gegevens achter en we bellen je
-          binnen één werkdag.
+          In een half uur laten we het portal en de app zien, met jouw klanten als voorbeeld. Laat je gegevens achter en we
+          bellen je binnen één werkdag.
         </p>
         <p class="demo__alt">
           Liever direct contact? <a href="mailto:hallo@wattzicht.nl">hallo@wattzicht.nl</a> of
@@ -213,6 +266,82 @@ const steps = [
   margin-top: 16px;
 }
 
+.partners {
+  padding-block: 32px;
+}
+.partners__row {
+  display: flex;
+  align-items: center;
+  gap: 24px 40px;
+  flex-wrap: wrap;
+}
+.partners__label {
+  margin: 0;
+}
+.partners__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.partner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--wz-text-soft);
+  font-size: 0.9rem;
+}
+.partner__plate {
+  /* Logo's van installateurs zijn meestal voor een lichte achtergrond gemaakt. */
+  display: grid;
+  place-items: center;
+  width: 150px;
+  height: 64px;
+  padding: 8px 14px;
+  border-radius: var(--wz-radius-m);
+  background: #fff;
+}
+.partner__plate img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.partner:hover .partner__plate {
+  outline: 2px solid var(--wz-sun);
+}
+
+.scenarios {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.scenario {
+  --c: var(--wz-sun);
+  padding: 24px;
+  border-radius: var(--wz-radius-l);
+  background: var(--wz-surface);
+  border: 1px solid var(--wz-line);
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.scenario::before {
+  content: '';
+  width: 28px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--c);
+}
+.scenario p {
+  color: var(--wz-text-soft);
+}
+.scenario--danger { --c: var(--wz-danger); }
+.scenario--grid { --c: var(--wz-grid); }
+.scenario--battery { --c: var(--wz-battery); }
+
 .h2-tight {
   margin-bottom: clamp(24px, 4vw, 40px);
 }
@@ -236,6 +365,7 @@ const steps = [
   border-radius: 999px;
   display: grid;
   place-items: center;
+  font-family: var(--wz-font-display);
   font-weight: 800;
   background: var(--wz-sun);
   color: var(--wz-night);
@@ -342,7 +472,8 @@ const steps = [
   .demo {
     grid-template-columns: 1fr;
   }
-  .steps {
+  .steps,
+  .scenarios {
     grid-template-columns: 1fr;
   }
   .top__phone {

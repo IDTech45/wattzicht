@@ -29,7 +29,7 @@ function logout() {
           <i class="pi pi-home" aria-hidden="true"></i> Klanten
         </RouterLink>
         <RouterLink :to="{ name: 'portal-branding' }" class="side__link">
-          <i class="pi pi-palette" aria-hidden="true"></i> Jouw huisstijl
+          <i class="pi pi-palette" aria-hidden="true"></i> Jouw bedrijf
         </RouterLink>
       </nav>
 
