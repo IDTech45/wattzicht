@@ -470,10 +470,17 @@ public static class HouseholdEndpoints
             ? pub
             : SavingsCalculator.DefaultPublicChargingPrice;
 
-        // Eerst opslaan: een nieuw tarief komt anders niet terug uit de query in RecalculateSavingsAsync.
-        await db.SaveChangesAsync(ct);
-        await summaries.RecalculateSavingsAsync(householdId, validFrom, ct);
-        await db.SaveChangesAsync(ct);
+        // Tarief en herberekende besparing samen opslaan, of allebei niet.
+        // Eerst opslaan binnen de transactie: een nieuw tarief komt anders niet terug uit de query in RecalculateSavingsAsync.
+        var strategy = db.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
+            await db.SaveChangesAsync(ct);
+            await summaries.RecalculateSavingsAsync(householdId, validFrom, ct);
+            await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+        });
 
         return Results.Ok(ToDto(tariff));
     }

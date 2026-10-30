@@ -116,8 +116,9 @@ public static class AdviceEndpoints
             today,
             rates,
             monthExportKwh: days.Where(d => d.Date >= monthStart).Sum(d => d.ExportKwh),
-            exportKwhLastYear: days.Sum(d => d.ExportKwh),
-            daysWithData: days.Count,
+            // Jaar: alleen volle dagen, vandaag is nog niet af.
+            exportKwhLastYear: days.Where(d => d.Date < today).Sum(d => d.ExportKwh),
+            daysWithData: days.Count(d => d.Date < today),
             liveExportW: FeedInCalculator.LiveExportW(live, now)));
     }
 }

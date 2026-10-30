@@ -66,6 +66,15 @@ public sealed class FeedInCalculatorTests
     }
 
     [Fact]
+    public void Geen_live_tip_als_zelf_gebruiken_nu_niets_scheelt()
+    {
+        // Saldering en geen terugleverkosten ingevuld: terugleveren levert evenveel op als zelf gebruiken.
+        var zonderKosten = new TariffRates(0.30m, 0.05m);
+
+        Assert.Null(FeedInCalculator.LiveSurplusTip(Live(-3000), Now, hasCharger: true, zonderKosten));
+    }
+
+    [Fact]
     public void Geen_live_tip_bij_weinig_teruglevering_afname_of_oude_meting()
     {
         Assert.Null(FeedInCalculator.LiveSurplusTip(Live(-900), Now, true, Rates));

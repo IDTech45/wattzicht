@@ -82,8 +82,15 @@ public static class FeedInCalculator
             return null;
         }
 
+        // Scheelt zelf gebruiken nu niets (saldering en geen terugleverkosten ingevuld)? Dan geen tip.
+        var worth = SelfUseWorthPerKwh(rates, DutchTime.LocalDate(now));
+        if (worth <= 0)
+        {
+            return null;
+        }
+
         var kw = (exportW / 1000).ToString("0.0", Nl);
-        var perHour = Money((decimal)(exportW / 1000) * SelfUseWorthPerKwh(rates, DutchTime.LocalDate(now)));
+        var perHour = Money((decimal)(exportW / 1000) * worth);
         var carIdle = hasCharger && (live?.ChargerPowerW ?? 0) < 100;
 
         return new AdviceTipDto(
