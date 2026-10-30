@@ -31,9 +31,8 @@ jobs:
       - name: MAUI Android workload
         run: dotnet workload install maui-android
       - name: Build Android
-        # Alleen Android: iOS kan niet op Linux. InstallAndroidDependencies haalt een ontbrekend Android-platform op.
+        # Alleen Android: iOS kan niet op Linux. De runner heeft de Android-SDK al.
         run: >
           dotnet build src/Wattzicht.App/Wattzicht.App.csproj -c Debug
           -p:TargetFrameworks=net9.0-android
-          -t:InstallAndroidDependencies,Build
           -p:AcceptAndroidSDKLicenses=true
