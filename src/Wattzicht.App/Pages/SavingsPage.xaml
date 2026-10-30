@@ -106,6 +106,35 @@
                         </VerticalStackLayout>
                     </Border>
 
+                    <!-- Duurzaamheid dit jaar -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding HasSustainability}">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="Dit jaar" Style="{StaticResource SubtitleLabel}" />
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                                <VerticalStackLayout Spacing="2">
+                                    <Label Text="{Binding YearPvText}" FontAttributes="Bold" FontSize="16" TextColor="{StaticResource Sun}" />
+                                    <Label Text="opgewekt" Style="{StaticResource StatCaption}" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                    <Label Text="{Binding Co2Text}" FontAttributes="Bold" FontSize="16" TextColor="{StaticResource Battery}" />
+                                    <Label Text="CO₂ vermeden" Style="{StaticResource StatCaption}" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="2" Spacing="2">
+                                    <Label Text="{Binding SelfSufficiencyText}" FontAttributes="Bold" FontSize="16" />
+                                    <Label Text="zelfvoorzienend" Style="{StaticResource StatCaption}" />
+                                </VerticalStackLayout>
+                            </Grid>
+                            <Label Text="{Binding PerformanceText}" FontSize="14">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding PerformanceLow}" Value="True">
+                                        <Setter Property="TextColor" Value="{StaticResource Danger}" />
+                                        <Setter Property="FontAttributes" Value="Bold" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </VerticalStackLayout>
+                    </Border>
+
                     <!-- Terugleveren -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding HasFeedIn}">
                         <VerticalStackLayout Spacing="6">

@@ -10,7 +10,7 @@ import Skeleton from 'primevue/skeleton'
 import StatusDot from '@/components/StatusDot.vue'
 import StatTile from '@/components/StatTile.vue'
 import { getInstallerHouseholds, type HouseholdSummary, type HouseholdStatus } from '@/api/client'
-import { kwh, relativeTime } from '@/utils/format'
+import { euro, kwh, relativeTime } from '@/utils/format'
 
 const router = useRouter()
 const rows = ref<HouseholdSummary[]>([])
@@ -45,6 +45,11 @@ const counts = computed(() => ({
   fault: rows.value.filter((r) => r.status === 'fault').length,
   nodata: rows.value.filter((r) => r.status === 'nodata').length,
   pv: rows.value.reduce((s, r) => s + (r.todayPvKwh ?? 0), 0),
+  chances: rows.value.filter((r) => (r.opportunities?.length ?? 0) > 0).length,
+  chanceValue: rows.value.reduce(
+    (s, r) => s + (r.opportunities ?? []).reduce((t, o) => t + (o.yearValueEur ?? 0), 0),
+    0,
+  ),
 }))
 
 const filtered = computed(() => {
@@ -90,6 +95,12 @@ function open(row: HouseholdSummary) {
       <StatTile label="Storing" :value="counts.fault" tone="danger" />
       <StatTile label="Geen data" :value="counts.nodata" tone="neutral" />
       <StatTile label="Vandaag opgewekt" :value="kwh(counts.pv)" unit="kWh" tone="sun" />
+      <StatTile
+        label="Klanten met een kans"
+        :value="counts.chances"
+        :hint="counts.chanceValue ? `${euro(counts.chanceValue)} per jaar voor je klanten` : undefined"
+        tone="battery"
+      />
     </div>
 
     <Message v-if="error" severity="error" :closable="false">
@@ -161,6 +172,16 @@ function open(row: HouseholdSummary) {
         <template #body="{ data }"><StatusDot :status="data.status" /></template>
       </Column>
 
+      <Column header="Kansen">
+        <template #body="{ data }">
+          <span class="devices">
+            <span v-if="data.performance === 'low'" class="chip chip--low">levert te weinig</span>
+            <span v-for="o in data.opportunities ?? []" :key="o.kind" class="chip chip--opp">{{ o.title }}</span>
+            <span v-if="!data.opportunities?.length && data.performance !== 'low'" class="wz-help">—</span>
+          </span>
+        </template>
+      </Column>
+
       <Column field="todayPvKwh" header="Vandaag opgewekt" sortable style="width: 170px" class="num">
         <template #body="{ data }"><span class="num">{{ kwh(data.todayPvKwh) }} kWh</span></template>
       </Column>
@@ -191,7 +212,7 @@ function open(row: HouseholdSummary) {
 }
 .tiles {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
 }
 .toolbar {
@@ -263,6 +284,8 @@ function open(row: HouseholdSummary) {
 .chip--Battery { --c: var(--wz-battery); }
 .chip--Charger { --c: var(--wz-charger); }
 .chip--P1Meter { --c: var(--wz-muted); }
+.chip--low { --c: var(--wz-danger); }
+.chip--opp { --c: var(--wz-battery); }
 .num {
   font-variant-numeric: tabular-nums;
 }

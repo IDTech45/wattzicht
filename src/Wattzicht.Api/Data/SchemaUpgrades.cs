@@ -46,6 +46,11 @@ public static class SchemaUpgrades
         """CREATE UNIQUE INDEX IF NOT EXISTS ix_push_devices_token ON push_devices ("Token")""",
         """CREATE INDEX IF NOT EXISTS ix_push_devices_household ON push_devices ("HouseholdId")""",
 
+        // 2026-10: prestatiecheck (weerdata).
+        """ALTER TABLE daily_summaries ADD COLUMN IF NOT EXISTS "IrradianceKwhM2" double precision NULL""",
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "Latitude" double precision NULL""",
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "Longitude" double precision NULL""",
+
         // 2026-10: terugleverkosten van de leverancier per kWh.
         """ALTER TABLE tariffs ADD COLUMN IF NOT EXISTS "FeedInCostPerKwh" numeric(10,4) NOT NULL DEFAULT 0""",
     ];

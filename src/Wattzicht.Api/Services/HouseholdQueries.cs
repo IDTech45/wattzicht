@@ -140,7 +140,8 @@ public sealed class HouseholdQueries(AppDbContext db, TimeProvider clock)
         d.Name,
         d.ExternalId,
         d.LastSeenAt,
-        d.LastSeenAt is { } seen && now - seen <= AlertService.NoDataThreshold);
+        d.LastSeenAt is { } seen && now - seen <= AlertService.NoDataThreshold,
+        d.LastError);
 
     public static HouseholdDto ToDto(Household h) => new(
         h.Id,

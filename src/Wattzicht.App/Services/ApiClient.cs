@@ -92,6 +92,9 @@ public sealed class ApiClient
 
     // ---------- Slim sturen ----------
 
+    public Task<SustainabilityDto> GetSustainabilityAsync(CancellationToken ct = default) =>
+        GetAsync<SustainabilityDto>("/sustainability", ct);
+
     public Task<FeedInDto> GetFeedInAsync(CancellationToken ct = default) =>
         GetAsync<FeedInDto>("/feed-in", ct);
 

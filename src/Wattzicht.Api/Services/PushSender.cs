@@ -15,8 +15,13 @@ public interface IPushSender
     bool Enabled { get; }
 
     /// <summary>Verstuurt de melding. Fouten worden gelogd en nooit doorgegooid.</summary>
+    /// <param name="householdId">Huishouden; de aanroeper heeft al gecontroleerd dat dit mag.</param>
+    /// <param name="title">Titel van de melding.</param>
+    /// <param name="body">Tekst van de melding.</param>
     /// <param name="route">Scherm in de app dat bij aantikken opent (bv. "advice" of "alerts").</param>
-    Task SendToHouseholdAsync(Guid householdId, string title, string body, string? route = null, CancellationToken ct = default);
+    /// <param name="ct">Annulering.</param>
+    /// <returns>Aantal toestellen waar de melding heen ging (0 als push uit staat of er geen toestel is).</returns>
+    Task<int> SendToHouseholdAsync(Guid householdId, string title, string body, string? route = null, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -51,18 +56,20 @@ public sealed class FcmPushSender : IPushSender
 
     public bool Enabled => !string.IsNullOrWhiteSpace(_serviceAccountJson) && !string.IsNullOrWhiteSpace(_projectId);
 
-    public async Task SendToHouseholdAsync(Guid householdId, string title, string body, string? route = null, CancellationToken ct = default)
+    public async Task<int> SendToHouseholdAsync(Guid householdId, string title, string body, string? route = null, CancellationToken ct = default)
     {
         if (!Enabled)
         {
             _logger.LogDebug("Pushmelding niet verstuurd: Push:Fcm is niet ingesteld ({Title})", title);
-            return;
+            return 0;
         }
 
-        var devices = await _db.PushDevices.Where(d => d.HouseholdId == householdId).ToListAsync(ct);
+        // Zonder tenantfilter: ook een installateur (bericht aan klant) of de pollworker stuurt via deze service.
+        // De aanroeper controleert vooraf of dat mag; hier lezen we alleen de tokens van precies dit huishouden.
+        var devices = await _db.PushDevices.IgnoreQueryFilters().Where(d => d.HouseholdId == householdId).ToListAsync(ct);
         if (devices.Count == 0)
         {
-            return;
+            return 0;
         }
 
         string accessToken;
@@ -73,10 +80,11 @@ public sealed class FcmPushSender : IPushSender
         catch (Exception ex) when (!ct.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "Kon geen FCM-toegangstoken ophalen; controleer de service-accountsleutel");
-            return;
+            return 0;
         }
 
         var expired = new List<PushDevice>();
+        var sent = 0;
         foreach (var device in devices)
         {
             var payload = JsonSerializer.Serialize(new
@@ -102,6 +110,7 @@ public sealed class FcmPushSender : IPushSender
                 using var response = await Http.SendAsync(request, ct);
                 if (response.IsSuccessStatusCode)
                 {
+                    sent++;
                     continue;
                 }
 
@@ -129,6 +138,8 @@ public sealed class FcmPushSender : IPushSender
             await _db.SaveChangesAsync(ct);
             _logger.LogInformation("{Count} verlopen toestel(len) opgeruimd", expired.Count);
         }
+
+        return sent;
     }
 
     // Eén credential voor het hele proces: de Google-bibliotheek bewaart het toegangstoken en ververst het op tijd.

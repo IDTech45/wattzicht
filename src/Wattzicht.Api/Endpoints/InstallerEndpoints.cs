@@ -31,6 +31,18 @@ public static partial class InstallerEndpoints
             .Produces<InstallerHouseholdDetailDto>()
             .Produces(StatusCodes.Status404NotFound);
 
+        group.MapPost("/households/{id:guid}/refresh", RefreshAsync)
+            .WithSummary("Actie op afstand: alle apparaten van deze klant nu opnieuw uitlezen (max. 1x per minuut).")
+            .Produces<InstallerActionResult>()
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status429TooManyRequests);
+
+        group.MapPost("/households/{id:guid}/message", MessageAsync)
+            .WithSummary("Actie op afstand: bericht aan de klant, komt als pushmelding binnen in Wattzicht.")
+            .Produces<InstallerActionResult>()
+            .ProducesValidationProblem()
+            .Produces(StatusCodes.Status404NotFound);
+
         group.MapGet("/branding", GetBrandingAsync)
             .WithSummary("Eigen white-label instellingen: naam, logo (data-URL), kleur en offertelink.")
             .Produces<BrandingDto>();
@@ -43,13 +55,13 @@ public static partial class InstallerEndpoints
         return app;
     }
 
-    private static async Task<IResult> HouseholdsAsync(HttpContext http, AppDbContext db, TimeProvider clock, CancellationToken ct)
+    private static async Task<IResult> HouseholdsAsync(HttpContext http, AppDbContext db, InsightsService insights, TimeProvider clock, CancellationToken ct)
     {
         var installerId = http.User.GetInstallerId();
-        return Results.Ok(await LoadHouseholdsAsync(db, installerId, clock.GetUtcNow(), ct));
+        return Results.Ok(await LoadHouseholdsAsync(db, insights, installerId, clock.GetUtcNow(), ct));
     }
 
-    private static async Task<IResult> OverviewAsync(HttpContext http, AppDbContext db, TimeProvider clock, CancellationToken ct)
+    private static async Task<IResult> OverviewAsync(HttpContext http, AppDbContext db, InsightsService insights, TimeProvider clock, CancellationToken ct)
     {
         var installerId = http.User.GetInstallerId();
         var installer = await db.Installers.FirstOrDefaultAsync(i => i.Id == installerId, ct);
@@ -58,7 +70,7 @@ public static partial class InstallerEndpoints
             return Results.Unauthorized();
         }
 
-        var households = await LoadHouseholdsAsync(db, installerId, clock.GetUtcNow(), ct);
+        var households = await LoadHouseholdsAsync(db, insights, installerId, clock.GetUtcNow(), ct);
 
         return Results.Ok(new InstallerOverviewDto(
             HouseholdQueries.ToDto(installer),
@@ -68,7 +80,8 @@ public static partial class InstallerEndpoints
             households.Count(h => h.Status == HouseholdStatus.NoData)));
     }
 
-    private static async Task<List<InstallerHouseholdDto>> LoadHouseholdsAsync(AppDbContext db, Guid installerId, DateTimeOffset now, CancellationToken ct)
+    private static async Task<List<InstallerHouseholdDto>> LoadHouseholdsAsync(
+        AppDbContext db, InsightsService insights, Guid installerId, DateTimeOffset now, CancellationToken ct)
     {
         var today = DutchTime.LocalDate(now);
 
@@ -88,22 +101,26 @@ public static partial class InstallerEndpoints
             })
             .ToListAsync(ct);
 
-        return rows
-            .Select(r =>
-            {
-                var lastSeen = r.Devices.Count == 0 ? null : r.Devices.Max(d => d.LastSeenAt);
-                return new InstallerHouseholdDto(
-                    r.Id,
-                    r.Name,
-                    r.City,
-                    r.PostalCode,
-                    r.Devices.Select(d => HouseholdQueries.ToDto(d, now)).ToList(),
-                    HouseholdQueries.DetermineStatus(r.Devices.Count, r.OpenAlerts, lastSeen, now),
-                    r.OpenAlerts,
-                    Math.Round(r.PvKwhToday, 2),
-                    lastSeen);
-            })
-            .ToList();
+        var result = new List<InstallerHouseholdDto>(rows.Count);
+        foreach (var r in rows)
+        {
+            var lastSeen = r.Devices.Count == 0 ? null : r.Devices.Max(d => d.LastSeenAt);
+            var (performance, opportunities) = await insights.ForInstallerAsync(r.Id, today, ct);
+            result.Add(new InstallerHouseholdDto(
+                r.Id,
+                r.Name,
+                r.City,
+                r.PostalCode,
+                r.Devices.Select(d => HouseholdQueries.ToDto(d, now)).ToList(),
+                HouseholdQueries.DetermineStatus(r.Devices.Count, r.OpenAlerts, lastSeen, now),
+                r.OpenAlerts,
+                Math.Round(r.PvKwhToday, 2),
+                lastSeen,
+                performance.Status,
+                opportunities));
+        }
+
+        return result;
     }
 
     private static async Task<IResult> DetailAsync(
@@ -111,6 +128,7 @@ public static partial class InstallerEndpoints
         HttpContext http,
         AppDbContext db,
         HouseholdQueries queries,
+        InsightsService insights,
         TimeProvider clock,
         CancellationToken ct)
     {
@@ -161,6 +179,7 @@ public static partial class InstallerEndpoints
         var month = await queries.AggregateAsync(id, monthStart, today, monthStart, ct);
         var lastDays = await queries.SummariesAsync(id, today.AddDays(-13), today, ct);
         var lastSeen = devices.Count == 0 ? null : devices.Max(d => d.LastSeenAt);
+        var (performance, opportunities) = await insights.ForInstallerAsync(id, today, ct);
 
         return Results.Ok(new InstallerHouseholdDetailDto(
             household.Id,
@@ -177,7 +196,95 @@ public static partial class InstallerEndpoints
             alerts,
             todaySummary,
             month,
-            lastDays));
+            lastDays,
+            performance,
+            opportunities));
+    }
+
+    // Eén "opnieuw uitlezen" per klant per minuut: merk-API's hebben limieten (SolaX: 10 per minuut).
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, DateTimeOffset> LastRefresh = new();
+
+    /// <summary>Klant van deze installateur mét toestemming, of null (dan altijd 404).</summary>
+    private static Task<Household?> FindOwnHouseholdAsync(AppDbContext db, Guid id, Guid installerId, CancellationToken ct) =>
+        db.Households.FirstOrDefaultAsync(h => h.Id == id && h.InstallerId == installerId && h.InstallerAccessGranted, ct);
+
+    private static async Task LogActionAsync(AppDbContext db, HttpContext http, Guid householdId, Guid installerId, string action, DateTimeOffset at, CancellationToken ct)
+    {
+        db.InstallerAccessLogs.Add(new InstallerAccessLog
+        {
+            HouseholdId = householdId,
+            InstallerId = installerId,
+            UserId = http.User.GetUserId(),
+            Action = action,
+            At = at
+        });
+        await db.SaveChangesAsync(ct);
+    }
+
+    private static async Task<IResult> RefreshAsync(
+        Guid id,
+        HttpContext http,
+        AppDbContext db,
+        PollingWorker poller,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var installerId = http.User.GetInstallerId();
+        if (await FindOwnHouseholdAsync(db, id, installerId, ct) is null)
+        {
+            return Results.NotFound();
+        }
+
+        var now = clock.GetUtcNow();
+        if (LastRefresh.TryGetValue(id, out var last) && now - last < TimeSpan.FromMinutes(1))
+        {
+            return Results.Json(new InstallerActionResult(false, "Net al uitgelezen. Probeer het over een minuut opnieuw."),
+                statusCode: StatusCodes.Status429TooManyRequests);
+        }
+
+        LastRefresh[id] = now;
+        await LogActionAsync(db, http, id, installerId, "refresh", now, ct);
+
+        var (ok, fail) = await poller.PollHouseholdAsync(id, ct);
+        var message = fail == 0
+            ? $"Opnieuw uitgelezen: {ok} apparaat/apparaten ok."
+            : $"Opnieuw uitgelezen: {ok} ok, {fail} mislukt. Zie de foutmelding bij het apparaat.";
+        return Results.Ok(new InstallerActionResult(fail == 0, message));
+    }
+
+    private static async Task<IResult> MessageAsync(
+        Guid id,
+        InstallerMessageRequest request,
+        HttpContext http,
+        AppDbContext db,
+        IPushSender push,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var text = request.Text?.Trim() ?? string.Empty;
+        if (text.Length is 0 or > 300)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]> { ["text"] = ["Schrijf een bericht van maximaal 300 tekens."] });
+        }
+
+        var installerId = http.User.GetInstallerId();
+        if (await FindOwnHouseholdAsync(db, id, installerId, ct) is null)
+        {
+            return Results.NotFound();
+        }
+
+        var installer = await db.Installers.FirstAsync(i => i.Id == installerId, ct);
+        await LogActionAsync(db, http, id, installerId, "message", clock.GetUtcNow(), ct);
+
+        if (!push.Enabled)
+        {
+            return Results.Ok(new InstallerActionResult(false, "Pushmeldingen staan nog niet aan op de server."));
+        }
+
+        var sent = await push.SendToHouseholdAsync(id, $"Bericht van {installer.Name}", text, null, ct);
+        return Results.Ok(sent > 0
+            ? new InstallerActionResult(true, "Verstuurd. Je klant krijgt het als melding in Wattzicht.")
+            : new InstallerActionResult(false, "Niet verstuurd: deze klant heeft meldingen uit of de app nog niet op de telefoon."));
     }
 
     private static async Task<IResult> GetBrandingAsync(HttpContext http, AppDbContext db, CancellationToken ct)

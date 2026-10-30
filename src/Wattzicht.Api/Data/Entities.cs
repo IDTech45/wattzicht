@@ -45,6 +45,11 @@ public sealed class Household
     /// <summary>Wanneer de bewoner de toestemming voor het laatst aan- of uitzette.</summary>
     public DateTimeOffset? InstallerAccessChangedAt { get; set; }
 
+    /// <summary>Locatie voor weerdata (afgeleid van de plaats; geen exact adres).</summary>
+    public double? Latitude { get; set; }
+
+    public double? Longitude { get; set; }
+
     /// <summary>Pushmelding bij een storing (standaard aan).</summary>
     public bool NotifyAlerts { get; set; } = true;
 
@@ -183,6 +188,9 @@ public sealed class DailySummary
     public double BatteryChargedFromGridKwh { get; set; }
 
     public decimal SavedEur { get; set; }
+
+    /// <summary>Zonnestraling die dag op de locatie (kWh/m², Open-Meteo); voor de prestatiecheck.</summary>
+    public double? IrradianceKwhM2 { get; set; }
 
     /// <summary>Tijdstip van de laatst verwerkte meting; nodig om vermogen naar energie te integreren.</summary>
     public DateTimeOffset? LastSampleAt { get; set; }

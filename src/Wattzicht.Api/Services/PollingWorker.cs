@@ -95,7 +95,8 @@ public sealed class PollingWorker(
             (clock.GetUtcNow() - started).TotalSeconds, householdIds.Count, okCount, failCount);
     }
 
-    private async Task<(int Ok, int Fail)> PollHouseholdAsync(Guid householdId, CancellationToken ct)
+    /// <summary>Eén huishouden nu uitlezen (ook gebruikt door "opnieuw uitlezen" in het installateursportal).</summary>
+    public async Task<(int Ok, int Fail)> PollHouseholdAsync(Guid householdId, CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
