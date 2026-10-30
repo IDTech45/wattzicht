@@ -77,8 +77,22 @@ public sealed class ProtectionKeyXmlEncryptor(ProtectionMasterKey masterKey) : I
 }
 
 /// <summary>Tegenhanger van <see cref="ProtectionKeyXmlEncryptor"/>; wordt door Data Protection via DI geïnstantieerd.</summary>
-public sealed class ProtectionKeyXmlDecryptor(ProtectionMasterKey masterKey) : IXmlDecryptor
+public sealed class ProtectionKeyXmlDecryptor : IXmlDecryptor
 {
+    private readonly ProtectionMasterKey masterKey;
+
+    public ProtectionKeyXmlDecryptor(ProtectionMasterKey masterKey) => this.masterKey = masterKey;
+
+    /// <summary>
+    /// Data Protection maakt de decryptor zelf aan bij het lezen van de sleutelring, met óf een lege
+    /// constructor óf één met <see cref="IServiceProvider"/>. Zonder deze constructor faalt dat met
+    /// "No parameterless constructor" en kunnen opgeslagen apparaat-credentials niet meer ontsleuteld worden.
+    /// </summary>
+    public ProtectionKeyXmlDecryptor(IServiceProvider services)
+        : this(services.GetRequiredService<ProtectionMasterKey>())
+    {
+    }
+
     public XElement Decrypt(XElement encryptedElement)
     {
         ArgumentNullException.ThrowIfNull(encryptedElement);
