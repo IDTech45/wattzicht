@@ -393,7 +393,7 @@ public static class HouseholdEndpoints
         if (tariff is null)
         {
             var d = TariffRates.Default;
-            return Results.Ok(new TariffDto(d.ImportPricePerKwh, d.ExportPricePerKwh, false, null, d.PublicChargingPricePerKwh));
+            return Results.Ok(new TariffDto(d.ImportPricePerKwh, d.ExportPricePerKwh, false, null, d.PublicChargingPricePerKwh, d.FeedInCostPerKwh));
         }
 
         return Results.Ok(ToDto(tariff));
@@ -421,6 +421,11 @@ public static class HouseholdEndpoints
             errors["exportTariffEur"] = ["Terugleververgoeding moet tussen 0 en 2 euro per kWh liggen."];
         }
 
+        if (request.FeedInCostEur is < 0 or > 1)
+        {
+            errors["feedInCostEur"] = ["Terugleverkosten moeten tussen 0 en 1 euro per kWh liggen."];
+        }
+
         if (request.PublicChargingTariffEur is < 0 or > 3)
         {
             errors["publicChargingTariffEur"] = ["Publiek laadtarief moet tussen 0 en 3 euro per kWh liggen."];
@@ -436,8 +441,26 @@ public static class HouseholdEndpoints
 
         if (tariff is null)
         {
-            tariff = new Tariff { Id = Guid.NewGuid(), HouseholdId = householdId, ValidFrom = validFrom };
+            // Terugleverkosten niet meegestuurd? Neem ze over van het vorige tarief (oudere apps kennen het veld niet).
+            var previousFeedIn = await db.Tariffs
+                .Where(t => t.HouseholdId == householdId && t.ValidFrom < validFrom)
+                .OrderByDescending(t => t.ValidFrom)
+                .Select(t => (decimal?)t.FeedInCostPerKwh)
+                .FirstOrDefaultAsync(ct);
+
+            tariff = new Tariff
+            {
+                Id = Guid.NewGuid(),
+                HouseholdId = householdId,
+                ValidFrom = validFrom,
+                FeedInCostPerKwh = previousFeedIn ?? 0m
+            };
             db.Tariffs.Add(tariff);
+        }
+
+        if (request.FeedInCostEur is { } feedIn)
+        {
+            tariff.FeedInCostPerKwh = feedIn;
         }
 
         tariff.ImportPricePerKwh = request.ImportTariffEur;
@@ -447,6 +470,8 @@ public static class HouseholdEndpoints
             ? pub
             : SavingsCalculator.DefaultPublicChargingPrice;
 
+        // Eerst opslaan: een nieuw tarief komt anders niet terug uit de query in RecalculateSavingsAsync.
+        await db.SaveChangesAsync(ct);
         await summaries.RecalculateSavingsAsync(householdId, validFrom, ct);
         await db.SaveChangesAsync(ct);
 
@@ -458,5 +483,6 @@ public static class HouseholdEndpoints
         t.ExportPricePerKwh,
         t.IsDynamic,
         t.ValidFrom,
-        t.PublicChargingPricePerKwh);
+        t.PublicChargingPricePerKwh,
+        t.FeedInCostPerKwh);
 }

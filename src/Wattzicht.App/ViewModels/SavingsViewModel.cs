@@ -83,6 +83,13 @@ public partial class SavingsViewModel : BaseViewModel
     [ObservableProperty] private string _totalExportText = "0 kWh";
     [ObservableProperty] private string _totalChargedText = "0 kWh";
     [ObservableProperty] private bool _isRefreshing;
+
+    // Terugleveren: wat kost het, wat scheelt zelf gebruiken
+    [ObservableProperty] private bool _hasFeedIn;
+    [ObservableProperty] private string _feedInMonthText = string.Empty;
+    [ObservableProperty] private string _feedInYearText = string.Empty;
+    [ObservableProperty] private string _feedIn2027Text = string.Empty;
+    [ObservableProperty] private bool _feedInCostMissing;
     [ObservableProperty] private bool _hasLoaded;
 
     /// <summary>Wordt verhoogd zodat de pagina de GraphicsView kan invalideren.</summary>
@@ -123,6 +130,15 @@ public partial class SavingsViewModel : BaseViewModel
 
             Apply(summaries, from, to);
             HasLoaded = true;
+
+            try
+            {
+                ApplyFeedIn(await _api.GetFeedInAsync());
+            }
+            catch (ApiException ex) when (!ex.IsUnauthorized)
+            {
+                HasFeedIn = false; // los blok: de rest van het scherm blijft werken
+            }
         }, _auth);
         IsRefreshing = false;
     }
@@ -167,6 +183,21 @@ public partial class SavingsViewModel : BaseViewModel
 
         ApplyChartTheme();
         ChartVersion++;
+    }
+
+    private void ApplyFeedIn(FeedInDto f)
+    {
+        HasFeedIn = f.YearExportKwh > 0 || f.MonthExportKwh > 0;
+        FeedInCostMissing = f.FeedInCostPerKwh <= 0;
+        FeedInMonthText = FeedInCostMissing
+            ? $"Deze maand {f.MonthExportKwh.ToString("N0", Nl)} kWh teruggeleverd"
+            : $"Terugleverkosten deze maand: {f.MonthCostEur.ToString("C2", Nl)}";
+        FeedInYearText = FeedInCostMissing
+            ? "Vul je terugleverkosten in bij Instellingen om te zien wat terugleveren je kost."
+            : $"Per jaar ± {f.YearCostEur.ToString("C0", Nl)} over {f.YearExportKwh.ToString("N0", Nl)} kWh{(f.YearIsEstimate ? " (schatting)" : string.Empty)}";
+        FeedIn2027Text = f.SelfUseWorth2027PerKwh > 0
+            ? $"Vanaf 2027 scheelt elke kWh die je zelf gebruikt {(f.SelfUseWorth2027PerKwh * 100).ToString("0", Nl)} cent. Bij je huidige teruglevering is dat ± {f.YearValue2027Eur.ToString("C0", Nl)} per jaar."
+            : string.Empty;
     }
 
     private void ApplyChartTheme()

@@ -132,6 +132,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
             e.Property(x => x.ImportPricePerKwh).HasPrecision(10, 4);
             e.Property(x => x.ExportPricePerKwh).HasPrecision(10, 4);
             e.Property(x => x.PublicChargingPricePerKwh).HasPrecision(10, 4);
+            e.Property(x => x.FeedInCostPerKwh).HasPrecision(10, 4);
             e.HasOne(x => x.Household)
                 .WithMany(h => h.Tariffs)
                 .HasForeignKey(x => x.HouseholdId)

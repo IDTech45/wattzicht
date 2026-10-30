@@ -78,6 +78,9 @@ public sealed class ApiClient
 
     // ---------- Slim sturen ----------
 
+    public Task<FeedInDto> GetFeedInAsync(CancellationToken ct = default) =>
+        GetAsync<FeedInDto>("/feed-in", ct);
+
     public Task<AdviceDto> GetAdviceAsync(CancellationToken ct = default) =>
         GetAsync<AdviceDto>("/advice", ct);
 

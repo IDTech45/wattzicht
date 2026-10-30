@@ -4,10 +4,12 @@ namespace Wattzicht.Api.Services;
 /// <param name="ImportPricePerKwh">Leveringstarief, all-in.</param>
 /// <param name="ExportPricePerKwh">Terugleververgoeding (na saldering).</param>
 /// <param name="PublicChargingPricePerKwh">Referentietarief publiek laden; standaard 0,59.</param>
+/// <param name="FeedInCostPerKwh">Terugleverkosten van de leverancier per teruggeleverde kWh; standaard 0.</param>
 public sealed record TariffRates(
     decimal ImportPricePerKwh,
     decimal ExportPricePerKwh,
-    decimal PublicChargingPricePerKwh = SavingsCalculator.DefaultPublicChargingPrice)
+    decimal PublicChargingPricePerKwh = SavingsCalculator.DefaultPublicChargingPrice,
+    decimal FeedInCostPerKwh = 0m)
 {
     /// <summary>Redelijke standaard als een huishouden nog geen tarief heeft ingevuld.</summary>
     public static TariffRates Default { get; } = new(0.28m, 0.08m);
@@ -42,7 +44,8 @@ public sealed record SavingsBreakdown(
 /// Besparingsregels v0.1 (zie ARCHITECTUUR.md):
 /// <list type="bullet">
 /// <item>zelfverbruik × leveringstarief;</item>
-/// <item>teruglevering × leveringstarief zolang de salderingsregeling geldt (t/m 31-12-2026), daarna × terugleververgoeding;</item>
+/// <item>teruglevering × leveringstarief zolang de salderingsregeling geldt (t/m 31-12-2026), daarna × terugleververgoeding;
+/// in beide gevallen min de terugleverkosten van de leverancier (kan per saldo negatief worden);</item>
 /// <item>laadpaal: geladen kWh × (publiek laadtarief − eigen tarief), nooit negatief;</item>
 /// <item>batterij: ontladen kWh × leveringstarief − van net geladen kWh × leveringstarief.</item>
 /// </list>
@@ -68,7 +71,7 @@ public sealed class SavingsCalculator
         var selfUse = Round((decimal)Math.Max(0, input.SelfUseKwh) * import);
 
         var exportPrice = IsSalderingActive(input.Date) ? import : rates.ExportPricePerKwh;
-        var export = Round((decimal)Math.Max(0, input.ExportKwh) * exportPrice);
+        var export = Round((decimal)Math.Max(0, input.ExportKwh) * (exportPrice - rates.FeedInCostPerKwh));
 
         var chargerMargin = Math.Max(0m, rates.PublicChargingPricePerKwh - import);
         var charger = Round((decimal)Math.Max(0, input.ChargedKwh) * chargerMargin);

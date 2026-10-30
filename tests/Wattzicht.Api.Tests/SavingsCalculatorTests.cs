@@ -100,4 +100,16 @@ public sealed class SavingsCalculatorTests
 
         Assert.Equal(0m, result.TotalEur);
     }
+
+    [Fact]
+    public void Terugleverkosten_gaan_van_de_teruglevering_af()
+    {
+        var rates = new TariffRates(ImportPricePerKwh: 0.30m, ExportPricePerKwh: 0.08m, FeedInCostPerKwh: 0.12m);
+
+        var in2026 = _calculator.Calculate(new SavingsInput(new DateOnly(2026, 6, 15), 0, ExportKwh: 10, 0, 0, 0), rates);
+        var in2027 = _calculator.Calculate(new SavingsInput(new DateOnly(2027, 6, 15), 0, ExportKwh: 10, 0, 0, 0), rates);
+
+        Assert.Equal(1.80m, in2026.ExportEur);   // 10 × (0,30 − 0,12)
+        Assert.Equal(-0.40m, in2027.ExportEur);  // 10 × (0,08 − 0,12): terugleveren kost dan geld
+    }
 }

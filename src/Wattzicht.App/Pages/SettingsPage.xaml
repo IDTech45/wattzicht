@@ -66,6 +66,19 @@
                         <Label Text="{Binding ExportTariffError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasExportTariffError}" />
                     </VerticalStackLayout>
 
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Terugleverkosten (€ per kWh)" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource InputBorder}">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                <Label Text="€" VerticalOptions="Center" Style="{StaticResource SubtitleLabel}" FontSize="15" />
+                                <Entry Grid.Column="1" Text="{Binding FeedInCost}" Keyboard="Numeric" Placeholder="0,120" />
+                            </Grid>
+                        </Border>
+                        <Label Text="Staat op je contract of jaarafrekening. Betaal je een vast bedrag per jaar (staffel)? Deel dat door je teruggeleverde kWh."
+                               Style="{StaticResource StatCaption}" />
+                        <Label Text="{Binding FeedInCostError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasFeedInCostError}" />
+                    </VerticalStackLayout>
+
                     <Label Text="{Binding TariffSavedText}" FontSize="13" TextColor="{StaticResource Battery}"
                            IsVisible="{Binding TariffSavedText, Converter={StaticResource IsNotNullOrEmpty}}" />
 

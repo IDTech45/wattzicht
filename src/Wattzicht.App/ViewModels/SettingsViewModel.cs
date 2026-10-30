@@ -16,6 +16,9 @@ public partial class SettingsViewModel : BaseViewModel
     // ---- Tarief ----
     [ObservableProperty] private string _importTariff = "0,30";
     [ObservableProperty] private string _exportTariff = "0,08";
+    [ObservableProperty] private string _feedInCost = "0,00";
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HasFeedInCostError))] private string? _feedInCostError;
+    public bool HasFeedInCostError => !string.IsNullOrWhiteSpace(FeedInCostError);
     [ObservableProperty] private bool _isDynamic;
     [ObservableProperty] private bool _isSavingTariff;
     [ObservableProperty] private string? _tariffSavedText;
@@ -65,6 +68,7 @@ public partial class SettingsViewModel : BaseViewModel
                 var tariff = await _api.GetTariffAsync();
                 ImportTariff = tariff.ImportTariffEur.ToString("0.00", Nl);
                 ExportTariff = tariff.ExportTariffEur.ToString("0.00", Nl);
+                FeedInCost = (tariff.FeedInCostEur ?? 0m).ToString("0.000", Nl);
                 IsDynamic = tariff.IsDynamic;
             }
             catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
@@ -129,20 +133,23 @@ public partial class SettingsViewModel : BaseViewModel
     [RelayCommand]
     private async Task SaveTariffAsync()
     {
-        ImportTariffError = ExportTariffError = null;
+        ImportTariffError = ExportTariffError = FeedInCostError = null;
 
         if (!TryParseEur(ImportTariff, out var import) || import <= 0 || import > 2)
             ImportTariffError = "Vul een tarief in tussen € 0,01 en € 2,00 per kWh.";
         if (!TryParseEur(ExportTariff, out var export) || export < 0 || export > 2)
             ExportTariffError = "Vul een vergoeding in tussen € 0,00 en € 2,00 per kWh.";
-        if (HasImportTariffError || HasExportTariffError) return;
+        if (!TryParseEur(FeedInCost, out var feedIn) || feedIn < 0 || feedIn > 1)
+            FeedInCostError = "Vul terugleverkosten in tussen € 0,00 en € 1,00 per kWh.";
+        if (HasImportTariffError || HasExportTariffError || HasFeedInCostError) return;
 
         IsSavingTariff = true;
         try
         {
-            var saved = await _api.UpdateTariffAsync(new TariffDto(import, export, IsDynamic, DateOnly.FromDateTime(DateTime.Today)));
+            var saved = await _api.UpdateTariffAsync(new TariffDto(import, export, IsDynamic, DateOnly.FromDateTime(DateTime.Today), FeedInCostEur: feedIn));
             ImportTariff = saved.ImportTariffEur.ToString("0.00", Nl);
             ExportTariff = saved.ExportTariffEur.ToString("0.00", Nl);
+            FeedInCost = (saved.FeedInCostEur ?? 0m).ToString("0.000", Nl);
             TariffSavedText = "Opgeslagen. Je besparing wordt vanaf vandaag met dit tarief berekend.";
         }
         catch (ApiException ex)

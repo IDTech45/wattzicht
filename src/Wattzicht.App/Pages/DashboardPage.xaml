@@ -53,6 +53,20 @@
                             </Grid>
                         </Border>
 
+                        <!-- Overschot: nu zelf gebruiken in plaats van terugleveren -->
+                        <Border Style="{StaticResource Card}" IsVisible="{Binding HasSurplus}" Stroke="{StaticResource Sun}" StrokeThickness="2">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding OpenAdviceCommand}" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
+                                <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                    <Label Text="{Binding SurplusText}" Style="{StaticResource CardTitle}" />
+                                    <Label Text="Zet nu de wasmachine aan of laad de auto. Terugleveren kost geld." Style="{StaticResource SubtitleLabel}" />
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="›" FontSize="24" VerticalOptions="Center" Style="{StaticResource SubtitleLabel}" />
+                            </Grid>
+                        </Border>
+
                         <!-- Energiestroom -->
                         <Label Text="Energiestroom nu" Style="{StaticResource SectionTitle}" />
                         <views:EnergyFlowView Snapshot="{Binding Live}" />

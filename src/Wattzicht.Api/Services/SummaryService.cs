@@ -103,7 +103,7 @@ public sealed class SummaryService(AppDbContext db, SavingsCalculator calculator
 
         return tariff is null
             ? TariffRates.Default
-            : new TariffRates(tariff.ImportPricePerKwh, tariff.ExportPricePerKwh, tariff.PublicChargingPricePerKwh);
+            : new TariffRates(tariff.ImportPricePerKwh, tariff.ExportPricePerKwh, tariff.PublicChargingPricePerKwh, tariff.FeedInCostPerKwh);
     }
 
     public static SavingsInput ToInput(DailySummary s) => new(

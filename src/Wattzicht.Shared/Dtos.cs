@@ -251,12 +251,14 @@ public sealed record DashboardDto(
 /// <param name="IsDynamic">Of het een dynamisch contract is (uurprijzen); v0.1 rekent dan met het gemiddelde.</param>
 /// <param name="ValidFrom">Vanaf welke dag dit tarief geldt; <c>null</c> bij opslaan = vandaag.</param>
 /// <param name="PublicChargingTariffEur">Referentietarief publiek laden in euro per kWh (standaard 0,59).</param>
+/// <param name="FeedInCostEur">Terugleverkosten in euro per teruggeleverde kWh; <c>null</c> bij opslaan = vorige waarde houden.</param>
 public sealed record TariffDto(
     decimal ImportTariffEur,
     decimal ExportTariffEur,
     bool IsDynamic,
     DateOnly? ValidFrom = null,
-    decimal? PublicChargingTariffEur = null);
+    decimal? PublicChargingTariffEur = null,
+    decimal? FeedInCostEur = null);
 
 // ---------------------------------------------------------------------------
 // Installateursportal
@@ -399,3 +401,30 @@ public sealed record UpdateInstallerAccessRequest(bool Granted);
 /// <param name="Action">Wat er bekeken werd, bv. <c>view_detail</c>.</param>
 /// <param name="Who">E-mailadres van de medewerker.</param>
 public sealed record AccessLogEntryDto(DateTimeOffset At, string Action, string? Who);
+
+// ---------------------------------------------------------------------------
+// Terugleveren: wat kost het en wat scheelt zelf gebruiken
+// ---------------------------------------------------------------------------
+
+/// <summary>Overzicht teruglevering en terugleverkosten (GET /feed-in).</summary>
+/// <param name="FeedInCostPerKwh">Ingestelde terugleverkosten in euro per kWh (0 = niet ingevuld).</param>
+/// <param name="MonthExportKwh">Teruggeleverd deze maand.</param>
+/// <param name="MonthCostEur">Terugleverkosten deze maand.</param>
+/// <param name="YearExportKwh">Teruglevering per jaar (laatste 365 dagen, of geschat uit minder dagen).</param>
+/// <param name="YearIsEstimate">Of het jaargetal is doorgerekend uit minder dan een jaar data.</param>
+/// <param name="YearCostEur">Terugleverkosten per jaar met het huidige tarief.</param>
+/// <param name="SelfUseWorthNowPerKwh">Wat elke kWh zelf gebruiken in plaats van terugleveren nu scheelt.</param>
+/// <param name="SelfUseWorth2027PerKwh">Hetzelfde vanaf 2027, als de saldering stopt.</param>
+/// <param name="YearValue2027Eur">Wat het vanaf 2027 per jaar scheelt als je al die stroom zelf gebruikt.</param>
+/// <param name="LiveExportW">Wat je nu teruglevert in watt (0 als je niets teruglevert of er geen verse meting is).</param>
+public sealed record FeedInDto(
+    decimal FeedInCostPerKwh,
+    double MonthExportKwh,
+    decimal MonthCostEur,
+    double YearExportKwh,
+    bool YearIsEstimate,
+    decimal YearCostEur,
+    decimal SelfUseWorthNowPerKwh,
+    decimal SelfUseWorth2027PerKwh,
+    decimal YearValue2027Eur,
+    double LiveExportW);

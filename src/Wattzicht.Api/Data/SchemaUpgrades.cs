@@ -27,6 +27,9 @@ public static class SchemaUpgrades
         )
         """,
         """CREATE INDEX IF NOT EXISTS ix_installer_access_log_household_at ON installer_access_log ("HouseholdId", "At")""",
+
+        // 2026-10: terugleverkosten van de leverancier per kWh.
+        """ALTER TABLE tariffs ADD COLUMN IF NOT EXISTS "FeedInCostPerKwh" numeric(10,4) NOT NULL DEFAULT 0""",
     ];
 
     public static async Task ApplyAsync(AppDbContext db, CancellationToken ct = default)

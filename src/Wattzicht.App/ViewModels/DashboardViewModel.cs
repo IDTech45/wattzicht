@@ -24,6 +24,23 @@ public partial class DashboardViewModel : BaseViewModel
     private bool _hasDevices;
 
     [ObservableProperty] private LiveSnapshotDto? _live;
+
+    /// <summary>Banner "je levert nu terug": alleen bij een verse meting en minstens 1,5 kW naar het net.</summary>
+    [ObservableProperty] private bool _hasSurplus;
+    [ObservableProperty] private string _surplusText = string.Empty;
+
+    partial void OnLiveChanged(LiveSnapshotDto? value)
+    {
+        var fresh = value?.UpdatedAt is { } at && DateTimeOffset.UtcNow - at <= TimeSpan.FromMinutes(15);
+        var exportW = fresh && value!.GridPowerW < 0 ? -value.GridPowerW : 0;
+        HasSurplus = exportW >= 1500;
+        SurplusText = HasSurplus
+            ? $"Je levert nu {(exportW / 1000).ToString("0.0", CultureInfo.GetCultureInfo("nl-NL"))} kW terug"
+            : string.Empty;
+    }
+
+    [RelayCommand]
+    private Task OpenAdviceAsync() => Shell.Current.GoToAsync("//main/advice");
     [ObservableProperty] private string _updatedAtText = string.Empty;
 
     // Stat-tiles

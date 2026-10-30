@@ -16,6 +16,12 @@ public static class AdviceEndpoints
             .WithSummary("Tips voor vandaag op basis van uurprijzen, zon en de eigen apparaten, met de besparing in euro.")
             .Produces<AdviceDto>();
 
+        app.MapGet("/feed-in", FeedInAsync)
+            .RequireAuthorization(AuthPolicies.Resident)
+            .WithTags("Slim sturen")
+            .WithSummary("Wat terugleveren kost (terugleverkosten) en wat zelf gebruiken scheelt, nu en vanaf 2027.")
+            .Produces<FeedInDto>();
+
         return app;
     }
 
@@ -23,6 +29,7 @@ public static class AdviceEndpoints
         HttpContext http,
         AppDbContext db,
         SummaryService summaries,
+        HouseholdQueries queries,
         IPriceProvider prices,
         IConfiguration configuration,
         TimeProvider clock,
@@ -67,6 +74,50 @@ public static class AdviceEndpoints
             SurchargePerKwh: surcharge);
 
         var advice = AdviceEngine.Build(input);
+
+        // Levert het huis nu flink terug? Dan bovenaan een tip voor nu.
+        if (input.HasPv)
+        {
+            var live = await queries.LiveAsync(householdId, ct);
+            var liveTip = FeedInCalculator.LiveSurplusTip(live, now, input.HasCharger, rates);
+            if (liveTip is not null)
+            {
+                advice = advice with { Tips = [liveTip, .. advice.Tips] };
+            }
+        }
+
         return Results.Ok(advice with { PriceSource = hourPrices.Count > 0 ? prices.Source : null });
+    }
+
+    private static async Task<IResult> FeedInAsync(
+        HttpContext http,
+        AppDbContext db,
+        SummaryService summaries,
+        HouseholdQueries queries,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var now = clock.GetUtcNow();
+        var today = DutchTime.LocalDate(now);
+        var monthStart = new DateOnly(today.Year, today.Month, 1);
+        var yearAgo = today.AddDays(-364);
+
+        var rates = await summaries.GetRatesAsync(householdId, today, ct);
+
+        var days = await db.DailySummaries
+            .Where(s => s.HouseholdId == householdId && s.Date >= yearAgo && s.Date <= today)
+            .Select(s => new { s.Date, s.ExportKwh })
+            .ToListAsync(ct);
+
+        var live = await queries.LiveAsync(householdId, ct);
+
+        return Results.Ok(FeedInCalculator.Build(
+            today,
+            rates,
+            monthExportKwh: days.Where(d => d.Date >= monthStart).Sum(d => d.ExportKwh),
+            exportKwhLastYear: days.Sum(d => d.ExportKwh),
+            daysWithData: days.Count,
+            liveExportW: FeedInCalculator.LiveExportW(live, now)));
     }
 }

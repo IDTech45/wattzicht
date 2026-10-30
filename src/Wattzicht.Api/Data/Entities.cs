@@ -139,6 +139,12 @@ public sealed class Tariff
 
     public bool IsDynamic { get; set; }
 
+    /// <summary>
+    /// Terugleverkosten van de leverancier in euro per teruggeleverde kWh (staat op het contract).
+    /// Bij een staffel: jaarbedrag gedeeld door de teruggeleverde kWh.
+    /// </summary>
+    public decimal FeedInCostPerKwh { get; set; }
+
     /// <summary>Referentietarief publiek laden in euro per kWh.</summary>
     public decimal PublicChargingPricePerKwh { get; set; } = 0.59m;
 }
