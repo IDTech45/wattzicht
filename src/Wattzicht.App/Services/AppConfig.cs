@@ -31,13 +31,14 @@ public static class AppConfig
     }
 
     // ---- Firebase (pushmeldingen, Android) ----
-    // Firebase-project 'laadcash' (gedeeld met LaadCash), Android-app nl.wattzicht.app.
+    // Eigen Firebase-project 'wattzicht' (los van LaadCash), Android-app nl.wattzicht.app.
+    // Makkelijkst: zet google-services.json in Platforms/Android/; dan zijn deze waarden niet nodig.
     // Deze waarden staan ook in google-services.json en zijn geen geheimen (ze zitten in elke app-build).
     // Leegmaken = push uit.
-    public const string FirebaseProjectId = "laadcash";
-    public const string FirebaseAndroidAppId = "1:879195215094:android:bb3a301e8e11b6a6aac8d7";   // "mobilesdk_app_id", bv. 1:1234567890:android:abc123
-    public const string FirebaseApiKey = "AIzaSyCriIPuD6simTzwSF_B4ix3ccZTAyi_ypk";          // "current_key"
-    public const string FirebaseSenderId = "879195215094";        // "project_number"
+    public const string FirebaseProjectId = "wattzicht";
+    public const string FirebaseAndroidAppId = "1:664049832837:android:9cfb8ed45b584f4e2feaec";   // "mobilesdk_app_id", bv. 1:1234567890:android:abc123
+    public const string FirebaseApiKey = "";                  // "current_key"
+    public const string FirebaseSenderId = "664049832837";        // "project_number"
 
     public static string Version => AppInfo.Current.VersionString;
     public static string Build => AppInfo.Current.BuildString;
