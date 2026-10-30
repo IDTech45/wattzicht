@@ -149,7 +149,8 @@ public sealed class HouseholdQueries(AppDbContext db, TimeProvider clock)
         h.City,
         h.InstallerId,
         h.Installer.Name,
-        h.CreatedAt);
+        h.CreatedAt,
+        h.InstallerAccessGranted);
 
     public static InstallerBrandingDto ToDto(Installer i) => new(
         i.Id,

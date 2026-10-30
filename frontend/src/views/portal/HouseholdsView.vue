@@ -77,7 +77,7 @@ function open(row: HouseholdSummary) {
     <header class="page__head">
       <div>
         <h1>Klanten</h1>
-        <p class="wz-help">Alle installaties die aan jouw bedrijf gekoppeld zijn.</p>
+        <p class="wz-help">Je klanten die in de app <strong>Installateur mag meekijken</strong> hebben aangezet. Elke keer dat je een klant opent, ziet die klant dat terug in de app.</p>
       </div>
       <button type="button" class="wz-btn wz-btn--ghost" :disabled="loading" @click="load">
         <i class="pi pi-refresh" :class="{ 'pi-spin': loading }" aria-hidden="true"></i> Vernieuwen

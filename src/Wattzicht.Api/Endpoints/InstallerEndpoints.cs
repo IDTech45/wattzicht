@@ -73,7 +73,8 @@ public static partial class InstallerEndpoints
         var today = DutchTime.LocalDate(now);
 
         var rows = await db.Households
-            .Where(h => h.InstallerId == installerId)
+            // Dubbel met het globale filter in AppDbContext, bewust: alleen eigen klanten met toestemming.
+            .Where(h => h.InstallerId == installerId && h.InstallerAccessGranted)
             .OrderBy(h => h.Name)
             .Select(h => new
             {
@@ -116,11 +117,29 @@ public static partial class InstallerEndpoints
         var installerId = http.User.GetInstallerId();
         var household = await db.Households
             .Include(h => h.Installer)
-            .FirstOrDefaultAsync(h => h.Id == id && h.InstallerId == installerId, ct);
+            .FirstOrDefaultAsync(h => h.Id == id && h.InstallerId == installerId && h.InstallerAccessGranted, ct);
 
         if (household is null)
         {
+            // Bestaat niet, is van een andere installateur of de bewoner gaf geen toestemming: altijd 404.
             return Results.NotFound();
+        }
+
+        // Inzage vastleggen; de bewoner kan dit zien in de app. Max. één regel per medewerker per 10 minuten.
+        var viewerId = http.User.GetUserId();
+        var viewedAt = clock.GetUtcNow();
+        var recent = viewedAt.AddMinutes(-10);
+        if (!await db.InstallerAccessLogs.AnyAsync(l => l.HouseholdId == household.Id && l.UserId == viewerId && l.At > recent, ct))
+        {
+            db.InstallerAccessLogs.Add(new InstallerAccessLog
+            {
+                HouseholdId = household.Id,
+                InstallerId = installerId,
+                UserId = viewerId,
+                Action = "view_detail",
+                At = viewedAt
+            });
+            await db.SaveChangesAsync(ct);
         }
 
         var now = clock.GetUtcNow();

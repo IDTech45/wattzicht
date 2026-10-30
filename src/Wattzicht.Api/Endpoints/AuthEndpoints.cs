@@ -67,9 +67,30 @@ public static class AuthEndpoints
             return Results.Conflict(new { message = "Er bestaat al een account met dit e-mailadres." });
         }
 
-        var slug = string.IsNullOrWhiteSpace(request.InstallerSlug) ? DbSeeder.TripleEnergieSlug : request.InstallerSlug.Trim().ToLowerInvariant();
-        var installer = await db.Installers.FirstOrDefaultAsync(i => i.Slug == slug, ct)
-                        ?? await db.Installers.OrderBy(i => i.CreatedAt).FirstAsync(ct);
+        // Een opgegeven installateurscode moet bestaan: nooit stilletjes bij een andere installateur terechtkomen.
+        Installer? installer;
+        if (string.IsNullOrWhiteSpace(request.InstallerSlug))
+        {
+            installer = await db.Installers.FirstOrDefaultAsync(i => i.Slug == DbSeeder.TripleEnergieSlug, ct)
+                        ?? await db.Installers.OrderBy(i => i.CreatedAt).FirstOrDefaultAsync(ct);
+        }
+        else
+        {
+            var slug = request.InstallerSlug.Trim().ToLowerInvariant();
+            installer = await db.Installers.FirstOrDefaultAsync(i => i.Slug == slug, ct);
+            if (installer is null)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["installerSlug"] = ["Onbekende installateurscode. Controleer de code van je installateur."]
+                });
+            }
+        }
+
+        if (installer is null)
+        {
+            return Results.Problem(title: "Er is nog geen installateur ingesteld.", statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
 
         var now = clock.GetUtcNow();
         var household = new Household
@@ -78,6 +99,8 @@ public static class AuthEndpoints
             Name = request.HouseholdName.Trim(),
             InstallerId = installer.Id,
             Installer = installer,
+            InstallerAccessGranted = request.AllowInstallerAccess,
+            InstallerAccessChangedAt = now,
             CreatedAt = now
         };
 

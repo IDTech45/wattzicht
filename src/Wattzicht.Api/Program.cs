@@ -30,6 +30,10 @@ var protectionKey = configuration["WZ_PROTECTION_KEY"] ?? configuration["DataPro
 // ---------------------------------------------------------------------------
 builder.Services.AddSingleton(TimeProvider.System);
 
+// Scheiding tussen klanten: de context leest per request wie er ingelogd is (zie TenantContext).
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<TenantContext>();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString, npgsql => npgsql.EnableRetryOnFailure(3)));
 
@@ -159,6 +163,7 @@ using (var scope = app.Services.CreateScope())
     {
         // Nog geen migraties in de repo: schema direct uit het model (v0.1). Daarna: dotnet ef migrations add Init.
         await db.Database.EnsureCreatedAsync();
+        await SchemaUpgrades.ApplyAsync(db);
     }
 }
 

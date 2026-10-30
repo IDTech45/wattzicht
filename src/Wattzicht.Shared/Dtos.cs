@@ -14,11 +14,13 @@ public sealed record LoginRequest(string Email, string Password);
 /// <param name="Password">Gekozen wachtwoord (minimaal 8 tekens).</param>
 /// <param name="HouseholdName">Naam van het huishouden, bijvoorbeeld "Familie Jansen".</param>
 /// <param name="InstallerSlug">Optionele code van de installateur (white-label koppeling).</param>
+/// <param name="AllowInstallerAccess">Bewoner geeft toestemming dat de installateur meekijkt (standaard nee).</param>
 public sealed record RegisterRequest(
     string Email,
     string Password,
     string HouseholdName,
-    string? InstallerSlug = null);
+    string? InstallerSlug = null,
+    bool AllowInstallerAccess = false);
 
 /// <summary>Antwoord op een geslaagde login of registratie.</summary>
 /// <param name="Token">JWT bearer-token.</param>
@@ -58,7 +60,8 @@ public sealed record HouseholdDto(
     string? City,
     Guid InstallerId,
     string InstallerName,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    bool InstallerAccessGranted = false);
 
 /// <summary>White-label instellingen van een installateur, zoals de app ze toont.</summary>
 /// <param name="Id">Unieke id.</param>
@@ -377,3 +380,22 @@ public sealed record AdviceDto(
     List<AdviceTipDto> Tips,
     decimal TotalSavingEur,
     string? PriceSource);
+
+// ---------------------------------------------------------------------------
+// Toestemming installateur (meekijken) en inzagelog
+// ---------------------------------------------------------------------------
+
+/// <summary>Of de installateur mag meekijken bij dit huishouden.</summary>
+/// <param name="Granted">Toestemming aan of uit.</param>
+/// <param name="ChangedAt">Laatst gewijzigd (UTC).</param>
+/// <param name="InstallerName">Naam van de installateur waar het om gaat.</param>
+public sealed record InstallerAccessDto(bool Granted, DateTimeOffset? ChangedAt, string InstallerName);
+
+/// <summary>Toestemming aan- of uitzetten (PUT /household/installer-access).</summary>
+public sealed record UpdateInstallerAccessRequest(bool Granted);
+
+/// <summary>Eén keer dat de installateur gegevens bekeek.</summary>
+/// <param name="At">Moment (UTC).</param>
+/// <param name="Action">Wat er bekeken werd, bv. <c>view_detail</c>.</param>
+/// <param name="Who">E-mailadres van de medewerker.</param>
+public sealed record AccessLogEntryDto(DateTimeOffset At, string Action, string? Who);

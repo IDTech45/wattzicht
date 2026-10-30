@@ -96,6 +96,17 @@
 
                     <Button Text="Bel installateur" Style="{StaticResource SecondaryButton}" Command="{Binding CallInstallerCommand}" IsVisible="{Binding HasInstallerPhone}" />
 
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="Installateur mag meekijken" Style="{StaticResource CardTitle}" />
+                            <Label Text="Dan ziet je installateur storingen en je opwek, en kan sneller helpen. Je kunt dit altijd uitzetten."
+                                   Style="{StaticResource SubtitleLabel}" />
+                            <Label Text="{Binding LastViewedText}" Style="{StaticResource StatCaption}" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" IsToggled="{Binding InstallerAccess}" VerticalOptions="Center"
+                                SemanticProperties.Description="Installateur mag meekijken" />
+                    </Grid>
+
                     <BoxView Style="{StaticResource Divider}" />
 
                     <Label Text="Nog geen thuisbatterij? Sla je zonnestroom op en gebruik hem 's avonds zelf." FontSize="14" />

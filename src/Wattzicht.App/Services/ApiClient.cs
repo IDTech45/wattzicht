@@ -65,6 +65,17 @@ public sealed class ApiClient
     public Task DeleteDeviceAsync(Guid deviceId, CancellationToken ct = default) =>
         DeleteAsync($"/devices/{deviceId}", ct);
 
+    // ---------- Meekijken door installateur ----------
+
+    public Task<InstallerAccessDto> GetInstallerAccessAsync(CancellationToken ct = default) =>
+        GetAsync<InstallerAccessDto>("/household/installer-access", ct);
+
+    public Task<InstallerAccessDto> SetInstallerAccessAsync(bool granted, CancellationToken ct = default) =>
+        PutAsync<UpdateInstallerAccessRequest, InstallerAccessDto>("/household/installer-access", new UpdateInstallerAccessRequest(granted), ct);
+
+    public Task<IReadOnlyList<AccessLogEntryDto>> GetAccessLogAsync(CancellationToken ct = default) =>
+        GetAsync<IReadOnlyList<AccessLogEntryDto>>("/household/access-log", ct);
+
     // ---------- Slim sturen ----------
 
     public Task<AdviceDto> GetAdviceAsync(CancellationToken ct = default) =>

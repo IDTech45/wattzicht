@@ -25,6 +25,18 @@ public static class HouseholdEndpoints
             .WithSummary("Het eigen huishouden.")
             .Produces<HouseholdDto>();
 
+        household.MapGet("/household/installer-access", GetInstallerAccessAsync)
+            .WithSummary("Mag de installateur meekijken? (toestemming van de bewoner)")
+            .Produces<InstallerAccessDto>();
+
+        household.MapPut("/household/installer-access", SetInstallerAccessAsync)
+            .WithSummary("Zet meekijken door de installateur aan of uit. Uit = direct onzichtbaar in het portal.")
+            .Produces<InstallerAccessDto>();
+
+        household.MapGet("/household/access-log", AccessLogAsync)
+            .WithSummary("Wanneer de installateur je gegevens bekeek (laatste 50).")
+            .Produces<List<AccessLogEntryDto>>();
+
         household.MapGet("/installer", InstallerAsync)
             .WithSummary("White-label gegevens van de eigen installateur (naam, logo, kleuren, offertelink, contact).")
             .Produces<InstallerBrandingDto>();
@@ -97,6 +109,63 @@ public static class HouseholdEndpoints
             .FirstOrDefaultAsync(h => h.Id == householdId, ct);
 
         return household is null ? Results.NotFound() : Results.Ok(HouseholdQueries.ToDto(household));
+    }
+
+    private static async Task<IResult> GetInstallerAccessAsync(HttpContext http, AppDbContext db, CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var household = await db.Households
+            .Include(h => h.Installer)
+            .FirstOrDefaultAsync(h => h.Id == householdId, ct);
+
+        return household is null
+            ? Results.NotFound()
+            : Results.Ok(new InstallerAccessDto(household.InstallerAccessGranted, household.InstallerAccessChangedAt, household.Installer.Name));
+    }
+
+    private static async Task<IResult> SetInstallerAccessAsync(
+        UpdateInstallerAccessRequest request,
+        HttpContext http,
+        AppDbContext db,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var household = await db.Households
+            .Include(h => h.Installer)
+            .FirstOrDefaultAsync(h => h.Id == householdId, ct);
+
+        if (household is null)
+        {
+            return Results.NotFound();
+        }
+
+        if (household.InstallerAccessGranted != request.Granted)
+        {
+            household.InstallerAccessGranted = request.Granted;
+            household.InstallerAccessChangedAt = clock.GetUtcNow();
+            await db.SaveChangesAsync(ct);
+        }
+
+        return Results.Ok(new InstallerAccessDto(household.InstallerAccessGranted, household.InstallerAccessChangedAt, household.Installer.Name));
+    }
+
+    private static async Task<IResult> AccessLogAsync(HttpContext http, AppDbContext db, CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var rows = await db.InstallerAccessLogs
+            .Where(l => l.HouseholdId == householdId)
+            .OrderByDescending(l => l.At)
+            .Take(50)
+            .Select(l => new
+            {
+                l.At,
+                l.Action,
+                Who = db.Users.Where(u => u.Id == l.UserId).Select(u => u.Email).FirstOrDefault()
+            })
+            .ToListAsync(ct);
+
+        return Results.Ok(rows.Select(r => new AccessLogEntryDto(r.At, r.Action, r.Who)).ToList());
     }
 
     private static async Task<IResult> InstallerAsync(HttpContext http, AppDbContext db, CancellationToken ct)

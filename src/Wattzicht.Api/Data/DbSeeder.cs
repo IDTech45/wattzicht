@@ -71,6 +71,8 @@ public static class DbSeeder
                 PostalCode = "7511",
                 City = "Enschede",
                 InstallerId = installer.Id,
+                InstallerAccessGranted = true, // demo: zichtbaar in het portal
+                InstallerAccessChangedAt = now,
                 CreatedAt = now
             };
             db.Households.Add(household);
@@ -135,6 +137,12 @@ public static class DbSeeder
                 });
 
             logger.LogInformation("Demo-huishouden met Demo-apparaten aangemaakt ({Email})", DemoEmail);
+        }
+        else if (household.InstallerAccessChangedAt is null)
+        {
+            // Bestaande demo-woning van vóór de toestemmingsregel: zichtbaar houden in het portal.
+            household.InstallerAccessGranted = true;
+            household.InstallerAccessChangedAt = now;
         }
 
         await db.SaveChangesAsync(ct);

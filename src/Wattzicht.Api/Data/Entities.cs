@@ -36,6 +36,15 @@ public sealed class Household
     public Installer Installer { get; set; } = null!;
     public DateTimeOffset CreatedAt { get; set; }
 
+    /// <summary>
+    /// Toestemming van de bewoner: mag de installateur meekijken? Standaard uit (AVG: opt-in).
+    /// Zonder toestemming ziet de installateur dit huishouden niet in het portal.
+    /// </summary>
+    public bool InstallerAccessGranted { get; set; }
+
+    /// <summary>Wanneer de bewoner de toestemming voor het laatst aan- of uitzette.</summary>
+    public DateTimeOffset? InstallerAccessChangedAt { get; set; }
+
     public List<User> Users { get; set; } = [];
     public List<Device> Devices { get; set; } = [];
     public List<Tariff> Tariffs { get; set; } = [];
@@ -193,4 +202,22 @@ public sealed class Alert
     public DateTimeOffset? ResolvedAt { get; set; }
 
     public bool IsOpen => ResolvedAt is null;
+}
+
+/// <summary>
+/// Logboek: wanneer een medewerker van de installateur gegevens van een huishouden bekeek.
+/// De bewoner kan dit zelf inzien (GET /household/access-log).
+/// </summary>
+public sealed class InstallerAccessLog
+{
+    public long Id { get; set; }
+    public Guid HouseholdId { get; set; }
+    public Household Household { get; set; } = null!;
+    public Guid InstallerId { get; set; }
+    public Guid UserId { get; set; }
+
+    /// <summary>Wat er gebeurde, bv. <c>view_detail</c>.</summary>
+    public string Action { get; set; } = string.Empty;
+
+    public DateTimeOffset At { get; set; }
 }

@@ -31,6 +31,11 @@ public partial class SettingsViewModel : BaseViewModel
     [ObservableProperty] private string? _installerPhone;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(HasInstallerPhone))] private bool _hasPhone;
     [ObservableProperty] private bool _hasQuoteUrl;
+
+    /// <summary>Mag de installateur meekijken? Wijzigen slaat direct op.</summary>
+    [ObservableProperty] private bool _installerAccess;
+    [ObservableProperty] private string? _lastViewedText;
+    private bool _syncingAccess;
     public bool HasInstallerPhone => HasPhone;
 
     // ---- Account ----
@@ -74,8 +79,51 @@ public partial class SettingsViewModel : BaseViewModel
             }
             catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
 
+            try
+            {
+                var access = await _api.GetInstallerAccessAsync();
+                _syncingAccess = true;
+                InstallerAccess = access.Granted;
+                _syncingAccess = false;
+
+                var log = await _api.GetAccessLogAsync();
+                LastViewedText = log.Count == 0
+                    ? "Nog niet bekeken door je installateur"
+                    : $"Laatst bekeken: {log[0].At.ToLocalTime().ToString("d MMM HH:mm", Nl)}";
+            }
+            catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
+            finally { _syncingAccess = false; }
+
             OnPropertyChanged(nameof(HouseholdName));
         }, _auth);
+    }
+
+    partial void OnInstallerAccessChanged(bool value)
+    {
+        if (_syncingAccess) return;
+        _ = SaveInstallerAccessAsync(value);
+    }
+
+    private async Task SaveInstallerAccessAsync(bool granted)
+    {
+        try
+        {
+            var saved = await _api.SetInstallerAccessAsync(granted);
+            if (saved.Granted != InstallerAccess)
+            {
+                _syncingAccess = true;
+                InstallerAccess = saved.Granted;
+                _syncingAccess = false;
+            }
+        }
+        catch (ApiException ex)
+        {
+            // Terugzetten zodat de schakelaar de echte stand toont.
+            _syncingAccess = true;
+            InstallerAccess = !granted;
+            _syncingAccess = false;
+            ErrorMessage = ex.Message;
+        }
     }
 
     [RelayCommand]

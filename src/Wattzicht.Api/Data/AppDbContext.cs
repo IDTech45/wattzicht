@@ -1,12 +1,27 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Wattzicht.Api.Services;
 
 namespace Wattzicht.Api.Data;
 
-/// <summary>EF Core-context voor Postgres. Timeseries staan in <see cref="Readings"/>.</summary>
-public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
+/// <summary>
+/// EF Core-context voor Postgres. Timeseries staan in <see cref="Readings"/>.
+/// <para>
+/// Scheiding tussen klanten: elke tabel met huishouddata heeft een globaal queryfilter op basis van
+/// <see cref="TenantContext"/>. Een bewoner ziet alleen het eigen huishouden; een installateur alleen
+/// de eigen klanten die toestemming gaven. Zo lekt er niets, ook niet als een endpoint een Where vergeet.
+/// </para>
+/// </summary>
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantContext? tenant = null)
     : DbContext(options), IDataProtectionKeyContext
 {
+    private readonly TenantContext _tenant = tenant ?? TenantContext.System;
+
+    // Door EF per query opnieuw gelezen (eigenschappen van de context worden parameters in het filter).
+    private bool TenantBypass => _tenant.IsSystem;
+    private Guid? TenantHouseholdId => _tenant.HouseholdId;
+    private Guid? TenantInstallerId => _tenant.InstallerId;
+
     public DbSet<Installer> Installers => Set<Installer>();
     public DbSet<Household> Households => Set<Household>();
     public DbSet<User> Users => Set<User>();
@@ -16,6 +31,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<DailySummary> DailySummaries => Set<DailySummary>();
     public DbSet<Alert> Alerts => Set<Alert>();
     public DbSet<Lead> Leads => Set<Lead>();
+    public DbSet<InstallerAccessLog> InstallerAccessLogs => Set<InstallerAccessLog>();
 
     /// <summary>Sleutelring van de Data Protection API (versleuteld met WZ_PROTECTION_KEY).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
@@ -50,6 +66,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasForeignKey(x => x.InstallerId)
                 .OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => x.InstallerId);
+            e.HasQueryFilter(h => TenantBypass
+                || h.Id == TenantHouseholdId
+                || (h.InstallerId == TenantInstallerId && h.InstallerAccessGranted));
         });
 
         modelBuilder.Entity<User>(e =>
@@ -85,6 +104,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasForeignKey(x => x.HouseholdId)
                 .OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.HouseholdId, x.Brand, x.ExternalId }).IsUnique();
+            e.HasQueryFilter(d => TenantBypass
+                || d.HouseholdId == TenantHouseholdId
+                || (d.Household.InstallerId == TenantInstallerId && d.Household.InstallerAccessGranted));
         });
 
         modelBuilder.Entity<Reading>(e =>
@@ -98,6 +120,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .OnDelete(DeleteBehavior.Cascade);
             // Belangrijkste index: laatste meting per apparaat en bereikquery's per dag.
             e.HasIndex(x => new { x.DeviceId, x.Timestamp }).IsDescending(false, true);
+            e.HasQueryFilter(r => TenantBypass
+                || r.Device.HouseholdId == TenantHouseholdId
+                || (r.Device.Household.InstallerId == TenantInstallerId && r.Device.Household.InstallerAccessGranted));
         });
 
         modelBuilder.Entity<Tariff>(e =>
@@ -112,6 +137,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasForeignKey(x => x.HouseholdId)
                 .OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.HouseholdId, x.ValidFrom }).IsUnique();
+            e.HasQueryFilter(t => TenantBypass
+                || t.HouseholdId == TenantHouseholdId
+                || (t.Household.InstallerId == TenantInstallerId && t.Household.InstallerAccessGranted));
         });
 
         modelBuilder.Entity<DailySummary>(e =>
@@ -124,6 +152,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasForeignKey(x => x.HouseholdId)
                 .OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.HouseholdId, x.Date }).IsUnique();
+            e.HasQueryFilter(s => TenantBypass
+                || s.HouseholdId == TenantHouseholdId
+                || (s.Household.InstallerId == TenantInstallerId && s.Household.InstallerAccessGranted));
         });
 
         modelBuilder.Entity<Alert>(e =>
@@ -138,6 +169,26 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasForeignKey(x => x.DeviceId)
                 .OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.DeviceId, x.Type, x.ResolvedAt });
+            e.HasQueryFilter(a => TenantBypass
+                || a.Device.HouseholdId == TenantHouseholdId
+                || (a.Device.Household.InstallerId == TenantInstallerId && a.Device.Household.InstallerAccessGranted));
+        });
+
+        modelBuilder.Entity<InstallerAccessLog>(e =>
+        {
+            e.ToTable("installer_access_log");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).ValueGeneratedOnAdd();
+            e.Property(x => x.Action).HasMaxLength(40).IsRequired();
+            e.HasOne(x => x.Household)
+                .WithMany()
+                .HasForeignKey(x => x.HouseholdId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.HouseholdId, x.At }).HasDatabaseName("ix_installer_access_log_household_at");
+            // Bewoner ziet wie er bij hem keek; installateur ziet alleen eigen logregels.
+            e.HasQueryFilter(l => TenantBypass
+                || l.HouseholdId == TenantHouseholdId
+                || l.InstallerId == TenantInstallerId);
         });
 
         modelBuilder.Entity<Lead>(e =>
