@@ -24,10 +24,10 @@
 
   <ItemGroup>
     <!-- App-icoon: achtergrond + voorgrond (adaptive icon op Android) -->
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#0F172A" />
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#FFE11A" />
 
     <!-- Splash -->
-    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0F172A" BaseSize="160,160" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0A1630" BaseSize="160,160" />
 
     <!-- Afbeeldingen (SVG's worden naar PNG omgezet per dichtheid) -->
     <MauiImage Include="Resources\Images\*" />

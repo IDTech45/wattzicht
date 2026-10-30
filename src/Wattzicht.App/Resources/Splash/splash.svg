@@ -1,11 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Wattzicht">
-  <defs>
-    <linearGradient id="sun" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#FFD166"/>
-      <stop offset="1" stop-color="#F59E0B"/>
-    </linearGradient>
-  </defs>
-  <path d="M256 128 C 336 128, 392 196, 416 256 C 392 316, 336 384, 256 384 C 176 384, 120 316, 96 256 C 120 196, 176 128, 256 128 Z" fill="none" stroke="#F8FAFC" stroke-width="22" stroke-linejoin="round"/>
-  <circle cx="256" cy="256" r="84" fill="url(#sun)"/>
-  <path d="M270 190 L222 270 L256 270 L242 322 L294 242 L260 242 Z" fill="#0F172A"/>
+  <!-- Op lacivert splashscherm: geel oog met gele zon en lacivert bliksem -->
+  <path d="M256 132 C 334 132, 390 198, 414 256 C 390 314, 334 380, 256 380 C 178 380, 122 314, 98 256 C 122 198, 178 132, 256 132 Z" fill="none" stroke="#FFE11A" stroke-width="30" stroke-linejoin="round"/>
+  <circle cx="256" cy="256" r="78" fill="#FFE11A"/>
+  <path d="M270 192 L224 268 L256 268 L243 318 L292 242 L260 242 Z" fill="#0A1630"/>
 </svg>

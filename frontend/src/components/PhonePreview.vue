@@ -50,7 +50,10 @@ const initials = computed(() =>
     <div class="phone__notch" aria-hidden="true"></div>
     <div class="screen">
       <header class="screen__top">
-        <span class="screen__word">watt<span>zicht</span></span>
+        <span class="screen__brandmark">
+          <img src="/wattzicht-icon.svg" alt="" width="24" height="24" class="screen__icon" />
+          <span class="screen__word">watt<span>zicht</span></span>
+        </span>
         <span class="screen__live">live</span>
       </header>
 
@@ -140,6 +143,16 @@ const initials = computed(() =>
   padding: 48px 18px 14px;
   background: var(--wz-night);
   color: var(--wz-ink);
+}
+.screen__brandmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.screen__icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
 }
 .screen__word {
   font-family: var(--wz-font-display);

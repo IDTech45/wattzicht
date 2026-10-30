@@ -75,7 +75,16 @@ builder.Services.AddHttpClient(EnergyZeroPriceProvider.HttpClientName, client =>
 });
 builder.Services.AddSingleton<IPriceProvider, EnergyZeroPriceProvider>();
 builder.Services.AddScoped<IPushSender, FcmPushSender>();
-builder.Services.AddHostedService<PollingWorker>();
+builder.Services.AddSingleton<PollingWorker>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<PollingWorker>());
+builder.Services.AddHttpClient(OpenMeteoWeatherProvider.HttpClientName, client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Wattzicht/0.1");
+});
+builder.Services.AddSingleton<IWeatherProvider, OpenMeteoWeatherProvider>();
+builder.Services.AddHostedService<WeatherWorker>();
+builder.Services.AddScoped<InsightsService>();
 
 // CORS voor de Vue-frontend en lokale ontwikkeling
 var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
@@ -103,6 +112,11 @@ builder.Services.AddRateLimiter(options =>
 // JSON: enums als tekst, camelCase (standaard voor minimal API's)
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
+    // Enums die het portal in kleine letters verwacht eerst; daarna de algemene (PascalCase) voor de rest.
+    // Een converter in Options gaat vóór het [JsonConverter]-attribuut op het type, dus expliciet hier.
+    options.SerializerOptions.Converters.Add(new Wattzicht.Shared.LowerCaseEnumConverter<Wattzicht.Shared.HouseholdStatus>());
+    options.SerializerOptions.Converters.Add(new Wattzicht.Shared.LowerCaseEnumConverter<Wattzicht.Shared.PerformanceStatus>());
+    options.SerializerOptions.Converters.Add(new Wattzicht.Shared.LowerCaseEnumConverter<Wattzicht.Shared.OpportunityKind>());
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });

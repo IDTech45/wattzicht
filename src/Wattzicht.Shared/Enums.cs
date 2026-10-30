@@ -58,6 +58,30 @@ public enum UserRole
     Installer = 1
 }
 
+/// <summary>Uitkomst van de prestatiecheck.</summary>
+[JsonConverter(typeof(LowerCaseEnumConverter<PerformanceStatus>))]
+public enum PerformanceStatus
+{
+    /// <summary>Nog te weinig dagen met data of weer.</summary>
+    Unknown = 0,
+
+    /// <summary>Levert wat het weer toelaat.</summary>
+    Ok = 1,
+
+    /// <summary>Levert structureel minder dan het weer toelaat (vuil, schaduw of defect).</summary>
+    Low = 2
+}
+
+/// <summary>Soort kans voor de installateur.</summary>
+[JsonConverter(typeof(LowerCaseEnumConverter<OpportunityKind>))]
+public enum OpportunityKind
+{
+    Battery = 0,
+    SmartCharging = 1,
+    Inspection = 2,
+    DynamicContract = 3
+}
+
 /// <summary>Soort slim-sturen-tip.</summary>
 public enum AdviceTipKind
 {

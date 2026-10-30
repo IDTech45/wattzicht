@@ -144,7 +144,8 @@ public sealed record DeviceDto(
     string Name,
     string ExternalId,
     DateTimeOffset? LastSeenAt,
-    bool IsOnline)
+    bool IsOnline,
+    string? LastError = null)
 {
     /// <summary>Alias van <see cref="LastSeenAt"/> (de app leest <c>lastSeen</c>).</summary>
     public DateTimeOffset? LastSeen => LastSeenAt;
@@ -283,7 +284,9 @@ public sealed record InstallerHouseholdDto(
     HouseholdStatus Status,
     int OpenAlerts,
     double TodayPvKwh,
-    DateTimeOffset? LastSeen);
+    DateTimeOffset? LastSeen,
+    PerformanceStatus Performance = PerformanceStatus.Unknown,
+    IReadOnlyList<OpportunityDto>? Opportunities = null);
 
 /// <summary>Overzicht met tellers voor het installateursportal (GET /installer/overview).</summary>
 /// <param name="Installer">Eigen white-label instellingen.</param>
@@ -329,7 +332,9 @@ public sealed record InstallerHouseholdDetailDto(
     IReadOnlyList<AlertDto> Alerts,
     DailySummaryDto Today,
     DailySummaryDto Month,
-    IReadOnlyList<DailySummaryDto> LastDays);
+    IReadOnlyList<DailySummaryDto> LastDays,
+    PerformanceDto? Performance = null,
+    IReadOnlyList<OpportunityDto>? Opportunities = null);
 
 // ---------------------------------------------------------------------------
 // Slim sturen (advies op basis van uurprijzen en zon)
@@ -442,3 +447,51 @@ public sealed record RegisterPushDeviceRequest(string Token, string? Platform = 
 /// <param name="Alerts">Bij een storing.</param>
 /// <param name="Surplus">Als het huis flink teruglevert (max. eens per 3 uur, tussen 9 en 20 uur).</param>
 public sealed record NotificationSettingsDto(bool Alerts, bool Surplus);
+
+// ---------------------------------------------------------------------------
+// Duurzaamheid, prestatiecheck en kansen
+// ---------------------------------------------------------------------------
+
+/// <summary>Levert de installatie wat het weer toeliet?</summary>
+/// <param name="Status">Ok, Low (structureel te weinig) of Unknown (te weinig data).</param>
+/// <param name="PercentOfExpected">Opwek van de laatste zonnige dagen als % van wat deze installatie normaal haalt bij dat weer.</param>
+/// <param name="LostKwh7Days">Geschat gemist in de laatste 7 dagen.</param>
+/// <param name="LostEur7Days">Wat dat ongeveer kostte.</param>
+/// <param name="Message">Uitleg in één zin.</param>
+public sealed record PerformanceDto(
+    PerformanceStatus Status,
+    int? PercentOfExpected,
+    double LostKwh7Days,
+    decimal LostEur7Days,
+    string Message);
+
+/// <summary>Duurzaamheid dit jaar (GET /sustainability).</summary>
+/// <param name="Year">Kalenderjaar.</param>
+/// <param name="PvKwh">Opgewekt dit jaar.</param>
+/// <param name="Co2AvoidedKg">Vermeden CO₂ (opwek × uitstoot van stroom uit het net; schatting).</param>
+/// <param name="SelfSufficiencyPercent">Deel van je verbruik dat uit eigen zon (en batterij) kwam.</param>
+/// <param name="SelfConsumptionPercent">Deel van je opwek dat je zelf gebruikte in plaats van terugleverde.</param>
+/// <param name="Performance">Prestatiecheck van de panelen.</param>
+public sealed record SustainabilityDto(
+    int Year,
+    double PvKwh,
+    double Co2AvoidedKg,
+    int SelfSufficiencyPercent,
+    int SelfConsumptionPercent,
+    PerformanceDto Performance);
+
+/// <summary>Een kans voor de installateur (en besparing voor de klant).</summary>
+/// <param name="Kind">Soort kans.</param>
+/// <param name="Title">Korte titel, bv. "Thuisbatterij".</param>
+/// <param name="Detail">Waarom, in één zin.</param>
+/// <param name="YearValueEur">Wat het de klant per jaar oplevert (vanaf 2027), als dat te schatten is.</param>
+public sealed record OpportunityDto(OpportunityKind Kind, string Title, string Detail, decimal? YearValueEur);
+
+/// <summary>Bericht van de installateur aan de klant; komt als pushmelding binnen.</summary>
+/// <param name="Text">Max. 300 tekens.</param>
+public sealed record InstallerMessageRequest(string Text);
+
+/// <summary>Resultaat van een actie op afstand.</summary>
+/// <param name="Ok">Gelukt.</param>
+/// <param name="Message">Uitleg voor in het portal.</param>
+public sealed record InstallerActionResult(bool Ok, string Message);

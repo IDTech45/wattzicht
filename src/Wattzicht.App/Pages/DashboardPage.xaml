@@ -15,6 +15,18 @@
                     <!-- Kop met logo van de installateur (white-label) -->
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                         <VerticalStackLayout Spacing="2">
+                            <!-- Merk van de app: Wattzicht (de installateur staat rechts) -->
+                            <HorizontalStackLayout Spacing="8" Margin="0,0,0,6" SemanticProperties.Description="Wattzicht">
+                                <Image Source="logo.png" HeightRequest="28" WidthRequest="28" VerticalOptions="Center" />
+                                <Label VerticalOptions="Center" FontSize="18" FontAttributes="Bold">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="watt" TextColor="{AppThemeBinding Light={StaticResource Ink}, Dark={StaticResource InkDark}}" />
+                                            <Span Text="zicht" TextColor="{StaticResource Sun}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </HorizontalStackLayout>
                             <Label Text="{Binding Greeting}" Style="{StaticResource PageTitle}" />
                             <Label Text="{Binding UpdatedAtText}" Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>

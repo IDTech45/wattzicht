@@ -90,6 +90,14 @@ public partial class SavingsViewModel : BaseViewModel
     [ObservableProperty] private string _feedInYearText = string.Empty;
     [ObservableProperty] private string _feedIn2027Text = string.Empty;
     [ObservableProperty] private bool _feedInCostMissing;
+
+    // Duurzaamheid dit jaar + prestatiecheck van de panelen
+    [ObservableProperty] private bool _hasSustainability;
+    [ObservableProperty] private string _co2Text = string.Empty;
+    [ObservableProperty] private string _selfSufficiencyText = string.Empty;
+    [ObservableProperty] private string _yearPvText = string.Empty;
+    [ObservableProperty] private string _performanceText = string.Empty;
+    [ObservableProperty] private bool _performanceLow;
     [ObservableProperty] private bool _hasLoaded;
 
     /// <summary>Wordt verhoogd zodat de pagina de GraphicsView kan invalideren.</summary>
@@ -130,6 +138,23 @@ public partial class SavingsViewModel : BaseViewModel
 
             Apply(summaries, from, to);
             HasLoaded = true;
+
+            if (!HasSustainability) try
+            {
+                var s = await _api.GetSustainabilityAsync();
+                HasSustainability = s.PvKwh > 0;
+                YearPvText = s.PvKwh.ToString("N0", Nl) + " kWh";
+                Co2Text = s.Co2AvoidedKg >= 1000
+                    ? (s.Co2AvoidedKg / 1000).ToString("N1", Nl) + " ton"
+                    : s.Co2AvoidedKg.ToString("N0", Nl) + " kg";
+                SelfSufficiencyText = s.SelfSufficiencyPercent + "%";
+                PerformanceLow = s.Performance.Status == PerformanceStatus.Low;
+                PerformanceText = s.Performance.Message;
+            }
+            catch (ApiException ex) when (!ex.IsUnauthorized)
+            {
+                HasSustainability = false;
+            }
 
             try
             {

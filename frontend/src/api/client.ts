@@ -42,6 +42,33 @@ export interface DeviceSummary {
   type: DeviceType
   brand: DeviceBrand
   name?: string
+  externalId?: string
+  isOnline?: boolean
+  lastSeen?: string | null
+  lastError?: string | null
+}
+
+export type PerformanceStatus = 'unknown' | 'ok' | 'low'
+export type OpportunityKind = 'battery' | 'smartcharging' | 'inspection' | 'dynamiccontract'
+
+export interface Opportunity {
+  kind: OpportunityKind
+  title: string
+  detail: string
+  yearValueEur: number | null
+}
+
+export interface Performance {
+  status: PerformanceStatus
+  percentOfExpected: number | null
+  lostKwh7Days: number
+  lostEur7Days: number
+  message: string
+}
+
+export interface ActionResult {
+  ok: boolean
+  message: string
 }
 
 export interface HouseholdSummary {
@@ -52,6 +79,8 @@ export interface HouseholdSummary {
   status: HouseholdStatus
   todayPvKwh: number
   lastSeen: string | null
+  performance?: PerformanceStatus
+  opportunities?: Opportunity[]
 }
 
 export interface LiveReading {
@@ -85,13 +114,15 @@ export interface DailySummary {
   savedEur: number
 }
 
-export interface HouseholdDetail extends HouseholdSummary {
+export interface HouseholdDetail extends Omit<HouseholdSummary, 'performance'> {
   email?: string
   address?: string
   live: LiveReading | null
   alerts: Alert[]
   today?: DailySummary | null
   month?: DailySummary | null
+  lastDays?: DailySummary[]
+  performance?: Performance | null
 }
 
 export interface Branding {
@@ -207,6 +238,19 @@ export function getInstallerHouseholds(): Promise<HouseholdSummary[]> {
 
 export function getHousehold(id: string): Promise<HouseholdDetail> {
   return request<HouseholdDetail>(`/installer/households/${encodeURIComponent(id)}`)
+}
+
+/** Actie op afstand: alle apparaten van deze klant nu opnieuw uitlezen. */
+export function refreshHousehold(id: string): Promise<ActionResult> {
+  return request<ActionResult>(`/installer/households/${encodeURIComponent(id)}/refresh`, { method: 'POST' })
+}
+
+/** Actie op afstand: bericht aan de klant (pushmelding in Wattzicht). */
+export function messageHousehold(id: string, text: string): Promise<ActionResult> {
+  return request<ActionResult>(`/installer/households/${encodeURIComponent(id)}/message`, {
+    method: 'POST',
+    body: JSON.stringify({ text }),
+  })
 }
 
 export function getBranding(): Promise<Branding> {

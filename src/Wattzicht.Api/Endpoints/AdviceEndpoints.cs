@@ -22,6 +22,13 @@ public static class AdviceEndpoints
             .WithSummary("Wat terugleveren kost (terugleverkosten) en wat zelf gebruiken scheelt, nu en vanaf 2027.")
             .Produces<FeedInDto>();
 
+        app.MapGet("/sustainability", async (HttpContext http, InsightsService insights, TimeProvider clock, CancellationToken ct) =>
+                Results.Ok(await insights.SustainabilityAsync(http.User.GetHouseholdId()!.Value, DutchTime.LocalDate(clock.GetUtcNow()), ct)))
+            .RequireAuthorization(AuthPolicies.Resident)
+            .WithTags("Slim sturen")
+            .WithSummary("Dit jaar: opwek, vermeden CO₂, zelfvoorziening en de prestatiecheck van de panelen.")
+            .Produces<SustainabilityDto>();
+
         return app;
     }
 
