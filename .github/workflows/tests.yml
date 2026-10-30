@@ -34,5 +34,5 @@ jobs:
         # Alleen Android: iOS kan niet op Linux. De runner heeft de Android-SDK al.
         run: >
           dotnet build src/Wattzicht.App/Wattzicht.App.csproj -c Debug
-          -p:TargetFrameworks=net9.0-android
+          -p:AndroidOnly=true
           -p:AcceptAndroidSDKLicenses=true
