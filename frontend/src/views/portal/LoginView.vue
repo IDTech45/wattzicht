@@ -78,7 +78,8 @@ async function submit() {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 .login__art {
-  background: var(--wz-night);
+  background: var(--wz-surface);
+  border-right: 1px solid var(--wz-line);
   color: #e2e8f0;
   padding: clamp(32px, 6vw, 72px);
   display: grid;
@@ -90,13 +91,14 @@ async function submit() {
   margin-bottom: 24px;
 }
 .login__tag {
+  font-family: var(--wz-font-display);
   font-size: 1.8rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #fff;
 }
 .login__sub {
-  color: #94a3b8;
+  color: var(--wz-text-soft);
   max-width: 40ch;
 }
 .login__form {

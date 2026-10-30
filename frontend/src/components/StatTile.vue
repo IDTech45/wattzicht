@@ -7,7 +7,7 @@ defineProps<{
   value: string | number
   unit?: string
   hint?: string
-  tone?: 'sun' | 'battery' | 'grid' | 'export' | 'danger' | 'neutral'
+  tone?: 'sun' | 'battery' | 'grid' | 'export' | 'charger' | 'danger' | 'neutral'
 }>()
 </script>
 
@@ -37,6 +37,7 @@ defineProps<{
 .tile--battery { --c: var(--wz-battery); }
 .tile--grid { --c: var(--wz-grid); }
 .tile--export { --c: var(--wz-export); }
+.tile--charger { --c: var(--wz-charger); }
 .tile--danger { --c: var(--wz-danger); }
 .tile--neutral { --c: var(--wz-line-strong); }
 
@@ -45,6 +46,8 @@ defineProps<{
   color: var(--wz-text-soft);
 }
 .tile__value {
+  font-family: var(--wz-font-display);
+  letter-spacing: -0.03em;
   font-size: 1.7rem;
   font-weight: 800;
   letter-spacing: -0.02em;

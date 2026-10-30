@@ -50,8 +50,8 @@ const fmt = (w: number) => (w >= 1000 ? `${(w / 1000).toFixed(1).replace('.', ',
 
     <defs>
       <linearGradient id="sunFill" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#FFD166" />
-        <stop offset="1" stop-color="#F59E0B" />
+        <stop offset="0" stop-color="#FFEB66" />
+        <stop offset="1" stop-color="#FFE11A" />
       </linearGradient>
       <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
         <feGaussianBlur stdDeviation="10" />
@@ -76,7 +76,7 @@ const fmt = (w: number) => (w >= 1000 ? `${(w / 1000).toFixed(1).replace('.', ',
     <g class="node node--sun" transform="translate(92 92)">
       <circle r="44" fill="url(#sunFill)" opacity=".35" filter="url(#glow)" class="sun-glow" />
       <circle r="30" fill="url(#sunFill)" />
-      <g class="rays" stroke="#F59E0B" stroke-width="3.5" stroke-linecap="round">
+      <g class="rays" stroke="#FFE11A" stroke-width="3.5" stroke-linecap="round">
         <line x1="0" y1="-44" x2="0" y2="-52" />
         <line x1="31" y1="-31" x2="37" y2="-37" />
         <line x1="44" y1="0" x2="52" y2="0" />
@@ -103,9 +103,9 @@ const fmt = (w: number) => (w >= 1000 ? `${(w / 1000).toFixed(1).replace('.', ',
     <g class="node node--battery" transform="translate(120 400)">
       <rect x="-30" y="-16" width="56" height="32" rx="6" class="bat-shell" />
       <rect x="26" y="-7" width="7" height="14" rx="2" class="bat-cap" />
-      <rect x="-25" y="-11" width="12" height="22" rx="2" fill="#22C55E" />
-      <rect x="-10" y="-11" width="12" height="22" rx="2" fill="#22C55E" />
-      <rect x="5" y="-11" width="12" height="22" rx="2" fill="#22C55E" class="bat-cell--last" />
+      <rect x="-25" y="-11" width="12" height="22" rx="2" fill="#5EEAD4" />
+      <rect x="-10" y="-11" width="12" height="22" rx="2" fill="#5EEAD4" />
+      <rect x="5" y="-11" width="12" height="22" rx="2" fill="#5EEAD4" class="bat-cell--last" />
     </g>
     <text x="120" y="442" class="label label--battery" text-anchor="middle">Batterij · 72%</text>
     <text x="120" y="464" class="value" text-anchor="middle">+{{ fmt(battery) }}</text>

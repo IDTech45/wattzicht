@@ -259,15 +259,10 @@ function open(row: HouseholdSummary) {
   font-weight: 400;
   opacity: 0.85;
 }
-.chip--Inverter { --c: #b45309; }
-.chip--Battery { --c: #15803d; }
-.chip--Charger { --c: #1d4ed8; }
+.chip--Inverter { --c: var(--wz-sun); }
+.chip--Battery { --c: var(--wz-battery); }
+.chip--Charger { --c: var(--wz-charger); }
 .chip--P1Meter { --c: var(--wz-muted); }
-@media (prefers-color-scheme: dark) {
-  .chip--Inverter { --c: var(--wz-sun); }
-  .chip--Battery { --c: var(--wz-battery); }
-  .chip--Charger { --c: #60a5fa; }
-}
 .num {
   font-variant-numeric: tabular-nums;
 }

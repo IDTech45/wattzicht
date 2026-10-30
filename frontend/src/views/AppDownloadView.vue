@@ -143,8 +143,8 @@ const guides = [
   gap: 12px;
   padding: 10px 20px 10px 16px;
   border-radius: 14px;
-  background: var(--wz-night);
-  color: #fff;
+  background: var(--wz-ink);
+  color: var(--wz-night);
   text-decoration: none;
   min-width: 190px;
   border: 1.5px solid transparent;
@@ -152,12 +152,6 @@ const guides = [
 }
 .store:hover {
   transform: translateY(-1px);
-}
-@media (prefers-color-scheme: dark) {
-  .store {
-    background: #fff;
-    color: var(--wz-night);
-  }
 }
 .store .pi {
   font-size: 1.6rem;

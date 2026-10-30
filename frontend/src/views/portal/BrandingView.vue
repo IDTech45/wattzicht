@@ -14,7 +14,7 @@ const toast = useToast()
 const form = reactive<Branding>({
   name: auth.installer?.name ?? '',
   logoDataUrl: auth.installer?.logoDataUrl ?? null,
-  primaryColor: auth.installer?.primaryColor ?? '#F59E0B',
+  primaryColor: auth.installer?.primaryColor ?? '#FFE11A',
   quoteUrl: auth.installer?.quoteUrl ?? '',
 })
 const saving = ref(false)
@@ -22,12 +22,12 @@ const loadError = ref<string | null>(null)
 const logoError = ref<string | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 
-const presets = ['#F59E0B', '#0E7490', '#16A34A', '#2563EB', '#DC2626', '#0F172A', '#7C3AED', '#EA580C']
+const presets = ['#FFE11A', '#0E7490', '#16A34A', '#2563EB', '#DC2626', '#0F172A', '#7C3AED', '#EA580C']
 
 onMounted(async () => {
   try {
     const b = await getBranding()
-    Object.assign(form, b, { primaryColor: normalize(b.primaryColor) || '#F59E0B' })
+    Object.assign(form, b, { primaryColor: normalize(b.primaryColor) || '#FFE11A' })
   } catch {
     loadError.value = 'De huidige huisstijl kon niet geladen worden. Je ziet de laatst bekende instellingen.'
   }
@@ -142,7 +142,7 @@ async function save() {
               aria-label="Hex-kleurcode"
               class="hex"
               maxlength="7"
-              @blur="form.primaryColor = normalize(form.primaryColor) || '#F59E0B'"
+              @blur="form.primaryColor = normalize(form.primaryColor) || '#FFE11A'"
             />
             <div class="presets" role="group" aria-label="Voorbeeldkleuren">
               <button

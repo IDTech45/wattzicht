@@ -36,3 +36,18 @@ jobs:
           dotnet build src/Wattzicht.App/Wattzicht.App.csproj -c Debug
           -p:AndroidOnly=true
           -p:AcceptAndroidSDKLicenses=true
+
+  web:
+    # Controleert dat de website (Vue + TypeScript) bouwt.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install
+        working-directory: frontend
+        run: npm install --no-audit --no-fund
+      - name: Build
+        working-directory: frontend
+        run: npm run build

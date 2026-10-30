@@ -6,7 +6,7 @@ const year = new Date().getFullYear()
   <footer class="foot">
     <div class="wz-wrap foot__grid">
       <div class="foot__brand">
-        <img src="/wattzicht-logo.svg" alt="Wattzicht" width="180" height="51" class="foot__logo" />
+        <span class="foot__logo" role="img" aria-label="Wattzicht">watt<span class="foot__logo-sun">zicht</span></span>
         <p>Zie wat je opwekt, gebruikt en bespaart. Welk merk je ook hebt.</p>
       </div>
 
@@ -56,13 +56,14 @@ const year = new Date().getFullYear()
   margin-top: 14px;
 }
 .foot__logo {
-  height: 40px;
-  width: auto;
+  font-family: var(--wz-font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--wz-ink);
 }
-@media (prefers-color-scheme: dark) {
-  .foot__logo {
-    filter: invert(1) hue-rotate(180deg) saturate(1.4);
-  }
+.foot__logo-sun {
+  color: var(--wz-sun);
 }
 .foot__col {
   display: grid;

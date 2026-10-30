@@ -16,13 +16,13 @@ const props = withDefaults(
   {
     name: 'Wattzicht',
     logoDataUrl: null,
-    primaryColor: '#F59E0B',
+    primaryColor: '#FFE11A',
     quoteUrl: '',
     compact: false,
   },
 )
 
-const color = computed(() => (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(props.primaryColor) ? props.primaryColor : '#F59E0B'))
+const color = computed(() => (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(props.primaryColor) ? props.primaryColor : '#FFE11A'))
 
 /** Kies zwart of wit op de primaire kleur op basis van luminantie. */
 const onColor = computed(() => {
@@ -32,7 +32,7 @@ const onColor = computed(() => {
   const g = parseInt(full.slice(2, 4), 16)
   const b = parseInt(full.slice(4, 6), 16)
   const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return lum > 0.6 ? '#0F172A' : '#FFFFFF'
+  return lum > 0.6 ? '#0A1630' : '#FFFFFF'
 })
 
 const initials = computed(() =>
@@ -75,7 +75,7 @@ const initials = computed(() =>
           <span class="swatch" style="--c: var(--wz-export)"></span><span>Naar het net</span><b>0,9 kW</b>
         </div>
         <div class="flowrow">
-          <span class="swatch" style="--c: var(--wz-grid)"></span><span>Laadpaal</span><b>0 W</b>
+          <span class="swatch" style="--c: var(--wz-charger)"></span><span>Laadpaal</span><b>0 W</b>
         </div>
       </section>
 
@@ -102,8 +102,8 @@ const initials = computed(() =>
   border-radius: 44px;
   background: var(--wz-night);
   box-shadow:
-    0 0 0 2px #334155,
-    0 30px 60px -30px rgba(15, 23, 42, 0.5);
+    0 0 0 2px #2e4573,
+    0 30px 60px -30px rgba(0, 0, 0, 0.5);
   margin-inline: auto;
 }
 .phone--compact {
@@ -150,7 +150,7 @@ const initials = computed(() =>
   height: 26px;
   object-fit: contain;
   border-radius: 6px;
-  background: #fff;
+  background: var(--wz-card);
   padding: 2px;
 }
 .screen__initials {
@@ -208,8 +208,8 @@ const initials = computed(() =>
 .screen__flows {
   margin: 10px 14px;
   padding: 6px 12px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--wz-card);
+  border: 1px solid var(--wz-line);
   border-radius: 14px;
   display: grid;
   align-content: start;
@@ -220,7 +220,7 @@ const initials = computed(() =>
   gap: 10px;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--wz-line);
 }
 .flowrow:last-child {
   border-bottom: 0;
@@ -239,7 +239,7 @@ const initials = computed(() =>
   margin: 0 14px 10px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--brand) 14%, #fff);
+  background: color-mix(in srgb, var(--brand) 18%, var(--wz-card));
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -259,8 +259,8 @@ const initials = computed(() =>
   display: flex;
   justify-content: space-around;
   padding: 10px 6px 18px;
-  border-top: 1px solid #e2e8f0;
-  background: #fff;
+  border-top: 1px solid var(--wz-line);
+  background: var(--wz-card);
   font-size: 11px;
   color: var(--wz-muted);
 }

@@ -2,59 +2,45 @@
 
 @layer base {
   :root {
-    /* BRAND.md tokens */
-    --wz-night: #0f172a;
-    --wz-night-soft: #1e293b;
-    --wz-sun: #f59e0b;
-    --wz-sun-light: #ffd166;
-    --wz-battery: #22c55e;
-    --wz-grid: #3b82f6;
-    --wz-export: #a855f7;
-    --wz-ink: #111827;
-    --wz-muted: #64748b;
-    --wz-paper: #f8fafc;
-    --wz-card: #ffffff;
-    --wz-danger: #dc2626;
+    /* Huisstijl Wattzicht (zie skill wattzicht-design): lacivert als nacht, geel als de zon. */
+    --wz-night: #0a1630;
+    --wz-night-soft: #12234a;
+    --wz-sun: #ffe11a;
+    --wz-sun-light: #ffeb66;
+    --wz-battery: #5eead4;
+    --wz-grid: #b69cff; /* net */
+    --wz-export: #b69cff; /* teruglevering = net */
+    --wz-charger: #ff7a3d;
+    --wz-ink: #f4f6fb;
+    --wz-muted: #9aa8c4;
+    --wz-paper: #0a1630;
+    --wz-card: #12234a;
+    --wz-danger: #ff6b6b;
 
-    /* Afgeleide rollen */
-    --wz-bg: var(--wz-paper);
+    /* Rollen: de site is altijd donker, net als de app */
+    --wz-bg: var(--wz-night);
     --wz-surface: var(--wz-card);
-    --wz-surface-2: #f1f5f9;
+    --wz-surface-2: #172c5c;
     --wz-text: var(--wz-ink);
     --wz-text-soft: var(--wz-muted);
-    --wz-line: #e2e8f0;
-    --wz-line-strong: #cbd5e1;
-    --wz-brand-fg: var(--wz-night); /* woordmerk/koppen */
-    --wz-cta-bg: var(--wz-night);
-    --wz-cta-fg: #ffffff;
+    --wz-line: #22365f;
+    --wz-line-strong: #2e4573;
+    --wz-brand-fg: var(--wz-ink);
+    --wz-cta-bg: var(--wz-sun);
+    --wz-cta-fg: var(--wz-night);
     --wz-focus: var(--wz-sun);
 
-    --wz-font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --wz-font: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --wz-font-display: 'Unbounded', var(--wz-font);
 
-    --wz-radius-s: 6px;
-    --wz-radius-m: 12px;
+    --wz-radius-s: 8px;
+    --wz-radius-m: 14px;
     --wz-radius-l: 22px;
 
     --wz-maxw: 1120px;
     --wz-gutter: clamp(16px, 4vw, 40px);
 
-    color-scheme: light;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --wz-bg: var(--wz-night);
-      --wz-surface: var(--wz-night-soft);
-      --wz-surface-2: #253146;
-      --wz-text: #f1f5f9;
-      --wz-text-soft: #94a3b8;
-      --wz-line: #2b3952;
-      --wz-line-strong: #3b4b66;
-      --wz-brand-fg: #f8fafc;
-      --wz-cta-bg: var(--wz-sun);
-      --wz-cta-fg: var(--wz-night);
-      color-scheme: dark;
-    }
+    color-scheme: dark;
   }
 
   *,
@@ -75,7 +61,7 @@
     line-height: 1.55;
     color: var(--wz-text);
     background: var(--wz-bg);
-    font-feature-settings: 'cv11', 'ss01', 'tnum';
+    font-feature-settings: 'tnum';
     -webkit-font-smoothing: antialiased;
   }
 
@@ -85,22 +71,25 @@
   h4 {
     margin: 0;
     color: var(--wz-brand-fg);
+    font-family: var(--wz-font-display);
     font-weight: 800;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     line-height: 1.1;
     text-wrap: balance;
   }
 
   h1 {
-    font-size: clamp(2.1rem, 5.2vw, 3.6rem);
-    letter-spacing: -0.03em;
+    font-size: clamp(2.1rem, 5.6vw, 3.8rem);
+    letter-spacing: -0.04em;
+    line-height: 1.02;
   }
   h2 {
     font-size: clamp(1.6rem, 3.4vw, 2.4rem);
   }
   h3 {
-    font-size: 1.2rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
 
   p {
@@ -163,9 +152,12 @@
   }
 
   .wz-kicker {
+    font-size: 0.8rem;
     font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--wz-text-soft);
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
 
   /* Knoppen */
@@ -176,7 +168,8 @@
     gap: 8px;
     padding: 13px 22px;
     border-radius: 999px;
-    font-weight: 600;
+    font-weight: 700;
+    min-height: 48px;
     text-decoration: none;
     border: 1.5px solid transparent;
     cursor: pointer;
@@ -198,7 +191,7 @@
     color: var(--wz-night);
   }
   .wz-btn--sun:hover {
-    background: #e18f06;
+    background: var(--wz-sun-light);
   }
   .wz-btn--ghost {
     background: transparent;
@@ -244,6 +237,9 @@
   .c-battery { color: var(--wz-battery); }
   .c-grid { color: var(--wz-grid); }
   .c-export { color: var(--wz-export); }
+  .c-charger { color: var(--wz-charger); }
+  /* Getallen in de displayletter, zoals in de app */
+  .wz-num { font-family: var(--wz-font-display); font-weight: 800; letter-spacing: -0.03em; }
   .c-danger { color: var(--wz-danger); }
 
   .sr-only {

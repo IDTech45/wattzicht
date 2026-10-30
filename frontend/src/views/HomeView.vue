@@ -49,7 +49,7 @@ const features = [
   <section class="hero">
     <div class="wz-wrap hero__grid">
       <div class="hero__copy">
-        <h1>Eén app voor je zonnepanelen, thuisbatterij en laadpaal</h1>
+        <h1>Eén app voor je <span class="c-sun">zonnepanelen</span>, thuisbatterij en laadpaal</h1>
         <p class="wz-lead hero__lead">
           Welk merk je ook hebt. Zie live wat je opwekt, gebruikt en bespaart.
         </p>

@@ -18,7 +18,7 @@ const links = [
     <div class="wz-wrap nav__bar">
       <RouterLink to="/" class="nav__brand" aria-label="Wattzicht, naar de homepage">
         <img src="/wattzicht-icon.svg" alt="" width="34" height="34" />
-        <span class="nav__word"><b>Watt</b>zicht</span>
+        <span class="nav__word">watt<span class="nav__word-sun">zicht</span></span>
       </RouterLink>
 
       <nav class="nav__links" :class="{ 'is-open': open }" aria-label="Hoofdmenu">
@@ -67,11 +67,14 @@ const links = [
   border-radius: 9px;
 }
 .nav__word {
-  font-size: 1.25rem;
-  letter-spacing: -0.02em;
-}
-.nav__word b {
+  font-family: var(--wz-font-display);
+  font-size: 1.15rem;
   font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--wz-ink);
+}
+.nav__word-sun {
+  color: var(--wz-sun);
 }
 .nav__links {
   display: flex;
