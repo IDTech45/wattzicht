@@ -226,18 +226,24 @@ const initials = computed(() =>
 }
 .screen__hero-label {
   color: var(--wz-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .screen__hero-value {
+  font-family: var(--wz-font-display);
   font-size: 40px;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   line-height: 1;
-  color: var(--wz-night);
+  color: var(--wz-sun);
 }
 .screen__hero-value small {
   font-size: 16px;
   font-weight: 600;
-  color: var(--wz-muted);
+  letter-spacing: 0;
+  color: var(--wz-ink);
 }
 .screen__hero-sub {
   color: var(--wz-muted);
