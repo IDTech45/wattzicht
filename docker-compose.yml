@@ -49,6 +49,12 @@ services:
       Seed__DemoPassword: ${SEED_DEMO_PASSWORD:-}
       Swagger__Enabled: ${SWAGGER_ENABLED:-false}
       TZ: Europe/Amsterdam
+      # Pushmeldingen (Firebase-project 'laadcash', gedeeld met LaadCash). De servicesleutel staat al op
+      # de server voor LaadCash en wordt hier alleen-lezen ingehangen: niet in de repo, niet in een env-variabele.
+      Push__Fcm__ProjectId: ${FCM_PROJECT_ID:-laadcash}
+      Push__Fcm__ServiceAccountFile: /run/secrets/fcm.json
+    volumes:
+      - /etc/dokploy/secrets/laadcash-fcm.json:/run/secrets/fcm.json:ro
     expose:
       - "8080"
     networks:
