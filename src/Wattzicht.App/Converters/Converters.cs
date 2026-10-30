@@ -57,6 +57,8 @@ public sealed class BrandToColorConverter : IValueConverter
         var key = value switch
         {
             DeviceBrand.Growatt => "Sun",
+            DeviceBrand.Solax => "Sun",
+            DeviceBrand.Enphase => "Sun",
             DeviceBrand.Sessy => "Battery",
             DeviceBrand.Deye => "Sun",
             DeviceBrand.Alfen => "Grid",

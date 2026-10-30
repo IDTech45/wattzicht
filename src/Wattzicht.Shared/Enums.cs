@@ -28,6 +28,8 @@ public enum DeviceBrand
     Alfen = 3,
     Zaptec = 4,
     HomeWizard = 5,
+    Solax = 6,
+    Enphase = 7,
 
     /// <summary>Demo-apparaat met gesimuleerde data; geen echte verbinding.</summary>
     Demo = 99

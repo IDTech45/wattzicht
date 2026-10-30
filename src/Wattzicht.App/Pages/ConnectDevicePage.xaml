@@ -95,6 +95,28 @@
                         </VerticalStackLayout>
                     </Border>
 
+                    <!-- SolaX -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding IsSolax}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="Log in op solaxcloud.com, ga naar Service → API en kopieer je TokenID. Het registratienummer (10 tekens) staat op de wifi-stick aan je omvormer."
+                                   Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="TokenID" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding ApiToken}" Placeholder="Plak hier je TokenID" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" />
+                                </Border>
+                                <Label Text="{Binding ApiTokenError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasApiTokenError}" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Registratienummer dongle" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding DongleSn}" Placeholder="Bijv. SXXXXXXXXX" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" MaxLength="10" />
+                                </Border>
+                                <Label Text="{Binding DongleSnError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasDongleSnError}" />
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
                     <!-- Sessy -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsSessy}">
                         <VerticalStackLayout Spacing="12">

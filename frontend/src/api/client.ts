@@ -7,6 +7,7 @@ export type DeviceType = 'Inverter' | 'Battery' | 'Charger' | 'P1Meter'
 export type DeviceBrand =
   | 'Growatt'
   | 'Sessy'
+  | 'Solax'
   | 'SolarEdge'
   | 'Enphase'
   | 'Deye'

@@ -36,6 +36,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     public IReadOnlyList<BrandOption> Brands { get; } =
     [
         new(DeviceBrand.Growatt, "Growatt", "Omvormer of batterij via ShinePhone-account", "Sun", DeviceType.Inverter),
+        new(DeviceBrand.Solax, "SolaX", "Omvormer of hybride met batterij via SolaXCloud", "Sun", DeviceType.Inverter),
         new(DeviceBrand.Sessy, "Sessy", "Thuisbatterij met Sessy-dongle", "Battery", DeviceType.Battery),
         new(DeviceBrand.HomeWizard, "HomeWizard", "P1-meter op je slimme meter", "Export", DeviceType.P1Meter),
         new(DeviceBrand.Demo, "Demo", "Voorbeelddata om de app te proberen", "Muted", DeviceType.Inverter),
@@ -60,6 +61,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasBrand))]
     [NotifyPropertyChangedFor(nameof(IsGrowatt))]
+    [NotifyPropertyChangedFor(nameof(IsSolax))]
     [NotifyPropertyChangedFor(nameof(IsSessy))]
     [NotifyPropertyChangedFor(nameof(IsHomeWizard))]
     [NotifyPropertyChangedFor(nameof(IsDemo))]
@@ -69,6 +71,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
 
     public bool HasBrand => SelectedBrand is not null;
     public bool IsGrowatt => SelectedBrand?.Brand == DeviceBrand.Growatt;
+    public bool IsSolax => SelectedBrand?.Brand == DeviceBrand.Solax;
     public bool IsSessy => SelectedBrand?.Brand == DeviceBrand.Sessy;
     public bool IsHomeWizard => SelectedBrand?.Brand == DeviceBrand.HomeWizard;
     public bool IsDemo => SelectedBrand?.Brand == DeviceBrand.Demo;
@@ -79,20 +82,24 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     [ObservableProperty] private string _ipAddress = string.Empty;
     [ObservableProperty] private string _username = string.Empty;
     [ObservableProperty] private string _password = string.Empty;
+    [ObservableProperty] private string _dongleSn = string.Empty;
 
     [ObservableProperty][NotifyPropertyChangedFor(nameof(HasApiTokenError))] private string? _apiTokenError;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(HasIpAddressError))] private string? _ipAddressError;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(HasUsernameError))] private string? _usernameError;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(HasPasswordError))] private string? _passwordError;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HasDongleSnError))] private string? _dongleSnError;
 
     public bool HasApiTokenError => !string.IsNullOrEmpty(ApiTokenError);
     public bool HasIpAddressError => !string.IsNullOrEmpty(IpAddressError);
     public bool HasUsernameError => !string.IsNullOrEmpty(UsernameError);
     public bool HasPasswordError => !string.IsNullOrEmpty(PasswordError);
+    public bool HasDongleSnError => !string.IsNullOrEmpty(DongleSnError);
 
     public string SummaryLine => SelectedBrand?.Brand switch
     {
         DeviceBrand.Growatt => "API-token: " + Mask(ApiToken),
+        DeviceBrand.Solax => $"TokenID {Mask(ApiToken)}, dongle {DongleSn.Trim().ToUpperInvariant()}",
         DeviceBrand.Sessy => $"Dongle op {IpAddress} als {Username}",
         DeviceBrand.HomeWizard => $"P1-meter op {IpAddress}",
         DeviceBrand.Demo => "Voorbeeldapparaten worden toegevoegd",
@@ -113,6 +120,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     partial void OnIpAddressChanged(string value) { IpAddressError = null; OnPropertyChanged(nameof(SummaryLine)); }
     partial void OnUsernameChanged(string value) { UsernameError = null; OnPropertyChanged(nameof(SummaryLine)); }
     partial void OnPasswordChanged(string value) => PasswordError = null;
+    partial void OnDongleSnChanged(string value) { DongleSnError = null; OnPropertyChanged(nameof(SummaryLine)); }
 
     [RelayCommand]
     private void SelectBrand(BrandOption option)
@@ -163,6 +171,10 @@ public partial class ConnectDeviceViewModel : BaseViewModel
             case DeviceBrand.Growatt:
                 credentials["token"] = ApiToken.Trim();
                 break;
+            case DeviceBrand.Solax:
+                credentials["token"] = ApiToken.Trim();
+                credentials["sn"] = DongleSn.Trim().ToUpperInvariant();
+                break;
             case DeviceBrand.Sessy:
                 credentials["ip"] = IpAddress.Trim();
                 credentials["username"] = Username.Trim();
@@ -193,6 +205,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                 // Credentials afgekeurd door de connector: terug naar stap 2 met melding onder het veld.
                 Step = 2;
                 if (IsGrowatt) ApiTokenError = "Dit token wordt niet geaccepteerd. Controleer het in ShinePhone.";
+                else if (IsSolax) ApiTokenError = "SolaXCloud accepteert dit token of dongle-nummer niet. Controleer beide.";
                 else if (IsSessy) PasswordError = "De dongle accepteert deze gegevens niet.";
                 else if (IsHomeWizard) IpAddressError = "Geen HomeWizard-meter gevonden op dit adres.";
                 else ErrorMessage = ex.Message;
@@ -202,12 +215,20 @@ public partial class ConnectDeviceViewModel : BaseViewModel
 
     private bool ValidateFields()
     {
-        ApiTokenError = IpAddressError = UsernameError = PasswordError = null;
+        ApiTokenError = IpAddressError = UsernameError = PasswordError = DongleSnError = null;
 
         if (IsGrowatt)
         {
             if (string.IsNullOrWhiteSpace(ApiToken)) ApiTokenError = "Vul je API-token in.";
             else if (ApiToken.Trim().Length < 16) ApiTokenError = "Dit token lijkt te kort.";
+        }
+        if (IsSolax)
+        {
+            if (string.IsNullOrWhiteSpace(ApiToken)) ApiTokenError = "Vul je SolaXCloud TokenID in.";
+            else if (ApiToken.Trim().Length < 16) ApiTokenError = "Dit TokenID lijkt te kort.";
+            var sn = DongleSn.Trim();
+            if (string.IsNullOrWhiteSpace(sn)) DongleSnError = "Vul het registratienummer van de dongle in.";
+            else if (sn.Length != 10) DongleSnError = "Het registratienummer heeft 10 tekens.";
         }
         if (IsSessy || IsHomeWizard)
         {
@@ -220,7 +241,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
             if (string.IsNullOrEmpty(Password)) PasswordError = "Vul het wachtwoord van de dongle in.";
         }
 
-        return !HasApiTokenError && !HasIpAddressError && !HasUsernameError && !HasPasswordError;
+        return !HasApiTokenError && !HasIpAddressError && !HasUsernameError && !HasPasswordError && !HasDongleSnError;
     }
 
     private static string Mask(string value)

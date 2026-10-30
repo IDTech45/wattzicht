@@ -13,7 +13,6 @@
     "difficulty": "easy",
     "popularityNl": 1
   },
-
   {
     "id": "growatt",
     "name": "Growatt",
@@ -22,7 +21,12 @@
     "api": "both",
     "authMode": "token",
     "fields": [
-      { "key": "token", "label": "API-token", "hint": "ShinePhone-app > Ik > API-token (Open API).", "type": "password" }
+      {
+        "key": "token",
+        "label": "API-token",
+        "hint": "ShinePhone-app > Ik > API-token (Open API).",
+        "type": "password"
+      }
     ],
     "status": "supported",
     "haIntegration": "core: growatt_server (onofficieel); HACS: growatt_modbus (lokaal)",
@@ -38,8 +42,18 @@
     "api": "both",
     "authMode": "token",
     "fields": [
-      { "key": "apiKey", "label": "API-sleutel", "hint": "Monitoring-portaal > Admin > Site-toegang > API-toegang. Alleen zichtbaar als je eigenaar/admin van de site bent; anders via installateur.", "type": "password" },
-      { "key": "siteId", "label": "Site-ID", "hint": "Nummer in de URL van het monitoring-portaal.", "type": "text" }
+      {
+        "key": "apiKey",
+        "label": "API-sleutel",
+        "hint": "Monitoring-portaal > Admin > Site-toegang > API-toegang. Alleen zichtbaar als je eigenaar/admin van de site bent; anders via installateur.",
+        "type": "password"
+      },
+      {
+        "key": "siteId",
+        "label": "Site-ID",
+        "hint": "Nummer in de URL van het monitoring-portaal.",
+        "type": "text"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: solaredge (cloud); HACS: solaredge-modbus-multi (Modbus TCP 1502)",
@@ -55,9 +69,24 @@
     "api": "both",
     "authMode": "oauth",
     "fields": [
-      { "key": "envoyHost", "label": "IP-adres Envoy/IQ Gateway", "hint": "Voor lokale uitlezing in het thuisnetwerk.", "type": "ip" },
-      { "key": "enlightenUser", "label": "Enlighten e-mail", "hint": "Nodig voor het Envoy-token (firmware 7+).", "type": "text" },
-      { "key": "enlightenPassword", "label": "Enlighten wachtwoord", "hint": "", "type": "password" }
+      {
+        "key": "envoyHost",
+        "label": "IP-adres Envoy/IQ Gateway",
+        "hint": "Voor lokale uitlezing in het thuisnetwerk.",
+        "type": "ip"
+      },
+      {
+        "key": "enlightenUser",
+        "label": "Enlighten e-mail",
+        "hint": "Nodig voor het Envoy-token (firmware 7+).",
+        "type": "text"
+      },
+      {
+        "key": "enlightenPassword",
+        "label": "Enlighten wachtwoord",
+        "hint": "",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: enphase_envoy (lokaal)",
@@ -73,9 +102,24 @@
     "api": "local",
     "authMode": "ip+credentials",
     "fields": [
-      { "key": "host", "label": "IP-adres omvormer", "hint": "Webconnect of ennexOS-omvormer in het thuisnetwerk.", "type": "ip" },
-      { "key": "username", "label": "Gebruiker", "hint": "Meestal 'user'.", "type": "text" },
-      { "key": "password", "label": "Wachtwoord", "hint": "Wachtwoord van de omvormer-webinterface.", "type": "password" }
+      {
+        "key": "host",
+        "label": "IP-adres omvormer",
+        "hint": "Webconnect of ennexOS-omvormer in het thuisnetwerk.",
+        "type": "ip"
+      },
+      {
+        "key": "username",
+        "label": "Gebruiker",
+        "hint": "Meestal 'user'.",
+        "type": "text"
+      },
+      {
+        "key": "password",
+        "label": "Wachtwoord",
+        "hint": "Wachtwoord van de omvormer-webinterface.",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: sma (lokaal); Sunny Portal cloud alleen voor partners",
@@ -91,7 +135,12 @@
     "api": "local",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres omvormer", "hint": "Bij Gen24 eerst 'Solar API' aanzetten in de webinterface (Communicatie > Solar API).", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres omvormer",
+        "hint": "Bij Gen24 eerst 'Solar API' aanzetten in de webinterface (Communicatie > Solar API).",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: fronius (lokaal, Solar API v1)",
@@ -107,9 +156,24 @@
     "api": "both",
     "authMode": "partner",
     "fields": [
-      { "key": "kioskUrl", "label": "Kiosk-URL", "hint": "FusionSolar-portaal > Monitoring > Kiosk > URL kopiëren (alleen vermogen en dagtotaal, ca. 30 min vertraging).", "type": "text" },
-      { "key": "northboundUser", "label": "Northbound-account (optioneel)", "hint": "Aangemaakt door installateur in FusionSolar > Bedrijfsbeheer.", "type": "text" },
-      { "key": "northboundPassword", "label": "Northbound-wachtwoord", "hint": "", "type": "password" }
+      {
+        "key": "kioskUrl",
+        "label": "Kiosk-URL",
+        "hint": "FusionSolar-portaal > Monitoring > Kiosk > URL kopiëren (alleen vermogen en dagtotaal, ca. 30 min vertraging).",
+        "type": "text"
+      },
+      {
+        "key": "northboundUser",
+        "label": "Northbound-account (optioneel)",
+        "hint": "Aangemaakt door installateur in FusionSolar > Bedrijfsbeheer.",
+        "type": "text"
+      },
+      {
+        "key": "northboundPassword",
+        "label": "Northbound-wachtwoord",
+        "hint": "",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: FusionSolar (kiosk/Northbound); HACS: huawei_solar (Modbus TCP via dongle)",
@@ -125,9 +189,24 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres omvormer", "hint": "Lokaal via UDP-poort 8899 op de wifi-dongle.", "type": "ip" },
-      { "key": "semsUser", "label": "SEMS e-mail (optioneel)", "hint": "Voor cloud-uitlezing als de app niet in het thuisnetwerk zit.", "type": "text" },
-      { "key": "semsPassword", "label": "SEMS wachtwoord", "hint": "", "type": "password" }
+      {
+        "key": "host",
+        "label": "IP-adres omvormer",
+        "hint": "Lokaal via UDP-poort 8899 op de wifi-dongle.",
+        "type": "ip"
+      },
+      {
+        "key": "semsUser",
+        "label": "SEMS e-mail (optioneel)",
+        "hint": "Voor cloud-uitlezing als de app niet in het thuisnetwerk zit.",
+        "type": "text"
+      },
+      {
+        "key": "semsPassword",
+        "label": "SEMS wachtwoord",
+        "hint": "",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: goodwe (lokaal); HACS: sems (cloud, onofficieel)",
@@ -143,8 +222,18 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres logger", "hint": "IP van de Solarman wifi-logger (LSW-3/LSE).", "type": "ip" },
-      { "key": "loggerSerial", "label": "Serienummer logger", "hint": "Nummer op de sticker van de wifi-logger (begint vaak met 17/21/23).", "type": "text" }
+      {
+        "key": "host",
+        "label": "IP-adres logger",
+        "hint": "IP van de Solarman wifi-logger (LSW-3/LSE).",
+        "type": "ip"
+      },
+      {
+        "key": "loggerSerial",
+        "label": "Serienummer logger",
+        "hint": "Nummer op de sticker van de wifi-logger (begint vaak met 17/21/23).",
+        "type": "text"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: solarman (lokaal, V5-protocol); cloud via Solarman Smart API (appId via support)",
@@ -160,10 +249,20 @@
     "api": "both",
     "authMode": "token",
     "fields": [
-      { "key": "token", "label": "SolaXCloud token", "hint": "SolaXCloud > Service > Derde partij ecosysteem > TokenID. Nieuwe API via developer-portaal (Client ID/Secret).", "type": "password" },
-      { "key": "registrationNo", "label": "Registratienummer dongle", "hint": "Serienummer van de Pocket WiFi/LAN dongle.", "type": "text" }
+      {
+        "key": "token",
+        "label": "SolaXCloud TokenID",
+        "hint": "SolaXCloud → Service → API → TokenID kopiëren.",
+        "type": "password"
+      },
+      {
+        "key": "sn",
+        "label": "Registratienummer dongle",
+        "hint": "10 tekens, staat op de wifi-stick en in SolaXCloud bij je apparaat.",
+        "type": "text"
+      }
     ],
-    "status": "planned",
+    "status": "supported",
     "haIntegration": "core: solax (lokaal); HACS: solax_modbus; HACS: SolaX Cloud (developer API)",
     "docsUrl": "https://community.home-assistant.io/t/solax-power-developer-portal-api-for-home-assistant/1023369",
     "difficulty": "easy",
@@ -177,7 +276,12 @@
     "api": "both",
     "authMode": "token",
     "fields": [
-      { "key": "apiKey", "label": "Open API-sleutel", "hint": "developer-eu.foxesscloud.com/apiKeys > Generate API Key (inloggen met FoxESS Cloud-account).", "type": "password" }
+      {
+        "key": "apiKey",
+        "label": "Open API-sleutel",
+        "hint": "developer-eu.foxesscloud.com/apiKeys > Generate API Key (inloggen met FoxESS Cloud-account).",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: foxess-ha (cloud, Open API); HACS: foxess_modbus (lokaal)",
@@ -193,7 +297,12 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres WiNet-dongle", "hint": "Modbus TCP poort 502 op de WiNet-S/S2 dongle.", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres WiNet-dongle",
+        "hint": "Modbus TCP poort 502 op de WiNet-S/S2 dongle.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: SungrowInverter (Modbus lokaal); HACS: iSolarCloud (OpenAPI, developer-account)",
@@ -209,9 +318,24 @@
     "api": "both",
     "authMode": "credentials",
     "fields": [
-      { "key": "username", "label": "S-Miles Cloud e-mail", "hint": "Onofficiële cloud-koppeling; kan breken bij wijzigingen van Hoymiles.", "type": "text" },
-      { "key": "password", "label": "S-Miles wachtwoord", "hint": "", "type": "password" },
-      { "key": "dtuHost", "label": "IP-adres DTU (optioneel)", "hint": "Lokaal via Modbus TCP op DTU-Pro of HMS-W.", "type": "ip" }
+      {
+        "key": "username",
+        "label": "S-Miles Cloud e-mail",
+        "hint": "Onofficiële cloud-koppeling; kan breken bij wijzigingen van Hoymiles.",
+        "type": "text"
+      },
+      {
+        "key": "password",
+        "label": "S-Miles wachtwoord",
+        "hint": "",
+        "type": "password"
+      },
+      {
+        "key": "dtuHost",
+        "label": "IP-adres DTU (optioneel)",
+        "hint": "Lokaal via Modbus TCP op DTU-Pro of HMS-W.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: hoymiles_cloud (onofficieel); HACS: ha-hoymiles-modbus-tcp (lokaal)",
@@ -227,7 +351,12 @@
     "api": "local",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres EZ1 / ECU", "hint": "EZ1-micro-omvormer: lokale API aanzetten in de AP EasyPower-app.", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres EZ1 / ECU",
+        "hint": "EZ1-micro-omvormer: lokale API aanzetten in de AP EasyPower-app.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: apsystems (EZ1 lokaal); HACS: apsystems_ecur (ECU-R lokaal)",
@@ -243,7 +372,12 @@
     "api": "cloud",
     "authMode": "credentials",
     "fields": [
-      { "key": "email", "label": "Zonneplan e-mailadres", "hint": "Je ontvangt een eenmalige inlogcode per e-mail.", "type": "text" }
+      {
+        "key": "email",
+        "label": "Zonneplan e-mailadres",
+        "hint": "Je ontvangt een eenmalige inlogcode per e-mail.",
+        "type": "text"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: zonneplan (2026.10, alleen prijzen/verbruik); HACS: zonneplan_one (Evo, Nexus, batterij, laadpaal)",
@@ -259,7 +393,12 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres SigenStor", "hint": "Installateur moet Modbus TCP aanzetten in de Sigenergy-app (poort 502).", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres SigenStor",
+        "hint": "Installateur moet Modbus TCP aanzetten in de Sigenergy-app (poort 502).",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: Sigenergy-Local-Modbus (omvormer, batterij én laadpaal)",
@@ -275,8 +414,18 @@
     "api": "cloud",
     "authMode": "token",
     "fields": [
-      { "key": "appId", "label": "AppID", "hint": "Registreer op open.alphaess.com, koppel systeem met serienummer + CheckCode (sticker op omvormer).", "type": "text" },
-      { "key": "appSecret", "label": "AppSecret", "hint": "", "type": "password" }
+      {
+        "key": "appId",
+        "label": "AppID",
+        "hint": "Registreer op open.alphaess.com, koppel systeem met serienummer + CheckCode (sticker op omvormer).",
+        "type": "text"
+      },
+      {
+        "key": "appSecret",
+        "label": "AppSecret",
+        "hint": "",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: homeassistant-alphaESS (officiële Open API)",
@@ -292,8 +441,18 @@
     "api": "both",
     "authMode": "token",
     "fields": [
-      { "key": "vrmToken", "label": "VRM access-token", "hint": "vrm.victronenergy.com > Voorkeuren > Integraties > Access tokens.", "type": "password" },
-      { "key": "gxHost", "label": "IP-adres GX (optioneel)", "hint": "Modbus TCP op Cerbo/Venus GX, poort 502.", "type": "ip" }
+      {
+        "key": "vrmToken",
+        "label": "VRM access-token",
+        "hint": "vrm.victronenergy.com > Voorkeuren > Integraties > Access tokens.",
+        "type": "password"
+      },
+      {
+        "key": "gxHost",
+        "label": "IP-adres GX (optioneel)",
+        "hint": "Modbus TCP op Cerbo/Venus GX, poort 502.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: hass-victron (Modbus lokaal); VRM API officieel gedocumenteerd",
@@ -301,7 +460,6 @@
     "difficulty": "easy",
     "popularityNl": 2
   },
-
   {
     "id": "sessy",
     "name": "Sessy",
@@ -310,9 +468,24 @@
     "api": "both",
     "authMode": "ip+credentials",
     "fields": [
-      { "key": "host", "label": "IP-adres Sessy-dongle", "hint": "Te vinden in de Sessy-app of op je router.", "type": "ip" },
-      { "key": "username", "label": "Gebruikersnaam dongle", "hint": "Staat op de sticker van de dongle.", "type": "text" },
-      { "key": "password", "label": "Wachtwoord dongle", "hint": "Staat op de sticker van de dongle.", "type": "password" }
+      {
+        "key": "host",
+        "label": "IP-adres Sessy-dongle",
+        "hint": "Te vinden in de Sessy-app of op je router.",
+        "type": "ip"
+      },
+      {
+        "key": "username",
+        "label": "Gebruikersnaam dongle",
+        "hint": "Staat op de sticker van de dongle.",
+        "type": "text"
+      },
+      {
+        "key": "password",
+        "label": "Wachtwoord dongle",
+        "hint": "Staat op de sticker van de dongle.",
+        "type": "password"
+      }
     ],
     "status": "supported",
     "haIntegration": "HACS: sessy (lokaal)",
@@ -328,7 +501,12 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres batterij", "hint": "Venus E v3 / Venus D: Local API aanzetten in de Marstek-app (UDP poort 30000). Oudere Venus: RS485-naar-wifi-adapter voor Modbus.", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres batterij",
+        "hint": "Venus E v3 / Venus D: Local API aanzetten in de Marstek-app (UDP poort 30000). Oudere Venus: RS485-naar-wifi-adapter voor Modbus.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: marstek_local_api; HACS: marstek_venus_modbus",
@@ -344,9 +522,24 @@
     "api": "both",
     "authMode": "credentials",
     "fields": [
-      { "key": "username", "label": "Zendure-account e-mail", "hint": "Gebruik bij voorkeur een tweede account dat je deelt in de Zendure-app.", "type": "text" },
-      { "key": "password", "label": "Wachtwoord", "hint": "", "type": "password" },
-      { "key": "host", "label": "IP-adres (optioneel)", "hint": "Nieuwere modellen (SolarFlow 800/Hyper 2000) hebben lokale REST/zenSDK.", "type": "ip" }
+      {
+        "key": "username",
+        "label": "Zendure-account e-mail",
+        "hint": "Gebruik bij voorkeur een tweede account dat je deelt in de Zendure-app.",
+        "type": "text"
+      },
+      {
+        "key": "password",
+        "label": "Wachtwoord",
+        "hint": "",
+        "type": "password"
+      },
+      {
+        "key": "host",
+        "label": "IP-adres (optioneel)",
+        "hint": "Nieuwere modellen (SolarFlow 800/Hyper 2000) hebben lokale REST/zenSDK.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: Zendure-HA (onofficieel, cloud/MQTT); HACS: Zendure-HA-zenSDK (lokaal)",
@@ -362,7 +555,12 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres batterij", "hint": "Druk op de knop van de batterij om de lokale API-koppeling (v2) te bevestigen.", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres batterij",
+        "hint": "Druk op de knop van de batterij om de lokale API-koppeling (v2) te bevestigen.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: homewizard_energy (lokaal, knop-pairing)",
@@ -378,8 +576,18 @@
     "api": "cloud",
     "authMode": "token",
     "fields": [
-      { "key": "appId", "label": "AppID", "hint": "Zelfde Open API als de AlphaESS-omvormer (open.alphaess.com).", "type": "text" },
-      { "key": "appSecret", "label": "AppSecret", "hint": "", "type": "password" }
+      {
+        "key": "appId",
+        "label": "AppID",
+        "hint": "Zelfde Open API als de AlphaESS-omvormer (open.alphaess.com).",
+        "type": "text"
+      },
+      {
+        "key": "appSecret",
+        "label": "AppSecret",
+        "hint": "",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: homeassistant-alphaESS",
@@ -395,7 +603,12 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres SigenStor", "hint": "Zie Sigenergy omvormer; batterijdata komt via dezelfde Modbus-koppeling.", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres SigenStor",
+        "hint": "Zie Sigenergy omvormer; batterijdata komt via dezelfde Modbus-koppeling.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: Sigenergy-Local-Modbus",
@@ -425,8 +638,18 @@
     "api": "both",
     "authMode": "ip+credentials",
     "fields": [
-      { "key": "host", "label": "IP-adres Gateway", "hint": "Backup Gateway in het thuisnetwerk.", "type": "ip" },
-      { "key": "password", "label": "Klantwachtwoord", "hint": "Standaard de laatste 5 tekens van het gateway-wachtwoord op de sticker.", "type": "password" }
+      {
+        "key": "host",
+        "label": "IP-adres Gateway",
+        "hint": "Backup Gateway in het thuisnetwerk.",
+        "type": "ip"
+      },
+      {
+        "key": "password",
+        "label": "Klantwachtwoord",
+        "hint": "Standaard de laatste 5 tekens van het gateway-wachtwoord op de sticker.",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: powerwall (lokaal); core: tesla_fleet (cloud, betaald per request)",
@@ -470,8 +693,18 @@
     "api": "both",
     "authMode": "token",
     "fields": [
-      { "key": "apiToken", "label": "GivEnergy API-token", "hint": "givenergy.cloud > Account > API Tokens.", "type": "password" },
-      { "key": "host", "label": "IP-adres omvormer (optioneel)", "hint": "Lokaal via Modbus TCP op de wifi-dongle.", "type": "ip" }
+      {
+        "key": "apiToken",
+        "label": "GivEnergy API-token",
+        "hint": "givenergy.cloud > Account > API Tokens.",
+        "type": "password"
+      },
+      {
+        "key": "host",
+        "label": "IP-adres omvormer (optioneel)",
+        "hint": "Lokaal via Modbus TCP op de wifi-dongle.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: ge_cloud (cloud); HACS: givenergy-local (lokaal)",
@@ -487,8 +720,18 @@
     "api": "both",
     "authMode": "ip+credentials",
     "fields": [
-      { "key": "host", "label": "IP-adres sonnenBatterie", "hint": "", "type": "ip" },
-      { "key": "authToken", "label": "API-token", "hint": "Webinterface van de batterij > Software-integratie > API-token.", "type": "password" }
+      {
+        "key": "host",
+        "label": "IP-adres sonnenBatterie",
+        "hint": "",
+        "type": "ip"
+      },
+      {
+        "key": "authToken",
+        "label": "API-token",
+        "hint": "Webinterface van de batterij > Software-integratie > API-token.",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: sonnenbatterie (lokaal API v2)",
@@ -504,9 +747,24 @@
     "api": "both",
     "authMode": "oauth",
     "fields": [
-      { "key": "envoyHost", "label": "IP-adres IQ Gateway", "hint": "Zelfde koppeling als de Enphase-omvormer.", "type": "ip" },
-      { "key": "enlightenUser", "label": "Enlighten e-mail", "hint": "", "type": "text" },
-      { "key": "enlightenPassword", "label": "Enlighten wachtwoord", "hint": "", "type": "password" }
+      {
+        "key": "envoyHost",
+        "label": "IP-adres IQ Gateway",
+        "hint": "Zelfde koppeling als de Enphase-omvormer.",
+        "type": "ip"
+      },
+      {
+        "key": "enlightenUser",
+        "label": "Enlighten e-mail",
+        "hint": "",
+        "type": "text"
+      },
+      {
+        "key": "enlightenPassword",
+        "label": "Enlighten wachtwoord",
+        "hint": "",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: enphase_envoy",
@@ -522,7 +780,12 @@
     "api": "both",
     "authMode": "partner",
     "fields": [
-      { "key": "kioskUrl", "label": "Kiosk-URL", "hint": "Zie Huawei FusionSolar; batterijdata alleen via Northbound-account of lokale Modbus.", "type": "text" }
+      {
+        "key": "kioskUrl",
+        "label": "Kiosk-URL",
+        "hint": "Zie Huawei FusionSolar; batterijdata alleen via Northbound-account of lokale Modbus.",
+        "type": "text"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: FusionSolar; HACS: huawei_solar (Modbus)",
@@ -538,7 +801,12 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres Solarbank", "hint": "Modbus TCP aanzetten in de Anker-app (Solarbank 3 / Max AC). Oudere Solarbanks alleen via onofficiële cloud met tweede account.", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres Solarbank",
+        "hint": "Modbus TCP aanzetten in de Anker-app (Solarbank 3 / Max AC). Oudere Solarbanks alleen via onofficiële cloud met tweede account.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: ha-anker-solix-official (lokaal Modbus, officieel); HACS: hacs-anker-solix (cloud, onofficieel)",
@@ -546,7 +814,6 @@
     "difficulty": "medium",
     "popularityNl": 2
   },
-
   {
     "id": "alfen",
     "name": "Alfen",
@@ -555,8 +822,18 @@
     "api": "local",
     "authMode": "ip+credentials",
     "fields": [
-      { "key": "host", "label": "IP-adres laadpaal", "hint": "Laadpaal moet bedraad of via wifi in het thuisnetwerk zitten.", "type": "ip" },
-      { "key": "password", "label": "Wachtwoord webinterface", "hint": "Gebruiker 'admin'; wachtwoord staat op de kaart bij de laadpaal of is bij de installateur bekend. Modbus TCP vereist 'Active Load Balancing'-licentie.", "type": "password" }
+      {
+        "key": "host",
+        "label": "IP-adres laadpaal",
+        "hint": "Laadpaal moet bedraad of via wifi in het thuisnetwerk zitten.",
+        "type": "ip"
+      },
+      {
+        "key": "password",
+        "label": "Wachtwoord webinterface",
+        "hint": "Gebruiker 'admin'; wachtwoord staat op de kaart bij de laadpaal of is bij de installateur bekend. Modbus TCP vereist 'Active Load Balancing'-licentie.",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: alfen_wallbox (lokale HTTPS-API); HACS: alfen_modbus",
@@ -572,8 +849,18 @@
     "api": "cloud",
     "authMode": "credentials",
     "fields": [
-      { "key": "username", "label": "Zaptec-account e-mail", "hint": "Zelfde login als de Zaptec-app/Portal.", "type": "text" },
-      { "key": "password", "label": "Wachtwoord", "hint": "Zaptec faseert wachtwoord-login uit richting OAuth; houd rekening met migratie.", "type": "password" }
+      {
+        "key": "username",
+        "label": "Zaptec-account e-mail",
+        "hint": "Zelfde login als de Zaptec-app/Portal.",
+        "type": "text"
+      },
+      {
+        "key": "password",
+        "label": "Wachtwoord",
+        "hint": "Zaptec faseert wachtwoord-login uit richting OAuth; houd rekening met migratie.",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: zaptec (cloud API)",
@@ -589,8 +876,18 @@
     "api": "cloud",
     "authMode": "credentials",
     "fields": [
-      { "key": "username", "label": "Easee-account (e-mail of telefoon)", "hint": "", "type": "text" },
-      { "key": "password", "label": "Wachtwoord", "hint": "", "type": "password" }
+      {
+        "key": "username",
+        "label": "Easee-account (e-mail of telefoon)",
+        "hint": "",
+        "type": "text"
+      },
+      {
+        "key": "password",
+        "label": "Wachtwoord",
+        "hint": "",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: easee_hass (cloud API)",
@@ -606,8 +903,18 @@
     "api": "cloud",
     "authMode": "credentials",
     "fields": [
-      { "key": "username", "label": "myWallbox e-mail", "hint": "", "type": "text" },
-      { "key": "password", "label": "Wachtwoord", "hint": "", "type": "password" }
+      {
+        "key": "username",
+        "label": "myWallbox e-mail",
+        "hint": "",
+        "type": "text"
+      },
+      {
+        "key": "password",
+        "label": "Wachtwoord",
+        "hint": "",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: wallbox (cloud)",
@@ -623,8 +930,18 @@
     "api": "local",
     "authMode": "ip+credentials",
     "fields": [
-      { "key": "host", "label": "IP-adres laadpaal", "hint": "", "type": "ip" },
-      { "key": "apiToken", "label": "Lokale API-token", "hint": "Webinterface laadpaal > Integraties > Lokale REST API aanzetten en token kopiëren.", "type": "password" }
+      {
+        "key": "host",
+        "label": "IP-adres laadpaal",
+        "hint": "",
+        "type": "ip"
+      },
+      {
+        "key": "apiToken",
+        "label": "Lokale API-token",
+        "hint": "Webinterface laadpaal > Integraties > Lokale REST API aanzetten en token kopiëren.",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: peblar (lokale REST API)",
@@ -640,8 +957,18 @@
     "api": "cloud",
     "authMode": "credentials",
     "fields": [
-      { "key": "username", "label": "Ratio-app e-mail", "hint": "Onofficiële cloud-API; geen documentatie van Ratio zelf.", "type": "text" },
-      { "key": "password", "label": "Wachtwoord", "hint": "", "type": "password" }
+      {
+        "key": "username",
+        "label": "Ratio-app e-mail",
+        "hint": "Onofficiële cloud-API; geen documentatie van Ratio zelf.",
+        "type": "text"
+      },
+      {
+        "key": "password",
+        "label": "Wachtwoord",
+        "hint": "",
+        "type": "password"
+      }
     ],
     "status": "requested",
     "haIntegration": "geen HA; Homey: Ratio Electric Charger (onofficieel, aioratio)",
@@ -657,7 +984,12 @@
     "api": "cloud",
     "authMode": "token",
     "fields": [
-      { "key": "apiToken", "label": "Plugchoice API-token", "hint": "app.plugchoice.com > Accountinstellingen > API Tokens (wordt eenmalig getoond).", "type": "password" }
+      {
+        "key": "apiToken",
+        "label": "Plugchoice API-token",
+        "hint": "app.plugchoice.com > Accountinstellingen > API Tokens (wordt eenmalig getoond).",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "geen HA; Homey: Volt Time Chargers (officieel, cloud API)",
@@ -673,8 +1005,18 @@
     "api": "cloud",
     "authMode": "token",
     "fields": [
-      { "key": "hubSerial", "label": "Serienummer hub", "hint": "Serienummer van de myenergi-hub (of zappi met ingebouwde hub).", "type": "text" },
-      { "key": "apiKey", "label": "API-sleutel", "hint": "myenergi-app/myaccount.myenergi.com > Advanced > API Key genereren.", "type": "password" }
+      {
+        "key": "hubSerial",
+        "label": "Serienummer hub",
+        "hint": "Serienummer van de myenergi-hub (of zappi met ingebouwde hub).",
+        "type": "text"
+      },
+      {
+        "key": "apiKey",
+        "label": "API-sleutel",
+        "hint": "myenergi-app/myaccount.myenergi.com > Advanced > API Key genereren.",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: myenergi (cloud API)",
@@ -704,7 +1046,12 @@
     "api": "local",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres Wall Connector", "hint": "Gen 3 Wall Connector in het thuisnetwerk; geen login nodig.", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres Wall Connector",
+        "hint": "Gen 3 Wall Connector in het thuisnetwerk; geen login nodig.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: tesla_wall_connector (lokaal)",
@@ -720,7 +1067,12 @@
     "api": "local",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres laadpaal", "hint": "Webasto Next/Unite: Modbus TCP aanzetten in de webinterface (poort 502).", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres laadpaal",
+        "hint": "Webasto Next/Unite: Modbus TCP aanzetten in de webinterface (poort 502).",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: webasto-next-modbus (lokaal)",
@@ -736,7 +1088,12 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres go-e Charger", "hint": "Lokale HTTP API v2 aanzetten in de go-e app.", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres go-e Charger",
+        "hint": "Lokale HTTP API v2 aanzetten in de go-e app.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: goecharger_api2 (lokaal); cloud API met serienummer + token",
@@ -752,7 +1109,12 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres Shelly Pro EV", "hint": "Lokale RPC-API; cloud via Shelly Cloud account.", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres Shelly Pro EV",
+        "hint": "Lokale RPC-API; cloud via Shelly Cloud account.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: shelly (lokaal)",
@@ -768,8 +1130,18 @@
     "api": "both",
     "authMode": "oauth",
     "fields": [
-      { "key": "clientId", "label": "Client ID", "hint": "Aan te vragen bij Smappee (gratis voor privégebruik, commercieel betaald).", "type": "text" },
-      { "key": "clientSecret", "label": "Client secret", "hint": "", "type": "password" }
+      {
+        "key": "clientId",
+        "label": "Client ID",
+        "hint": "Aan te vragen bij Smappee (gratis voor privégebruik, commercieel betaald).",
+        "type": "text"
+      },
+      {
+        "key": "clientSecret",
+        "label": "Client secret",
+        "hint": "",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: smappee (cloud OAuth + lokaal voor monitors)",
@@ -785,7 +1157,12 @@
     "api": "both",
     "authMode": "oauth",
     "fields": [
-      { "key": "envoyHost", "label": "IP-adres IQ Gateway", "hint": "Via dezelfde Enphase-koppeling; laadpaal-entiteiten in HA sinds 2025.", "type": "ip" }
+      {
+        "key": "envoyHost",
+        "label": "IP-adres IQ Gateway",
+        "hint": "Via dezelfde Enphase-koppeling; laadpaal-entiteiten in HA sinds 2025.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: enphase_envoy (deels)",
@@ -801,7 +1178,12 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres SigenStor", "hint": "Laadpaal is Modbus device-ID 1 op dezelfde koppeling.", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres SigenStor",
+        "hint": "Laadpaal is Modbus device-ID 1 op dezelfde koppeling.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "HACS: Sigenergy-Local-Modbus",
@@ -809,7 +1191,6 @@
     "difficulty": "medium",
     "popularityNl": 2
   },
-
   {
     "id": "homewizard-p1",
     "name": "HomeWizard P1",
@@ -818,7 +1199,12 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres P1-meter", "hint": "Lokale API aanzetten in de HomeWizard Energy-app (Instellingen > Meters > Lokale API).", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres P1-meter",
+        "hint": "Lokale API aanzetten in de HomeWizard Energy-app (Instellingen > Meters > Lokale API).",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: homewizard_energy (lokaal)",
@@ -834,7 +1220,12 @@
     "api": "cloud",
     "authMode": "token",
     "fields": [
-      { "key": "accessToken", "label": "Tibber access-token", "hint": "developer.tibber.com > Access token. Realtime-data vereist een Tibber-account met Pulse.", "type": "password" }
+      {
+        "key": "accessToken",
+        "label": "Tibber access-token",
+        "hint": "developer.tibber.com > Access token. Realtime-data vereist een Tibber-account met Pulse.",
+        "type": "password"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: tibber (cloud GraphQL + realtime websocket)",
@@ -850,7 +1241,12 @@
     "api": "both",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres Shelly", "hint": "Lokale RPC-API, geen login nodig tenzij ingesteld.", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres Shelly",
+        "hint": "Lokale RPC-API, geen login nodig tenzij ingesteld.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: shelly (lokaal)",
@@ -866,7 +1262,12 @@
     "api": "local",
     "authMode": "ip",
     "fields": [
-      { "key": "host", "label": "IP-adres SlimmeLezer", "hint": "ESPHome-apparaat; data via native API of webserver op poort 80.", "type": "ip" }
+      {
+        "key": "host",
+        "label": "IP-adres SlimmeLezer",
+        "hint": "ESPHome-apparaat; data via native API of webserver op poort 80.",
+        "type": "ip"
+      }
     ],
     "status": "planned",
     "haIntegration": "core: esphome (lokaal)",

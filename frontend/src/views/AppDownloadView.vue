@@ -17,6 +17,16 @@ const guides = [
     ],
   },
   {
+    brand: 'SolaX',
+    kind: 'Omvormer en batterij',
+    connected: true,
+    steps: [
+      'Log in op solaxcloud.com en ga naar Service → API. Kopieer je TokenID.',
+      'Zoek het registratienummer (10 tekens) op de wifi-stick aan je omvormer.',
+      'Vul beide in bij Apparaat toevoegen → SolaX. Heb je een hybride, dan verschijnt je batterij er automatisch bij.',
+    ],
+  },
+  {
     brand: 'Sessy',
     kind: 'Thuisbatterij',
     connected: true,

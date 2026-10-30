@@ -4,6 +4,7 @@ import BrandBadge from '@/components/BrandBadge.vue'
 
 const brands = [
   { name: 'Growatt', kind: 'Omvormer', connected: true },
+  { name: 'SolaX', kind: 'Hybride omvormer', connected: true },
   { name: 'Sessy', kind: 'Thuisbatterij', connected: true },
   { name: 'SolarEdge', kind: 'Omvormer', connected: false },
   { name: 'Enphase', kind: 'Micro-omvormers', connected: false },
