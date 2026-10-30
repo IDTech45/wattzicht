@@ -93,7 +93,7 @@ const features = [
     <div class="wz-wrap">
       <div class="section-head">
         <h2>Wat je ziet</h2>
-        <p class="wz-lead">Drie dingen die elke app voor zonnepanelen zou moeten laten zien, en bijna geen enkele doet.</p>
+        <p class="wz-lead">Vier dingen die elke app voor zonnepanelen zou moeten doen, en bijna geen enkele doet.</p>
       </div>
       <div class="features">
         <article v-for="f in features" :key="f.title" class="feature" :class="`feature--${f.tone}`">
@@ -227,15 +227,20 @@ const features = [
 .feature--battery { --c: var(--wz-battery); }
 .feature--danger { --c: var(--wz-danger); }
 .feature__icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  background: color-mix(in srgb, var(--c) 16%, transparent);
+  /* Geen gekleurd blokje (huisstijl): alleen een streep in de stroomkleur met het icoon erin. */
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: var(--c);
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   margin-bottom: 6px;
+}
+.feature__icon::before {
+  content: '';
+  width: 28px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--c);
 }
 .feature p {
   color: var(--wz-text-soft);
