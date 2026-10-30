@@ -188,7 +188,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
             // Bewoner ziet wie er bij hem keek; installateur ziet alleen eigen logregels.
             e.HasQueryFilter(l => TenantBypass
                 || l.HouseholdId == TenantHouseholdId
-                || l.InstallerId == TenantInstallerId);
+                || (l.InstallerId == TenantInstallerId && l.Household.InstallerAccessGranted));
         });
 
         modelBuilder.Entity<Lead>(e =>

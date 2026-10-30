@@ -134,7 +134,9 @@ public static class AuthEndpoints
     {
         var email = request.Email?.Trim().ToLowerInvariant() ?? string.Empty;
 
+        // Inloggen is anoniem; het eigen huishouden van deze gebruiker mag wel mee in het antwoord.
         var user = await db.Users
+            .IgnoreQueryFilters()
             .Include(u => u.Installer)
             .Include(u => u.Household!)
                 .ThenInclude(h => h.Installer)

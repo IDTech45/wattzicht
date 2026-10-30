@@ -155,6 +155,28 @@ public sealed class TenantIsolationTests
     }
 
     [Fact]
+    public void Anoniem_request_ziet_niets()
+    {
+        using var db = Create(As(nameof(UserRole.Resident), InstallerA, HouseWithConsent, authenticated: false));
+
+        AssertOnlyHouses(db);
+        Assert.Empty(db.InstallerAccessLogs);
+    }
+
+    [Fact]
+    public void Installateur_ziet_geen_inzagelog_na_intrekken_toestemming()
+    {
+        using (var system = Create(TenantContext.System))
+        {
+            system.Households.Single(h => h.Id == HouseWithConsent).InstallerAccessGranted = false;
+            system.SaveChanges();
+        }
+
+        using var db = Create(As(nameof(UserRole.Installer), InstallerA));
+        Assert.Empty(db.InstallerAccessLogs);
+    }
+
+    [Fact]
     public void Systeem_ziet_alles_voor_de_pollworker()
     {
         using var db = Create(TenantContext.System);

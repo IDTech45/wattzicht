@@ -3,7 +3,8 @@ namespace Wattzicht.Api.Services;
 /// <summary>
 /// Wie vraagt er data op? Bepaalt de scheiding tussen installateurs en huishoudens in <see cref="Data.AppDbContext"/>.
 /// <list type="bullet">
-/// <item><b>Systeem</b> (pollworker, seeder, anonieme endpoints zoals login): geen filter.</item>
+/// <item><b>Systeem</b> (pollworker, seeder; geen HTTP-request): geen filter.</item>
+/// <item><b>Anoniem request</b>: niets.</item>
 /// <item><b>Bewoner</b>: alleen het eigen huishouden.</item>
 /// <item><b>Installateur</b>: alleen huishoudens van de eigen installateur die toestemming gaven.</item>
 /// <item>Ingelogd maar geen van beide: niets.</item>
@@ -24,8 +25,11 @@ public sealed class TenantContext
 
     private bool IsAuthenticated => Http?.User.Identity?.IsAuthenticated == true;
 
-    /// <summary>Geen ingelogde gebruiker: achtergrondtaak of anoniem endpoint. Die zien geen huishouddata via de API.</summary>
-    public bool IsSystem => !IsAuthenticated;
+    /// <summary>
+    /// Alleen werk buiten een HTTP-request (pollworker, seeder) ziet alles.
+    /// Een anoniem request ziet niets: zo lekt een endpoint zonder RequireAuthorization geen klantdata.
+    /// </summary>
+    public bool IsSystem => Http is null;
 
     /// <summary>Het huishouden van een ingelogde bewoner.</summary>
     public Guid? HouseholdId => IsAuthenticated ? Http!.User.GetHouseholdId() : null;
