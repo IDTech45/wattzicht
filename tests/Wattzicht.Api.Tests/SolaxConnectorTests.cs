@@ -80,3 +80,29 @@ public class SolaxConnectorTests
         public HttpClient CreateClient(string name) => client;
     }
 }
+
+public class SolaxChargerParseTests
+{
+    [Fact]
+    public void Charging_three_phase_estimates_power_from_currents()
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse("""
+            {"deviceState":2,"deviceMode":1,"currentA":16,"currentB":16,"currentC":16,"chargeEnergyTotal":1234.5,"sn":"C3110000001"}
+            """);
+        var r = Wattzicht.Api.Connectors.SolaxConnector.ParseCharger(doc.RootElement, DateTimeOffset.UtcNow);
+
+        Assert.Equal(11040, r.ChargerPowerW);      // 3 × 16 A × 230 V
+        Assert.Equal(1_234_500, r.ChargerEnergyWh);
+    }
+
+    [Fact]
+    public void Not_charging_gives_zero_power()
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse("""
+            {"deviceState":0,"currentA":0.4,"chargeEnergyTotal":10}
+            """);
+        var r = Wattzicht.Api.Connectors.SolaxConnector.ParseCharger(doc.RootElement, DateTimeOffset.UtcNow);
+
+        Assert.Equal(0, r.ChargerPowerW);
+    }
+}

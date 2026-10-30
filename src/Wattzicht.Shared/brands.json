@@ -1274,5 +1274,32 @@
     "docsUrl": "https://www.zuidwijk.com/product/slimmelezer-plus/",
     "difficulty": "easy",
     "popularityNl": 2
+  },
+  {
+    "id": "solax-charger",
+    "name": "SolaX laadpaal",
+    "category": "charger",
+    "country": "CN",
+    "api": "cloud",
+    "authMode": "token",
+    "fields": [
+      {
+        "key": "token",
+        "label": "SolaXCloud TokenID",
+        "hint": "SolaXCloud → Service → API → TokenID kopiëren.",
+        "type": "password"
+      },
+      {
+        "key": "charger_sn",
+        "label": "Serienummer laadpaal",
+        "hint": "Staat op de zijkant van de laadpaal en in SolaXCloud.",
+        "type": "text"
+      }
+    ],
+    "status": "supported",
+    "haIntegration": "HACS: solax-cloud-api-ha",
+    "docsUrl": "https://www.solaxcloud.com/",
+    "difficulty": "easy",
+    "popularityNl": 2
   }
 ]

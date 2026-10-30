@@ -17,12 +17,19 @@ namespace Wattzicht.Api.Connectors;
 ///
 /// Limiet van SolaX: minder dan 10 calls per minuut en 10.000 per dag per token. De poller leest elke 5 minuten;
 /// een hybride levert twee apparaten (omvormer + batterij) op hetzelfde serienummer, dus 2 calls per ronde.
+///
+/// Laadpaal (SolaX Smart EV Charger / X1-X3-HAC): zelfde TokenID, maar het serienummer van de laadpaal en de
+/// endpoint <c>api/v2/charger/getInfo</c> (token in header <c>tokenId</c>). Die geeft fasestromen en een
+/// cumulatieve energieteller, geen momentaan vermogen; dat schatten we als stroom × 230 V per fase.
+/// SolaX Power Nederland zit in Hengelo en levert omvormers, batterijen en laadpalen met MID-meter.
 /// </summary>
 public sealed class SolaxConnector(IHttpClientFactory httpClientFactory, ILogger<SolaxConnector> logger) : IDeviceConnector
 {
     public const string HttpClientName = "solax";
     public const string DefaultBaseUrl = "https://www.solaxcloud.com/";
     private const string RealtimePath = "proxyApp/proxy/api/getRealtimeInfo.do";
+    private const string ChargerPath = "api/v2/charger/getInfo";
+    private const double PhaseVoltage = 230d;
 
     public DeviceBrand Brand => DeviceBrand.Solax;
 
@@ -33,6 +40,11 @@ public sealed class SolaxConnector(IHttpClientFactory httpClientFactory, ILogger
         if (token is null)
         {
             return ConnectResult.Fail("Vul je SolaXCloud TokenID in (SolaXCloud → Service → API).");
+        }
+
+        if (request.Type == DeviceType.Charger)
+        {
+            return await ConnectChargerAsync(token, request.Credentials.Get("charger_sn") ?? sn, ct);
         }
 
         if (sn is null)
@@ -82,6 +94,11 @@ public sealed class SolaxConnector(IHttpClientFactory httpClientFactory, ILogger
     public async Task<DeviceReading> ReadAsync(Device device, IReadOnlyDictionary<string, string> credentials, CancellationToken ct)
     {
         var token = credentials.Get("token") ?? throw new ConnectorException("SolaXCloud-token ontbreekt.");
+        if (device.Type == DeviceType.Charger)
+        {
+            return await ReadChargerAsync(token, credentials.Get("charger_sn") ?? device.ExternalId, ct);
+        }
+
         var sn = credentials.Get("sn") ?? device.ExternalId;
 
         try
@@ -128,6 +145,123 @@ public sealed class SolaxConnector(IHttpClientFactory httpClientFactory, ILogger
         catch (KeyNotFoundException ex)
         {
             throw new ConnectorException("Onverwacht antwoord van SolaXCloud.", ex);
+        }
+    }
+
+    private async Task<ConnectResult> ConnectChargerAsync(string token, string? chargerSn, CancellationToken ct)
+    {
+        if (chargerSn is null)
+        {
+            return ConnectResult.Fail("Vul het serienummer van de laadpaal in (staat op de zijkant en in SolaXCloud).");
+        }
+
+        try
+        {
+            using var doc = await GetChargerAsync(token, chargerSn, ct);
+            var extra = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["charger_sn"] = chargerSn };
+            return ConnectResult.Ok([new DiscoveredDevice(chargerSn, $"SolaX laadpaal ({chargerSn})", DeviceType.Charger, extra)]);
+        }
+        catch (ConnectorException ex)
+        {
+            return ConnectResult.Fail(ex.Message);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex, "SolaXCloud niet bereikbaar bij koppelen laadpaal");
+            return ConnectResult.Fail("SolaXCloud is op dit moment niet bereikbaar. Probeer het later opnieuw.");
+        }
+    }
+
+    private async Task<DeviceReading> ReadChargerAsync(string token, string chargerSn, CancellationToken ct)
+    {
+        try
+        {
+            using var doc = await GetChargerAsync(token, chargerSn, ct);
+            var r = doc.RootElement.GetProperty("result");
+            return ParseCharger(r, DateTimeOffset.UtcNow);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new ConnectorException("SolaXCloud is niet bereikbaar.", ex);
+        }
+    }
+
+    /// <summary>Normaliseert het charger/getInfo-resultaat. Publiek voor tests.</summary>
+    public static DeviceReading ParseCharger(JsonElement r, DateTimeOffset timestamp)
+    {
+        // Status 2 = Charging. Alleen dan rekenen we vermogen; anders 0 (stroomwaarden kunnen blijven hangen).
+        var state = (int)(r.GetDoubleOrNull("deviceState") ?? -1);
+        double power = 0;
+        if (state == 2)
+        {
+            power = r.GetDoubleOrNull("chargePower", "power", "chargingPower")
+                    ?? PhaseVoltage * (r.GetDoubleOrZero("currentA") + r.GetDoubleOrZero("currentB") + r.GetDoubleOrZero("currentC"));
+            if (power <= 0)
+            {
+                power = PhaseVoltage * r.GetDoubleOrZero("current");
+            }
+        }
+
+        // chargeEnergyTotal is cumulatief, in kWh.
+        var totalKwh = r.GetDoubleOrNull("chargeEnergyTotal", "totalChargeEnergy");
+        return new DeviceReading(
+            Timestamp: timestamp,
+            ChargerPowerW: Math.Round(Math.Max(0, power)),
+            ChargerEnergyWh: KwhToWh(totalKwh));
+    }
+
+    private async Task<JsonDocument> GetChargerAsync(string token, string chargerSn, CancellationToken ct)
+    {
+        var client = httpClientFactory.CreateClient(HttpClientName);
+
+        // De documentatie noemt GET maar toont een JSON-body; we proberen POST en vallen terug op GET.
+        using var post = new HttpRequestMessage(HttpMethod.Post, ChargerPath)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new { sn = chargerSn }), System.Text.Encoding.UTF8, "application/json")
+        };
+        post.Headers.Add("tokenId", token);
+        using var response = await client.SendAsync(post, ct);
+
+        HttpResponseMessage final = response;
+        HttpResponseMessage? fallback = null;
+        if (response.StatusCode is System.Net.HttpStatusCode.MethodNotAllowed or System.Net.HttpStatusCode.NotFound)
+        {
+            var get = new HttpRequestMessage(HttpMethod.Get, $"{ChargerPath}?sn={Uri.EscapeDataString(chargerSn)}");
+            get.Headers.Add("tokenId", token);
+            fallback = await client.SendAsync(get, ct);
+            final = fallback;
+        }
+
+        try
+        {
+            if (!final.IsSuccessStatusCode)
+            {
+                throw new ConnectorException($"SolaXCloud gaf HTTP {(int)final.StatusCode} voor de laadpaal.");
+            }
+
+            await using var stream = await final.Content.ReadAsStreamAsync(ct);
+            var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+            var root = doc.RootElement;
+            var code = (int)(root.GetDoubleOrNull("code") ?? 0);
+            var success = root.TryGetPropertyIgnoreCase("success", out var s) && s.ValueKind == JsonValueKind.True;
+            if (!success || code != 0 || !root.TryGetPropertyIgnoreCase("result", out var result) || result.ValueKind != JsonValueKind.Object)
+            {
+                doc.Dispose();
+                throw new ConnectorException(code switch
+                {
+                    1001 => "Dit SolaXCloud-account heeft geen toegang tot de laadpaal-API. Vraag de installateur om API-rechten.",
+                    1002 => "SolaXCloud keurt het serienummer van de laadpaal af. Controleer het nummer.",
+                    1003 => "Deze laadpaal hoort niet bij dit SolaXCloud-account.",
+                    2002 => "SolaXCloud vindt geen laadpaal met dit serienummer.",
+                    _ => TranslateError(root.GetStringOrNull("exception") ?? "onbekende fout")
+                });
+            }
+
+            return doc;
+        }
+        finally
+        {
+            fallback?.Dispose();
         }
     }
 

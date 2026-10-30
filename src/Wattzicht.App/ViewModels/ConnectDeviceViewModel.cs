@@ -37,6 +37,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     [
         new(DeviceBrand.Growatt, "Growatt", "Omvormer of batterij via ShinePhone-account", "Sun", DeviceType.Inverter),
         new(DeviceBrand.Solax, "SolaX", "Omvormer of hybride met batterij via SolaXCloud", "Sun", DeviceType.Inverter),
+        new(DeviceBrand.Solax, "SolaX laadpaal", "Smart EV Charger met MID-meter via SolaXCloud", "Grid", DeviceType.Charger),
         new(DeviceBrand.Sessy, "Sessy", "Thuisbatterij met Sessy-dongle", "Battery", DeviceType.Battery),
         new(DeviceBrand.HomeWizard, "HomeWizard", "P1-meter op je slimme meter", "Export", DeviceType.P1Meter),
         new(DeviceBrand.Demo, "Demo", "Voorbeelddata om de app te proberen", "Muted", DeviceType.Inverter),
@@ -62,6 +63,11 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(HasBrand))]
     [NotifyPropertyChangedFor(nameof(IsGrowatt))]
     [NotifyPropertyChangedFor(nameof(IsSolax))]
+    [NotifyPropertyChangedFor(nameof(IsSolaxCharger))]
+    [NotifyPropertyChangedFor(nameof(IsSolaxInverter))]
+    [NotifyPropertyChangedFor(nameof(SolaxSnLabel))]
+    [NotifyPropertyChangedFor(nameof(SolaxSnPlaceholder))]
+    [NotifyPropertyChangedFor(nameof(SolaxHelp))]
     [NotifyPropertyChangedFor(nameof(IsSessy))]
     [NotifyPropertyChangedFor(nameof(IsHomeWizard))]
     [NotifyPropertyChangedFor(nameof(IsDemo))]
@@ -72,6 +78,13 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     public bool HasBrand => SelectedBrand is not null;
     public bool IsGrowatt => SelectedBrand?.Brand == DeviceBrand.Growatt;
     public bool IsSolax => SelectedBrand?.Brand == DeviceBrand.Solax;
+    public bool IsSolaxCharger => IsSolax && SelectedBrand?.DefaultType == DeviceType.Charger;
+    public bool IsSolaxInverter => IsSolax && !IsSolaxCharger;
+    public string SolaxSnLabel => IsSolaxCharger ? "Serienummer laadpaal" : "Registratienummer dongle";
+    public string SolaxSnPlaceholder => IsSolaxCharger ? "Staat op de zijkant van de laadpaal" : "Bijv. SXXXXXXXXX";
+    public string SolaxHelp => IsSolaxCharger
+        ? "Log in op solaxcloud.com, ga naar Service → API en kopieer je TokenID. Het serienummer van de laadpaal staat op de zijkant en in SolaXCloud bij het apparaat."
+        : "Log in op solaxcloud.com, ga naar Service → API en kopieer je TokenID. Het registratienummer (10 tekens) staat op de wifi-stick aan je omvormer.";
     public bool IsSessy => SelectedBrand?.Brand == DeviceBrand.Sessy;
     public bool IsHomeWizard => SelectedBrand?.Brand == DeviceBrand.HomeWizard;
     public bool IsDemo => SelectedBrand?.Brand == DeviceBrand.Demo;
@@ -99,7 +112,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     public string SummaryLine => SelectedBrand?.Brand switch
     {
         DeviceBrand.Growatt => "API-token: " + Mask(ApiToken),
-        DeviceBrand.Solax => $"TokenID {Mask(ApiToken)}, dongle {DongleSn.Trim().ToUpperInvariant()}",
+        DeviceBrand.Solax => $"TokenID {Mask(ApiToken)}, {(IsSolaxCharger ? "laadpaal" : "dongle")} {DongleSn.Trim().ToUpperInvariant()}",
         DeviceBrand.Sessy => $"Dongle op {IpAddress} als {Username}",
         DeviceBrand.HomeWizard => $"P1-meter op {IpAddress}",
         DeviceBrand.Demo => "Voorbeeldapparaten worden toegevoegd",
@@ -173,7 +186,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                 break;
             case DeviceBrand.Solax:
                 credentials["token"] = ApiToken.Trim();
-                credentials["sn"] = DongleSn.Trim().ToUpperInvariant();
+                credentials[IsSolaxCharger ? "charger_sn" : "sn"] = DongleSn.Trim().ToUpperInvariant();
                 break;
             case DeviceBrand.Sessy:
                 credentials["ip"] = IpAddress.Trim();
@@ -227,7 +240,12 @@ public partial class ConnectDeviceViewModel : BaseViewModel
             if (string.IsNullOrWhiteSpace(ApiToken)) ApiTokenError = "Vul je SolaXCloud TokenID in.";
             else if (ApiToken.Trim().Length < 16) ApiTokenError = "Dit TokenID lijkt te kort.";
             var sn = DongleSn.Trim();
-            if (string.IsNullOrWhiteSpace(sn)) DongleSnError = "Vul het registratienummer van de dongle in.";
+            if (IsSolaxCharger)
+            {
+                if (string.IsNullOrWhiteSpace(sn)) DongleSnError = "Vul het serienummer van de laadpaal in.";
+                else if (sn.Length < 8) DongleSnError = "Dit serienummer lijkt te kort.";
+            }
+            else if (string.IsNullOrWhiteSpace(sn)) DongleSnError = "Vul het registratienummer van de dongle in.";
             else if (sn.Length != 10) DongleSnError = "Het registratienummer heeft 10 tekens.";
         }
         if (IsSessy || IsHomeWizard)

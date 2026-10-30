@@ -9,6 +9,7 @@ const brands = [
   { name: 'SolarEdge', kind: 'Omvormer', connected: false },
   { name: 'Enphase', kind: 'Micro-omvormers', connected: false },
   { name: 'Deye', kind: 'Hybride omvormer', connected: false },
+  { name: 'SolaX laadpaal', kind: 'Laadpaal (MID)', connected: true },
   { name: 'Alfen', kind: 'Laadpaal', connected: false },
   { name: 'Zaptec', kind: 'Laadpaal', connected: false },
   { name: 'HomeWizard', kind: 'P1-meter', connected: false },

@@ -24,6 +24,7 @@ const guides = [
       'Log in op solaxcloud.com en ga naar Service → API. Kopieer je TokenID.',
       'Zoek het registratienummer (10 tekens) op de wifi-stick aan je omvormer.',
       'Vul beide in bij Apparaat toevoegen → SolaX. Heb je een hybride, dan verschijnt je batterij er automatisch bij.',
+      'SolaX-laadpaal? Kies SolaX laadpaal en vul hetzelfde TokenID plus het serienummer van de laadpaal in.',
     ],
   },
   {
