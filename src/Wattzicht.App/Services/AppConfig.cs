@@ -37,7 +37,7 @@ public static class AppConfig
     // Leegmaken = push uit.
     public const string FirebaseProjectId = "wattzicht";
     public const string FirebaseAndroidAppId = "1:664049832837:android:9cfb8ed45b584f4e2feaec";   // "mobilesdk_app_id", bv. 1:1234567890:android:abc123
-    public const string FirebaseApiKey = "";                  // "current_key"
+    public const string FirebaseApiKey = "AIzaSyBFgWW0KmwLCR3YolnOiqL4rDuAj5dvVdM";          // "current_key"
     public const string FirebaseSenderId = "664049832837";        // "project_number"
 
     public static string Version => AppInfo.Current.VersionString;

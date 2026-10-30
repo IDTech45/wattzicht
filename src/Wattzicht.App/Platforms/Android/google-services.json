@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "664049832837",
+    "project_id": "wattzicht",
+    "storage_bucket": "wattzicht.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:664049832837:android:9cfb8ed45b584f4e2feaec",
+        "android_client_info": {
+          "package_name": "nl.wattzicht.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFgWW0KmwLCR3YolnOiqL4rDuAj5dvVdM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
