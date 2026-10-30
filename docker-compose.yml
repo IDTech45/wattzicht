@@ -54,9 +54,10 @@ services:
       Push__Fcm__ProjectId: ${FCM_PROJECT_ID:-wattzicht}
       Push__Fcm__ServiceAccountFile: /run/secrets/wattzicht/fcm.json
     volumes:
-      # Map i.p.v. los bestand: bestaat de sleutel nog niet, dan maakt Docker een lege map en staat push gewoon uit.
-      # Sleutel neerzetten: /etc/dokploy/secrets/wattzicht/fcm.json, daarna API herstarten.
-      - /etc/dokploy/secrets/wattzicht:/run/secrets/wattzicht:ro
+      # De sleutel komt uit een Dokploy "File Mount" (app → Advanced → Mounts, pad: fcm/fcm.json).
+      # Dokploy zet die bestanden in ../files naast de code. Een map i.p.v. los bestand: zolang de
+      # sleutel ontbreekt, is de map leeg en staat push gewoon uit.
+      - ../files/fcm:/run/secrets/wattzicht:ro
     expose:
       - "8080"
     networks:
