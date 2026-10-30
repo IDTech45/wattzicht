@@ -30,6 +30,14 @@ public static class AppConfig
         }
     }
 
+    // ---- Firebase (pushmeldingen, Android) ----
+    // Leeg = push uit. Óf vul deze vier in (staan in google-services.json; geen geheimen),
+    // óf zet google-services.json in Platforms/Android/ — dan zijn deze niet nodig.
+    public const string FirebaseProjectId = "";
+    public const string FirebaseAndroidAppId = "";   // "mobilesdk_app_id", bv. 1:1234567890:android:abc123
+    public const string FirebaseApiKey = "";          // "current_key"
+    public const string FirebaseSenderId = "";        // "project_number"
+
     public static string Version => AppInfo.Current.VersionString;
     public static string Build => AppInfo.Current.BuildString;
 }

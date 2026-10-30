@@ -15,6 +15,7 @@
             <conv:PowerToKwConverter x:Key="PowerToKw" />
             <conv:BrandToColorConverter x:Key="BrandToColor" />
             <conv:OnlineToColorConverter x:Key="OnlineToColor" />
+            <conv:LogoSourceConverter x:Key="LogoSource" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

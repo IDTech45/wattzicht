@@ -33,6 +33,7 @@
     <MauiImage Update="Resources\Images\devices.svg" BaseSize="24,24" />
     <MauiImage Update="Resources\Images\savings.svg" BaseSize="24,24" />
     <MauiImage Update="Resources\Images\settings.svg" BaseSize="24,24" />
+    <MauiImage Update="Resources\Images\sturen.svg" BaseSize="24,24" />
     <MauiImage Update="Resources\Images\logo.svg" BaseSize="96,96" />
 
     <MauiFont Include="Resources\Fonts\*" />
@@ -43,6 +44,13 @@
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+  </ItemGroup>
+
+  <!-- Pushmeldingen (Android): Firebase Cloud Messaging -->
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <PackageReference Include="Xamarin.Firebase.Messaging" Version="124.1.0.1" />
+    <!-- Optioneel: zet google-services.json uit de Firebase-console hier neer; dan start Firebase vanzelf. -->
+    <GoogleServicesJson Include="Platforms\Android\google-services.json" Condition="Exists('Platforms\Android\google-services.json')" />
   </ItemGroup>
 
   <ItemGroup>

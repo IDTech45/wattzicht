@@ -16,6 +16,11 @@ namespace Wattzicht.Api.Services;
 /// </summary>
 public sealed class AlertService(AppDbContext db, TimeProvider clock, ILogger<AlertService> logger)
 {
+    private readonly List<Alert> _opened = [];
+
+    /// <summary>Meldingen die in deze scope nieuw zijn geopend (voor de pushmelding na het opslaan).</summary>
+    public IReadOnlyList<Alert> Opened => _opened;
+
     public static readonly TimeSpan NoDataThreshold = TimeSpan.FromMinutes(30);
     public const int ProductionWindowStartHour = 10;
     public const int ProductionWindowEndHour = 16;
@@ -84,14 +89,16 @@ public sealed class AlertService(AppDbContext db, TimeProvider clock, ILogger<Al
         }
 
         logger.LogInformation("Melding {Type} geopend voor apparaat {DeviceId}", type, device.Id);
-        db.Alerts.Add(new Alert
+        var alert = new Alert
         {
             Id = Guid.NewGuid(),
             DeviceId = device.Id,
             Type = type,
             Message = Truncate(message),
             Since = clock.GetUtcNow()
-        });
+        };
+        db.Alerts.Add(alert);
+        _opened.Add(alert);
     }
 
     private async Task ResolveAsync(Device device, AlertType type, CancellationToken ct)

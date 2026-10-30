@@ -65,6 +65,20 @@ public sealed class ApiClient
     public Task DeleteDeviceAsync(Guid deviceId, CancellationToken ct = default) =>
         DeleteAsync($"/devices/{deviceId}", ct);
 
+    // ---------- Pushmeldingen ----------
+
+    public Task RegisterPushDeviceAsync(RegisterPushDeviceRequest request, CancellationToken ct = default) =>
+        PostNoContentAsync("/push/devices", request, ct);
+
+    public Task UnregisterPushDeviceAsync(string token, CancellationToken ct = default) =>
+        DeleteAsync($"/push/devices?token={Uri.EscapeDataString(token)}", ct);
+
+    public Task<NotificationSettingsDto> GetNotificationSettingsAsync(CancellationToken ct = default) =>
+        GetAsync<NotificationSettingsDto>("/push/settings", ct);
+
+    public Task<NotificationSettingsDto> SetNotificationSettingsAsync(NotificationSettingsDto settings, CancellationToken ct = default) =>
+        PutAsync<NotificationSettingsDto, NotificationSettingsDto>("/push/settings", settings, ct);
+
     // ---------- Meekijken door installateur ----------
 
     public Task<InstallerAccessDto> GetInstallerAccessAsync(CancellationToken ct = default) =>
@@ -122,6 +136,17 @@ public sealed class ApiClient
         };
         await AuthorizeAsync(req);
         return await SendAsync<TOut>(req, ct);
+    }
+
+    private async Task PostNoContentAsync<TIn>(string path, TIn body, CancellationToken ct)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Post, path)
+        {
+            Content = JsonContent.Create(body, options: JsonOptions)
+        };
+        await AuthorizeAsync(req);
+        using var res = await SendRawAsync(req, ct);
+        await EnsureSuccessAsync(res, ct);
     }
 
     private async Task DeleteAsync(string path, CancellationToken ct)

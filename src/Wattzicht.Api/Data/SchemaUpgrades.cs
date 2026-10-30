@@ -28,6 +28,23 @@ public static class SchemaUpgrades
         """,
         """CREATE INDEX IF NOT EXISTS ix_installer_access_log_household_at ON installer_access_log ("HouseholdId", "At")""",
 
+        // 2026-10: pushmeldingen.
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "NotifyAlerts" boolean NOT NULL DEFAULT true""",
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "NotifySurplus" boolean NOT NULL DEFAULT true""",
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "LastSurplusPushAt" timestamp with time zone NULL""",
+        """
+        CREATE TABLE IF NOT EXISTS push_devices (
+            "Id" uuid NOT NULL PRIMARY KEY,
+            "HouseholdId" uuid NOT NULL REFERENCES households ("Id") ON DELETE CASCADE,
+            "Token" character varying(4096) NOT NULL,
+            "Platform" character varying(20) NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            "LastSeenAt" timestamp with time zone NOT NULL
+        )
+        """,
+        """CREATE UNIQUE INDEX IF NOT EXISTS ix_push_devices_token ON push_devices ("Token")""",
+        """CREATE INDEX IF NOT EXISTS ix_push_devices_household ON push_devices ("HouseholdId")""",
+
         // 2026-10: terugleverkosten van de leverancier per kWh.
         """ALTER TABLE tariffs ADD COLUMN IF NOT EXISTS "FeedInCostPerKwh" numeric(10,4) NOT NULL DEFAULT 0""",
     ];

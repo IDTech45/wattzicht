@@ -428,3 +428,17 @@ public sealed record FeedInDto(
     decimal SelfUseWorth2027PerKwh,
     decimal YearValue2027Eur,
     double LiveExportW);
+
+// ---------------------------------------------------------------------------
+// Pushmeldingen
+// ---------------------------------------------------------------------------
+
+/// <summary>Toestel aanmelden voor pushmeldingen (POST /push/devices). De app stuurt dit bij elke start.</summary>
+/// <param name="Token">FCM-registratietoken van dit toestel.</param>
+/// <param name="Platform">"android" of "ios".</param>
+public sealed record RegisterPushDeviceRequest(string Token, string? Platform = null);
+
+/// <summary>Welke pushmeldingen de bewoner wil krijgen.</summary>
+/// <param name="Alerts">Bij een storing.</param>
+/// <param name="Surplus">Als het huis flink teruglevert (max. eens per 3 uur, tussen 9 en 20 uur).</param>
+public sealed record NotificationSettingsDto(bool Alerts, bool Surplus);

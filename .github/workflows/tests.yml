@@ -2,7 +2,6 @@ name: tests
 
 on:
   push:
-    branches: [main]
   pull_request:
 
 jobs:
@@ -17,3 +16,20 @@ jobs:
         run: dotnet build src/Wattzicht.Api/Wattzicht.Api.csproj -c Release
       - name: Test
         run: dotnet test tests/Wattzicht.Api.Tests/Wattzicht.Api.Tests.csproj -c Release --logger "console;verbosity=normal"
+
+  app-android:
+    # Controleert dat de MAUI-app voor Android compileert (inclusief Firebase-push).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+      - name: MAUI Android workload
+        run: dotnet workload install maui-android
+      - name: Build Android
+        run: dotnet build src/Wattzicht.App/Wattzicht.App.csproj -f net9.0-android -c Debug

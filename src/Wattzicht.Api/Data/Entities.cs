@@ -45,6 +45,15 @@ public sealed class Household
     /// <summary>Wanneer de bewoner de toestemming voor het laatst aan- of uitzette.</summary>
     public DateTimeOffset? InstallerAccessChangedAt { get; set; }
 
+    /// <summary>Pushmelding bij een storing (standaard aan).</summary>
+    public bool NotifyAlerts { get; set; } = true;
+
+    /// <summary>Pushmelding als het huis flink teruglevert (standaard aan).</summary>
+    public bool NotifySurplus { get; set; } = true;
+
+    /// <summary>Laatste overschot-melding; voorkomt dat we vaker dan eens per paar uur sturen.</summary>
+    public DateTimeOffset? LastSurplusPushAt { get; set; }
+
     public List<User> Users { get; set; } = [];
     public List<Device> Devices { get; set; } = [];
     public List<Tariff> Tariffs { get; set; } = [];
@@ -226,4 +235,25 @@ public sealed class InstallerAccessLog
     public string Action { get; set; } = string.Empty;
 
     public DateTimeOffset At { get; set; }
+}
+
+/// <summary>
+/// Een telefoon waarop de app staat, zodat we er een pushmelding heen kunnen sturen (Firebase Cloud Messaging).
+/// Het token hoort bij één installatie; opnieuw installeren geeft een nieuw token. Daarom is het token uniek
+/// en niet het huishouden: iemand met telefoon en tablet heeft twee rijen.
+/// </summary>
+public sealed class PushDevice
+{
+    public Guid Id { get; set; }
+    public Guid HouseholdId { get; set; }
+    public Household Household { get; set; } = null!;
+
+    /// <summary>Registratietoken van dit toestel bij Google.</summary>
+    public string Token { get; set; } = string.Empty;
+
+    /// <summary>"android" of "ios".</summary>
+    public string Platform { get; set; } = "android";
+
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset LastSeenAt { get; set; }
 }

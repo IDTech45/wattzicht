@@ -25,6 +25,11 @@ public partial class DashboardViewModel : BaseViewModel
 
     [ObservableProperty] private LiveSnapshotDto? _live;
 
+    /// <summary>White-label: logo en naam van de installateur bovenaan.</summary>
+    [ObservableProperty] private string? _installerLogo;
+    [ObservableProperty] private string? _installerName;
+    [ObservableProperty] private bool _hasInstallerLogo;
+
     /// <summary>Banner "je levert nu terug": alleen bij een verse meting en minstens 1,5 kW naar het net.</summary>
     [ObservableProperty] private bool _hasSurplus;
     [ObservableProperty] private string _surplusText = string.Empty;
@@ -106,6 +111,21 @@ public partial class DashboardViewModel : BaseViewModel
             {
                 var dashboard = await _api.GetDashboardAsync();
                 Apply(dashboard);
+            }
+
+            if (InstallerName is null)
+            {
+                try
+                {
+                    var installer = await _api.GetInstallerAsync();
+                    InstallerName = installer.Name;
+                    InstallerLogo = installer.LogoDataUrl;
+                    HasInstallerLogo = !string.IsNullOrWhiteSpace(installer.LogoDataUrl);
+                }
+                catch (ApiException ex) when (!ex.IsUnauthorized)
+                {
+                    // Geen logo is geen probleem.
+                }
             }
 
             HasLoaded = true;

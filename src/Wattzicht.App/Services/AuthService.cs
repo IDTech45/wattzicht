@@ -28,7 +28,11 @@ public sealed class AuthService
         var response = await _api.LoginAsync(new LoginRequest(email.Trim(), password), ct);
         await _tokens.SetAsync(response.Token, response.ExpiresAt);
         Household = response.Household;
+        LoggedIn?.Invoke(this, EventArgs.Empty);
     }
+
+    /// <summary>Na een geslaagde login (bv. om het toestel voor pushmeldingen aan te melden).</summary>
+    public event EventHandler? LoggedIn;
 
     /// <summary>Vernieuwt het token als het binnen een dag verloopt. Fouten worden stil genegeerd.</summary>
     public async Task TryRefreshAsync(CancellationToken ct = default)

@@ -85,3 +85,41 @@ public sealed class OnlineToColorConverter : IValueConverter
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 }
+
+/// <summary>
+/// Logo van de installateur (white-label): een https-link of een data:image-URL (base64) uit het portal.
+/// Leeg of onleesbaar geeft <c>null</c>, dan toont de pagina niets. SVG wordt door MAUI niet als data-URL ondersteund.
+/// </summary>
+public sealed class LogoSourceConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+    {
+        if (value is not string text || string.IsNullOrWhiteSpace(text))
+            return null;
+
+        if (text.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
+        {
+            if (text.StartsWith("data:image/svg", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            var comma = text.IndexOf(";base64,", StringComparison.Ordinal);
+            if (comma < 0) return null;
+            try
+            {
+                var bytes = System.Convert.FromBase64String(text[(comma + 8)..]);
+                return ImageSource.FromStream(() => new MemoryStream(bytes));
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
+        }
+
+        return Uri.TryCreate(text, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps
+            ? ImageSource.FromUri(uri)
+            : null;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
+        throw new NotSupportedException();
+}

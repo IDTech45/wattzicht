@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Wattzicht.Api.Connectors;
 using Wattzicht.Api.Data;
+using Wattzicht.Shared;
 
 namespace Wattzicht.Api.Services;
 
@@ -157,13 +158,72 @@ public sealed class PollingWorker(
             await alerts.CheckNoDataAsync(device, ct);
         }
 
+        LiveSnapshotDto? snapshotForPush = null;
         if (latest.Count > 0)
         {
             var snapshot = SnapshotBuilder.Build(latest);
             await summaries.ApplySnapshotAsync(householdId, snapshot, ct);
+            snapshotForPush = snapshot;
         }
 
         await db.SaveChangesAsync(ct);
+
+        // Pushmeldingen pas na het opslaan: een mislukte melding mag de meting niet kosten.
+        try
+        {
+            await SendPushesAsync(scope.ServiceProvider, db, householdId, devices, alerts.Opened, snapshotForPush, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(ex, "Pushmeldingen voor huishouden {HouseholdId} mislukt", householdId);
+        }
+
         return (ok, fail);
+    }
+
+    private async Task SendPushesAsync(
+        IServiceProvider services,
+        AppDbContext db,
+        Guid householdId,
+        List<Device> devices,
+        IReadOnlyList<Alert> openedAlerts,
+        LiveSnapshotDto? snapshot,
+        CancellationToken ct)
+    {
+        var push = services.GetRequiredService<IPushSender>();
+        if (!push.Enabled)
+        {
+            return;
+        }
+
+        var household = await db.Households.FirstOrDefaultAsync(h => h.Id == householdId, ct);
+        if (household is null)
+        {
+            return;
+        }
+
+        if (household.NotifyAlerts && openedAlerts.Count > 0)
+        {
+            var names = devices.ToDictionary(d => d.Id, d => d.Name);
+            var (title, body) = PushPolicy.AlertMessage(openedAlerts, names);
+            await push.SendToHouseholdAsync(householdId, title, body, "alerts", ct);
+        }
+
+        var now = clock.GetUtcNow();
+        if (snapshot is not null
+            && devices.Any(d => d.Type == DeviceType.Inverter)
+            && PushPolicy.MaySendSurplus(household, now))
+        {
+            var summaries = services.GetRequiredService<SummaryService>();
+            var rates = await summaries.GetRatesAsync(householdId, DutchTime.LocalDate(now), ct);
+            var tip = FeedInCalculator.LiveSurplusTip(snapshot, now, devices.Any(d => d.Type == DeviceType.Charger), rates);
+            if (tip is not null)
+            {
+                var body = tip.Note is null ? tip.Detail : $"{tip.Detail}. {tip.Note}.";
+                await push.SendToHouseholdAsync(householdId, tip.Title, body, "advice", ct);
+                household.LastSurplusPushAt = now;
+                await db.SaveChangesAsync(ct);
+            }
+        }
     }
 }

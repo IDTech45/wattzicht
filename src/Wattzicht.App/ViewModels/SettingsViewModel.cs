@@ -34,6 +34,8 @@ public partial class SettingsViewModel : BaseViewModel
     [ObservableProperty] private string? _installerPhone;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(HasInstallerPhone))] private bool _hasPhone;
     [ObservableProperty] private bool _hasQuoteUrl;
+    [ObservableProperty] private string? _installerLogo;
+    [ObservableProperty] private bool _hasInstallerLogo;
 
     /// <summary>Mag de installateur meekijken? Wijzigen slaat direct op.</summary>
     [ObservableProperty] private bool _installerAccess;
@@ -46,10 +48,18 @@ public partial class SettingsViewModel : BaseViewModel
     public string VersionText => $"Wattzicht {AppConfig.Version} ({AppConfig.Build})";
     public string ApiText => AppConfig.ApiBaseUrl;
 
-    public SettingsViewModel(ApiClient api, AuthService auth)
+    private readonly PushService _push;
+
+    // Pushmeldingen
+    [ObservableProperty] private bool _notifyAlerts = true;
+    [ObservableProperty] private bool _notifySurplus = true;
+    private bool _syncingNotify;
+
+    public SettingsViewModel(ApiClient api, AuthService auth, PushService push)
     {
         _api = api;
         _auth = auth;
+        _push = push;
         Title = "Instellingen";
     }
 
@@ -80,6 +90,8 @@ public partial class SettingsViewModel : BaseViewModel
                 InstallerPhone = Installer.Phone;
                 HasPhone = !string.IsNullOrWhiteSpace(Installer.Phone);
                 HasQuoteUrl = Uri.TryCreate(Installer.QuoteUrl, UriKind.Absolute, out _);
+                InstallerLogo = Installer.LogoDataUrl;
+                HasInstallerLogo = !string.IsNullOrWhiteSpace(Installer.LogoDataUrl);
             }
             catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
 
@@ -98,8 +110,37 @@ public partial class SettingsViewModel : BaseViewModel
             catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
             finally { _syncingAccess = false; }
 
+            try
+            {
+                var notify = await _api.GetNotificationSettingsAsync();
+                _syncingNotify = true;
+                NotifyAlerts = notify.Alerts;
+                NotifySurplus = notify.Surplus;
+            }
+            catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
+            finally { _syncingNotify = false; }
+
             OnPropertyChanged(nameof(HouseholdName));
         }, _auth);
+    }
+
+    partial void OnNotifyAlertsChanged(bool value) => SaveNotifySettings();
+    partial void OnNotifySurplusChanged(bool value) => SaveNotifySettings();
+
+    private async void SaveNotifySettings()
+    {
+        if (_syncingNotify) return;
+        try
+        {
+            await _api.SetNotificationSettingsAsync(new NotificationSettingsDto(NotifyAlerts, NotifySurplus));
+            // Iemand die meldingen aanzet, wil ze ook ontvangen: toestel (opnieuw) aanmelden en toestemming vragen.
+            if (NotifyAlerts || NotifySurplus)
+                await _push.RegisterAsync();
+        }
+        catch (ApiException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
     }
 
     partial void OnInstallerAccessChanged(bool value)
@@ -204,6 +245,7 @@ public partial class SettingsViewModel : BaseViewModel
     {
         var confirmed = await ConfirmAsync("Uitloggen?", "Je kunt daarna opnieuw inloggen met je e-mail en wachtwoord.", "Uitloggen");
         if (!confirmed) return;
+        await _push.UnregisterAsync();
         await _auth.LogoutAsync();
     }
 

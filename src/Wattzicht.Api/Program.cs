@@ -74,6 +74,7 @@ builder.Services.AddHttpClient(EnergyZeroPriceProvider.HttpClientName, client =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd("Wattzicht/0.1");
 });
 builder.Services.AddSingleton<IPriceProvider, EnergyZeroPriceProvider>();
+builder.Services.AddScoped<IPushSender, FcmPushSender>();
 builder.Services.AddHostedService<PollingWorker>();
 
 // CORS voor de Vue-frontend en lokale ontwikkeling
@@ -206,6 +207,7 @@ app.MapHouseholdEndpoints();
 app.MapInstallerEndpoints();
 app.MapLeadEndpoints();
 app.MapAdviceEndpoints();
+app.MapPushEndpoints();
 
 app.Run();
 

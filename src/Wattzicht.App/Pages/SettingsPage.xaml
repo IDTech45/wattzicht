@@ -98,7 +98,12 @@
                     <Grid ColumnDefinitions="48,*" ColumnSpacing="12">
                         <Border WidthRequest="48" HeightRequest="48" StrokeThickness="0" StrokeShape="RoundRectangle 12"
                                 BackgroundColor="{StaticResource Night}" VerticalOptions="Center">
-                            <Label Text="⚡" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" TextColor="{StaticResource Sun}" />
+                            <Grid>
+                                <Label Text="⚡" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" TextColor="{StaticResource Sun}"
+                                       IsVisible="{Binding HasInstallerLogo, Converter={StaticResource InvertedBool}}" />
+                                <Image Source="{Binding InstallerLogo, Converter={StaticResource LogoSource}}" Aspect="AspectFit" Margin="4"
+                                       IsVisible="{Binding HasInstallerLogo}" />
+                            </Grid>
                         </Border>
                         <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                             <Label Text="{Binding InstallerName}" Style="{StaticResource CardTitle}" />
@@ -124,6 +129,29 @@
 
                     <Label Text="Nog geen thuisbatterij? Sla je zonnestroom op en gebruik hem 's avonds zelf." FontSize="14" />
                     <Button Text="Vraag offerte voor thuisbatterij" Style="{StaticResource PrimaryButton}" Command="{Binding RequestQuoteCommand}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== Meldingen ===== -->
+            <Label Text="Meldingen" Style="{StaticResource SectionTitle}" />
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="Bij een storing" Style="{StaticResource CardTitle}" />
+                            <Label Text="Als een apparaat geen data meer geeft of niets opwekt" Style="{StaticResource SubtitleLabel}" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" IsToggled="{Binding NotifyAlerts}" VerticalOptions="Center"
+                                SemanticProperties.Description="Melding bij een storing" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="Bij veel terugleveren" Style="{StaticResource CardTitle}" />
+                            <Label Text="Tip om je stroom zelf te gebruiken. Hooguit eens per 3 uur, tussen 9 en 20 uur." Style="{StaticResource SubtitleLabel}" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" IsToggled="{Binding NotifySurplus}" VerticalOptions="Center"
+                                SemanticProperties.Description="Melding bij veel terugleveren" />
+                    </Grid>
                 </VerticalStackLayout>
             </Border>
 

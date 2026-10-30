@@ -5,12 +5,20 @@ namespace Wattzicht.App;
 public partial class App : Application
 {
     private readonly AuthService _auth;
+    private readonly PushService _push;
 
-    public App(AuthService auth)
+    public App(AuthService auth, PushService push)
     {
         InitializeComponent();
         _auth = auth;
+        _push = push;
         _auth.LoggedOut += OnLoggedOut;
+        _auth.LoggedIn += (_, _) => MainThread.BeginInvokeOnMainThread(async () => await _push.RegisterAsync());
+        PushService.TokenRefreshed += async (_, token) =>
+        {
+            if (await _auth.IsLoggedInAsync())
+                await _push.SendTokenAsync(token);
+        };
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
@@ -27,6 +35,8 @@ public partial class App : Application
         {
             await _auth.TryRefreshAsync();
             await Shell.Current.GoToAsync(AppShell.Routes.Home);
+            await _push.RegisterAsync();
+            await PushService.OpenPendingRouteAsync();
         }
         else
         {

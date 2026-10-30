@@ -32,6 +32,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
     public DbSet<Alert> Alerts => Set<Alert>();
     public DbSet<Lead> Leads => Set<Lead>();
     public DbSet<InstallerAccessLog> InstallerAccessLogs => Set<InstallerAccessLog>();
+    public DbSet<PushDevice> PushDevices => Set<PushDevice>();
 
     /// <summary>Sleutelring van de Data Protection API (versleuteld met WZ_PROTECTION_KEY).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
@@ -173,6 +174,22 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
             e.HasQueryFilter(a => TenantBypass
                 || a.Device.HouseholdId == TenantHouseholdId
                 || (a.Device.Household.InstallerId == TenantInstallerId && a.Device.Household.InstallerAccessGranted));
+        });
+
+        modelBuilder.Entity<PushDevice>(e =>
+        {
+            e.ToTable("push_devices");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Token).HasMaxLength(4096).IsRequired();
+            e.Property(x => x.Platform).HasMaxLength(20).IsRequired();
+            e.HasIndex(x => x.Token).IsUnique().HasDatabaseName("ix_push_devices_token");
+            e.HasIndex(x => x.HouseholdId).HasDatabaseName("ix_push_devices_household");
+            e.HasOne(x => x.Household)
+                .WithMany()
+                .HasForeignKey(x => x.HouseholdId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // Alleen de bewoner zelf; installateurs zien geen toestellen.
+            e.HasQueryFilter(d => TenantBypass || d.HouseholdId == TenantHouseholdId);
         });
 
         modelBuilder.Entity<InstallerAccessLog>(e =>

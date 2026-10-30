@@ -13,4 +13,6 @@
                android:networkSecurityConfig="@xml/network_security_config" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.INTERNET" />
+  <!-- Android 13+: toestemming voor pushmeldingen -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>

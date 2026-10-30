@@ -12,9 +12,19 @@
             <ScrollView>
                 <VerticalStackLayout Padding="16,8,16,32" Spacing="12">
 
-                    <!-- Kop -->
-                    <Label Text="{Binding Greeting}" Style="{StaticResource PageTitle}" />
-                    <Label Text="{Binding UpdatedAtText}" Style="{StaticResource SubtitleLabel}" />
+                    <!-- Kop met logo van de installateur (white-label) -->
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="{Binding Greeting}" Style="{StaticResource PageTitle}" />
+                            <Label Text="{Binding UpdatedAtText}" Style="{StaticResource SubtitleLabel}" />
+                        </VerticalStackLayout>
+                        <Image Grid.Column="1"
+                               Source="{Binding InstallerLogo, Converter={StaticResource LogoSource}}"
+                               IsVisible="{Binding HasInstallerLogo}"
+                               HeightRequest="40" MaximumWidthRequest="120" Aspect="AspectFit"
+                               VerticalOptions="Center"
+                               SemanticProperties.Description="{Binding InstallerName}" />
+                    </Grid>
 
                     <!-- Foutmelding -->
                     <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
