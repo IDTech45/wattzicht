@@ -56,6 +56,10 @@ public sealed class SessyConnector(IHttpClientFactory httpClientFactory, ILogger
         {
             return ConnectResult.Fail($"Sessy op {host} reageert niet (time-out).");
         }
+        catch (JsonException)
+        {
+            return ConnectResult.Fail($"Op {host} antwoordt iets anders dan een Sessy. Controleer het IP-adres.");
+        }
     }
 
     public async Task<DeviceReading> ReadAsync(Device device, IReadOnlyDictionary<string, string> credentials, CancellationToken ct)

@@ -220,7 +220,7 @@ public sealed class SolaxConnector(IHttpClientFactory httpClientFactory, ILogger
             Content = new StringContent(JsonSerializer.Serialize(new { sn = chargerSn }), System.Text.Encoding.UTF8, "application/json")
         };
         post.Headers.Add("tokenId", token);
-        using var response = await client.SendAsync(post, ct);
+        using var response = await SendGuardedAsync(() => client.SendAsync(post, ct), ct);
 
         HttpResponseMessage final = response;
         HttpResponseMessage? fallback = null;
@@ -228,7 +228,7 @@ public sealed class SolaxConnector(IHttpClientFactory httpClientFactory, ILogger
         {
             var get = new HttpRequestMessage(HttpMethod.Get, $"{ChargerPath}?sn={Uri.EscapeDataString(chargerSn)}");
             get.Headers.Add("tokenId", token);
-            fallback = await client.SendAsync(get, ct);
+            fallback = await SendGuardedAsync(() => client.SendAsync(get, ct), ct);
             final = fallback;
         }
 
@@ -239,8 +239,7 @@ public sealed class SolaxConnector(IHttpClientFactory httpClientFactory, ILogger
                 throw new ConnectorException($"SolaXCloud gaf HTTP {(int)final.StatusCode} voor de laadpaal.");
             }
 
-            await using var stream = await final.Content.ReadAsStreamAsync(ct);
-            var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+            var doc = await ParseJsonAsync(final, ct);
             var root = doc.RootElement;
             var code = (int)(root.GetDoubleOrNull("code") ?? 0);
             var success = root.TryGetPropertyIgnoreCase("success", out var s) && s.ValueKind == JsonValueKind.True;
@@ -270,14 +269,18 @@ public sealed class SolaxConnector(IHttpClientFactory httpClientFactory, ILogger
         var client = httpClientFactory.CreateClient(HttpClientName);
         var url = $"{RealtimePath}?tokenId={Uri.EscapeDataString(token)}&sn={Uri.EscapeDataString(sn)}";
 
-        using var response = await client.GetAsync(url, ct);
+        using var response = await SendGuardedAsync(() => client.GetAsync(url, ct), ct);
+        if ((int)response.StatusCode == 429)
+        {
+            throw new ConnectorException("SolaXCloud-limiet bereikt (max. 10 keer per minuut). Probeer het zo opnieuw.");
+        }
+
         if (!response.IsSuccessStatusCode)
         {
             throw new ConnectorException($"SolaXCloud gaf HTTP {(int)response.StatusCode}.");
         }
 
-        await using var stream = await response.Content.ReadAsStreamAsync(ct);
-        var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+        var doc = await ParseJsonAsync(response, ct);
         var root = doc.RootElement;
 
         var success = root.TryGetPropertyIgnoreCase("success", out var s) && s.ValueKind == JsonValueKind.True;
@@ -285,10 +288,42 @@ public sealed class SolaxConnector(IHttpClientFactory httpClientFactory, ILogger
         {
             var message = root.GetStringOrNull("exception") ?? "onbekende fout";
             doc.Dispose();
-            throw new ConnectorException(TranslateError(message));
+            throw new ConnectorException(success
+                ? "SolaXCloud gaf geen meetgegevens terug. Staat de omvormer aan en is de dongle online?"
+                : TranslateError(message));
         }
 
         return doc;
+    }
+
+    /// <summary>Time-out en netwerkfout worden een nette <see cref="ConnectorException"/>; annuleren door de aanroeper niet.</summary>
+    private static async Task<HttpResponseMessage> SendGuardedAsync(Func<Task<HttpResponseMessage>> send, CancellationToken ct)
+    {
+        try
+        {
+            return await send();
+        }
+        catch (TaskCanceledException ex) when (!ct.IsCancellationRequested)
+        {
+            throw new ConnectorException("SolaXCloud reageert niet (time-out). Probeer het later opnieuw.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new ConnectorException("SolaXCloud is op dit moment niet bereikbaar. Probeer het later opnieuw.", ex);
+        }
+    }
+
+    private static async Task<JsonDocument> ParseJsonAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        try
+        {
+            await using var stream = await response.Content.ReadAsStreamAsync(ct);
+            return await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+        }
+        catch (JsonException ex)
+        {
+            throw new ConnectorException("Onverwacht antwoord van SolaXCloud (geen geldige JSON).", ex);
+        }
     }
 
     private static string TranslateError(string message)
@@ -299,14 +334,14 @@ public sealed class SolaxConnector(IHttpClientFactory httpClientFactory, ILogger
             return "SolaXCloud weigert het TokenID. Controleer het token in SolaXCloud → Service → API.";
         }
 
+        if (m.Contains("frequen") || m.Contains("limit") || m.Contains("threshold") || m.Contains("too many"))
+        {
+            return "SolaXCloud-limiet bereikt (max. 10 keer per minuut). Probeer het zo opnieuw.";
+        }
+
         if (m.Contains("sn") || m.Contains("serial") || m.Contains("not exist") || m.Contains("permission"))
         {
             return "SolaXCloud kent dit registratienummer niet bij dit account. Controleer de 10 tekens op de dongle.";
-        }
-
-        if (m.Contains("frequen") || m.Contains("limit"))
-        {
-            return "SolaXCloud-limiet bereikt (max. 10 keer per minuut). Probeer het zo opnieuw.";
         }
 
         return $"SolaXCloud: {message}";
