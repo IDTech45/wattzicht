@@ -35,8 +35,9 @@ public partial class App : Application
         {
             await _auth.TryRefreshAsync();
             await Shell.Current.GoToAsync(AppShell.Routes.Home);
-            await _push.RegisterAsync();
+            // Eerst naar het scherm uit de aangetikte melding; aanmelden voor push mag daarna, op de achtergrond.
             await PushService.OpenPendingRouteAsync();
+            _ = _push.RegisterAsync();
         }
         else
         {

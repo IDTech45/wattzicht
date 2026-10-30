@@ -52,6 +52,13 @@ public static class FirebasePush
         return listener.Task;
     }
 
+    /// <summary>Bij uitloggen: token van dit toestel ongeldig maken.</summary>
+    public static void DeleteToken()
+    {
+        if (FirebaseApp.GetApps(AndroidContext).Count > 0)
+            FirebaseMessaging.Instance.DeleteToken();
+    }
+
     /// <summary>Android 8+ toont meldingen alleen in een kanaal.</summary>
     private static void CreateChannel()
     {

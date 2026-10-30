@@ -9,15 +9,17 @@ public sealed class AuthService
 {
     private readonly ApiClient _api;
     private readonly TokenStore _tokens;
+    private readonly PushService _push;
 
     public HouseholdDto? Household { get; private set; }
 
     public event EventHandler? LoggedOut;
 
-    public AuthService(ApiClient api, TokenStore tokens)
+    public AuthService(ApiClient api, TokenStore tokens, PushService push)
     {
         _api = api;
         _tokens = tokens;
+        _push = push;
     }
 
     public async Task<bool> IsLoggedInAsync() =>
@@ -56,11 +58,13 @@ public sealed class AuthService
         }
     }
 
-    public Task LogoutAsync()
+    public async Task LogoutAsync()
     {
+        // Eerst push afmelden (heeft het token nog nodig), ook bij een automatische uitlog na een 401:
+        // dan lukt de API-call niet, maar het Firebase-token wordt gewist en de server ruimt het daarna op.
+        await _push.UnregisterAsync();
         _tokens.Clear();
         Household = null;
         LoggedOut?.Invoke(this, EventArgs.Empty);
-        return Task.CompletedTask;
     }
 }

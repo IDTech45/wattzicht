@@ -57,16 +57,31 @@ public sealed class PushService
     public async Task UnregisterAsync()
     {
         var token = Preferences.Default.Get<string?>(TokenKey, null);
-        if (string.IsNullOrWhiteSpace(token)) return;
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            try
+            {
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                await _api.UnregisterPushDeviceAsync(token, timeout.Token);
+            }
+            catch (Exception)
+            {
+                // Offline of token al verlopen: zie hieronder.
+            }
+            Preferences.Default.Remove(TokenKey);
+        }
+
+#if ANDROID
+        // Het Firebase-token van dit toestel wissen. Lukte de afmelding hierboven niet, dan meldt Google
+        // het oude token bij de volgende verzending als ongeldig en ruimt de server de rij op.
         try
         {
-            await _api.UnregisterPushDeviceAsync(token);
+            Wattzicht.App.Push.FirebasePush.DeleteToken();
         }
         catch (Exception)
         {
-            // Offline of al uitgelogd: de server ruimt verlopen tokens zelf op.
         }
-        Preferences.Default.Remove(TokenKey);
+#endif
     }
 
     public async Task SendTokenAsync(string token)

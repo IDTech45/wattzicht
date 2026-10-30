@@ -40,6 +40,16 @@ public sealed class PushPolicyTests
     }
 
     [Fact]
+    public void Storingsmeldingen_hooguit_eens_per_2_uur()
+    {
+        var household = new Household { LastAlertPushAt = Local(10) };
+
+        Assert.False(PushPolicy.MaySendAlert(household, Local(11, 59)));
+        Assert.True(PushPolicy.MaySendAlert(household, Local(12)));
+        Assert.False(PushPolicy.MaySendAlert(new Household { NotifyAlerts = false }, Local(12)));
+    }
+
+    [Fact]
     public void Storingsmelding_noemt_het_apparaat_of_telt_ze()
     {
         var a = new Alert { DeviceId = Guid.NewGuid(), Message = "Geen data sinds 10:00" };

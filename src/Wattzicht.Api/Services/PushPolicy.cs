@@ -16,6 +16,13 @@ public static class PushPolicy
     /// <summary>Vanaf dit uur (lokale tijd) niet meer.</summary>
     public const int SurplusUntilHour = 20;
 
+    /// <summary>Minimaal zoveel tijd tussen twee storingsmeldingen (tegen een apparaat dat steeds aan/uit flappert).</summary>
+    public static readonly TimeSpan AlertInterval = TimeSpan.FromHours(2);
+
+    public static bool MaySendAlert(Household household, DateTimeOffset now) =>
+        household.NotifyAlerts
+        && (household.LastAlertPushAt is not { } last || now - last >= AlertInterval);
+
     public static bool MaySendSurplus(Household household, DateTimeOffset now)
     {
         if (!household.NotifySurplus)

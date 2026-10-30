@@ -10,7 +10,13 @@
                android:roundIcon="@mipmap/appicon_round"
                android:supportsRtl="true"
                android:label="Wattzicht"
-               android:networkSecurityConfig="@xml/network_security_config" />
+               android:networkSecurityConfig="@xml/network_security_config">
+    <!-- Pushmeldingen op de achtergrond: wit silhouet-icoon en ons kanaal -->
+    <meta-data android:name="com.google.firebase.messaging.default_notification_icon"
+               android:resource="@drawable/ic_stat_wattzicht" />
+    <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id"
+               android:value="wattzicht" />
+  </application>
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.INTERNET" />
   <!-- Android 13+: toestemming voor pushmeldingen -->

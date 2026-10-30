@@ -32,6 +32,7 @@ public static class SchemaUpgrades
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "NotifyAlerts" boolean NOT NULL DEFAULT true""",
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "NotifySurplus" boolean NOT NULL DEFAULT true""",
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "LastSurplusPushAt" timestamp with time zone NULL""",
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "LastAlertPushAt" timestamp with time zone NULL""",
         """
         CREATE TABLE IF NOT EXISTS push_devices (
             "Id" uuid NOT NULL PRIMARY KEY,

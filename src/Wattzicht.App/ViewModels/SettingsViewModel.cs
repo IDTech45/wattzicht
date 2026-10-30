@@ -245,8 +245,7 @@ public partial class SettingsViewModel : BaseViewModel
     {
         var confirmed = await ConfirmAsync("Uitloggen?", "Je kunt daarna opnieuw inloggen met je e-mail en wachtwoord.", "Uitloggen");
         if (!confirmed) return;
-        await _push.UnregisterAsync();
-        await _auth.LogoutAsync();
+        await _auth.LogoutAsync(); // meldt ook het toestel af voor push
     }
 
     private static bool TryParseEur(string? text, out decimal value)

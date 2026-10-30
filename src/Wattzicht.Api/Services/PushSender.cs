@@ -70,7 +70,7 @@ public sealed class FcmPushSender : IPushSender
         {
             accessToken = await AccessTokenAsync(ct);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (!ct.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "Kon geen FCM-toegangstoken ophalen; controleer de service-accountsleutel");
             return;
@@ -117,7 +117,7 @@ public sealed class FcmPushSender : IPushSender
 
                 _logger.LogWarning("Pushmelding geweigerd ({Status}) voor huishouden {HouseholdId}: {Body}", (int)response.StatusCode, householdId, text);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (!ct.IsCancellationRequested)
             {
                 _logger.LogWarning(ex, "Pushmelding versturen mislukt voor huishouden {HouseholdId}", householdId);
             }
@@ -131,14 +131,29 @@ public sealed class FcmPushSender : IPushSender
         }
     }
 
-    /// <summary>Kortlevend toegangstoken via de servicesleutel; de Google-bibliotheek ververst het zelf.</summary>
+    // Eén credential voor het hele proces: de Google-bibliotheek bewaart het toegangstoken en ververst het op tijd.
+    private static readonly object CredentialLock = new();
+    private static (string Json, GoogleCredential Credential)? _cached;
+
+    /// <summary>Kortlevend toegangstoken via de servicesleutel.</summary>
     private async Task<string> AccessTokenAsync(CancellationToken ct)
     {
+        GoogleCredential credential;
+        lock (CredentialLock)
+        {
+            if (_cached is not { } cached || cached.Json != _serviceAccountJson)
+            {
 #pragma warning disable CS0618 // FromJson is gemarkeerd als verouderd, maar is wat LaadCash ook gebruikt; vervangen door CredentialFactory zodra we upgraden.
-        var credential = GoogleCredential
-            .FromJson(_serviceAccountJson)
-            .CreateScoped("https://www.googleapis.com/auth/firebase.messaging");
+                var created = GoogleCredential
+                    .FromJson(_serviceAccountJson)
+                    .CreateScoped("https://www.googleapis.com/auth/firebase.messaging");
 #pragma warning restore CS0618
+                _cached = (_serviceAccountJson!, created);
+            }
+
+            credential = _cached.Value.Credential;
+        }
+
         return await credential.UnderlyingCredential.GetAccessTokenForRequestAsync(cancellationToken: ct);
     }
 }

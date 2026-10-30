@@ -173,8 +173,9 @@ public sealed class PollingWorker(
         {
             await SendPushesAsync(scope.ServiceProvider, db, householdId, devices, alerts.Opened, snapshotForPush, ct);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (!ct.IsCancellationRequested)
         {
+            // Ook een time-out (TaskCanceledException) mag de pollronde niet stoppen.
             logger.LogWarning(ex, "Pushmeldingen voor huishouden {HouseholdId} mislukt", householdId);
         }
 
@@ -202,14 +203,16 @@ public sealed class PollingWorker(
             return;
         }
 
-        if (household.NotifyAlerts && openedAlerts.Count > 0)
+        var now = clock.GetUtcNow();
+        if (openedAlerts.Count > 0 && PushPolicy.MaySendAlert(household, now))
         {
             var names = devices.ToDictionary(d => d.Id, d => d.Name);
             var (title, body) = PushPolicy.AlertMessage(openedAlerts, names);
             await push.SendToHouseholdAsync(householdId, title, body, "alerts", ct);
+            household.LastAlertPushAt = now;
+            await db.SaveChangesAsync(ct);
         }
 
-        var now = clock.GetUtcNow();
         if (snapshot is not null
             && devices.Any(d => d.Type == DeviceType.Inverter)
             && PushPolicy.MaySendSurplus(household, now))
@@ -219,7 +222,7 @@ public sealed class PollingWorker(
             var tip = FeedInCalculator.LiveSurplusTip(snapshot, now, devices.Any(d => d.Type == DeviceType.Charger), rates);
             if (tip is not null)
             {
-                var body = tip.Note is null ? tip.Detail : $"{tip.Detail}. {tip.Note}.";
+                var body = tip.Note is null ? tip.Detail : $"{tip.Detail.TrimEnd('.')}. {tip.Note.TrimEnd('.')}.";
                 await push.SendToHouseholdAsync(householdId, tip.Title, body, "advice", ct);
                 household.LastSurplusPushAt = now;
                 await db.SaveChangesAsync(ct);

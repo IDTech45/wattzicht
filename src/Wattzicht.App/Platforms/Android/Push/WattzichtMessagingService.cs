@@ -35,16 +35,17 @@ public sealed class WattzichtMessagingService : FirebaseMessagingService
         if (message.Data.TryGetValue("route", out var route) && !string.IsNullOrWhiteSpace(route))
             intent.PutExtra("route", route);
 
-        var pending = PendingIntent.GetActivity(this, 0, intent, PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
+        var id = Interlocked.Increment(ref _nextId);
+        var pending = PendingIntent.GetActivity(this, id, intent, PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
 
         var builder = new NotificationCompat.Builder(this, FirebasePush.ChannelId)
-            .SetSmallIcon(Resource.Mipmap.appicon)
+            .SetSmallIcon(Resource.Drawable.ic_stat_wattzicht)
             .SetContentTitle(notification.Title)
             .SetContentText(notification.Body)
             .SetStyle(new NotificationCompat.BigTextStyle().BigText(notification.Body))
             .SetAutoCancel(true)
             .SetContentIntent(pending);
 
-        NotificationManagerCompat.From(this).Notify(Interlocked.Increment(ref _nextId), builder.Build());
+        NotificationManagerCompat.From(this).Notify(id, builder.Build());
     }
 }

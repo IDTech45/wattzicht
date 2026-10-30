@@ -51,6 +51,9 @@ public sealed class Household
     /// <summary>Pushmelding als het huis flink teruglevert (standaard aan).</summary>
     public bool NotifySurplus { get; set; } = true;
 
+    /// <summary>Laatste storingsmelding; max. één per 2 uur.</summary>
+    public DateTimeOffset? LastAlertPushAt { get; set; }
+
     /// <summary>Laatste overschot-melding; voorkomt dat we vaker dan eens per paar uur sturen.</summary>
     public DateTimeOffset? LastSurplusPushAt { get; set; }
 
