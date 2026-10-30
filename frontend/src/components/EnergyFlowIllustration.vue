@@ -157,10 +157,13 @@ const fmt = (w: number) => (w >= 1000 ? `${(w / 1000).toFixed(1).replace('.', ',
 }
 
 .sun-glow {
+  /* SVG: zonder fill-box draait/schaalt alles om het midden van de hele tekening en schiet de zon weg. */
+  transform-box: fill-box;
   transform-origin: center;
   animation: breathe 4s ease-in-out infinite;
 }
 .rays {
+  transform-box: fill-box;
   transform-origin: center;
   animation: spin 60s linear infinite;
 }
