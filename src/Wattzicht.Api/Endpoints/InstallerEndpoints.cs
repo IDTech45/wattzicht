@@ -236,16 +236,32 @@ public static partial class InstallerEndpoints
         }
 
         var now = clock.GetUtcNow();
-        if (LastRefresh.TryGetValue(id, out var last) && now - last < TimeSpan.FromMinutes(1))
+        // Atomair: bij een dubbele klik wint er precies één.
+        var claimed = false;
+        LastRefresh.AddOrUpdate(
+            id,
+            _ => { claimed = true; return now; },
+            (_, last) =>
+            {
+                if (now - last < TimeSpan.FromMinutes(1))
+                {
+                    return last;
+                }
+
+                claimed = true;
+                return now;
+            });
+        if (!claimed)
         {
             return Results.Json(new InstallerActionResult(false, "Net al uitgelezen. Probeer het over een minuut opnieuw."),
                 statusCode: StatusCodes.Status429TooManyRequests);
         }
 
-        LastRefresh[id] = now;
         await LogActionAsync(db, http, id, installerId, "refresh", now, ct);
 
-        var (ok, fail) = await poller.PollHouseholdAsync(id, ct);
+        // Eigen time-out i.p.v. die van het request: ook als de browser afhaakt, worden de metingen bewaard.
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+        var (ok, fail) = await poller.PollHouseholdAsync(id, timeout.Token);
         var message = fail == 0
             ? $"Opnieuw uitgelezen: {ok} apparaat/apparaten ok."
             : $"Opnieuw uitgelezen: {ok} ok, {fail} mislukt. Zie de foutmelding bij het apparaat.";
@@ -273,8 +289,19 @@ public static partial class InstallerEndpoints
             return Results.NotFound();
         }
 
+        // Max. 5 berichten per klant per dag, zodat een klant niet overspoeld raakt.
+        var now = clock.GetUtcNow();
+        var dayStart = DutchTime.StartOfLocalDayUtc(DutchTime.LocalDate(now));
+        var sentToday = await db.InstallerAccessLogs.CountAsync(
+            l => l.HouseholdId == id && l.Action == "message" && l.At >= dayStart, ct);
+        if (sentToday >= 5)
+        {
+            return Results.Json(new InstallerActionResult(false, "Je hebt deze klant vandaag al 5 berichten gestuurd. Morgen kan het weer."),
+                statusCode: StatusCodes.Status429TooManyRequests);
+        }
+
         var installer = await db.Installers.FirstAsync(i => i.Id == installerId, ct);
-        await LogActionAsync(db, http, id, installerId, "message", clock.GetUtcNow(), ct);
+        await LogActionAsync(db, http, id, installerId, "message", now, ct);
 
         if (!push.Enabled)
         {
@@ -284,7 +311,7 @@ public static partial class InstallerEndpoints
         var sent = await push.SendToHouseholdAsync(id, $"Bericht van {installer.Name}", text, null, ct);
         return Results.Ok(sent > 0
             ? new InstallerActionResult(true, "Verstuurd. Je klant krijgt het als melding in Wattzicht.")
-            : new InstallerActionResult(false, "Niet verstuurd: deze klant heeft meldingen uit of de app nog niet op de telefoon."));
+            : new InstallerActionResult(false, "Niet verstuurd: deze klant heeft Wattzicht nog niet met meldingen op de telefoon staan."));
     }
 
     private static async Task<IResult> GetBrandingAsync(HttpContext http, AppDbContext db, CancellationToken ct)

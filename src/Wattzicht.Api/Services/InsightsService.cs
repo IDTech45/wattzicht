@@ -28,7 +28,25 @@ public sealed class InsightsService(AppDbContext db, SummaryService summaries, I
         return InsightsCalculator.Sustainability(today.Year, days, performance, co2);
     }
 
+    // Kansen en prestatie veranderen langzaam (weer elke 6 uur): 15 minuten bewaren scheelt veel query's in het klantoverzicht.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, (DateTimeOffset At, PerformanceDto Performance, List<OpportunityDto> Opportunities)> InstallerCache = new();
+    private static readonly TimeSpan InstallerCacheDuration = TimeSpan.FromMinutes(15);
+
     public async Task<(PerformanceDto Performance, List<OpportunityDto> Opportunities)> ForInstallerAsync(
+        Guid householdId, DateOnly today, CancellationToken ct)
+    {
+        var now = DateTimeOffset.UtcNow;
+        if (InstallerCache.TryGetValue(householdId, out var hit) && now - hit.At < InstallerCacheDuration)
+        {
+            return (hit.Performance, hit.Opportunities);
+        }
+
+        var result = await ComputeForInstallerAsync(householdId, today, ct);
+        InstallerCache[householdId] = (now, result.Performance, result.Opportunities);
+        return result;
+    }
+
+    private async Task<(PerformanceDto Performance, List<OpportunityDto> Opportunities)> ComputeForInstallerAsync(
         Guid householdId, DateOnly today, CancellationToken ct)
     {
         var performance = await PerformanceAsync(householdId, today, ct);

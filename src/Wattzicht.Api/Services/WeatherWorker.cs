@@ -67,14 +67,25 @@ public sealed class WeatherWorker(
 
         foreach (var household in households)
         {
-            if (household.Latitude is null || household.Longitude is null)
+            double lat = DefaultLat, lon = DefaultLon;
+            if (household.Latitude is { } savedLat && household.Longitude is { } savedLon)
             {
-                var place = household.City ?? household.PostalCode;
+                (lat, lon) = (savedLat, savedLon);
+            }
+            else
+            {
+                var place = !string.IsNullOrWhiteSpace(household.City) ? household.City : household.PostalCode;
                 var found = string.IsNullOrWhiteSpace(place) ? null : await weather.GeocodeAsync(place, ct);
-                (household.Latitude, household.Longitude) = found is { } f ? (f.Lat, f.Lon) : (DefaultLat, DefaultLon);
+                if (found is { } f)
+                {
+                    // Alleen een gevonden plaats bewaren; anders volgende ronde opnieuw proberen.
+                    (lat, lon) = (f.Lat, f.Lon);
+                    household.Latitude = lat;
+                    household.Longitude = lon;
+                }
             }
 
-            var irradiance = await weather.DailyIrradianceAsync(household.Latitude!.Value, household.Longitude!.Value, ct);
+            var irradiance = await weather.DailyIrradianceAsync(lat, lon, ct);
             if (irradiance.Count == 0)
             {
                 continue;

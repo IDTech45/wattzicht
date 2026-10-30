@@ -112,6 +112,11 @@ builder.Services.AddRateLimiter(options =>
 // JSON: enums als tekst, camelCase (standaard voor minimal API's)
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
+    // Enums die het portal in kleine letters verwacht eerst; daarna de algemene (PascalCase) voor de rest.
+    // Een converter in Options gaat vóór het [JsonConverter]-attribuut op het type, dus expliciet hier.
+    options.SerializerOptions.Converters.Add(new Wattzicht.Shared.LowerCaseEnumConverter<Wattzicht.Shared.HouseholdStatus>());
+    options.SerializerOptions.Converters.Add(new Wattzicht.Shared.LowerCaseEnumConverter<Wattzicht.Shared.PerformanceStatus>());
+    options.SerializerOptions.Converters.Add(new Wattzicht.Shared.LowerCaseEnumConverter<Wattzicht.Shared.OpportunityKind>());
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });

@@ -36,7 +36,12 @@ public static class PerformanceAnalyzer
         var ratios = usable.Select(d => d.PvKwh / d.IrradianceKwhM2!.Value).OrderBy(r => r).ToList();
         var baseline = Percentile(ratios, 0.9);
 
-        var recent = usable.Where(d => d.IrradianceKwhM2 >= SunnyDayIrradiance).TakeLast(3).ToList();
+        // Recente zonnige dagen óók met (bijna) nul opwek: juist een stilgevallen omvormer moet "laag" geven.
+        var recent = days
+            .Where(d => d.Date < today && d.IrradianceKwhM2 is >= SunnyDayIrradiance)
+            .OrderBy(d => d.Date)
+            .TakeLast(3)
+            .ToList();
         if (recent.Count < 3 || baseline <= 0)
         {
             return new PerformanceDto(PerformanceStatus.Unknown, null, 0, 0m,

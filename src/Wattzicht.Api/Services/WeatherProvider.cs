@@ -54,7 +54,7 @@ public sealed class OpenMeteoWeatherProvider(
 
     public async Task<IReadOnlyDictionary<DateOnly, double>> DailyIrradianceAsync(double lat, double lon, CancellationToken ct)
     {
-        var key = string.Create(CultureInfo.InvariantCulture, $"{lat:0.0},{lon:0.0}");
+        var key = string.Create(CultureInfo.InvariantCulture, $"{lat:0.00},{lon:0.00}");
         var now = clock.GetUtcNow();
         if (_cache.TryGetValue(key, out var cached) && now - cached.At < CacheDuration)
         {
@@ -93,6 +93,7 @@ public sealed class OpenMeteoWeatherProvider(
         for (var i = 0; i < count; i++)
         {
             if (values[i].ValueKind != JsonValueKind.Number
+                || times[i].ValueKind != JsonValueKind.String
                 || !DateOnly.TryParse(times[i].GetString(), CultureInfo.InvariantCulture, out var date))
             {
                 continue;

@@ -59,6 +59,15 @@ public sealed class InsightsTests
     }
 
     [Fact]
+    public void Stilgevallen_omvormer_op_zonnige_dagen_is_laag()
+    {
+        var result = PerformanceAnalyzer.Analyze(History((0, 2), (0, 3), (0, 2)), Today, 0.30m);
+
+        Assert.Equal(PerformanceStatus.Low, result.Status);
+        Assert.Equal(0, result.PercentOfExpected);
+    }
+
+    [Fact]
     public void Een_slechte_dag_is_nog_geen_probleem()
     {
         var result = PerformanceAnalyzer.Analyze(History((8, 2), (8, 2), (2, 2)), Today, 0.30m);

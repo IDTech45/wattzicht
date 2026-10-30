@@ -95,8 +95,26 @@ public sealed class PollingWorker(
             (clock.GetUtcNow() - started).TotalSeconds, householdIds.Count, okCount, failCount);
     }
 
+    // Eén uitleesronde tegelijk per huishouden: "opnieuw uitlezen" vanuit het portal mag niet samenvallen met de
+    // gewone pollronde (dubbele dagtotalen of meldingen).
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SemaphoreSlim> HouseholdLocks = new();
+
     /// <summary>Eén huishouden nu uitlezen (ook gebruikt door "opnieuw uitlezen" in het installateursportal).</summary>
     public async Task<(int Ok, int Fail)> PollHouseholdAsync(Guid householdId, CancellationToken ct)
+    {
+        var gate = HouseholdLocks.GetOrAdd(householdId, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(ct);
+        try
+        {
+            return await PollHouseholdCoreAsync(householdId, ct);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private async Task<(int Ok, int Fail)> PollHouseholdCoreAsync(Guid householdId, CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

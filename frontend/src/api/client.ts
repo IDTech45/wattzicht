@@ -114,7 +114,7 @@ export interface DailySummary {
   savedEur: number
 }
 
-export interface HouseholdDetail extends HouseholdSummary {
+export interface HouseholdDetail extends Omit<HouseholdSummary, 'performance'> {
   email?: string
   address?: string
   live: LiveReading | null

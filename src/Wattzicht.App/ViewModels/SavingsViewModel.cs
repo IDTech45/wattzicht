@@ -139,7 +139,7 @@ public partial class SavingsViewModel : BaseViewModel
             Apply(summaries, from, to);
             HasLoaded = true;
 
-            try
+            if (!HasSustainability) try
             {
                 var s = await _api.GetSustainabilityAsync();
                 HasSustainability = s.PvKwh > 0;
