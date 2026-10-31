@@ -62,6 +62,17 @@ public sealed class Household
     /// <summary>Laatste overschot-melding; voorkomt dat we vaker dan eens per paar uur sturen.</summary>
     public DateTimeOffset? LastSurplusPushAt { get; set; }
 
+    /// <summary>
+    /// Pushmelding vlak voordat het slimme laadmoment begint (standaard aan).
+    ///
+    /// De adviezen stonden er al, maar alleen voor wie de app toevallig opende. Een tip dat je
+    /// tussen twee en drie uur het goedkoopst laadt is niets waard als je hem om vijf uur leest.
+    /// </summary>
+    public bool NotifySmartMoment { get; set; } = true;
+
+    /// <summary>Laatste laadmoment-melding; hoogstens één per dag, zie PushPolicy.</summary>
+    public DateTimeOffset? LastSmartMomentPushAt { get; set; }
+
     public List<User> Users { get; set; } = [];
     public List<Device> Devices { get; set; } = [];
     public List<Tariff> Tariffs { get; set; } = [];

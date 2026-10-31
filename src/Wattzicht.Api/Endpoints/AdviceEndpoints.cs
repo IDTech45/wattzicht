@@ -22,6 +22,13 @@ public static class AdviceEndpoints
             .WithSummary("Wat terugleveren kost (terugleverkosten) en wat zelf gebruiken scheelt, nu en vanaf 2027.")
             .Produces<FeedInDto>();
 
+        app.MapGet("/charge-plan", ChargePlanAsync)
+            .RequireAuthorization(AuthPolicies.Resident)
+            .WithTags("Slim sturen")
+            .WithSummary("Wanneer je auto laden het voordeligst is: uurprijzen afgewogen tegen de zon op je eigen dak.")
+            .Produces<ChargePlanDto>()
+            .ProducesValidationProblem();
+
         app.MapGet("/sustainability", async (HttpContext http, InsightsService insights, TimeProvider clock, CancellationToken ct) =>
                 Results.Ok(await insights.SustainabilityAsync(http.User.GetHouseholdId()!.Value, DutchTime.LocalDate(clock.GetUtcNow()), ct)))
             .RequireAuthorization(AuthPolicies.Resident)
@@ -94,6 +101,80 @@ public static class AdviceEndpoints
         }
 
         return Results.Ok(advice with { PriceSource = hourPrices.Count > 0 ? prices.Source : null });
+    }
+
+    /// <summary>
+    /// Een laadplan voor één auto: hoeveel er in moet en wanneer hij klaar moet zijn.
+    ///
+    /// Bewust parameters en geen opgeslagen instelling: de vraag verschilt per dag. Vanavond moet er
+    /// 30 kWh in voor een rit naar Groningen, morgen is 10 kWh genoeg. Een vast schema zou daar altijd
+    /// naast zitten.
+    /// </summary>
+    private static async Task<IResult> ChargePlanAsync(
+        HttpContext http,
+        AppDbContext db,
+        SummaryService summaries,
+        IPriceProvider prices,
+        IWeatherProvider weather,
+        IConfiguration configuration,
+        TimeProvider clock,
+        CancellationToken ct,
+        double kwh = 20,
+        DateTimeOffset? by = null,
+        double? chargerKw = null)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var now = clock.GetUtcNow();
+        var today = DutchTime.LocalDate(now);
+
+        if (kwh is <= 0 or > 200)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["kwh"] = ["Vul in hoeveel kilowattuur erin moet, tussen 1 en 200."]
+            });
+        }
+
+        // Standaard morgenochtend zeven uur: dat is waar de meeste mensen hun auto voor nodig hebben.
+        var deadline = by ?? DutchTime.StartOfLocalDayUtc(today.AddDays(1)).AddHours(7);
+        if (deadline <= now)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["by"] = ["Het tijdstip waarop hij vol moet zijn ligt in het verleden."]
+            });
+        }
+
+        var household = await db.Households
+            .Where(h => h.Id == householdId)
+            .Select(h => new { h.Latitude, h.Longitude, h.City })
+            .FirstOrDefaultAsync(ct);
+
+        var tariff = await db.Tariffs
+            .Where(t => t.HouseholdId == householdId && t.ValidFrom <= today)
+            .OrderByDescending(t => t.ValidFrom)
+            .FirstOrDefaultAsync(ct);
+        var rates = await summaries.GetRatesAsync(householdId, today, ct);
+
+        var pvPiek = configuration.GetValue("Advice:PvPeakKw", 4.0);
+        var laadVermogen = chargerKw is > 0 and <= 50 ? chargerKw.Value : configuration.GetValue("Advice:ChargerKw", 11.0);
+
+        var hourPrices = await prices.GetPricesAsync(today, ct);
+        var forecast = household is { Latitude: { } lat, Longitude: { } lon }
+            ? await weather.HourlyForecastAsync(lat, lon, ct)
+            : [];
+
+        var plan = ChargePlanner.Build(new ChargePlanInput(
+            now, deadline, kwh, laadVermogen, hourPrices, forecast, pvPiek,
+            IsDynamic: tariff?.IsDynamic ?? false,
+            rates,
+            configuration.GetValue("Advice:SurchargePerKwh", AdviceEngine.DefaultSurchargePerKwh)));
+
+        return Results.Ok(new ChargePlanDto(
+            plan.Slots.Select(s => new ChargeSlotDto(s.StartUtc, s.Kwh, s.SolarKwh, s.CostEur)).ToList(),
+            plan.TotalKwh, plan.CostEur, plan.CostIfStartNowEur, plan.SavingEur, plan.SolarKwh,
+            plan.Feasible, plan.Explanation,
+            hourPrices.Count > 0 ? prices.Source : null));
     }
 
     private static async Task<IResult> FeedInAsync(

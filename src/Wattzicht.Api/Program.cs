@@ -84,6 +84,8 @@ builder.Services.AddHttpClient(OpenMeteoWeatherProvider.HttpClientName, client =
 });
 builder.Services.AddSingleton<IWeatherProvider, OpenMeteoWeatherProvider>();
 builder.Services.AddHostedService<WeatherWorker>();
+// Brengt het laadadvies naar de bewoner in plaats van andersom; zie SmartMomentWorker.
+builder.Services.AddHostedService<SmartMomentWorker>();
 builder.Services.AddScoped<InsightsService>();
 
 // CORS voor de Vue-frontend en lokale ontwikkeling

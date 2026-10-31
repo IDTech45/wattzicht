@@ -588,3 +588,37 @@ public sealed record AdminAccessLogDto(
     string InstallerName,
     string HouseholdName,
     string Action);
+
+/// <summary>Eén uur uit het laadplan (GET /charge-plan).</summary>
+/// <param name="StartUtc">Begin van het uur.</param>
+/// <param name="Kwh">Hoeveel er dat uur in de auto gaat.</param>
+/// <param name="SolarKwh">Daarvan rechtstreeks van het eigen dak.</param>
+/// <param name="CostEur">Wat dat uur kost.</param>
+public sealed record ChargeSlotDto(DateTimeOffset StartUtc, double Kwh, double SolarKwh, decimal CostEur);
+
+/// <summary>
+/// Wanneer laad je je auto het voordeligst (GET /charge-plan)?
+///
+/// Niet hetzelfde als "het goedkoopste uur": de planner weegt de uurprijs tegen de verwachte zon op
+/// het eigen dak. Een kilowattuur van je eigen panelen kost alleen de terugleververgoeding die je
+/// misloopt, en dat is vrijwel altijd minder dan stroom van het net.
+/// </summary>
+/// <param name="Slots">De voorgestelde uren, op tijd.</param>
+/// <param name="TotalKwh">Hoeveel er geladen wordt.</param>
+/// <param name="CostEur">Wat het plan kost.</param>
+/// <param name="CostIfStartNowEur">Wat nu meteen beginnen zou kosten.</param>
+/// <param name="SavingEur">Het verschil tussen die twee.</param>
+/// <param name="SolarKwh">Hoeveel ervan van het eigen dak komt.</param>
+/// <param name="Feasible">Of het binnen de opgegeven tijd past.</param>
+/// <param name="Explanation">Eén zin om in de app te tonen.</param>
+/// <param name="PriceSource">Bron van de uurprijzen, of null zonder prijzen.</param>
+public sealed record ChargePlanDto(
+    IReadOnlyList<ChargeSlotDto> Slots,
+    double TotalKwh,
+    decimal CostEur,
+    decimal CostIfStartNowEur,
+    decimal SavingEur,
+    double SolarKwh,
+    bool Feasible,
+    string Explanation,
+    string? PriceSource);
