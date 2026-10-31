@@ -99,6 +99,36 @@ public sealed class PollingWorker(
     // gewone pollronde (dubbele dagtotalen of meldingen).
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SemaphoreSlim> HouseholdLocks = new();
 
+    /// <summary>
+    /// Wanneer we een apparaat voor het laatst probeerden uit te lezen. Alleen in het geheugen: na een
+    /// herstart leest elk apparaat één keer extra uit, en dat is goedkoper dan een kolom erbij.
+    /// </summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, DateTimeOffset> LaatstePoging = new();
+
+    /// <summary>
+    /// Het kortste interval per merk. De poller draait elke vijf minuten, maar niet elk merk mag dat.
+    ///
+    /// Enphase staat op het gratis plan "Watt" met 1.000 verzoeken per maand. Elke vijf minuten uitlezen
+    /// is 8.640 verzoeken per maand: dan is het quotum na drie dagen op en stopt ook de Enphase-koppeling
+    /// van LaadCash, want die hangt aan hetzelfde developer-account. Eén keer per uur past wel.
+    /// </summary>
+    private static TimeSpan KortsteInterval(DeviceBrand brand) => brand switch
+    {
+        DeviceBrand.Enphase => TimeSpan.FromMinutes(60),
+        _ => TimeSpan.Zero,
+    };
+
+    private bool NogTeVroeg(Device device, out DateTimeOffset wachtTot)
+    {
+        wachtTot = default;
+        var minimum = KortsteInterval(device.Brand);
+        if (minimum == TimeSpan.Zero) return false;
+        if (!LaatstePoging.TryGetValue(device.Id, out var vorige)) return false;
+
+        wachtTot = vorige + minimum;
+        return clock.GetUtcNow() < wachtTot;
+    }
+
     /// <summary>Eén huishouden nu uitlezen (ook gebruikt door "opnieuw uitlezen" in het installateursportal).</summary>
     public async Task<(int Ok, int Fail)> PollHouseholdAsync(Guid householdId, CancellationToken ct)
     {
@@ -141,14 +171,33 @@ public sealed class PollingWorker(
                 continue;
             }
 
+            if (NogTeVroeg(device, out var wachtTot))
+            {
+                // Dit merk mag niet zo vaak. Overslaan is hier geen fout: het vorige antwoord staat nog
+                // in de database en de klant ziet gewoon de laatste meting.
+                logger.LogDebug("Apparaat {DeviceId} ({Brand}) overgeslagen tot {WachtTot:HH:mm}", device.Id, device.Brand, wachtTot);
+                continue;
+            }
+
+            LaatstePoging[device.Id] = clock.GetUtcNow();
+
             try
             {
-                var credentials = protector.Unprotect(device.EncryptedCredentials);
+                var credentials = new DeviceCredentials(protector.Unprotect(device.EncryptedCredentials));
 
                 using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
                 timeout.CancelAfter(TimeSpan.FromSeconds(30));
 
                 var reading = await connector.ReadAsync(device, credentials, timeout.Token);
+
+                // Heeft het merk onderweg een nieuwe sleutel gegeven, dan moet die bewaard worden,
+                // anders werkt de koppeling na deze ronde niet meer (Enphase doet dit bij elke vernieuwing).
+                if (credentials.Changed)
+                {
+                    device.EncryptedCredentials = protector.Protect(credentials.ToDictionary());
+                    logger.LogInformation("Vernieuwde sleutel bewaard voor apparaat {DeviceId} ({Brand})", device.Id, device.Brand);
+                }
+
                 var entity = reading.ToEntity(device.Id);
 
                 db.Readings.Add(entity);

@@ -104,7 +104,7 @@ public sealed class GrowattConnector(IHttpClientFactory httpClientFactory, ILogg
         }
     }
 
-    public async Task<DeviceReading> ReadAsync(Device device, IReadOnlyDictionary<string, string> credentials, CancellationToken ct)
+    public async Task<DeviceReading> ReadAsync(Device device, DeviceCredentials credentials, CancellationToken ct)
     {
         var token = credentials.Get("token") ?? throw new ConnectorException("Growatt-token ontbreekt.");
         var kind = credentials.Get("device_kind") ?? KindTlx;

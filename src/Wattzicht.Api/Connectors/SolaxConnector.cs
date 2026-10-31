@@ -91,7 +91,7 @@ public sealed class SolaxConnector(IHttpClientFactory httpClientFactory, ILogger
         }
     }
 
-    public async Task<DeviceReading> ReadAsync(Device device, IReadOnlyDictionary<string, string> credentials, CancellationToken ct)
+    public async Task<DeviceReading> ReadAsync(Device device, DeviceCredentials credentials, CancellationToken ct)
     {
         var token = credentials.Get("token") ?? throw new ConnectorException("SolaXCloud-token ontbreekt.");
         if (device.Type == DeviceType.Charger)

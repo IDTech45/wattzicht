@@ -44,6 +44,7 @@ Zonder Docker: `dotnet run --project src/Wattzicht.Api` en `cd frontend && npm i
 | --- | --- | --- |
 | Growatt | Omvormer, hybride + batterij | Open API v1, token uit ShinePhone (Ik → API Token) |
 | SolaX | Omvormer, batterij, laadpaal | Cloud-token + registratienummer van de dongle |
+| Enphase | Micro-omvormers (zonkant) | OAuth op Enlighten v4; alleen opwek, net en verbruik zitten achter een betaald plan |
 | Sessy | Thuisbatterij | Lokale API op de dongle (basic auth) |
 | Demo | Alles | Gesimuleerde dagcurve, alleen voor demonstreren (`SEED_DEMO=true`) |
 

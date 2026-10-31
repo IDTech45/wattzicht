@@ -73,6 +73,54 @@ public sealed record DeviceReading(
     };
 }
 
+/// <summary>
+/// De credentials van één apparaat tijdens het uitlezen, met de mogelijkheid ze bij te werken.
+///
+/// Nodig voor merken die hun sleutel onderweg vernieuwen. Enphase geeft bij elke token-vernieuwing een
+/// nieuw refresh-token en maakt het oude ongeldig; bewaren we dat niet, dan werkt de koppeling precies
+/// één keer en daarna nooit meer. Een connector zet de nieuwe waarde met <see cref="Set"/>; de poller
+/// ziet <see cref="Changed"/> en versleutelt het geheel opnieuw op het apparaat.
+/// </summary>
+public sealed class DeviceCredentials : IReadOnlyDictionary<string, string>
+{
+    private readonly Dictionary<string, string> _values;
+
+    public DeviceCredentials(IDictionary<string, string> values)
+        => _values = new Dictionary<string, string>(values, StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Is er sinds het inlezen iets veranderd dat bewaard moet worden?</summary>
+    public bool Changed { get; private set; }
+
+    /// <summary>Werkt een waarde bij. Dezelfde waarde opnieuw zetten verandert niets.</summary>
+    public void Set(string key, string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            if (_values.Remove(key)) Changed = true;
+            return;
+        }
+
+        if (_values.TryGetValue(key, out var huidig) && huidig == value) return;
+        _values[key] = value;
+        Changed = true;
+    }
+
+    /// <summary>Platte kopie om te versleutelen.</summary>
+    public Dictionary<string, string> ToDictionary() => new(_values, StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Een platte dictionary mag er zo in; handig voor tests en voor merken zonder sleutelvernieuwing.</summary>
+    public static implicit operator DeviceCredentials(Dictionary<string, string> values) => new(values);
+
+    public string this[string key] => _values[key];
+    public IEnumerable<string> Keys => _values.Keys;
+    public IEnumerable<string> Values => _values.Values;
+    public int Count => _values.Count;
+    public bool ContainsKey(string key) => _values.ContainsKey(key);
+    public bool TryGetValue(string key, out string value) => _values.TryGetValue(key, out value!);
+    public IEnumerator<KeyValuePair<string, string>> GetEnumerator() => _values.GetEnumerator();
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
 /// <summary>Fout bij het uitlezen van een apparaat (verbinding, authenticatie, onverwacht antwoord).</summary>
 public sealed class ConnectorException(string message, Exception? inner = null) : Exception(message, inner);
 
@@ -88,6 +136,10 @@ public interface IDeviceConnector
 
     /// <summary>Leest één genormaliseerde meting. Gooit <see cref="ConnectorException"/> bij een fout.</summary>
     /// <param name="device">Het apparaat (voor id, type en externalId).</param>
-    /// <param name="credentials">Ontsleutelde credentials inclusief eventuele extra's uit <see cref="DiscoveredDevice.ExtraCredentials"/>.</param>
-    Task<DeviceReading> ReadAsync(Device device, IReadOnlyDictionary<string, string> credentials, CancellationToken ct);
+    /// <param name="credentials">
+    /// Ontsleutelde credentials inclusief eventuele extra's uit <see cref="DiscoveredDevice.ExtraCredentials"/>.
+    /// Vernieuwt het merk onderweg een sleutel, zet die dan met <see cref="DeviceCredentials.Set"/>; de poller bewaart hem.
+    /// </param>
+    /// <param name="ct">Afbreektoken.</param>
+    Task<DeviceReading> ReadAsync(Device device, DeviceCredentials credentials, CancellationToken ct);
 }

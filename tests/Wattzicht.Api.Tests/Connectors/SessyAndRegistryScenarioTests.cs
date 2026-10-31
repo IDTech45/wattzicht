@@ -149,7 +149,7 @@ public sealed class ConnectorContractTests
         var registry = sp.GetRequiredService<ConnectorRegistry>();
 
         Assert.Equal(
-            new[] { DeviceBrand.Growatt, DeviceBrand.Sessy, DeviceBrand.Solax, DeviceBrand.Demo }.OrderBy(b => b),
+            new[] { DeviceBrand.Growatt, DeviceBrand.Sessy, DeviceBrand.Solax, DeviceBrand.Enphase, DeviceBrand.Demo }.OrderBy(b => b),
             registry.SupportedBrands.OrderBy(b => b));
     }
 
@@ -159,12 +159,14 @@ public sealed class ConnectorContractTests
         using var sp = Services();
         var registry = sp.GetRequiredService<ConnectorRegistry>();
 
-        Assert.Null(registry.Get(DeviceBrand.Enphase));
-        var ex = Assert.Throws<ConnectorException>(() => registry.GetRequired(DeviceBrand.Enphase));
+        // Alfen staat in de merkenlijst omdat het de meest geplaatste laadpaal van Nederland is, maar
+        // heeft nog geen connector: alleen een lokale HTTPS-API met het admin-wachtwoord van de paal.
+        Assert.Null(registry.Get(DeviceBrand.Alfen));
+        var ex = Assert.Throws<ConnectorException>(() => registry.GetRequired(DeviceBrand.Alfen));
         Assert.Contains("nog niet ondersteund", ex.Message);
     }
 
-    public static TheoryData<DeviceBrand> RealBrands => new() { DeviceBrand.Growatt, DeviceBrand.Solax, DeviceBrand.Sessy };
+    public static TheoryData<DeviceBrand> RealBrands => new() { DeviceBrand.Growatt, DeviceBrand.Solax, DeviceBrand.Sessy, DeviceBrand.Enphase };
 
     [Theory]
     [MemberData(nameof(RealBrands))]

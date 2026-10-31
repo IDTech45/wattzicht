@@ -51,6 +51,10 @@ services:
       Seed__Demo: ${SEED_DEMO:-false}
       Seed__DemoPassword: ${SEED_DEMO_PASSWORD:-}
       Swagger__Enabled: ${SWAGGER_ENABLED:-false}
+      # Enphase (micro-omvormers). Zonder deze drie staat Enphase-koppelen uit met een duidelijke melding.
+      Connectors__Enphase__ClientId: ${ENPHASE_CLIENT_ID:-}
+      Connectors__Enphase__ClientSecret: ${ENPHASE_CLIENT_SECRET:-}
+      Connectors__Enphase__ApiKey: ${ENPHASE_API_KEY:-}
       TZ: Europe/Amsterdam
       # Pushmeldingen: eigen Firebase-project 'wattzicht'. De servicesleutel staat als bestand op de server
       # en wordt alleen-lezen ingehangen: niet in de repo, niet in een env-variabele. Zonder bestand: push uit.

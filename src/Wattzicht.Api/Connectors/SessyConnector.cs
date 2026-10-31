@@ -62,7 +62,7 @@ public sealed class SessyConnector(IHttpClientFactory httpClientFactory, ILogger
         }
     }
 
-    public async Task<DeviceReading> ReadAsync(Device device, IReadOnlyDictionary<string, string> credentials, CancellationToken ct)
+    public async Task<DeviceReading> ReadAsync(Device device, DeviceCredentials credentials, CancellationToken ct)
     {
         var host = credentials.Get("host") ?? throw new ConnectorException("Sessy-host ontbreekt.");
         var username = credentials.Get("username") ?? throw new ConnectorException("Sessy-gebruikersnaam ontbreekt.");

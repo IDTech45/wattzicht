@@ -31,7 +31,7 @@ public sealed class DemoConnector(TimeProvider clock) : IDeviceConnector
         return Task.FromResult(ConnectResult.Ok(devices));
     }
 
-    public Task<DeviceReading> ReadAsync(Device device, IReadOnlyDictionary<string, string> credentials, CancellationToken ct) =>
+    public Task<DeviceReading> ReadAsync(Device device, DeviceCredentials credentials, CancellationToken ct) =>
         Task.FromResult(Simulate(device.Type, clock.GetUtcNow(), device.ExternalId));
 
     /// <summary>Berekent de gesimuleerde meting op een moment. Publiek voor tests.</summary>

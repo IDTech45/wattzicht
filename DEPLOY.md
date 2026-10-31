@@ -61,7 +61,26 @@ Knop **Deploy**. De eerste build duurt 5–10 minuten (dotnet + npm). Volg het i
 
 In `src/Wattzicht.App/Services/AppConfig.cs` staat de productie-URL `https://api.wattzicht.nl`. Zolang je het traefik.me-adres gebruikt: zet die tijdelijk op `https://<api-domein>` (zonder `/api`; de app voegt dat zelf niet toe, de API accepteert beide). Of bouw in Debug tegen `http://localhost:8080` met de dev-compose.
 
-## 7. Later: eigen domein
+## 7. Enphase aanzetten
+
+Enphase koppelt met OAuth, dus er is eenmalig iets nodig aan de kant van Enphase. De klant kan het
+zelf niet met een sleutel regelen.
+
+1. Ga naar [developer-v4.enphase.com](https://developer-v4.enphase.com) en open de app (of maak er
+   een aan). Hetzelfde account als LaadCash mag, maar let op: het gratis plan "Watt" geeft
+   **1.000 verzoeken per maand** en beide apps delen dat. De poller leest Enphase daarom hoogstens
+   één keer per uur uit.
+2. Zet bij **Redirect URI** de terugkeerpagina van Wattzicht, bijvoorbeeld
+   `https://wattzicht.laadcash.nl/oauth/enphase`. Die moet later exact zo meegestuurd worden.
+3. Vul in Dokploy → Environment de drie waarden:
+   `ENPHASE_CLIENT_ID`, `ENPHASE_CLIENT_SECRET` en `ENPHASE_API_KEY`, en redeploy.
+
+Wat Enphase daarna oplevert: het actuele vermogen van de panelen en de opwek-teller. Afname van en
+teruglevering aan het net zitten in de meter-telemetrie en die hoort bij het betaalde plan
+($249 per maand). Voor de besparing van een Enphase-huis is dus een P1-meter ernaast nodig, of de
+lokale IQ Gateway in het thuisnetwerk.
+
+## 8. Later: eigen domein
 
 1. Registreer `wattzicht.nl`, DNS `A`-records `wattzicht.nl`, `www.wattzicht.nl` en `api.wattzicht.nl` → VPS-IP.
 2. Dokploy → Domains: voeg de drie hosts toe aan dezelfde services (frontend: `wattzicht.nl` + `www`; api: `api.wattzicht.nl`), HTTPS aan.
