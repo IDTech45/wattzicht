@@ -43,11 +43,23 @@ defineProps<{
   font-weight: 800;
   letter-spacing: -0.02em;
 }
+/*
+ * Merknaam en status staan naast elkaar zolang dat past. Op een telefoon paste het niet: het raster
+ * houdt daar twee kolommen aan, en in zo'n kaart van nog geen 180px liggen "Hybride omvormer" en
+ * "Gekoppeld" niet naast elkaar. Zonder afbreekruimte liep de status de kaart uit, dwars over de
+ * buurkaart heen (gezien op een Android-telefoon, 31-10-2026). Vandaar wrap en min-width: 0; zonder
+ * dat laatste weigert een flex-item smaller te worden dan zijn langste woord.
+ */
 .badge__meta {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 8px;
+  gap: 4px 8px;
   font-size: 0.85rem;
+  min-width: 0;
+}
+.badge__kind {
+  min-width: 0;
 }
 .badge__state {
   display: inline-flex;
@@ -60,5 +72,20 @@ defineProps<{
 }
 .badge__state .pi {
   font-size: 0.75rem;
+}
+
+/* Op een smal scherm onder elkaar: twee regels in een smalle kaart lezen prettiger dan afgeknepen
+   tekst op een regel, en de status blijft binnen zijn eigen kaart. */
+@media (max-width: 560px) {
+  .badge {
+    padding: 14px 16px;
+  }
+  .badge__name {
+    font-size: 1.1rem;
+  }
+  .badge__meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 </style>
