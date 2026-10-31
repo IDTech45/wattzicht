@@ -35,6 +35,56 @@ export interface LoginResponse {
   token: string
   expiresAt?: string
   installer: Installer
+  /** 'Resident' | 'Installer' | 'Admin'; bepaalt naar welk scherm we na het inloggen gaan. */
+  role?: string
+}
+
+// ---- Beheer (Wattzicht zelf) ----
+export interface AdminInstaller {
+  id: string
+  name: string
+  slug: string
+  households: number
+  householdsWithAccess: number
+  devices: number
+  devicesWithProblem: number
+  lastDataAt?: string | null
+  monthlyRevenueEur: number
+  createdAt: string
+}
+
+export interface AdminHousehold {
+  id: string
+  name: string
+  city?: string | null
+  installerId: string
+  installerName: string
+  devices: number
+  devicesWithProblem: number
+  openAlerts: number
+  lastSeen?: string | null
+  installerAccessGranted: boolean
+  createdAt: string
+}
+
+export interface AdminOverview {
+  installers: number
+  households: number
+  householdsWithAccess: number
+  devices: number
+  devicesWithProblem: number
+  devicesSilent24h: number
+  openAlerts: number
+  pricePerHouseholdEur: number
+  monthlyRevenueEur: number
+  installers_: AdminInstaller[]
+}
+
+export interface AdminAccessLogRow {
+  at: string
+  installerName: string
+  householdName: string
+  action: string
 }
 
 export interface DeviceSummary {
@@ -230,6 +280,22 @@ export function login(body: LoginRequest): Promise<LoginResponse> {
     body: JSON.stringify(body),
     auth: false,
   })
+}
+
+export function getAdminOverview(): Promise<AdminOverview> {
+  return request<AdminOverview>('/admin/overview')
+}
+
+export function getAdminHouseholds(params: { installerId?: string; search?: string } = {}): Promise<AdminHousehold[]> {
+  const q = new URLSearchParams()
+  if (params.installerId) q.set('installerId', params.installerId)
+  if (params.search) q.set('search', params.search)
+  const suffix = q.toString() ? `?${q}` : ''
+  return request<AdminHousehold[]>(`/admin/households${suffix}`)
+}
+
+export function getAdminAccessLog(): Promise<AdminAccessLogRow[]> {
+  return request<AdminAccessLogRow[]>('/admin/access-log')
 }
 
 export function getInstallerHouseholds(): Promise<HouseholdSummary[]> {

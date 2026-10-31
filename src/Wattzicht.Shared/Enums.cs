@@ -55,7 +55,14 @@ public enum UserRole
     Resident = 0,
 
     /// <summary>Installateur; ziet alle huishoudens van zijn eigen bedrijf.</summary>
-    Installer = 1
+    Installer = 1,
+
+    /// <summary>
+    /// Beheerder van Wattzicht zelf: ziet alle installateurs en al hun huishoudens, dwars door de
+    /// tenantgrens heen. Bewust een eigen rol en geen installateur met extra rechten, want elke
+    /// installateursvraag filtert op zijn eigen bedrijf en dat moet zo blijven.
+    /// </summary>
+    Admin = 2
 }
 
 /// <summary>Uitkomst van de prestatiecheck.</summary>

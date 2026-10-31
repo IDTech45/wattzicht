@@ -18,6 +18,9 @@ public static class DbSeeder
     public const string DemoEmail = "demo@wattzicht.nl";
     public const string InstallerEmail = "installateur@triple-energie.nl";
 
+    /// <summary>Het beheeraccount van Wattzicht zelf; wachtwoord uit <c>Seed:AdminPassword</c>.</summary>
+    public const string AdminEmail = "admin@wattzicht.nl";
+
     /// <summary>Logo van Triple Energie (van hun eigen site) tot ze er zelf een uploaden in het portal.</summary>
     public const string TripleEnergieLogoUrl = "https://www.triple-energie.nl/wp-content/uploads/2025/04/Triple-energie-logo-768x351.png";
 
@@ -68,6 +71,23 @@ public static class DbSeeder
                 InstallerId = installer.Id,
                 CreatedAt = now
             });
+        }
+
+        // Beheerder van Wattzicht zelf. Hij hangt administratief aan Triple Energie omdat elke
+        // gebruiker een installateur nodig heeft, maar zijn rol bepaalt wat hij ziet: alles, dwars
+        // door de tenantgrens heen. Zie AdminEndpoints.
+        if (!await db.Users.AnyAsync(u => u.Email == AdminEmail, ct))
+        {
+            db.Users.Add(new User
+            {
+                Id = Guid.NewGuid(),
+                Email = AdminEmail,
+                PasswordHash = hasher.Hash(Setting(config, "Seed:AdminPassword", "Admin123!")),
+                Role = UserRole.Admin,
+                InstallerId = installer.Id,
+                CreatedAt = now
+            });
+            logger.LogInformation("Beheeraccount {Email} aangemaakt.", AdminEmail);
         }
 
         var household = await db.Households.FirstOrDefaultAsync(h => h.Id == DemoHouseholdId, ct);

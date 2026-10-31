@@ -219,6 +219,7 @@ app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 app.MapAuthEndpoints();
 app.MapHouseholdEndpoints();
 app.MapInstallerEndpoints();
+app.MapAdminEndpoints();
 app.MapLeadEndpoints();
 app.MapAdviceEndpoints();
 app.MapPushEndpoints();

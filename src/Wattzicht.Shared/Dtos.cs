@@ -31,7 +31,11 @@ public sealed record AuthResponse(
     string Token,
     DateTimeOffset ExpiresAt,
     HouseholdDto? Household,
-    InstallerBrandingDto? Installer = null);
+    InstallerBrandingDto? Installer = null,
+    // De rol zit al in het token, maar de app en de website lezen dat token niet uit. Zonder deze
+    // regel weet de website na het inloggen niet of ze de beheerder of een installateur voor zich
+    // heeft, en kan ze hem niet naar het juiste scherm sturen.
+    UserRole Role = UserRole.Resident);
 
 /// <summary>Ingelogde gebruiker met rol en huishouden.</summary>
 public sealed record MeDto(
@@ -495,3 +499,92 @@ public sealed record InstallerMessageRequest(string Text);
 /// <param name="Ok">Gelukt.</param>
 /// <param name="Message">Uitleg voor in het portal.</param>
 public sealed record InstallerActionResult(bool Ok, string Message);
+
+// ---------------------------------------------------------------------------------------------
+// Beheer (Wattzicht zelf). Eén installateur ziet alleen zijn eigen klanten; de beheerder ziet de
+// hele keten: welke installateur welke huishoudens heeft, of hun apparaten data leveren, en wat
+// dat aan abonnement oplevert. Bewust aparte DTO's: wat de beheerder nodig heeft (omzet, alle
+// tenants) hoort niet in het installateursportal terecht te komen.
+// ---------------------------------------------------------------------------------------------
+
+/// <summary>Eén installateur op het beheeroverzicht (GET /admin/installers).</summary>
+/// <param name="Id">Unieke id.</param>
+/// <param name="Name">Bedrijfsnaam.</param>
+/// <param name="Slug">Korte code uit links en registratie.</param>
+/// <param name="Households">Aantal huishoudens, ook zonder toestemming.</param>
+/// <param name="HouseholdsWithAccess">Daarvan: hoeveel de installateur mag inzien.</param>
+/// <param name="Devices">Aantal gekoppelde apparaten.</param>
+/// <param name="DevicesWithProblem">Apparaten met een foutmelding bij het laatste uitlezen.</param>
+/// <param name="LastDataAt">Wanneer er voor het laatst data van deze installateur binnenkwam.</param>
+/// <param name="MonthlyRevenueEur">Wat deze installateur per maand oplevert bij het huidige tarief.</param>
+/// <param name="CreatedAt">Sinds wanneer hij meedoet.</param>
+public sealed record AdminInstallerDto(
+    Guid Id,
+    string Name,
+    string Slug,
+    int Households,
+    int HouseholdsWithAccess,
+    int Devices,
+    int DevicesWithProblem,
+    DateTimeOffset? LastDataAt,
+    decimal MonthlyRevenueEur,
+    DateTimeOffset CreatedAt);
+
+/// <summary>Eén huishouden op het beheeroverzicht, met de installateur erbij (GET /admin/households).</summary>
+/// <param name="Id">Unieke id.</param>
+/// <param name="Name">Naam van het huishouden.</param>
+/// <param name="City">Plaats.</param>
+/// <param name="InstallerId">Bij welke installateur het hoort.</param>
+/// <param name="InstallerName">Naam van die installateur.</param>
+/// <param name="Devices">Aantal apparaten.</param>
+/// <param name="DevicesWithProblem">Apparaten met een foutmelding.</param>
+/// <param name="OpenAlerts">Openstaande storingsmeldingen.</param>
+/// <param name="LastSeen">Laatste geslaagde uitlezing.</param>
+/// <param name="InstallerAccessGranted">Of de bewoner de installateur laat meekijken.</param>
+/// <param name="CreatedAt">Sinds wanneer.</param>
+public sealed record AdminHouseholdDto(
+    Guid Id,
+    string Name,
+    string? City,
+    Guid InstallerId,
+    string InstallerName,
+    int Devices,
+    int DevicesWithProblem,
+    int OpenAlerts,
+    DateTimeOffset? LastSeen,
+    bool InstallerAccessGranted,
+    DateTimeOffset CreatedAt);
+
+/// <summary>Cijfers bovenaan het beheerpaneel (GET /admin/overview).</summary>
+/// <param name="Installers">Aantal installateurs.</param>
+/// <param name="Households">Aantal huishoudens.</param>
+/// <param name="HouseholdsWithAccess">Huishoudens die hun installateur laten meekijken.</param>
+/// <param name="Devices">Gekoppelde apparaten.</param>
+/// <param name="DevicesWithProblem">Apparaten met een foutmelding.</param>
+/// <param name="DevicesSilent24h">Apparaten die al een etmaal niets leverden.</param>
+/// <param name="OpenAlerts">Openstaande storingsmeldingen.</param>
+/// <param name="PricePerHouseholdEur">Het maandtarief waarmee gerekend wordt.</param>
+/// <param name="MonthlyRevenueEur">Huishoudens maal dat tarief.</param>
+/// <param name="Installers_">Per installateur dezelfde cijfers.</param>
+public sealed record AdminOverviewDto(
+    int Installers,
+    int Households,
+    int HouseholdsWithAccess,
+    int Devices,
+    int DevicesWithProblem,
+    int DevicesSilent24h,
+    int OpenAlerts,
+    decimal PricePerHouseholdEur,
+    decimal MonthlyRevenueEur,
+    IReadOnlyList<AdminInstallerDto> Installers_);
+
+/// <summary>Wie keek er bij wie mee (GET /admin/access-log).</summary>
+/// <param name="At">Wanneer.</param>
+/// <param name="InstallerName">Welke installateur.</param>
+/// <param name="HouseholdName">Bij welk huishouden.</param>
+/// <param name="Action">Wat hij deed.</param>
+public sealed record AdminAccessLogDto(
+    DateTimeOffset At,
+    string InstallerName,
+    string HouseholdName,
+    string Action);

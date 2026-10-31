@@ -125,4 +125,8 @@ public static class ClaimsPrincipalExtensions
 
     public static bool IsInstaller(this ClaimsPrincipal principal) =>
         principal.IsInRole(nameof(UserRole.Installer));
+
+    /// <summary>Beheerder van Wattzicht zelf. Zie de Admin-rol: die kijkt dwars door de tenantgrens heen.</summary>
+    public static bool IsAdmin(this ClaimsPrincipal principal) =>
+        principal.IsInRole(nameof(UserRole.Admin));
 }

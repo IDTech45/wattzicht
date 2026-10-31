@@ -156,7 +156,7 @@ public static class AuthEndpoints
     {
         var (token, expires) = tokens.CreateToken(user);
         var household = user.Household is null ? null : HouseholdQueries.ToDto(user.Household);
-        return new AuthResponse(token, expires, household, HouseholdQueries.ToDto(user.Installer));
+        return new AuthResponse(token, expires, household, HouseholdQueries.ToDto(user.Installer), user.Role);
     }
 
     private static async Task<IResult> RefreshAsync(

@@ -13,6 +13,9 @@ public static class AuthPolicies
     /// <summary>Installateur (rol Installer).</summary>
     public const string Installer = "Installer";
 
+    /// <summary>Beheerder van Wattzicht zelf (rol Admin).</summary>
+    public const string Admin = "Admin";
+
     public static AuthorizationOptions AddWattzichtPolicies(this AuthorizationOptions options)
     {
         options.AddPolicy(Resident, policy => policy
@@ -22,6 +25,12 @@ public static class AuthPolicies
         options.AddPolicy(Installer, policy => policy
             .RequireAuthenticatedUser()
             .RequireRole(nameof(UserRole.Installer)));
+
+        // Bewust alleen Admin: een beheerder hoort niet stilletjes als installateur te kunnen werken,
+        // want die endpoints filteren op zijn eigen bedrijf en dat heeft hij niet.
+        options.AddPolicy(Admin, policy => policy
+            .RequireAuthenticatedUser()
+            .RequireRole(nameof(UserRole.Admin)));
 
         return options;
     }

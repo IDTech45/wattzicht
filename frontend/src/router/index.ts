@@ -50,6 +50,14 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Klant – Wattzicht portal' },
       },
       {
+        // Beheer van Wattzicht zelf. Hangt bewust onder /portal: het is hetzelfde ingelogde scherm,
+        // alleen ziet de beheerder alle installateurs in plaats van alleen zijn eigen klanten.
+        path: 'beheer',
+        name: 'portal-admin',
+        component: () => import('@/views/portal/AdminView.vue'),
+        meta: { title: 'Beheer – Wattzicht', requiresAdmin: true },
+      },
+      {
         path: 'branding',
         name: 'portal-branding',
         component: () => import('@/views/portal/BrandingView.vue'),
@@ -80,8 +88,12 @@ router.beforeEach((to) => {
   if (to.meta.requiresAuth && !auth.isLoggedIn) {
     return { name: 'portal-login', query: { redirect: to.fullPath } }
   }
-  if (to.name === 'portal-login' && auth.isLoggedIn) {
+  // Een installateur hoort niet in het beheerscherm; daar staan de klanten van zijn concurrenten.
+  if (to.meta.requiresAdmin && !auth.isAdmin) {
     return { name: 'portal-home' }
+  }
+  if (to.name === 'portal-login' && auth.isLoggedIn) {
+    return { name: auth.isAdmin ? 'portal-admin' : 'portal-home' }
   }
 })
 
