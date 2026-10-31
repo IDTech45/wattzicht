@@ -45,7 +45,9 @@ CORS_ORIGIN_0=https://wattzicht.nl
 CORS_ORIGIN_1=https://www.wattzicht.nl
 
 SEED_ENABLED=true
+SEED_ADMIN_PASSWORD=$(rand_alnum 24 16)
 SEED_INSTALLER_PASSWORD=$(rand_alnum 24 16)
+SEED_DEMO=false
 SEED_DEMO_PASSWORD=$(rand_alnum 24 12)
 SWAGGER_ENABLED=false
 EOF

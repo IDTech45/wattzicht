@@ -5,9 +5,17 @@ using Wattzicht.Shared;
 namespace Wattzicht.Api.Data;
 
 /// <summary>
-/// Zet de basisdata klaar: installateur "Triple Energie", een installateursaccount en een demo-huishouden
-/// met Demo-apparaten en een standaardtarief. Idempotent: bestaande rijen worden niet overschreven.
-/// Wachtwoorden komen uit configuratie (<c>Seed:InstallerPassword</c>, <c>Seed:DemoPassword</c>) met een dev-fallback.
+/// Zet de basisdata klaar: installateur "Triple Energie" en een installateursaccount. Idempotent:
+/// bestaande rijen worden niet overschreven.
+///
+/// Wachtwoorden komen uit configuratie (<c>Seed:AdminPassword</c>, <c>Seed:InstallerPassword</c>,
+/// <c>Seed:DemoPassword</c>). Buiten Development is er geen terugvaloptie: staat een wachtwoord niet
+/// ingesteld, dan maken we dat account niet aan. Anders zou er op de productieserver een beheerder
+/// klaarstaan met een wachtwoord dat in deze broncode te lezen is.
+///
+/// Het demo-huishouden met Demo-apparaten (een gesimuleerde dagcurve) hoort bij ontwikkelen en
+/// demonstreren, niet bij de echte klanten van een installateur. Het komt er daarom alleen bij als
+/// <c>Seed:Demo</c> aan staat; buiten Development staat dat uit.
 /// </summary>
 public static class DbSeeder
 {
@@ -31,9 +39,14 @@ public static class DbSeeder
         var hasher = scope.ServiceProvider.GetRequiredService<PasswordHasher>();
         var protector = scope.ServiceProvider.GetRequiredService<CredentialProtector>();
         var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+        var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
         var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
 
         var now = DateTimeOffset.UtcNow;
+
+        // Alleen tijdens ontwikkelen mogen de vaste wachtwoorden uit deze broncode gelden.
+        var devFallback = env.IsDevelopment();
+        var metDemo = config.GetValue("Seed:Demo", devFallback);
 
         var installer = await db.Installers.FirstOrDefaultAsync(i => i.Id == TripleEnergieId, ct);
         if (installer is null)
@@ -60,34 +73,70 @@ public static class DbSeeder
             await db.SaveChangesAsync(ct);
         }
 
+        var installerPassword = Wachtwoord(config, "Seed:InstallerPassword", "Installateur123!", devFallback);
+        await ZetWachtwoordOpnieuwAsync(db, InstallerEmail, Ingesteld(config, "Seed:InstallerPassword"), hasher, logger, ct);
         if (!await db.Users.AnyAsync(u => u.Email == InstallerEmail, ct))
         {
-            db.Users.Add(new User
+            if (installerPassword is null)
             {
-                Id = Guid.NewGuid(),
-                Email = InstallerEmail,
-                PasswordHash = hasher.Hash(Setting(config, "Seed:InstallerPassword", "Installateur123!")),
-                Role = UserRole.Installer,
-                InstallerId = installer.Id,
-                CreatedAt = now
-            });
+                logger.LogWarning("Installateursaccount {Email} niet aangemaakt: Seed:InstallerPassword staat niet ingesteld.", InstallerEmail);
+            }
+            else
+            {
+                db.Users.Add(new User
+                {
+                    Id = Guid.NewGuid(),
+                    Email = InstallerEmail,
+                    PasswordHash = hasher.Hash(installerPassword),
+                    Role = UserRole.Installer,
+                    InstallerId = installer.Id,
+                    CreatedAt = now
+                });
+            }
         }
 
         // Beheerder van Wattzicht zelf. Hij hangt administratief aan Triple Energie omdat elke
         // gebruiker een installateur nodig heeft, maar zijn rol bepaalt wat hij ziet: alles, dwars
         // door de tenantgrens heen. Zie AdminEndpoints.
+        var adminPassword = Wachtwoord(config, "Seed:AdminPassword", "Admin123!", devFallback);
+        await ZetWachtwoordOpnieuwAsync(db, AdminEmail, Ingesteld(config, "Seed:AdminPassword"), hasher, logger, ct);
         if (!await db.Users.AnyAsync(u => u.Email == AdminEmail, ct))
         {
-            db.Users.Add(new User
+            if (adminPassword is null)
             {
-                Id = Guid.NewGuid(),
-                Email = AdminEmail,
-                PasswordHash = hasher.Hash(Setting(config, "Seed:AdminPassword", "Admin123!")),
-                Role = UserRole.Admin,
-                InstallerId = installer.Id,
-                CreatedAt = now
-            });
-            logger.LogInformation("Beheeraccount {Email} aangemaakt.", AdminEmail);
+                logger.LogWarning("Beheeraccount {Email} niet aangemaakt: Seed:AdminPassword staat niet ingesteld. "
+                                  + "Zet die variabele en herstart; een beheerder met een wachtwoord uit de broncode zetten we niet klaar.", AdminEmail);
+            }
+            else
+            {
+                db.Users.Add(new User
+                {
+                    Id = Guid.NewGuid(),
+                    Email = AdminEmail,
+                    PasswordHash = hasher.Hash(adminPassword),
+                    Role = UserRole.Admin,
+                    InstallerId = installer.Id,
+                    CreatedAt = now
+                });
+                logger.LogInformation("Beheeraccount {Email} aangemaakt.", AdminEmail);
+            }
+        }
+
+        if (!metDemo)
+        {
+            // Geen demo-woning op een echte omgeving: een installateur moet in zijn portal alleen zijn
+            // eigen klanten zien, niet een huishouden met een verzonnen dagcurve ertussen.
+            await db.SaveChangesAsync(ct);
+            logger.LogInformation("Demo-huishouden overgeslagen (Seed:Demo staat uit).");
+            return;
+        }
+
+        var demoPassword = Wachtwoord(config, "Seed:DemoPassword", "Demo1234!", devFallback);
+        if (demoPassword is null)
+        {
+            await db.SaveChangesAsync(ct);
+            logger.LogWarning("Demo-huishouden overgeslagen: Seed:Demo staat aan maar Seed:DemoPassword niet ingesteld.");
+            return;
         }
 
         var household = await db.Households.FirstOrDefaultAsync(h => h.Id == DemoHouseholdId, ct);
@@ -110,7 +159,7 @@ public static class DbSeeder
             {
                 Id = Guid.NewGuid(),
                 Email = DemoEmail,
-                PasswordHash = hasher.Hash(Setting(config, "Seed:DemoPassword", "Demo1234!")),
+                PasswordHash = hasher.Hash(demoPassword),
                 Role = UserRole.Resident,
                 HouseholdId = household.Id,
                 InstallerId = installer.Id,
@@ -177,10 +226,42 @@ public static class DbSeeder
         await db.SaveChangesAsync(ct);
     }
 
-    /// <summary>Configuratiewaarde met fallback; een lege string (lege env-variabele) telt als niet gezet.</summary>
-    private static string Setting(IConfiguration config, string key, string fallback)
+    /// <summary>
+    /// Zet het wachtwoord van een al bestaand seed-account opnieuw als er er een is ingesteld. Nodig
+    /// omdat de vorige versie van deze seeder op elke omgeving een beheerder aanmaakte met een
+    /// wachtwoord uit de broncode: dat account staat dan al in de database en gaat niet weg door de
+    /// regel hierboven. Zet je de variabele, dan is dat bekende wachtwoord na een herstart weg.
+    /// Alleen bij een expliciet ingestelde waarde, zodat de terugvaloptie in Development niets overschrijft.
+    /// </summary>
+    private static async Task ZetWachtwoordOpnieuwAsync(AppDbContext db, string email, string? ingesteld,
+        PasswordHasher hasher, ILogger logger, CancellationToken ct)
+    {
+        if (ingesteld is null) return;
+        var user = await db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Email == email, ct);
+        if (user is null) return;
+
+        // De hash heeft een eigen salt, dus twee hashes van hetzelfde wachtwoord zijn nooit gelijk:
+        // vergelijken gaat met Verify, anders zou dit bij elke herstart opnieuw schrijven.
+        if (hasher.Verify(ingesteld, user.PasswordHash)) return;
+
+        user.PasswordHash = hasher.Hash(ingesteld);
+        await db.SaveChangesAsync(ct);
+        logger.LogInformation("Wachtwoord van {Email} opnieuw gezet uit de configuratie.", email);
+    }
+
+    /// <summary>De expliciet ingestelde waarde, of <c>null</c> bij een ontbrekende of lege instelling.</summary>
+    private static string? Ingesteld(IConfiguration config, string key) =>
+        string.IsNullOrWhiteSpace(config[key]) ? null : config[key];
+
+    /// <summary>
+    /// Het ingestelde wachtwoord, of <c>null</c> als het ontbreekt en er geen terugvaloptie mag gelden.
+    /// Een lege env-variabele telt als niet gezet; compose geeft die namelijk leeg door zodra je hem
+    /// vergeet te vullen, en juist dan mag er geen wachtwoord uit deze broncode gelden.
+    /// </summary>
+    private static string? Wachtwoord(IConfiguration config, string key, string devFallbackWaarde, bool devFallback)
     {
         var value = config[key];
-        return string.IsNullOrWhiteSpace(value) ? fallback : value;
+        if (!string.IsNullOrWhiteSpace(value)) return value;
+        return devFallback ? devFallbackWaarde : null;
     }
 }
