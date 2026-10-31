@@ -18,17 +18,21 @@ const year = new Date().getFullYear()
         <RouterLink to="/portal">Installateursportal</RouterLink>
       </nav>
 
+      <!--
+        Hier stonden een verzonnen telefoonnummer (053 - 123 45 67) en een verzonnen KvK-nummer
+        (12345678). Op een pagina die klanten en installateurs lezen is dat erger dan niets: wie het
+        probeert, belt een vreemde. Het e-mailadres blijft staan omdat het verkeer ergens heen moet;
+        telefoon en KvK komen er pas bij zodra de echte waarden bekend zijn.
+      -->
       <div class="foot__col">
         <h4>Contact</h4>
         <a href="mailto:hallo@wattzicht.nl">hallo@wattzicht.nl</a>
-        <a href="tel:+31531234567">053 – 123 45 67</a>
         <span>Enschede</span>
       </div>
 
       <div class="foot__col">
         <h4>Juridisch</h4>
         <RouterLink to="/privacy">Privacy</RouterLink>
-        <span>KVK 12345678</span>
       </div>
     </div>
     <div class="wz-wrap foot__bottom">

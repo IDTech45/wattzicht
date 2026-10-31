@@ -174,8 +174,7 @@ const scenarios = [
           bellen je binnen één werkdag.
         </p>
         <p class="demo__alt">
-          Liever direct contact? <a href="mailto:hallo@wattzicht.nl">hallo@wattzicht.nl</a> of
-          <a href="tel:+31531234567">053 – 123 45 67</a>.
+          Liever direct contact? <a href="mailto:hallo@wattzicht.nl">hallo@wattzicht.nl</a>.
         </p>
       </div>
 
