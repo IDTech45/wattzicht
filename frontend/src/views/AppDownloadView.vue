@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
 import PhonePreview from '@/components/PhonePreview.vue'
 
 // Store-links zijn nog placeholders tot de apps live staan.
@@ -77,7 +78,10 @@ const guides = [
             <span><small>Ontdek het op</small><b>Google Play</b></span>
           </a>
         </div>
-        <p class="top__note">De apps staan nog niet in de stores. Laat je e-mailadres achter bij je installateur, dan krijg je bericht.</p>
+        <p class="top__note">
+          De apps staan nog niet in de stores. Heb je al een account van je installateur, dan kun je je
+          apparaten nu al koppelen via <RouterLink to="/koppelen">koppelen</RouterLink>.
+        </p>
       </div>
       <div class="top__phone">
         <PhonePreview />

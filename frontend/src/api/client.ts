@@ -282,6 +282,37 @@ export function login(body: LoginRequest): Promise<LoginResponse> {
   })
 }
 
+// ---- Koppelen (bewoner) ----
+
+export interface EnphaseAuthorizeUrl {
+  url: string
+  redirectUri: string
+}
+
+/** De toestemmingspagina van Enphase. De client-id blijft op de server. */
+export function getEnphaseAuthorizeUrl(redirectUri: string): Promise<EnphaseAuthorizeUrl> {
+  return request<EnphaseAuthorizeUrl>(
+    `/connectors/enphase/authorize-url?redirectUri=${encodeURIComponent(redirectUri)}`,
+  )
+}
+
+/** Koppelt een apparaat met de gegevens die het merk nodig heeft. */
+export function connectDevice(body: {
+  brand: DeviceBrand
+  type: DeviceType
+  credentials: Record<string, string>
+}): Promise<DeviceSummary[]> {
+  return request<DeviceSummary[]>('/devices/connect', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+/** De apparaten van het eigen huishouden. */
+export function getMyDevices(): Promise<DeviceSummary[]> {
+  return request<DeviceSummary[]>('/devices')
+}
+
 export function getAdminOverview(): Promise<AdminOverview> {
   return request<AdminOverview>('/admin/overview')
 }

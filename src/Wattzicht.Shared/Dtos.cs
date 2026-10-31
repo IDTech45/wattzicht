@@ -402,6 +402,15 @@ public sealed record AdviceDto(
 /// <param name="InstallerName">Naam van de installateur waar het om gaat.</param>
 public sealed record InstallerAccessDto(bool Granted, DateTimeOffset? ChangedAt, string InstallerName);
 
+/// <summary>Waar de bewoner naartoe moet om Enphase toestemming te geven.</summary>
+/// <param name="Url">De toestemmingspagina van Enphase, met onze client-id en het terugkeeradres erin.</param>
+/// <param name="RedirectUri">Het terugkeeradres dat erin zit; exact dit moet straks mee bij het koppelen.</param>
+public sealed record EnphaseAuthorizeUrlDto(string Url, string RedirectUri);
+
+/// <summary>Vraag om de Enphase-toestemmingspagina.</summary>
+/// <param name="RedirectUri">Gewenst terugkeeradres; leeg = het eerste adres van onze lijst.</param>
+public sealed record EnphaseAuthorizeUrlQuery(string? RedirectUri);
+
 /// <summary>Toestemming aan- of uitzetten (PUT /household/installer-access).</summary>
 public sealed record UpdateInstallerAccessRequest(bool Granted);
 

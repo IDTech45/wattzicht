@@ -53,6 +53,11 @@ public static class HouseholdEndpoints
             .WithSummary("Gekoppelde apparaten.")
             .Produces<List<DeviceDto>>();
 
+        household.MapGet("/connectors/enphase/authorize-url", EnphaseAuthorizeUrlAsync)
+            .WithSummary("De Enphase-toestemmingspagina waar de bewoner naartoe moet (client-id blijft op de server).")
+            .Produces<EnphaseAuthorizeUrlDto>()
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
         household.MapPost("/devices/connect", ConnectDeviceAsync)
             .WithSummary("Koppelt een apparaat: valideert de credentials bij het merk en slaat ze versleuteld op.")
             .Produces<List<DeviceDto>>(StatusCodes.Status201Created)
@@ -213,6 +218,45 @@ public static class HouseholdEndpoints
     {
         var householdId = http.User.GetHouseholdId()!.Value;
         return Results.Ok(await queries.DevicesAsync(householdId, ct));
+    }
+
+    /// <summary>
+    /// Terugkeeradressen die wij voor Enphase accepteren. Een open lijst zou een omleidingsgat zijn: wie
+    /// zijn eigen adres mee mag geven, kan de toestemmingscode van een klant naar zichzelf laten sturen.
+    /// Deze adressen moeten ook in de Enphase developer-app staan, anders weigert Enphase ze zelf al.
+    /// </summary>
+    private static readonly string[] EnphaseRedirects =
+    [
+        "https://wattzicht.laadcash.nl/oauth/enphase",
+        "https://wattzicht.nl/oauth/enphase",
+        "https://www.wattzicht.nl/oauth/enphase",
+        "http://localhost:5173/oauth/enphase",
+    ];
+
+    private static Task<IResult> EnphaseAuthorizeUrlAsync(
+        [AsParameters] EnphaseAuthorizeUrlQuery query,
+        EnphaseOptions enphase)
+    {
+        if (string.IsNullOrWhiteSpace(enphase.ClientId))
+        {
+            return Task.FromResult(Results.Problem(
+                title: "Enphase is op de server nog niet ingesteld.",
+                statusCode: StatusCodes.Status400BadRequest));
+        }
+
+        var redirectUri = string.IsNullOrWhiteSpace(query.RedirectUri) ? EnphaseRedirects[0] : query.RedirectUri.Trim();
+        if (!EnphaseRedirects.Contains(redirectUri))
+        {
+            return Task.FromResult(Results.Problem(
+                title: "Dit terugkeeradres staat niet op onze lijst.",
+                statusCode: StatusCodes.Status400BadRequest));
+        }
+
+        var url = "https://api.enphaseenergy.com/oauth/authorize?response_type=code"
+                  + "&client_id=" + Uri.EscapeDataString(enphase.ClientId)
+                  + "&redirect_uri=" + Uri.EscapeDataString(redirectUri);
+
+        return Task.FromResult(Results.Ok(new EnphaseAuthorizeUrlDto(url, redirectUri)));
     }
 
     private static async Task<IResult> ConnectDeviceAsync(
