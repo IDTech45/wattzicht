@@ -16,6 +16,7 @@ import {
   getEnphaseAuthorizeUrl,
   getMyDevices,
   login as apiLogin,
+  register as apiRegister,
   type DeviceSummary,
 } from '@/api/client'
 import SiteNav from '@/components/SiteNav.vue'
@@ -36,6 +37,11 @@ const apparaten = ref<DeviceSummary[]>([])
 
 /** Het merk dat de klant gekozen heeft, of null zolang hij nog kiest. */
 const merk = ref<'Enphase' | 'Growatt' | 'Solax' | null>(null)
+
+/** Inloggen of een nieuw account maken. Zonder dit tweede kan niemand hier beginnen. */
+const nieuwAccount = ref(false)
+const huishoudnaam = ref('')
+const installateurscode = ref('')
 
 const growattToken = ref('')
 const solaxToken = ref('')
@@ -77,6 +83,29 @@ async function inloggen() {
   } catch (e) {
     fout.value = e instanceof ApiError && e.status === 401
       ? 'Dit e-mailadres en wachtwoord horen niet bij elkaar.'
+      : melding(e)
+  } finally {
+    bezig.value = false
+  }
+}
+
+async function aanmelden() {
+  fout.value = null
+  bezig.value = true
+  try {
+    const res = await apiRegister({
+      email: email.value.trim(),
+      password: wachtwoord.value,
+      householdName: huishoudnaam.value.trim(),
+      installerSlug: installateurscode.value.trim() || undefined,
+    })
+    token.value = res.token
+    bewaarToken(res.token)
+    wachtwoord.value = ''
+    await apparatenOphalen()
+  } catch (e) {
+    fout.value = e instanceof ApiError && e.status === 409
+      ? 'Er bestaat al een account met dit e-mailadres. Log in in plaats van aanmelden.'
       : melding(e)
   } finally {
     bezig.value = false
@@ -197,15 +226,22 @@ onMounted(async () => {
       <h1>Apparaten koppelen</h1>
 
       <p v-if="!ingelogd" class="wz-lead">
-        Log in met het account dat je van je installateur kreeg. Daarna koppel je je omvormer,
-        batterij of laadpaal.
+        {{
+          nieuwAccount
+            ? 'Maak een account aan voor je woning. Daarna koppel je je omvormer, batterij of laadpaal.'
+            : 'Log in met het account dat je van je installateur kreeg. Daarna koppel je je omvormer, batterij of laadpaal.'
+        }}
       </p>
 
       <p v-if="fout" class="melding melding--fout">{{ fout }}</p>
       <p v-if="gelukt" class="melding melding--goed">{{ gelukt }}</p>
 
-      <!-- Inloggen -->
-      <form v-if="!ingelogd" class="wz-panel kaart" @submit.prevent="inloggen">
+      <!-- Inloggen of aanmelden -->
+      <form
+        v-if="!ingelogd"
+        class="wz-panel kaart"
+        @submit.prevent="nieuwAccount ? aanmelden() : inloggen()"
+      >
         <label for="k-email">E-mailadres</label>
         <input id="k-email" v-model="email" type="email" autocomplete="username" required />
 
@@ -214,13 +250,29 @@ onMounted(async () => {
           id="k-wachtwoord"
           v-model="wachtwoord"
           type="password"
-          autocomplete="current-password"
+          :autocomplete="nieuwAccount ? 'new-password' : 'current-password'"
+          :minlength="nieuwAccount ? 8 : undefined"
           required
         />
+        <p v-if="nieuwAccount" class="hint">Minimaal acht tekens.</p>
+
+        <template v-if="nieuwAccount">
+          <label for="k-huis">Naam van je woning</label>
+          <input id="k-huis" v-model="huishoudnaam" placeholder="Bijvoorbeeld: Thuis" required />
+
+          <label for="k-code">Code van je installateur <span class="hint">(mag leeg)</span></label>
+          <input id="k-code" v-model="installateurscode" />
+        </template>
 
         <button class="wz-btn wz-btn--primary" type="submit" :disabled="bezig">
-          {{ bezig ? 'Bezig…' : 'Inloggen' }}
+          {{ bezig ? 'Bezig…' : nieuwAccount ? 'Account aanmaken' : 'Inloggen' }}
         </button>
+
+        <p class="wissel">
+          <button type="button" class="link" @click="nieuwAccount = !nieuwAccount; fout = null">
+            {{ nieuwAccount ? 'Ik heb al een account' : 'Ik heb nog geen account' }}
+          </button>
+        </p>
       </form>
 
       <!-- Gekoppeld -->
@@ -407,8 +459,13 @@ input {
   opacity: 0.75;
 }
 
-.uitloggen {
+.uitloggen,
+.wissel {
   margin-top: 1.5rem;
+}
+
+.wissel {
+  margin-bottom: 0;
 }
 
 .link {

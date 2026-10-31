@@ -284,6 +284,23 @@ export function login(body: LoginRequest): Promise<LoginResponse> {
 
 // ---- Koppelen (bewoner) ----
 
+export interface RegisterRequest {
+  email: string
+  password: string
+  householdName: string
+  installerSlug?: string
+  allowInstallerAccess?: boolean
+}
+
+/** Maakt een huishouden met de eerste gebruiker aan en logt direct in. */
+export function register(body: RegisterRequest): Promise<LoginResponse> {
+  return request<LoginResponse>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(body),
+    auth: false,
+  })
+}
+
 export interface EnphaseAuthorizeUrl {
   url: string
   redirectUri: string
