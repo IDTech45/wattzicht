@@ -56,8 +56,10 @@ const links = [
 </template>
 
 <style scoped>
-/* De aanmeldknop is de enige actie in de balk, dus die mag eruit springen; de rest blijft tekst. */
-.nav__link--cta {
+/* De aanmeldknop is de enige actie in de balk, dus die mag eruit springen; de rest blijft tekst.
+   Twee klassen in de selector, want .nav__link hieronder zet ook een kleur en staat later in het
+   bestand. Met één klasse won die, en dan stond er grijsblauwe tekst op geel: 1,33:1, onleesbaar. */
+.nav__link.nav__link--cta {
   background: var(--wz-cta-bg);
   color: var(--wz-cta-fg);
   border-radius: 999px;
@@ -127,12 +129,23 @@ const links = [
   color: var(--wz-text-soft);
   transition: color 120ms ease, background-color 120ms ease;
 }
+.nav__link.nav__link--cta:hover {
+  background: var(--wz-accent-600);
+  color: var(--wz-text-on-accent);
+}
 .nav__link:hover,
 .nav__link.router-link-active {
   color: var(--wz-text);
 }
 .nav__link.router-link-exact-active {
   background: var(--wz-surface-2);
+}
+/* Sta je al op /aanmelden, dan blijft de knop een knop. Zonder dit pakken de actieve-staten
+   hierboven de kleuren over en krijg je lichte tekst op geel. */
+.nav__link.nav__link--cta.router-link-active,
+.nav__link.nav__link--cta.router-link-exact-active {
+  background: var(--wz-cta-bg);
+  color: var(--wz-cta-fg);
 }
 .nav__link--portal {
   margin-left: 12px;
