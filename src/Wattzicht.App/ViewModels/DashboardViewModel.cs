@@ -13,6 +13,7 @@ public partial class DashboardViewModel : BaseViewModel
     private static readonly CultureInfo Nl = CultureInfo.GetCultureInfo("nl-NL");
 
     private readonly ApiClient _api;
+    private readonly LokaleMeter _lokaal;
     private readonly AuthService _auth;
 
     [ObservableProperty] private bool _isRefreshing;
@@ -90,10 +91,11 @@ public partial class DashboardViewModel : BaseViewModel
         }
     }
 
-    public DashboardViewModel(ApiClient api, AuthService auth)
+    public DashboardViewModel(ApiClient api, AuthService auth, LokaleMeter lokaal)
     {
         _api = api;
         _auth = auth;
+        _lokaal = lokaal;
         Title = "Home";
     }
 
@@ -112,6 +114,12 @@ public partial class DashboardViewModel : BaseViewModel
         {
             var devices = await _api.GetDevicesAsync();
             HasDevices = devices.Count > 0;
+
+            // Eerst de meterkast, dan pas het dashboard ophalen. Een P1-meter praat alleen op het
+            // thuisnetwerk, dus dit is het moment waarop die meting er kan zijn: de telefoon is hier
+            // en de app staat open. Lukt het niet (niet thuis, kastje uit), dan gaat de rest gewoon
+            // door; de meter houdt zijn eigen tellers bij en loopt bij de volgende keer weer bij.
+            if (HasDevices) await _lokaal.StuurDoorAsync(devices);
 
             if (HasDevices)
             {

@@ -131,6 +131,13 @@ public interface IDeviceConnector
 {
     DeviceBrand Brand { get; }
 
+    /// <summary>
+    /// Wordt dit apparaat door de app uitgelezen in plaats van door de server? Dat geldt voor
+    /// apparaten die alleen op het thuisnetwerk praten, zoals een P1-meter op de slimme meter. De
+    /// poller slaat ze over, want 192.168.1.50 bestaat voor onze server niet.
+    /// </summary>
+    bool IsLokaal => false;
+
     /// <summary>Valideert de credentials en haalt de apparaten op.</summary>
     Task<ConnectResult> ConnectAsync(ConnectRequest request, CancellationToken ct);
 

@@ -62,6 +62,13 @@ public sealed class ApiClient
     public Task<IReadOnlyList<DeviceDto>> ConnectDeviceAsync(ConnectDeviceRequest request, CancellationToken ct = default) =>
         PostAsync<ConnectDeviceRequest, IReadOnlyList<DeviceDto>>("/devices", request, authenticated: true, ct);
 
+    /// <summary>
+    /// Een meting doorsturen die de app zelf op het thuisnetwerk ophaalde, zoals van een P1-meter.
+    /// Het antwoord van het kastje gaat onvertaald mee; de server doet de omzetting.
+    /// </summary>
+    public Task StuurLokaleMetingAsync(Guid deviceId, LocalReadingRequest meting, CancellationToken ct = default) =>
+        PostNoContentAsync($"/devices/{deviceId}/readings", meting, ct);
+
     public Task DeleteDeviceAsync(Guid deviceId, CancellationToken ct = default) =>
         DeleteAsync($"/devices/{deviceId}", ct);
 

@@ -168,11 +168,13 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <!-- HomeWizard -->
+                    <!-- P1-meter: een dongle op de slimme meter, welk merk dan ook -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsHomeWizard}">
                         <VerticalStackLayout Spacing="12">
-                            <Label Text="Zet in de HomeWizard Energy-app de lokale API aan (Instellingen → Meters → P1-meter → Lokale API) en vul het IP-adres in."
+                            <Label Text="Zet in de app van je dongle de lokale API aan en vul het IP-adres in. Bij HomeWizard staat dat onder Instellingen, Meters, P1-meter, Lokale API."
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                            <Label Text="Je telefoon moet op hetzelfde wifi-netwerk zitten als de meter. Wij lezen hem uit zodra je de app thuis opent; buitenshuis kan het niet."
+                                   Style="{StaticResource StatCaption}" />
                             <VerticalStackLayout Spacing="4">
                                 <Label Text="IP-adres van de P1-meter" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">

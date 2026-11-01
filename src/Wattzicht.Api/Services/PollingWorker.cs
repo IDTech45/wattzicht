@@ -174,6 +174,13 @@ public sealed class PollingWorker(
                 continue;
             }
 
+            if (connector.IsLokaal)
+            {
+                // Een P1-meter praat alleen op het netwerk van de bewoner; de app stuurt die metingen
+                // door. Hier niets doen en vooral geen fout melden: er is niets mis.
+                continue;
+            }
+
             if (NogTeVroeg(device, out var wachtTot))
             {
                 // Dit merk mag niet zo vaak. Overslaan is hier geen fout: het vorige antwoord staat nog

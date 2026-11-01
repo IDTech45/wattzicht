@@ -2,7 +2,7 @@ using Wattzicht.Shared;
 
 namespace Wattzicht.Api.Connectors;
 
-/// <summary>Geeft per merk de juiste connector. Merken zonder connector (Deye, Alfen, HomeWizard) geven <c>null</c>.</summary>
+/// <summary>Geeft per merk de juiste connector. Merken zonder connector (Deye, Alfen) geven <c>null</c>.</summary>
 public sealed class ConnectorRegistry
 {
     private readonly IReadOnlyDictionary<DeviceBrand, IDeviceConnector> _connectors;
@@ -72,6 +72,7 @@ public static class ConnectorServiceCollectionExtensions
         services.AddSingleton<IDeviceConnector, SolaxConnector>();
         services.AddSingleton<IDeviceConnector, SessyConnector>();
         services.AddSingleton<IDeviceConnector, ZaptecConnector>();
+        services.AddSingleton<IDeviceConnector, HomeWizardConnector>();
         services.AddSingleton(new EnphaseOptions(
             configuration["Connectors:Enphase:ClientId"],
             configuration["Connectors:Enphase:ClientSecret"],

@@ -188,6 +188,17 @@ public sealed record ConnectDeviceRequest(
     Dictionary<string, string> Credentials,
     string? Name = null);
 
+/// <summary>
+/// Eén meting die de app zelf op het thuisnetwerk heeft opgehaald, bijvoorbeeld van een P1-meter.
+/// De server kan zo'n kastje niet bereiken, dus de telefoon doet het en stuurt dit door.
+/// </summary>
+/// <param name="Raw">Het antwoord van het kastje zoals het was. De server doet de omzetting, zodat
+/// een oudere app niet met een eigen uitleg van de velden aan komt zetten.</param>
+/// <param name="MeasuredAt">Wanneer de app het uitlas. Mag niet in de toekomst liggen.</param>
+public sealed record LocalReadingRequest(
+    System.Text.Json.JsonElement Raw,
+    DateTimeOffset? MeasuredAt = null);
+
 // ---------------------------------------------------------------------------
 // Metingen en dashboard
 // ---------------------------------------------------------------------------

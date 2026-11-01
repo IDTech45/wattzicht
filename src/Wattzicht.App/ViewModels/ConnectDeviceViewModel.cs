@@ -31,13 +31,12 @@ public sealed partial class BrandOption : ObservableObject
 public partial class ConnectDeviceViewModel : BaseViewModel
 {
     private readonly ApiClient _api;
+    private readonly LokaleMeter _lokaal;
     private readonly AuthService _auth;
 
-    // Alleen merken waar echt een connector voor draait. HomeWizard stond hier wel in de lijst maar
-    // heeft er geen: wie hem koos kwam na het invullen uit op "Merk HomeWizard wordt nog niet
-    // ondersteund". De invoervelden ervoor blijven in de pagina staan, dus zodra de connector er is
-    // gaat deze regel er weer bij. De P1-meter moet lokaal uitgelezen worden en dat kan onze server
-    // niet; dat hoort in de app te gebeuren.
+    // Alleen merken waar echt een koppeling voor is. De P1-meter is de bijzondere: die praat alleen
+    // op het thuisnetwerk, dus die leest de app zelf uit en stuurt hij door. Daarom staat hij hier
+    // zonder merknaam: elke dongle leest dezelfde poort uit.
     public IReadOnlyList<BrandOption> Brands { get; } =
     [
         new(DeviceBrand.Growatt, "Growatt", "Omvormer of batterij via ShinePhone-account", "Accent500", DeviceType.Inverter),
@@ -45,6 +44,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         new(DeviceBrand.Solax, "SolaX laadpaal", "Smart EV Charger met MID-meter via SolaXCloud", "EnergyCharger", DeviceType.Charger),
         new(DeviceBrand.Sessy, "Sessy", "Thuisbatterij met Sessy-dongle", "EnergyBattery", DeviceType.Battery),
         new(DeviceBrand.Zaptec, "Zaptec", "Laadpaal via je eigen Zaptec-account", "EnergyCharger", DeviceType.Charger),
+        new(DeviceBrand.HomeWizard, "P1-meter", "Dongle op je slimme meter, leest je netafname", "EnergyGrid", DeviceType.P1Meter),
         new(DeviceBrand.Demo, "Demo", "Voorbeelddata om de app te proberen", "TextMuted", DeviceType.Inverter),
     ];
 
@@ -129,10 +129,11 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     [ObservableProperty] private bool _isDone;
     [ObservableProperty] private string _doneText = string.Empty;
 
-    public ConnectDeviceViewModel(ApiClient api, AuthService auth)
+    public ConnectDeviceViewModel(ApiClient api, AuthService auth, LokaleMeter lokaal)
     {
         _api = api;
         _auth = auth;
+        _lokaal = lokaal;
         Title = "Apparaat koppelen";
     }
 
@@ -211,10 +212,38 @@ public partial class ConnectDeviceViewModel : BaseViewModel
 
         await RunSafeAsync(async () =>
         {
+            // De P1-meter eerst zelf aanspreken. De server kan dat niet, dus zou een typefout in het
+            // adres pas weken later opvallen als "deze meter heeft nog nooit iets gestuurd".
+            if (IsHomeWizard)
+            {
+                var proef = await _lokaal.HaalAsync(IpAddress.Trim());
+                if (proef is null)
+                {
+                    Step = 2;
+                    IpAddressError = "Geen meter gevonden op dit adres. Staat je telefoon op hetzelfde wifi-netwerk?";
+                    return;
+                }
+
+                if (proef.Value.TryGetProperty("unique_id", out var uniek) && uniek.ValueKind == System.Text.Json.JsonValueKind.String)
+                {
+                    credentials["serial"] = uniek.GetString()!;
+                }
+            }
+
             var request = new ConnectDeviceRequest(SelectedBrand.Brand, SelectedBrand.DefaultType, credentials);
             try
             {
                 var devices = await _api.ConnectDeviceAsync(request);
+
+                // Het adres blijft op de telefoon. De server heeft er niets aan en wij sturen hem
+                // niet terug, dus zonder dit zou de app na een herstart niet weten waar te kijken.
+                if (IsHomeWizard && devices is not null)
+                {
+                    foreach (var apparaat in devices)
+                    {
+                        await LokaleMeter.BewaarAdresAsync(apparaat.Id, IpAddress.Trim());
+                    }
+                }
                 var count = devices?.Count ?? 0;
                 DoneText = count switch
                 {

@@ -68,6 +68,11 @@ public static class HouseholdEndpoints
             .Produces<List<DeviceDto>>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
+        household.MapPost("/devices/{id:guid}/readings", LocalReadingAsync)
+            .WithSummary("Een meting die de app zelf op het thuisnetwerk ophaalde (P1-meter).")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesValidationProblem();
+
         household.MapDelete("/devices/{id:guid}", DeleteDeviceAsync)
             .WithSummary("Ontkoppelt een apparaat; metingen en meldingen gaan mee weg.")
             .Produces(StatusCodes.Status204NoContent)
@@ -369,6 +374,72 @@ public static class HouseholdEndpoints
 
         var dtos = created.Select(d => HouseholdQueries.ToDto(d, now)).ToList();
         return Results.Created("/devices", dtos);
+    }
+
+    /// <summary>
+    /// Een meting van een apparaat dat alleen op het thuisnetwerk praat.
+    ///
+    /// Onze server komt niet op iemands wifi, dus de app leest het kastje uit en stuurt het antwoord
+    /// hierheen zoals het was. De omzetting gebeurt hier en niet in de app: dan kan een oude versie
+    /// van de app geen eigen uitleg van de velden meesturen, en hoeft niemand te updaten als er een
+    /// veldnaam bij komt.
+    ///
+    /// Alleen voor merken die als lokaal bekendstaan. Voor een Growatt of Zaptec zou dit een gaatje
+    /// zijn om zelf cijfers te verzinnen die wij ook gewoon zelf kunnen ophalen.
+    /// </summary>
+    private static async Task<IResult> LocalReadingAsync(
+        Guid id,
+        LocalReadingRequest request,
+        HttpContext http,
+        AppDbContext db,
+        ConnectorRegistry registry,
+        AlertService alerts,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var device = await db.Devices.FirstOrDefaultAsync(d => d.Id == id && d.HouseholdId == householdId, ct);
+        if (device is null) return Results.NotFound();
+
+        if (registry.Get(device.Brand)?.IsLokaal != true)
+        {
+            return Results.Problem(
+                title: "Dit apparaat lezen wij zelf uit; metingen opsturen kan hier niet.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var nu = clock.GetUtcNow();
+        var gemeten = request.MeasuredAt ?? nu;
+
+        // Een tijdstip uit de toekomst zou de dagtotalen en de "laatst gezien" van slag brengen, en
+        // iets van gisteren hoort niet meer als nieuwste meting te gelden. De klok van een telefoon
+        // loopt zo vaak een paar seconden voor, dus een kleine marge mag.
+        if (gemeten > nu.AddMinutes(2) || gemeten < nu.AddHours(-1))
+        {
+            gemeten = nu;
+        }
+
+        DeviceReading meting;
+        try
+        {
+            meting = HomeWizardConnector.LeesP1(request.Raw, gemeten);
+        }
+        catch (Exception)
+        {
+            return Results.Problem(
+                title: "Dit antwoord van de meter begrijpen we niet.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var entity = meting.ToEntity(device.Id);
+        db.Readings.Add(entity);
+
+        device.LastSeenAt = entity.Timestamp;
+        device.LastError = null;
+        await alerts.SetOfflineAsync(device, null, ct);
+        await db.SaveChangesAsync(ct);
+
+        return Results.NoContent();
     }
 
     private static async Task<IResult> DeleteDeviceAsync(Guid id, HttpContext http, AppDbContext db, CancellationToken ct)
