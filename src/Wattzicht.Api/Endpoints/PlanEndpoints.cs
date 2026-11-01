@@ -27,7 +27,43 @@ public static class PlanEndpoints
             .Produces<EntitlementDto>()
             .Produces(StatusCodes.Status403Forbidden);
 
+        app.MapGet("/offers", AanbiedingenAsync)
+            .RequireAuthorization(AuthPolicies.Resident)
+            .WithTags("Aanbiedingen")
+            .WithSummary("Aanbiedingen voor deze woning. Leeg bij Plus en leeg als de data niets rechtvaardigt.")
+            .Produces<List<OfferDto>>();
+
+        app.MapPost("/offers/{kind}/request", AanvraagAsync)
+            .RequireAuthorization(AuthPolicies.Resident)
+            .WithTags("Aanbiedingen")
+            .WithSummary("Vraagt een offerte aan; gaat als lead naar de installateur.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesValidationProblem();
+
         return app;
+    }
+
+    private static async Task<IResult> AanbiedingenAsync(
+        HttpContext http, Aanbiedingen aanbiedingen, EntitlementService entitlement, CancellationToken ct)
+    {
+        var homeId = http.User.GetHouseholdId()!.Value;
+        var recht = await entitlement.GetForHomeAsync(homeId, ct);
+        return Results.Ok(await aanbiedingen.VoorWoningAsync(homeId, recht.Plus, ct));
+    }
+
+    private static async Task<IResult> AanvraagAsync(
+        string kind, HttpContext http, Aanbiedingen aanbiedingen, CancellationToken ct)
+    {
+        if (!OfferKind.Alle.Contains(kind))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["kind"] = [$"Soort moet een van {string.Join(", ", OfferKind.Alle)} zijn."],
+            });
+        }
+
+        await aanbiedingen.AanvraagAsync(http.User.GetHouseholdId()!.Value, kind, ct);
+        return Results.NoContent();
     }
 
     private static IResult Plannen(EntitlementService entitlement) =>
