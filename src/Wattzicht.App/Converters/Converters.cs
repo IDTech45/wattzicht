@@ -56,16 +56,16 @@ public sealed class BrandToColorConverter : IValueConverter
     {
         var key = value switch
         {
-            DeviceBrand.Growatt => "Sun",
-            DeviceBrand.Solax => "Sun",
-            DeviceBrand.Enphase => "Sun",
-            DeviceBrand.Sessy => "Battery",
-            DeviceBrand.Deye => "Sun",
-            DeviceBrand.Alfen => "Grid",
-            DeviceBrand.Zaptec => "Grid",
-            DeviceBrand.HomeWizard => "Export",
-            DeviceBrand.Demo => "Muted",
-            _ => "Muted"
+            DeviceBrand.Growatt => "Accent500",
+            DeviceBrand.Solax => "Accent500",
+            DeviceBrand.Enphase => "Accent500",
+            DeviceBrand.Sessy => "EnergyBattery",
+            DeviceBrand.Deye => "Accent500",
+            DeviceBrand.Alfen => "EnergyCharger",
+            DeviceBrand.Zaptec => "EnergyCharger",
+            DeviceBrand.HomeWizard => "EnergyGrid",
+            DeviceBrand.Demo => "TextMuted",
+            _ => "TextMuted"
         };
         return ThemeColors.Get(key);
     }
@@ -78,7 +78,7 @@ public sealed class OnlineToColorConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        var key = value is true ? "Battery" : "Danger";
+        var key = value is true ? "EnergyBattery" : "ErrorDot";
         return ThemeColors.Get(key);
     }
 

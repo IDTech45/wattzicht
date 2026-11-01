@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Wattzicht">
-  <!-- Op lacivert splashscherm: geel oog met gele zon en lacivert bliksem -->
-  <path d="M256 120 C 342 120, 404 194, 432 256 C 404 318, 342 392, 256 392 C 170 392, 108 318, 80 256 C 108 194, 170 120, 256 120 Z" fill="none" stroke="#FFE11A" stroke-width="46" stroke-linejoin="round"/>
-  <circle cx="256" cy="256" r="100" fill="#FFE11A"/>
-  <path d="M274 172 L212 274 L254 274 L238 340 L304 236 L262 236 Z" fill="#0A1630"/>
+  <!-- Op het navy splashscherm: geel oog met gele zon en navy bliksem. -->
+  <path d="M256 120 C 342 120, 404 194, 432 256 C 404 318, 342 392, 256 392 C 170 392, 108 318, 80 256 C 108 194, 170 120, 256 120 Z" fill="none" stroke="#F5C518" stroke-width="46" stroke-linejoin="round"/>
+  <circle cx="256" cy="256" r="100" fill="#F5C518"/>
+  <path d="M274 172 L212 274 L254 274 L238 340 L304 236 L262 236 Z" fill="#0A2540"/>
 </svg>

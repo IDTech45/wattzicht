@@ -2,60 +2,116 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- ============ Huisstijl: lacivert + geel (skill wattzicht-design). De app draait altijd donker (App.xaml.cs). ============ -->
+    <!--
+        Design-tokens van Wattzicht. Zelfde systeem als LaadCash: zelfde navy, fonts, radius,
+        statuskleuren en tekst- en vlakkleuren. Het enige verschil is het accent: LaadCash groen,
+        Wattzicht geel. Zie docs/DESIGN-TOKENS.md voor de tabel met beide kolommen.
 
-    <!-- Merk -->
-    <Color x:Key="Night">#0A1630</Color>
-    <Color x:Key="NightSoft">#12234A</Color>
+        Dit is de enige plek in de app waar een kleurcode staat. scripts/check-app-colors.sh
+        controleert dat, en controleert ook of elke opgevraagde sleutel hier bestaat: een
+        StaticResource die niet bestaat valt in MAUI pas op als het scherm opengaat.
+    -->
 
-    <!-- Energiestromen: zon geel, batterij teal, laadpaal oranje (key "Grid"), net/teruglevering paars (key "Export") -->
-    <Color x:Key="Sun">#FFE11A</Color>
-    <Color x:Key="SunLight">#FFEB66</Color>
-    <Color x:Key="Battery">#5EEAD4</Color>
-    <Color x:Key="Grid">#FF7A3D</Color>
-    <Color x:Key="Export">#B69CFF</Color>
+    <!-- ============ Merk ============ -->
+    <Color x:Key="Navy900">#0A2540</Color>
+    <Color x:Key="Teal800">#0E3A4A</Color>
 
-    <!-- Tekst & vlakken (light) -->
-    <Color x:Key="Ink">#111827</Color>
-    <Color x:Key="Muted">#64748B</Color>
-    <Color x:Key="Paper">#F8FAFC</Color>
+    <!-- Accent: geel. Op geel hoort navy-tekst, want geel met wit haalt geen 4,5:1. -->
+    <Color x:Key="Accent500">#F5C518</Color>
+    <Color x:Key="Accent600">#D9AC0F</Color>
+    <Color x:Key="Accent300">#FFE89A</Color>
+    <Color x:Key="TextOnAccent">#0A2540</Color>
+
+    <!-- ============ Vlakken (light) ============ -->
+    <Color x:Key="BgApp">#F6F8F7</Color>
+    <Color x:Key="BgCanvas">#F6F8F7</Color>
     <Color x:Key="Surface">#FFFFFF</Color>
-    <Color x:Key="Danger">#FF6B6B</Color>
+    <Color x:Key="Surface2">#EEF2F0</Color>
+    <Color x:Key="SurfaceTint">#EEF6F1</Color>
+    <Color x:Key="Border">#DFE6E2</Color>
+    <Color x:Key="BorderStrong">#C6D1CB</Color>
+    <Color x:Key="Divider">#E6EBE8</Color>
 
-    <!-- Randen en zachte tinten (light) -->
-    <Color x:Key="Line">#E2E8F0</Color>
-    <Color x:Key="SunSoft">#FEF3C7</Color>
-    <Color x:Key="BatterySoft">#DCFCE7</Color>
-    <Color x:Key="GridSoft">#DBEAFE</Color>
-    <Color x:Key="ExportSoft">#F3E8FF</Color>
-    <Color x:Key="DangerSoft">#FEE2E2</Color>
+    <!-- ============ Tekst ============ -->
+    <Color x:Key="TextBody">#36474C</Color>
+    <Color x:Key="TextMuted">#5C6B66</Color>
+    <Color x:Key="TextFaint">#5F6F75</Color>
+    <Color x:Key="TextOnDarkMuted">#9DB4BC</Color>
+    <Color x:Key="Placeholder">#AEBAB5</Color>
 
-    <!-- ============ Dark-varianten ============ -->
-    <Color x:Key="InkDark">#F4F6FB</Color>
-    <Color x:Key="MutedDark">#9AA8C4</Color>
-    <Color x:Key="PaperDark">#0A1630</Color>
-    <Color x:Key="SurfaceDark">#12234A</Color>
-    <Color x:Key="DangerDark">#FF6B6B</Color>
-    <Color x:Key="LineDark">#22365F</Color>
-    <Color x:Key="SunSoftDark">#2E2E1A</Color>
-    <Color x:Key="BatterySoftDark">#103A44</Color>
-    <Color x:Key="GridSoftDark">#3A2A2E</Color>
-    <Color x:Key="ExportSoftDark">#2A2A5A</Color>
-    <Color x:Key="DangerSoftDark">#3F1414</Color>
+    <!-- ============ Status ============ -->
+    <Color x:Key="SuccessDot">#0E9F6E</Color>
+    <Color x:Key="SuccessText">#0E7A55</Color>
+    <Color x:Key="SuccessBg">#E6F3EA</Color>
 
-    <!-- Hulpkleuren -->
+    <Color x:Key="PendingDot">#3B6FE0</Color>
+    <Color x:Key="PendingText">#2B59C3</Color>
+    <Color x:Key="PendingBg">#EAF0FF</Color>
+
+    <Color x:Key="WarningDot">#E0A82E</Color>
+    <Color x:Key="WarningText">#946200</Color>
+    <Color x:Key="WarningBg">#FBF1DD</Color>
+
+    <Color x:Key="ErrorDot">#E5484D</Color>
+    <Color x:Key="ErrorText">#C2363B</Color>
+    <Color x:Key="ErrorBg">#FBE6E7</Color>
+
+    <!--
+        ============ Energiekleuren ============
+        Gelijk in Wattzicht en LaadCash. Laadpaal is blauw en niet groen, omdat groen in LaadCash het
+        merk-accent is; dan zou een laadpaal daar niet van een knop te onderscheiden zijn.
+        Deze vijf gelden overal: grafieken, tegels, stroomdiagram en merk-badges.
+    -->
+    <Color x:Key="EnergySolar">#F5C518</Color>
+    <Color x:Key="EnergyBattery">#1FA67A</Color>
+    <Color x:Key="EnergyCharger">#3B6FE0</Color>
+    <Color x:Key="EnergyGrid">#9DB4BC</Color>
+    <Color x:Key="EnergyHome">#36474C</Color>
+
+    <!-- Zachte achtergrond per energiebron, voor badges en tegels. -->
+    <Color x:Key="EnergySolarSoft">#FBF1DD</Color>
+    <Color x:Key="EnergyBatterySoft">#E6F3EA</Color>
+    <Color x:Key="EnergyChargerSoft">#EAF0FF</Color>
+    <Color x:Key="EnergyGridSoft">#EEF2F0</Color>
+
+    <!--
+        ============ Dark mode ============
+        Dezelfde logica als LaadCash: navy wordt de achtergrond in plaats van de tekstkleur.
+        Het accent verschuift niet; geel op navy haalt ruim contrast, en een accent dat per thema
+        van kleur wisselt maakt een merk onherkenbaar.
+    -->
+    <Color x:Key="BgAppDark">#0A2540</Color>
+    <Color x:Key="BgCanvasDark">#0A2540</Color>
+    <Color x:Key="SurfaceDark">#0E3A4A</Color>
+    <Color x:Key="Surface2Dark">#123F52</Color>
+    <Color x:Key="SurfaceTintDark">#123F52</Color>
+    <Color x:Key="BorderDark">#1C4A5C</Color>
+    <Color x:Key="BorderStrongDark">#2A5E72</Color>
+    <Color x:Key="DividerDark">#1C4A5C</Color>
+
+    <Color x:Key="TextBodyDark">#F0F0F0</Color>
+    <Color x:Key="TextMutedDark">#9DB4BC</Color>
+    <Color x:Key="TextFaintDark">#9DB4BC</Color>
+    <Color x:Key="PlaceholderDark">#7D97A1</Color>
+
+    <!-- Status op donker: de stip blijft, tekst wordt lichter en het vlak donkerder. -->
+    <Color x:Key="SuccessTextDark">#5FD3A8</Color>
+    <Color x:Key="SuccessBgDark">#0D3D30</Color>
+    <Color x:Key="PendingTextDark">#9BB8F5</Color>
+    <Color x:Key="PendingBgDark">#13284F</Color>
+    <Color x:Key="WarningTextDark">#F3CE7A</Color>
+    <Color x:Key="WarningBgDark">#3D3015</Color>
+    <Color x:Key="ErrorTextDark">#F79A9D</Color>
+    <Color x:Key="ErrorBgDark">#45191B</Color>
+
+    <Color x:Key="EnergyHomeDark">#F0F0F0</Color>
+    <Color x:Key="EnergySolarSoftDark">#3D3015</Color>
+    <Color x:Key="EnergyBatterySoftDark">#0D3D30</Color>
+    <Color x:Key="EnergyChargerSoftDark">#13284F</Color>
+    <Color x:Key="EnergyGridSoftDark">#123F52</Color>
+
+    <!-- ============ Hulpkleuren ============ -->
     <Color x:Key="White">#FFFFFF</Color>
     <Color x:Key="Black">#000000</Color>
-    <Color x:Key="Transparent">Transparent</Color>
-
-    <!-- Brushes voor gradient-accenten -->
-    <LinearGradientBrush x:Key="SunGradient" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#FFD166" Offset="0" />
-        <GradientStop Color="#F59E0B" Offset="1" />
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="NightGradient" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#1E293B" Offset="0" />
-        <GradientStop Color="#0F172A" Offset="1" />
-    </LinearGradientBrush>
 
 </ResourceDictionary>

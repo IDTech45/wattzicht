@@ -14,11 +14,11 @@
 
         <!-- Zon -->
         <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}"
-                BackgroundColor="{AppThemeBinding Light={StaticResource SunSoft}, Dark={StaticResource SunSoftDark}}"
-                Stroke="{StaticResource Sun}">
+                BackgroundColor="{AppThemeBinding Light={StaticResource EnergySolarSoft}, Dark={StaticResource EnergySolarSoftDark}}"
+                Stroke="{StaticResource EnergySolar}">
             <VerticalStackLayout Spacing="4">
                 <Label Text="Zon" Style="{StaticResource StatCaption}" />
-                <Label Text="{Binding PvKwText}" Style="{StaticResource StatValue}" TextColor="{StaticResource Sun}" />
+                <Label Text="{Binding PvKwText}" Style="{StaticResource StatValue}" TextColor="{StaticResource EnergySolar}" />
                 <Label Text="{Binding PvHint}" Style="{StaticResource StatCaption}" />
             </VerticalStackLayout>
         </Border>
@@ -34,17 +34,17 @@
 
         <!-- Batterij -->
         <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}"
-                BackgroundColor="{AppThemeBinding Light={StaticResource BatterySoft}, Dark={StaticResource BatterySoftDark}}"
-                Stroke="{StaticResource Battery}">
+                BackgroundColor="{AppThemeBinding Light={StaticResource EnergyBatterySoft}, Dark={StaticResource EnergyBatterySoftDark}}"
+                Stroke="{StaticResource EnergyBattery}">
             <VerticalStackLayout Spacing="4">
                 <Grid ColumnDefinitions="*,Auto">
                     <Label Text="Batterij" Style="{StaticResource StatCaption}" />
                     <Label Grid.Column="1" Text="{Binding SocText}" Style="{StaticResource StatCaption}" FontAttributes="Bold" />
                 </Grid>
-                <Label Text="{Binding BatteryKwText}" Style="{StaticResource StatValue}" TextColor="{StaticResource Battery}" />
+                <Label Text="{Binding BatteryKwText}" Style="{StaticResource StatValue}" TextColor="{StaticResource EnergyBattery}" />
                 <Label Text="{Binding BatteryHint}" Style="{StaticResource StatCaption}" />
                 <ProgressBar Progress="{Binding SocFraction}"
-                             ProgressColor="{StaticResource Battery}"
+                             ProgressColor="{StaticResource EnergyBattery}"
                              HeightRequest="6"
                              Margin="0,4,0,0" />
             </VerticalStackLayout>
@@ -64,14 +64,14 @@
         <!-- Laadpaal -->
         <Border Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource Card}"
                 IsVisible="{Binding HasCharger}"
-                BackgroundColor="{AppThemeBinding Light={StaticResource GridSoft}, Dark={StaticResource GridSoftDark}}"
-                Stroke="{StaticResource Grid}">
+                BackgroundColor="{AppThemeBinding Light={StaticResource EnergyChargerSoft}, Dark={StaticResource EnergyChargerSoftDark}}"
+                Stroke="{StaticResource EnergyCharger}">
             <Grid ColumnDefinitions="*,Auto">
                 <VerticalStackLayout Spacing="2">
                     <Label Text="Laadpaal" Style="{StaticResource StatCaption}" />
                     <Label Text="{Binding ChargerHint}" Style="{StaticResource StatCaption}" />
                 </VerticalStackLayout>
-                <Label Grid.Column="1" Text="{Binding ChargerKwText}" Style="{StaticResource StatValue}" TextColor="{StaticResource Grid}" VerticalOptions="Center" />
+                <Label Grid.Column="1" Text="{Binding ChargerKwText}" Style="{StaticResource StatValue}" TextColor="{StaticResource EnergyCharger}" VerticalOptions="Center" />
             </Grid>
         </Border>
     </Grid>

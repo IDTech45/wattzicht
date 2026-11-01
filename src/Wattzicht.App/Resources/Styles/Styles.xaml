@@ -2,66 +2,86 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
+    <!--
+        Stijlen van Wattzicht, met dezelfde opbouw als laadcash.nl: navy voor de primaire knop,
+        accent voor de actie die eruit mag springen, wit met navy rand voor secundair. Radius, padding
+        en schaduw komen uit docs/DESIGN-TOKENS.md. Kleuren staan alleen in Colors.xaml.
+    -->
+
+    <!-- ============ Radius (tokens uit DESIGN-TOKENS.md) ============ -->
+    <x:Double x:Key="RadiusButton">10</x:Double>
+    <x:Double x:Key="RadiusInput">10</x:Double>
+    <x:Double x:Key="RadiusCard">12</x:Double>
+    <x:Double x:Key="RadiusPanel">14</x:Double>
+    <x:Double x:Key="RadiusPill">999</x:Double>
+
     <!-- ============ Pagina ============ -->
     <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Paper}, Dark={StaticResource PaperDark}}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource BgApp}, Dark={StaticResource BgAppDark}}" />
         <Setter Property="Padding" Value="0" />
     </Style>
 
     <Style TargetType="ActivityIndicator">
-        <Setter Property="Color" Value="{StaticResource Sun}" />
+        <Setter Property="Color" Value="{StaticResource Accent500}" />
     </Style>
 
     <Style TargetType="RefreshView">
-        <Setter Property="RefreshColor" Value="{StaticResource Sun}" />
+        <Setter Property="RefreshColor" Value="{StaticResource Accent500}" />
     </Style>
 
     <!-- ============ Labels ============ -->
     <Style TargetType="Label">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Ink}, Dark={StaticResource InkDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}" />
+        <Setter Property="FontFamily" Value="Text" />
         <Setter Property="FontSize" Value="15" />
         <Setter Property="LineBreakMode" Value="WordWrap" />
     </Style>
 
     <Style x:Key="PageTitle" TargetType="Label">
+        <Setter Property="FontFamily" Value="Display" />
         <Setter Property="FontSize" Value="28" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Ink}, Dark={StaticResource InkDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}" />
     </Style>
 
     <Style x:Key="SectionTitle" TargetType="Label">
+        <Setter Property="FontFamily" Value="Display" />
         <Setter Property="FontSize" Value="20" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="Margin" Value="0,12,0,4" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Ink}, Dark={StaticResource InkDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}" />
     </Style>
 
     <Style x:Key="CardTitle" TargetType="Label">
+        <Setter Property="FontFamily" Value="Display" />
         <Setter Property="FontSize" Value="16" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Ink}, Dark={StaticResource InkDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}" />
     </Style>
 
     <Style x:Key="SubtitleLabel" TargetType="Label">
         <Setter Property="FontSize" Value="13" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Muted}, Dark={StaticResource MutedDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}" />
     </Style>
 
     <Style x:Key="FieldLabel" TargetType="Label">
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Muted}, Dark={StaticResource MutedDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}" />
     </Style>
 
     <Style x:Key="ErrorLabel" TargetType="Label">
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Danger}, Dark={StaticResource DangerDark}}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <!-- De tekstkleur, niet de stipkleur: ErrorDot is fel bedoeld voor een bolletje. -->
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ErrorText}, Dark={StaticResource ErrorTextDark}}" />
     </Style>
 
     <Style x:Key="StatValue" TargetType="Label">
+        <Setter Property="FontFamily" Value="Mono" />
         <Setter Property="FontSize" Value="26" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="LineBreakMode" Value="TailTruncation" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Ink}, Dark={StaticResource InkDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}" />
     </Style>
 
     <Style x:Key="StatValueLarge" TargetType="Label" BasedOn="{StaticResource StatValue}">
@@ -70,27 +90,32 @@
 
     <Style x:Key="StatCaption" TargetType="Label">
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Muted}, Dark={StaticResource MutedDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}" />
     </Style>
 
-    <!-- ============ Knoppen ============ -->
+    <!--
+        ============ Knoppen ============
+        Zoals op laadcash.nl: primair is navy met witte tekst, accent is het merkkleurtje voor de ene
+        actie die eruit mag springen, secundair is leeg met een navy rand. Radius 10 overal, want een
+        knop die per platform een andere ronding heeft valt op zodra je de twee naast elkaar zet.
+    -->
     <Style TargetType="Button">
+        <Setter Property="FontFamily" Value="TextSemi" />
         <Setter Property="FontSize" Value="15" />
-        <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="MinimumHeightRequest" Value="48" />
         <Setter Property="HeightRequest" Value="50" />
         <Setter Property="Padding" Value="16,12" />
-        <Setter Property="CornerRadius" Value="{OnPlatform Default=10, Android=8, iOS=12}" />
+        <Setter Property="CornerRadius" Value="10" />
     </Style>
 
     <Style x:Key="PrimaryButton" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{StaticResource Sun}" />
-        <Setter Property="TextColor" Value="{StaticResource Night}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource TextOnAccent}}" />
+        <Setter Property="FontFamily" Value="TextSemi" />
         <Setter Property="FontSize" Value="15" />
-        <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="MinimumHeightRequest" Value="48" />
         <Setter Property="HeightRequest" Value="50" />
-        <Setter Property="CornerRadius" Value="{OnPlatform Default=10, Android=8, iOS=12}" />
+        <Setter Property="CornerRadius" Value="10" />
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup x:Name="CommonStates">
@@ -105,77 +130,146 @@
         </Setter>
     </Style>
 
+    <!-- De accentknop: geel met navy tekst. Eén per scherm, anders springt er niets meer uit. -->
+    <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+        <Setter Property="BackgroundColor" Value="{StaticResource Accent500}" />
+        <Setter Property="TextColor" Value="{StaticResource TextOnAccent}" />
+    </Style>
+
     <Style x:Key="SecondaryButton" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Night}, Dark={StaticResource InkDark}}" />
-        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Night}, Dark={StaticResource MutedDark}}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Surface}, Dark=Transparent}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource TextBodyDark}}" />
+        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource BorderStrongDark}}" />
         <Setter Property="BorderWidth" Value="1.5" />
+        <Setter Property="FontFamily" Value="TextSemi" />
         <Setter Property="FontSize" Value="15" />
-        <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="MinimumHeightRequest" Value="48" />
         <Setter Property="HeightRequest" Value="50" />
-        <Setter Property="CornerRadius" Value="{OnPlatform Default=10, Android=8, iOS=12}" />
+        <Setter Property="CornerRadius" Value="10" />
     </Style>
 
     <Style x:Key="DangerButton" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{StaticResource Danger}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource ErrorDot}" />
         <Setter Property="TextColor" Value="{StaticResource White}" />
+        <Setter Property="FontFamily" Value="TextSemi" />
         <Setter Property="FontSize" Value="15" />
-        <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="MinimumHeightRequest" Value="48" />
         <Setter Property="HeightRequest" Value="50" />
-        <Setter Property="CornerRadius" Value="{OnPlatform Default=10, Android=8, iOS=12}" />
+        <Setter Property="CornerRadius" Value="10" />
     </Style>
 
-    <!-- Tekstknop (link-achtig) -->
+    <!-- Tekstknop (link-achtig). Navy, niet de laadpaalkleur: dit is geen energiebron. -->
     <Style x:Key="LinkButton" TargetType="Button">
         <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{StaticResource Grid}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource TextBodyDark}}" />
+        <Setter Property="FontFamily" Value="Text" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontAttributes" Value="None" />
         <Setter Property="MinimumHeightRequest" Value="48" />
         <Setter Property="HeightRequest" Value="48" />
     </Style>
 
-    <!-- Segment-knoppen (Dag/Week/Maand/Jaar) -->
+    <!-- Segment-knoppen (Dag/Week/Maand/Jaar): pill-vorm, zoals de tabs op laadcash.nl. -->
     <Style x:Key="SegmentButton" TargetType="Button">
         <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Muted}, Dark={StaticResource MutedDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}" />
+        <Setter Property="FontFamily" Value="TextSemi" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="MinimumHeightRequest" Value="44" />
         <Setter Property="HeightRequest" Value="44" />
         <Setter Property="Padding" Value="8,0" />
-        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="CornerRadius" Value="999" />
     </Style>
     <Style x:Key="SegmentButtonActive" TargetType="Button" BasedOn="{StaticResource SegmentButton}">
-        <Setter Property="BackgroundColor" Value="{StaticResource Sun}" />
-        <Setter Property="TextColor" Value="{StaticResource Night}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource Accent500}" />
+        <Setter Property="TextColor" Value="{StaticResource TextOnAccent}" />
     </Style>
 
-    <!-- ============ Kaarten ============ -->
+    <!--
+        ============ Kaarten ============
+        Radius 12 en de kaartschaduw uit de tokens: 1px lijn eronder plus een zachte 18px, allebei in
+        navy met 6% dekking. Een zwarte schaduw maakt een kaart op een koele achtergrond grauw.
+    -->
     <Style x:Key="Card" TargetType="Border">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" />
-        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Line}, Dark={StaticResource LineDark}}" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Border}, Dark={StaticResource BorderDark}}" />
         <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
         <Setter Property="Padding" Value="16" />
         <Setter Property="Shadow">
             <Setter.Value>
-                <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.06" />
+                <Shadow Brush="{StaticResource Navy900}" Offset="0,6" Radius="18" Opacity="0.06" />
             </Setter.Value>
         </Setter>
     </Style>
 
-    <Style x:Key="DangerCard" TargetType="Border" BasedOn="{StaticResource Card}">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource DangerSoft}, Dark={StaticResource DangerSoftDark}}" />
-        <Setter Property="Stroke" Value="{StaticResource Danger}" />
+    <!-- Paneel: groter vlak zonder schaduw, radius 14. Voor een sectie met kaarten erin. -->
+    <Style x:Key="Panel" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Surface2}, Dark={StaticResource Surface2Dark}}" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Border}, Dark={StaticResource BorderDark}}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 14" />
+        <Setter Property="Padding" Value="16" />
     </Style>
 
-    <!-- Invoerveld-rand -->
+    <!-- Donker paneel met cijfers erin, zoals de financiële blokken op laadcash.nl. -->
+    <Style x:Key="DarkPanel" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource Teal800}" />
+        <Setter Property="Stroke" Value="Transparent" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 14" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <Style x:Key="DangerCard" TargetType="Border" BasedOn="{StaticResource Card}">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ErrorBg}, Dark={StaticResource ErrorBgDark}}" />
+        <Setter Property="Stroke" Value="{StaticResource ErrorDot}" />
+    </Style>
+
+    <!--
+        ============ Badges ============
+        Pill met een zachte achtergrond en de tekstkleur van dezelfde status. De stipkleur is te fel
+        voor tekst; die hoort bij het bolletje ervoor.
+    -->
+    <Style x:Key="Badge" TargetType="Border">
+        <Setter Property="StrokeShape" Value="RoundRectangle 999" />
+        <Setter Property="Stroke" Value="Transparent" />
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="HorizontalOptions" Value="Start" />
+    </Style>
+
+    <Style x:Key="BadgeSuccess" TargetType="Border" BasedOn="{StaticResource Badge}">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SuccessBg}, Dark={StaticResource SuccessBgDark}}" />
+    </Style>
+    <Style x:Key="BadgePending" TargetType="Border" BasedOn="{StaticResource Badge}">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PendingBg}, Dark={StaticResource PendingBgDark}}" />
+    </Style>
+    <Style x:Key="BadgeWarning" TargetType="Border" BasedOn="{StaticResource Badge}">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource WarningBg}, Dark={StaticResource WarningBgDark}}" />
+    </Style>
+    <Style x:Key="BadgeError" TargetType="Border" BasedOn="{StaticResource Badge}">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ErrorBg}, Dark={StaticResource ErrorBgDark}}" />
+    </Style>
+
+    <Style x:Key="BadgeLabel" TargetType="Label">
+        <Setter Property="FontFamily" Value="TextSemi" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style x:Key="BadgeLabelSuccess" TargetType="Label" BasedOn="{StaticResource BadgeLabel}">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
+    </Style>
+    <Style x:Key="BadgeLabelPending" TargetType="Label" BasedOn="{StaticResource BadgeLabel}">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PendingText}, Dark={StaticResource PendingTextDark}}" />
+    </Style>
+    <Style x:Key="BadgeLabelWarning" TargetType="Label" BasedOn="{StaticResource BadgeLabel}">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource WarningTextDark}}" />
+    </Style>
+    <Style x:Key="BadgeLabelError" TargetType="Label" BasedOn="{StaticResource BadgeLabel}">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ErrorText}, Dark={StaticResource ErrorTextDark}}" />
+    </Style>
+
+    <!-- Invoerveld-rand. BorderStrong, want een invoerveld moet zichtbaar een invoerveld zijn. -->
     <Style x:Key="InputBorder" TargetType="Border">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" />
-        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Line}, Dark={StaticResource LineDark}}" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource BorderStrong}, Dark={StaticResource BorderStrongDark}}" />
         <Setter Property="StrokeThickness" Value="1" />
         <Setter Property="StrokeShape" Value="RoundRectangle 10" />
         <Setter Property="Padding" Value="12,0" />
@@ -184,21 +278,22 @@
 
     <!-- ============ Invoer ============ -->
     <Style TargetType="Entry">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Ink}, Dark={StaticResource InkDark}}" />
-        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Muted}, Dark={StaticResource MutedDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}" />
+        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Placeholder}, Dark={StaticResource PlaceholderDark}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="FontFamily" Value="Text" />
         <Setter Property="FontSize" Value="15" />
         <Setter Property="MinimumHeightRequest" Value="48" />
     </Style>
 
     <Style TargetType="Switch">
-        <Setter Property="OnColor" Value="{StaticResource Sun}" />
+        <Setter Property="OnColor" Value="{StaticResource Accent500}" />
         <Setter Property="ThumbColor" Value="{StaticResource White}" />
     </Style>
 
-    <Style TargetType="BoxView" x:Key="Divider">
+    <Style TargetType="BoxView" x:Key="DividerLine">
         <Setter Property="HeightRequest" Value="1" />
-        <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource Line}, Dark={StaticResource LineDark}}" />
+        <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource DividerDark}}" />
     </Style>
 
 </ResourceDictionary>

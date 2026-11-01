@@ -23,11 +23,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- App-icoon: achtergrond + voorgrond (adaptive icon op Android) -->
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#FFE11A" />
+    <!-- App-icoon: achtergrond + voorgrond (adaptive icon op Android).
+         Navy achtergrond met geel merkteken, zoals LaadCash navy met groen doet. -->
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#0A2540" />
 
     <!-- Splash -->
-    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0A1630" BaseSize="160,160" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0A2540" BaseSize="160,160" />
 
     <!-- Afbeeldingen (SVG's worden naar PNG omgezet per dichtheid) -->
     <MauiImage Include="Resources\Images\*" />
@@ -38,7 +39,8 @@
     <MauiImage Update="Resources\Images\sturen.svg" BaseSize="24,24" />
     <MauiImage Update="Resources\Images\logo.svg" BaseSize="96,96" />
 
-    <MauiFont Include="Resources\Fonts\*" />
+    <!-- Alleen de fontbestanden; OFL.txt staat ernaast als licentie. -->
+    <MauiFont Include="Resources\Fonts\*.ttf" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 

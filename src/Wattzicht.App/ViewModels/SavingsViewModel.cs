@@ -228,10 +228,10 @@ public partial class SavingsViewModel : BaseViewModel
     private void ApplyChartTheme()
     {
         var dark = Application.Current?.RequestedTheme == AppTheme.Dark;
-        Chart.BarColor = Res("Sun");
-        Chart.BarColorLight = Res("SunLight");
-        Chart.AxisColor = Res(dark ? "LineDark" : "Line");
-        Chart.TextColor = Res(dark ? "MutedDark" : "Muted");
+        Chart.BarColor = Res("Accent500");
+        Chart.BarColorLight = Res("Accent300");
+        Chart.AxisColor = Res(dark ? "BorderDark" : "Border");
+        Chart.TextColor = Res(dark ? "TextMutedDark" : "TextMuted");
     }
 
     private static Color Res(string key) => ThemeColors.Get(key);

@@ -86,11 +86,11 @@ public partial class EnergyFlowView : ContentView
         bool exporting = grid < -50;
         bool importing = grid > 50;
         GridHint = exporting ? "▲ Teruglevering" : importing ? "▼ Afname" : "Geen uitwisseling";
-        GridAccent = exporting ? Res("Export") : importing ? Res("Export") : Res("Muted");
+        GridAccent = exporting ? Res("EnergyGrid") : importing ? Res("EnergyGrid") : Res("TextMuted");
         GridCardBackground = exporting
-            ? ThemeRes("ExportSoft", "ExportSoftDark")
+            ? ThemeRes("EnergyGridSoft", "EnergyGridSoftDark")
             : importing
-                ? ThemeRes("GridSoft", "GridSoftDark")
+                ? ThemeRes("EnergyChargerSoft", "EnergyChargerSoftDark")
                 : ThemeRes("Surface", "SurfaceDark");
 
         HasCharger = s?.ChargerPowerW is not null;

@@ -15,20 +15,20 @@
 
                 <!-- Voortgang -->
                 <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
-                    <BoxView Grid.Column="0" HeightRequest="4" CornerRadius="2" Color="{StaticResource Sun}" />
+                    <BoxView Grid.Column="0" HeightRequest="4" CornerRadius="2" Color="{StaticResource Accent500}" />
                     <BoxView Grid.Column="1" HeightRequest="4" CornerRadius="2"
-                             Color="{AppThemeBinding Light={StaticResource Line}, Dark={StaticResource LineDark}}">
+                             Color="{AppThemeBinding Light={StaticResource Border}, Dark={StaticResource BorderDark}}">
                         <BoxView.Triggers>
                             <DataTrigger TargetType="BoxView" Binding="{Binding IsStep1}" Value="False">
-                                <Setter Property="Color" Value="{StaticResource Sun}" />
+                                <Setter Property="Color" Value="{StaticResource Accent500}" />
                             </DataTrigger>
                         </BoxView.Triggers>
                     </BoxView>
                     <BoxView Grid.Column="2" HeightRequest="4" CornerRadius="2"
-                             Color="{AppThemeBinding Light={StaticResource Line}, Dark={StaticResource LineDark}}">
+                             Color="{AppThemeBinding Light={StaticResource Border}, Dark={StaticResource BorderDark}}">
                         <BoxView.Triggers>
                             <DataTrigger TargetType="BoxView" Binding="{Binding IsStep3}" Value="True">
-                                <Setter Property="Color" Value="{StaticResource Sun}" />
+                                <Setter Property="Color" Value="{StaticResource Accent500}" />
                             </DataTrigger>
                         </BoxView.Triggers>
                     </BoxView>
@@ -48,7 +48,7 @@
                                 <Border Style="{StaticResource Card}" Padding="12" MinimumHeightRequest="64">
                                     <Border.Triggers>
                                         <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                            <Setter Property="Stroke" Value="{StaticResource Sun}" />
+                                            <Setter Property="Stroke" Value="{StaticResource Accent500}" />
                                             <Setter Property="StrokeThickness" Value="2" />
                                         </DataTrigger>
                                     </Border.Triggers>
@@ -67,7 +67,7 @@
                                             <Label Text="{Binding Description}" Style="{StaticResource SubtitleLabel}" />
                                         </VerticalStackLayout>
                                         <Label Grid.Column="2" Text="✓" FontSize="22" FontAttributes="Bold"
-                                               TextColor="{StaticResource Sun}" VerticalOptions="Center"
+                                               TextColor="{StaticResource Accent500}" VerticalOptions="Center"
                                                IsVisible="{Binding IsSelected}" />
                                     </Grid>
                                 </Border>
@@ -189,10 +189,10 @@
                     </Border>
 
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsDone}"
-                            BackgroundColor="{AppThemeBinding Light={StaticResource BatterySoft}, Dark={StaticResource BatterySoftDark}}"
-                            Stroke="{StaticResource Battery}">
+                            BackgroundColor="{AppThemeBinding Light={StaticResource EnergyBatterySoft}, Dark={StaticResource EnergyBatterySoftDark}}"
+                            Stroke="{StaticResource EnergyBattery}">
                         <VerticalStackLayout Spacing="8">
-                            <Label Text="✓" FontSize="36" TextColor="{StaticResource Battery}" />
+                            <Label Text="✓" FontSize="36" TextColor="{StaticResource EnergyBattery}" />
                             <Label Text="{Binding DoneText}" FontSize="16" />
                             <Label Text="Binnen een paar minuten zie je de eerste metingen op Home." Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>
@@ -203,7 +203,7 @@
 
         <!-- Knoppenbalk -->
         <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="12" Padding="16,8,16,16"
-              BackgroundColor="{AppThemeBinding Light={StaticResource Paper}, Dark={StaticResource PaperDark}}">
+              BackgroundColor="{AppThemeBinding Light={StaticResource BgApp}, Dark={StaticResource BgAppDark}}">
             <Button Grid.Column="0" Text="Terug" Style="{StaticResource SecondaryButton}" WidthRequest="110"
                     Command="{Binding BackCommand}" IsEnabled="{Binding IsNotBusy}"
                     IsVisible="{Binding IsDone, Converter={StaticResource InvertedBool}}" />
@@ -211,7 +211,7 @@
                 <Button Text="{Binding PrimaryButtonText}" Style="{StaticResource PrimaryButton}"
                         Command="{Binding NextCommand}" IsEnabled="{Binding IsNotBusy}" />
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
-                                   Color="{StaticResource Night}" HorizontalOptions="End" Margin="0,0,16,0" />
+                                   Color="{StaticResource Navy900}" HorizontalOptions="End" Margin="0,0,16,0" />
             </Grid>
             <Button Grid.ColumnSpan="2" Text="Klaar" Style="{StaticResource PrimaryButton}"
                     Command="{Binding FinishCommand}" IsVisible="{Binding IsDone}" />

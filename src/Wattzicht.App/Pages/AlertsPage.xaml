@@ -23,7 +23,7 @@
                 <VerticalStackLayout Padding="32,48" Spacing="12" HorizontalOptions="Center">
                     <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
                     <VerticalStackLayout Spacing="8" IsVisible="{Binding HasLoaded}">
-                        <Label Text="✓" FontSize="40" TextColor="{StaticResource Battery}" HorizontalTextAlignment="Center" />
+                        <Label Text="✓" FontSize="40" TextColor="{StaticResource EnergyBattery}" HorizontalTextAlignment="Center" />
                         <Label Text="Alles werkt" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" Margin="0" />
                         <Label Text="Er zijn op dit moment geen storingen." Style="{StaticResource SubtitleLabel}" HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>
@@ -34,13 +34,13 @@
                 <DataTemplate x:DataType="vm:AlertItem">
                     <Border Style="{StaticResource DangerCard}" Margin="16,4">
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                            <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12" Fill="{StaticResource Danger}" VerticalOptions="Start" Margin="0,5,0,0" />
+                            <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12" Fill="{StaticResource ErrorDot}" VerticalOptions="Start" Margin="0,5,0,0" />
                             <VerticalStackLayout Grid.Column="1" Spacing="4">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <Label Text="{Binding DeviceName}" Style="{StaticResource CardTitle}" />
                                     <Label Grid.Column="1" Text="{Binding SinceText}" Style="{StaticResource StatCaption}" />
                                 </Grid>
-                                <Label Text="{Binding TypeText}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource Danger}, Dark={StaticResource DangerDark}}" FontSize="14" />
+                                <Label Text="{Binding TypeText}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource ErrorDot}, Dark={StaticResource ErrorTextDark}}" FontSize="14" />
                                 <Label Text="{Binding Message}" FontSize="14" />
                                 <Label Text="{Binding Advice}" Style="{StaticResource SubtitleLabel}" />
                             </VerticalStackLayout>

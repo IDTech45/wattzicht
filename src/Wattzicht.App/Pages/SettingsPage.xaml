@@ -79,14 +79,14 @@
                         <Label Text="{Binding FeedInCostError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasFeedInCostError}" />
                     </VerticalStackLayout>
 
-                    <Label Text="{Binding TariffSavedText}" FontSize="13" TextColor="{StaticResource Battery}"
+                    <Label Text="{Binding TariffSavedText}" FontSize="13" TextColor="{StaticResource EnergyBattery}"
                            IsVisible="{Binding TariffSavedText, Converter={StaticResource IsNotNullOrEmpty}}" />
 
                     <Grid>
                         <Button Text="Tarief opslaan" Style="{StaticResource PrimaryButton}" Command="{Binding SaveTariffCommand}"
                                 IsEnabled="{Binding IsSavingTariff, Converter={StaticResource InvertedBool}}" />
                         <ActivityIndicator IsRunning="{Binding IsSavingTariff}" IsVisible="{Binding IsSavingTariff}"
-                                           Color="{StaticResource Night}" HorizontalOptions="End" Margin="0,0,16,0" />
+                                           Color="{StaticResource Navy900}" HorizontalOptions="End" Margin="0,0,16,0" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
@@ -100,7 +100,7 @@
                         <Border WidthRequest="72" HeightRequest="48" StrokeThickness="0" StrokeShape="RoundRectangle 12"
                                 BackgroundColor="{StaticResource White}" VerticalOptions="Center">
                             <Grid>
-                                <Label Text="⚡" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" TextColor="{StaticResource Night}"
+                                <Label Text="⚡" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" TextColor="{StaticResource Navy900}"
                                        IsVisible="{Binding HasInstallerLogo, Converter={StaticResource InvertedBool}}" />
                                 <Image Source="{Binding InstallerLogo, Converter={StaticResource LogoSource}}" Aspect="AspectFit" Margin="4"
                                        IsVisible="{Binding HasInstallerLogo}" />
@@ -126,7 +126,7 @@
                                 SemanticProperties.Description="Installateur mag meekijken" />
                     </Grid>
 
-                    <BoxView Style="{StaticResource Divider}" />
+                    <BoxView Style="{StaticResource DividerLine}" />
 
                     <Label Text="Nog geen thuisbatterij? Sla je zonnestroom op en gebruik hem 's avonds zelf." FontSize="14" />
                     <Button Text="Vraag offerte voor thuisbatterij" Style="{StaticResource PrimaryButton}" Command="{Binding RequestQuoteCommand}" />
@@ -161,8 +161,8 @@
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12">
                     <Button Text="Uitloggen" Style="{StaticResource SecondaryButton}"
-                            TextColor="{AppThemeBinding Light={StaticResource Danger}, Dark={StaticResource DangerDark}}"
-                            BorderColor="{AppThemeBinding Light={StaticResource Danger}, Dark={StaticResource DangerDark}}"
+                            TextColor="{AppThemeBinding Light={StaticResource ErrorDot}, Dark={StaticResource ErrorTextDark}}"
+                            BorderColor="{AppThemeBinding Light={StaticResource ErrorDot}, Dark={StaticResource ErrorTextDark}}"
                             Command="{Binding LogoutCommand}" />
                     <Label Text="{Binding VersionText}" Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" />
                     <Label Text="{Binding ApiText}" Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" Opacity="0.7" />

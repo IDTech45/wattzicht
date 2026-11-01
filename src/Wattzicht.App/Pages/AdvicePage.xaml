@@ -13,7 +13,7 @@
                 <VerticalStackLayout Padding="16,8,16,8" Spacing="12">
                     <Label Text="Slim sturen · vandaag" Style="{StaticResource SubtitleLabel}" />
                     <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="{Binding TotalText}" Style="{StaticResource StatValueLarge}" TextColor="{StaticResource Sun}" />
+                        <Label Text="{Binding TotalText}" Style="{StaticResource StatValueLarge}" TextColor="{StaticResource Accent500}" />
                         <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
                     </Grid>
                     <Label Text="{Binding Subtitle}" Style="{StaticResource SubtitleLabel}" />
@@ -24,8 +24,8 @@
 
                     <Border Style="{StaticResource Card}" IsVisible="{Binding HasPrices}">
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="{Binding CheapestText}" FontAttributes="Bold" TextColor="{StaticResource Sun}" />
-                            <Label Text="{Binding ExpensiveText}" FontAttributes="Bold" TextColor="{StaticResource Export}" />
+                            <Label Text="{Binding CheapestText}" FontAttributes="Bold" TextColor="{StaticResource Accent500}" />
+                            <Label Text="{Binding ExpensiveText}" FontAttributes="Bold" TextColor="{StaticResource EnergyGrid}" />
                             <Label Text="Uurprijzen inclusief belasting (schatting)" Style="{StaticResource StatCaption}" />
                         </VerticalStackLayout>
                     </Border>
@@ -48,9 +48,9 @@
                             <Label Grid.Column="1" Text="{Binding Title}" Style="{StaticResource CardTitle}" />
                             <Label Grid.Column="1" Grid.Row="1" Text="{Binding Detail}" Style="{StaticResource StatCaption}" />
                             <Label Grid.Column="1" Grid.Row="2" Text="{Binding Note}" IsVisible="{Binding HasNote}"
-                                   Style="{StaticResource StatCaption}" TextColor="{StaticResource Sun}" />
+                                   Style="{StaticResource StatCaption}" TextColor="{StaticResource Accent500}" />
                             <Label Grid.Column="2" Grid.RowSpan="3" Text="{Binding SavingText}" IsVisible="{Binding HasSaving}"
-                                   FontAttributes="Bold" FontSize="16" TextColor="{StaticResource Sun}" VerticalOptions="Center" />
+                                   FontAttributes="Bold" FontSize="16" TextColor="{StaticResource Accent500}" VerticalOptions="Center" />
                         </Grid>
                     </Border>
                 </DataTemplate>

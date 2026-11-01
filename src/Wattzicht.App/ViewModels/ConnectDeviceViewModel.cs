@@ -35,12 +35,12 @@ public partial class ConnectDeviceViewModel : BaseViewModel
 
     public IReadOnlyList<BrandOption> Brands { get; } =
     [
-        new(DeviceBrand.Growatt, "Growatt", "Omvormer of batterij via ShinePhone-account", "Sun", DeviceType.Inverter),
-        new(DeviceBrand.Solax, "SolaX", "Omvormer of hybride met batterij via SolaXCloud", "Sun", DeviceType.Inverter),
-        new(DeviceBrand.Solax, "SolaX laadpaal", "Smart EV Charger met MID-meter via SolaXCloud", "Grid", DeviceType.Charger),
-        new(DeviceBrand.Sessy, "Sessy", "Thuisbatterij met Sessy-dongle", "Battery", DeviceType.Battery),
-        new(DeviceBrand.HomeWizard, "HomeWizard", "P1-meter op je slimme meter", "Export", DeviceType.P1Meter),
-        new(DeviceBrand.Demo, "Demo", "Voorbeelddata om de app te proberen", "Muted", DeviceType.Inverter),
+        new(DeviceBrand.Growatt, "Growatt", "Omvormer of batterij via ShinePhone-account", "Accent500", DeviceType.Inverter),
+        new(DeviceBrand.Solax, "SolaX", "Omvormer of hybride met batterij via SolaXCloud", "Accent500", DeviceType.Inverter),
+        new(DeviceBrand.Solax, "SolaX laadpaal", "Smart EV Charger met MID-meter via SolaXCloud", "EnergyCharger", DeviceType.Charger),
+        new(DeviceBrand.Sessy, "Sessy", "Thuisbatterij met Sessy-dongle", "EnergyBattery", DeviceType.Battery),
+        new(DeviceBrand.HomeWizard, "HomeWizard", "P1-meter op je slimme meter", "EnergyGrid", DeviceType.P1Meter),
+        new(DeviceBrand.Demo, "Demo", "Voorbeelddata om de app te proberen", "TextMuted", DeviceType.Inverter),
     ];
 
     // ---- Stap ----

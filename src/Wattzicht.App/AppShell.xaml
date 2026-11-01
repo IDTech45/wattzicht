@@ -4,13 +4,13 @@
        xmlns:pages="clr-namespace:Wattzicht.App.Pages"
        x:Class="Wattzicht.App.AppShell"
        Shell.FlyoutBehavior="Disabled"
-       Shell.BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource NightSoft}}"
-       Shell.ForegroundColor="{AppThemeBinding Light={StaticResource Ink}, Dark={StaticResource InkDark}}"
-       Shell.TitleColor="{AppThemeBinding Light={StaticResource Ink}, Dark={StaticResource InkDark}}"
-       Shell.TabBarBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource NightSoft}}"
-       Shell.TabBarForegroundColor="{StaticResource Sun}"
-       Shell.TabBarTitleColor="{StaticResource Sun}"
-       Shell.TabBarUnselectedColor="{AppThemeBinding Light={StaticResource Muted}, Dark={StaticResource MutedDark}}">
+       Shell.BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Teal800}}"
+       Shell.ForegroundColor="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}"
+       Shell.TitleColor="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}"
+       Shell.TabBarBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Teal800}}"
+       Shell.TabBarForegroundColor="{StaticResource Accent500}"
+       Shell.TabBarTitleColor="{StaticResource Accent500}"
+       Shell.TabBarUnselectedColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}">
 
     <!-- Login staat buiten de tabs: geen TabBar zichtbaar -->
     <ShellContent Route="login"

@@ -10,8 +10,8 @@ public partial class App : Application
     public App(AuthService auth, PushService push)
     {
         InitializeComponent();
-        // Huisstijl: altijd donker (lacivert), net als de website.
-        UserAppTheme = AppTheme.Dark;
+        // Geen afgedwongen thema meer: alle kleuren hebben een light- en een dark-variant
+        // (AppThemeBinding in Styles.xaml), dus de app volgt de telefoon. Zelfde gedrag als LaadCash.
         _auth = auth;
         _push = push;
         _auth.LoggedOut += OnLoggedOut;

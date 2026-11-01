@@ -24,6 +24,16 @@ jobs:
       - name: Docker build (met tests)
         run: docker build -f src/Wattzicht.Api/Dockerfile -t wattzicht-api:ci .
 
+  app-colors:
+    # Kleurregels van de app: geen kleurcodes buiten Colors.xaml, en elke opgevraagde sleutel bestaat.
+    # Die tweede is de reden dat dit in CI staat: een StaticResource die niet bestaat valt in MAUI pas
+    # op als dat scherm opengaat, dus een typefout in een kleurnaam komt er anders doorheen.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Kleurcontrole
+        run: ./scripts/check-app-colors.sh
+
   app-android:
     # Controleert dat de MAUI-app voor Android compileert (inclusief Firebase-push).
     runs-on: ubuntu-latest

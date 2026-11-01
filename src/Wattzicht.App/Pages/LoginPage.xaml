@@ -6,7 +6,7 @@
              x:DataType="vm:LoginViewModel"
              Title="Inloggen"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="{StaticResource Night}">
+             BackgroundColor="{StaticResource Navy900}">
 
     <ScrollView>
         <Grid RowDefinitions="*,Auto,*" Padding="24" RowSpacing="24">
@@ -15,7 +15,7 @@
             <VerticalStackLayout Grid.Row="0" Spacing="12" VerticalOptions="End" HorizontalOptions="Center">
                 <Image Source="logo.png" HeightRequest="96" WidthRequest="96"
                        SemanticProperties.Description="Wattzicht-logo" />
-                <Label HorizontalTextAlignment="Center" FontSize="30" TextColor="{StaticResource InkDark}">
+                <Label HorizontalTextAlignment="Center" FontSize="30" TextColor="{StaticResource TextBodyDark}">
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text="Watt" FontAttributes="Bold" />
@@ -25,7 +25,7 @@
                 </Label>
                 <Label Text="Zie wat je bespaart"
                        FontSize="15"
-                       TextColor="{StaticResource MutedDark}"
+                       TextColor="{StaticResource TextMutedDark}"
                        HorizontalTextAlignment="Center" />
             </VerticalStackLayout>
 
@@ -84,7 +84,7 @@
                                 IsEnabled="{Binding IsNotBusy}" />
                         <ActivityIndicator IsRunning="{Binding IsBusy}"
                                            IsVisible="{Binding IsBusy}"
-                                           Color="{StaticResource Night}"
+                                           Color="{StaticResource Navy900}"
                                            HorizontalOptions="End"
                                            Margin="0,0,16,0" />
                     </Grid>

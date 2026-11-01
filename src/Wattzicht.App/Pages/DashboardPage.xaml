@@ -21,8 +21,8 @@
                                 <Label VerticalOptions="Center" FontSize="18" FontAttributes="Bold">
                                     <Label.FormattedText>
                                         <FormattedString>
-                                            <Span Text="watt" TextColor="{AppThemeBinding Light={StaticResource Ink}, Dark={StaticResource InkDark}}" />
-                                            <Span Text="zicht" TextColor="{StaticResource Sun}" />
+                                            <Span Text="watt" TextColor="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}" />
+                                            <Span Text="zicht" TextColor="{StaticResource Accent500}" />
                                         </FormattedString>
                                     </Label.FormattedText>
                                 </Label>
@@ -67,7 +67,7 @@
                                 <TapGestureRecognizer Command="{Binding OpenAlertsCommand}" />
                             </Border.GestureRecognizers>
                             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
-                                <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12" Fill="{StaticResource Danger}" VerticalOptions="Center" />
+                                <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12" Fill="{StaticResource ErrorDot}" VerticalOptions="Center" />
                                 <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                                     <Label Text="{Binding AlertsSummary}" Style="{StaticResource CardTitle}" />
                                     <Label Text="Een apparaat levert geen data of produceert niets." Style="{StaticResource SubtitleLabel}" />
@@ -77,7 +77,7 @@
                         </Border>
 
                         <!-- Overschot: nu zelf gebruiken in plaats van terugleveren -->
-                        <Border Style="{StaticResource Card}" IsVisible="{Binding HasSurplus}" Stroke="{StaticResource Sun}" StrokeThickness="2">
+                        <Border Style="{StaticResource Card}" IsVisible="{Binding HasSurplus}" Stroke="{StaticResource EnergySolar}" StrokeThickness="2">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding OpenAdviceCommand}" />
                             </Border.GestureRecognizers>
@@ -100,13 +100,13 @@
                             <Border Grid.Column="0" Style="{StaticResource Card}" Padding="12">
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="Bespaard" Style="{StaticResource StatCaption}" />
-                                    <Label Text="{Binding SavedTodayText}" Style="{StaticResource StatValue}" FontSize="20" TextColor="{StaticResource Sun}" />
+                                    <Label Text="{Binding SavedTodayText}" Style="{StaticResource StatValue}" FontSize="20" TextColor="{StaticResource Accent500}" />
                                 </VerticalStackLayout>
                             </Border>
                             <Border Grid.Column="1" Style="{StaticResource Card}" Padding="12">
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="Zelfverbruik" Style="{StaticResource StatCaption}" />
-                                    <Label Text="{Binding SelfUsePercentText}" Style="{StaticResource StatValue}" FontSize="20" TextColor="{StaticResource Battery}" />
+                                    <Label Text="{Binding SelfUsePercentText}" Style="{StaticResource StatValue}" FontSize="20" TextColor="{StaticResource EnergyBattery}" />
                                 </VerticalStackLayout>
                             </Border>
                             <Border Grid.Column="2" Style="{StaticResource Card}" Padding="12">
@@ -123,28 +123,28 @@
                             <VerticalStackLayout Spacing="12">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <Label Text="Bespaard" Style="{StaticResource CardTitle}" VerticalOptions="Center" />
-                                    <Label Grid.Column="1" Text="{Binding MonthSavedText}" Style="{StaticResource StatValue}" TextColor="{StaticResource Sun}" />
+                                    <Label Grid.Column="1" Text="{Binding MonthSavedText}" Style="{StaticResource StatValue}" TextColor="{StaticResource Accent500}" />
                                 </Grid>
-                                <BoxView Style="{StaticResource Divider}" />
+                                <BoxView Style="{StaticResource DividerLine}" />
                                 <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" RowSpacing="12" ColumnSpacing="12">
                                     <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="2">
                                         <Label Text="Opgewekt" Style="{StaticResource StatCaption}" />
-                                        <Label Text="{Binding MonthPvText}" FontAttributes="Bold" TextColor="{StaticResource Sun}" />
+                                        <Label Text="{Binding MonthPvText}" FontAttributes="Bold" TextColor="{StaticResource EnergySolar}" />
                                     </VerticalStackLayout>
                                     <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="2">
                                         <Label Text="Zelf gebruikt" Style="{StaticResource StatCaption}" />
-                                        <Label Text="{Binding MonthSelfUseText}" FontAttributes="Bold" TextColor="{StaticResource Battery}" />
+                                        <Label Text="{Binding MonthSelfUseText}" FontAttributes="Bold" TextColor="{StaticResource EnergyBattery}" />
                                     </VerticalStackLayout>
                                     <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="2">
                                         <Label Text="Teruggeleverd" Style="{StaticResource StatCaption}" />
-                                        <Label Text="{Binding MonthExportText}" FontAttributes="Bold" TextColor="{StaticResource Export}" />
+                                        <Label Text="{Binding MonthExportText}" FontAttributes="Bold" TextColor="{StaticResource EnergyGrid}" />
                                     </VerticalStackLayout>
                                     <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="2">
                                         <Label Text="Geladen (auto)" Style="{StaticResource StatCaption}" />
-                                        <Label Text="{Binding MonthChargedText}" FontAttributes="Bold" TextColor="{StaticResource Grid}" />
+                                        <Label Text="{Binding MonthChargedText}" FontAttributes="Bold" TextColor="{StaticResource EnergyCharger}" />
                                     </VerticalStackLayout>
                                 </Grid>
-                                <BoxView Style="{StaticResource Divider}" />
+                                <BoxView Style="{StaticResource DividerLine}" />
                                 <Grid ColumnDefinitions="*,Auto">
                                     <Label Text="Dit jaar bespaard" Style="{StaticResource SubtitleLabel}" VerticalOptions="Center" />
                                     <Label Grid.Column="1" Text="{Binding YearSavedText}" FontAttributes="Bold" />

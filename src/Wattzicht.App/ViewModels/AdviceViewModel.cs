@@ -25,10 +25,10 @@ public sealed class AdviceTipRow
     /// <summary>Vaste kleur per stroom (zie huisstijl): laadpaal, batterij, apparaat, teruglevering.</summary>
     public Color AccentColor => ThemeColors.Get(Tip.Kind switch
     {
-        AdviceTipKind.Charger => "Grid",
-        AdviceTipKind.Battery => "Battery",
-        AdviceTipKind.Export => "Export",
-        _ => "Sun"
+        AdviceTipKind.Charger => "EnergyCharger",
+        AdviceTipKind.Battery => "EnergyBattery",
+        AdviceTipKind.Export => "EnergyGrid",
+        _ => "Accent500"
     });
 }
 

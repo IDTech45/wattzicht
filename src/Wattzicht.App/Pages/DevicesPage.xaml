@@ -39,7 +39,7 @@
                             <SwipeView.RightItems>
                                 <SwipeItems Mode="Reveal">
                                     <SwipeItem Text="Verwijderen"
-                                               BackgroundColor="{StaticResource Danger}"
+                                               BackgroundColor="{StaticResource ErrorDot}"
                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DevicesViewModel}}, Path=DeleteCommand}"
                                                CommandParameter="{Binding .}" />
                                 </SwipeItems>
@@ -78,7 +78,7 @@
                                     <Button Grid.Column="2"
                                             Text="✕"
                                             Style="{StaticResource LinkButton}"
-                                            TextColor="{AppThemeBinding Light={StaticResource Muted}, Dark={StaticResource MutedDark}}"
+                                            TextColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}"
                                             WidthRequest="48"
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DevicesViewModel}}, Path=DeleteCommand}"
                                             CommandParameter="{Binding .}"

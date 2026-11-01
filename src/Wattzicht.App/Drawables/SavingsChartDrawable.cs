@@ -1,10 +1,12 @@
+using Wattzicht.App.Services;
+
 namespace Wattzicht.App.Drawables;
 
 /// <summary>Eén staaf in de besparingsgrafiek.</summary>
 public sealed record ChartBar(string Label, double Value);
 
 /// <summary>
-/// Eenvoudige staafgrafiek zonder externe library. Tekent staven in de sun-kleur,
+/// Eenvoudige staafgrafiek zonder externe library. Tekent staven in de accentkleur,
 /// een basislijn, labels onder de staven en de maximale waarde linksboven.
 /// </summary>
 public sealed class SavingsChartDrawable : IDrawable
@@ -13,10 +15,12 @@ public sealed class SavingsChartDrawable : IDrawable
     public string ValueSuffix { get; set; } = "";
     public string ValuePrefix { get; set; } = "€ ";
 
-    public Color BarColor { get; set; } = Color.FromArgb("#F59E0B");
-    public Color BarColorLight { get; set; } = Color.FromArgb("#FFD166");
-    public Color AxisColor { get; set; } = Color.FromArgb("#E2E8F0");
-    public Color TextColor { get; set; } = Color.FromArgb("#64748B");
+    // Geen kleurcodes hier: alle kleuren staan in Colors.xaml en worden gezet door SavingsViewModel.
+    // Deze beginwaarden zijn alleen vangnet voor het geval de ViewModel nog niets heeft gezet.
+    public Color BarColor { get; set; } = ThemeColors.Get("Accent500");
+    public Color BarColorLight { get; set; } = ThemeColors.Get("Accent300");
+    public Color AxisColor { get; set; } = ThemeColors.Get("Border");
+    public Color TextColor { get; set; } = ThemeColors.Get("TextMuted");
 
     /// <summary>Toon maximaal zoveel labels onder de x-as (voorkomt overlap bij 30+ staven).</summary>
     public int MaxLabels { get; set; } = 7;

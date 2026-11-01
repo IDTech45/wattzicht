@@ -14,7 +14,19 @@ public static class MauiProgram
             .UseMauiApp<App>()
             .ConfigureFonts(fonts =>
             {
-                // Systeemfont (SF Pro / Roboto) volgens BRAND.md; geen custom fonts nodig.
+                // Zelfde fonts als LaadCash; zie docs/DESIGN-TOKENS.md. Instrument Sans en Bricolage
+                // Grotesque bestaan bij Google Fonts alleen als variabele font, dus de gewichten zijn
+                // met fontTools uitgesneden. Licentie: SIL OFL 1.1, zie Resources/Fonts/OFL.txt.
+                fonts.AddFont("InstrumentSans-Regular.ttf", "Text");
+                fonts.AddFont("InstrumentSans-Medium.ttf", "TextMedium");
+                fonts.AddFont("InstrumentSans-SemiBold.ttf", "TextSemi");
+                fonts.AddFont("BricolageGrotesque-SemiBold.ttf", "Display");
+                fonts.AddFont("BricolageGrotesque-Bold.ttf", "DisplayBold");
+
+                // Cijfers in mono: in een lijst met bedragen staan de cijfers dan onder elkaar, en een
+                // getal dat van 9,99 naar 10,01 gaat laat de regel niet verspringen.
+                fonts.AddFont("IBMPlexMono-Regular.ttf", "Mono");
+                fonts.AddFont("IBMPlexMono-Medium.ttf", "MonoMedium");
             });
 
         // ---- Services ----
