@@ -76,7 +76,10 @@ public static class ConnectorServiceCollectionExtensions
         services.AddSingleton(new EnphaseOptions(
             configuration["Connectors:Enphase:ClientId"],
             configuration["Connectors:Enphase:ClientSecret"],
-            configuration["Connectors:Enphase:ApiKey"]));
+            configuration["Connectors:Enphase:ApiKey"],
+            // Het gratis plan "Watt" geeft 1.000 aanroepen per maand voor de hele app, niet per
+            // woning. Hoger zetten mag zodra er een betaald plan achter zit.
+            configuration.GetValue("Connectors:Enphase:MaxPerMaand", 1000)));
         services.AddSingleton<IDeviceConnector, EnphaseConnector>();
         services.AddSingleton<IDeviceConnector, DemoConnector>();
         services.AddSingleton<ConnectorRegistry>();

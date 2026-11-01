@@ -13,7 +13,50 @@ namespace Wattzicht.Api.Connectors;
 /// <param name="ClientId">Client-id van de developer-app (developer-v4.enphase.com).</param>
 /// <param name="ClientSecret">Client secret van die app.</param>
 /// <param name="ApiKey">De API-sleutel die bij elke aanroep als <c>key=</c> mee moet.</param>
-public sealed record EnphaseOptions(string? ClientId, string? ClientSecret, string? ApiKey);
+public sealed record EnphaseOptions(string? ClientId, string? ClientSecret, string? ApiKey, int MaxPerMaand = 1000);
+
+/// <summary>
+/// Hoeveel aanroepen er deze maand op een Enphase-sleutel zijn gedaan.
+///
+/// Enphase rekent per developer-app en niet per woning: het gratis plan "Watt" geeft 1.000 aanroepen
+/// per maand voor alles bij elkaar. Eén uitlezing kost er twee (token vernieuwen plus opvragen), dus
+/// dat zijn 500 uitlezingen voor het hele platform. Zonder rem gaat dat stil over de grens en krijgt
+/// iedereen tegelijk foutmeldingen die nergens op slaan, ergens halverwege de maand.
+///
+/// Dit is een rem, geen boekhouding: na een herstart begint de teller opnieuw. Wie er echt op wil
+/// kunnen bouwen geeft zijn eigen sleutels op, en die tellen apart.
+/// </summary>
+internal static class EnphaseQuotum
+{
+    private static readonly Lock Slot = new();
+    private static readonly Dictionary<string, (int Maand, int Aantal)> Stand = [];
+
+    /// <summary>Boekt één aanroep. Geeft false als de grens bereikt is; dan hoort er niets meer uit te gaan.</summary>
+    public static bool Boek(string sleutel, int max, DateTimeOffset nu)
+    {
+        var maand = nu.Year * 12 + nu.Month;
+        lock (Slot)
+        {
+            var (vorigeMaand, aantal) = Stand.TryGetValue(sleutel, out var v) ? v : (maand, 0);
+            if (vorigeMaand != maand) aantal = 0;
+
+            if (aantal >= max)
+            {
+                Stand[sleutel] = (maand, aantal);
+                return false;
+            }
+
+            Stand[sleutel] = (maand, aantal + 1);
+            return true;
+        }
+    }
+
+    /// <summary>Alleen voor tests: de teller leegmaken.</summary>
+    internal static void Reset()
+    {
+        lock (Slot) Stand.Clear();
+    }
+}
 
 /// <summary>
 /// Enphase Enlighten API v4 (<c>https://api.enphaseenergy.com</c>) voor micro-omvormers (IQ-systemen).
@@ -56,6 +99,25 @@ public sealed class EnphaseConnector(
                               && !string.IsNullOrWhiteSpace(ClientSecret)
                               && !string.IsNullOrWhiteSpace(ApiKey);
 
+    /// <summary>
+    /// De sleutels voor één woning. Staan ze bij het apparaat, dan gaan die voor.
+    ///
+    /// Enphase rekent per developer-app, niet per woning, dus met één gedeelde sleutel delen alle
+    /// klanten samen 1.000 aanroepen per maand. Wie zijn eigen app aanmaakt op
+    /// developer-v4.enphase.com heeft zijn eigen 1.000 en zit niemand in de weg. Dat is te veel
+    /// gedoe voor de gemiddelde bewoner, maar een installateur of iemand die handig is doet het zo.
+    /// </summary>
+    private (string Id, string Secret, string Key) Sleutels(IReadOnlyDictionary<string, string>? credentials)
+    {
+        var id = credentials?.Get("client_id");
+        var secret = credentials?.Get("client_secret");
+        var key = credentials?.Get("api_key");
+
+        return !string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(secret) && !string.IsNullOrWhiteSpace(key)
+            ? (id!, secret!, key!)
+            : (ClientId!, ClientSecret!, ApiKey!);
+    }
+
     public async Task<ConnectResult> ConnectAsync(ConnectRequest request, CancellationToken ct)
     {
         if (!Ingesteld)
@@ -71,11 +133,13 @@ public sealed class EnphaseConnector(
         }
 
         Tokens tokens;
+        var sleutels = Sleutels(request.Credentials);
+
         try
         {
             tokens = code is not null
-                ? await WisselCodeAsync(code, request.Credentials.Get("redirect_uri"), ct)
-                : await VernieuwAsync(refreshToken!, ct);
+                ? await WisselCodeAsync(code, request.Credentials.Get("redirect_uri"), sleutels, ct)
+                : await VernieuwAsync(refreshToken!, sleutels, ct);
         }
         catch (ConnectorException ex)
         {
@@ -85,7 +149,7 @@ public sealed class EnphaseConnector(
         try
         {
             var client = Client(tokens.AccessToken);
-            var systemen = await SystemenAsync(client, ct);
+            var systemen = await SystemenAsync(client, sleutels, ct);
             if (systemen.Count == 0)
             {
                 return ConnectResult.Fail("Geen Enphase-systeem gevonden op dit account.");
@@ -121,7 +185,8 @@ public sealed class EnphaseConnector(
         var refreshToken = credentials.Get("refresh_token")
                            ?? throw new ConnectorException("Geen Enphase-koppeling meer. Verbind opnieuw met Enphase.");
 
-        var tokens = await VernieuwAsync(refreshToken, ct);
+        var sleutels = Sleutels(credentials);
+        var tokens = await VernieuwAsync(refreshToken, sleutels, ct);
 
         // Enphase maakt het oude refresh-token ongeldig: dit moet bewaard worden of de koppeling is dood.
         credentials.Set("refresh_token", tokens.RefreshToken);
@@ -133,7 +198,7 @@ public sealed class EnphaseConnector(
         }
 
         var client = Client(tokens.AccessToken);
-        using var doc = await GetAsync(client, $"/api/v4/systems/{Uri.EscapeDataString(systemId)}/summary?key={Uri.EscapeDataString(ApiKey!)}", ct);
+        using var doc = await GetAsync(client, $"/api/v4/systems/{Uri.EscapeDataString(systemId)}/summary?key={Uri.EscapeDataString(sleutels.Key)}", sleutels.Id, ct);
         var root = doc.RootElement;
 
         var vermogenW = root.GetDoubleOrNull("current_power", "currentPower") ?? 0;
@@ -157,7 +222,7 @@ public sealed class EnphaseConnector(
 
     private sealed record Tokens(string AccessToken, string RefreshToken);
 
-    private async Task<Tokens> WisselCodeAsync(string code, string? redirectUri, CancellationToken ct)
+    private async Task<Tokens> WisselCodeAsync(string code, string? redirectUri, (string Id, string Secret, string Key) sleutels, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(redirectUri))
         {
@@ -167,21 +232,23 @@ public sealed class EnphaseConnector(
         var url = "/oauth/token?grant_type=authorization_code"
                   + "&redirect_uri=" + Uri.EscapeDataString(redirectUri)
                   + "&code=" + Uri.EscapeDataString(code);
-        return await TokenAsync(url, "Toestemming van Enphase omwisselen mislukte", ct);
+        return await TokenAsync(url, "Toestemming van Enphase omwisselen mislukte", sleutels, ct);
     }
 
-    private async Task<Tokens> VernieuwAsync(string refreshToken, CancellationToken ct)
+    private async Task<Tokens> VernieuwAsync(string refreshToken, (string Id, string Secret, string Key) sleutels, CancellationToken ct)
     {
         var url = "/oauth/token?grant_type=refresh_token&refresh_token=" + Uri.EscapeDataString(refreshToken);
-        return await TokenAsync(url, "Enphase-token vernieuwen mislukte", ct);
+        return await TokenAsync(url, "Enphase-token vernieuwen mislukte", sleutels, ct);
     }
 
-    private async Task<Tokens> TokenAsync(string url, string foutmelding, CancellationToken ct)
+    private async Task<Tokens> TokenAsync(string url, string foutmelding, (string Id, string Secret, string Key) sleutels, CancellationToken ct)
     {
+        Rem(sleutels.Id);
+
         var client = httpClientFactory.CreateClient(HttpClientName);
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
-            "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ClientId}:{ClientSecret}")));
+            "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"{sleutels.Id}:{sleutels.Secret}")));
 
         using var response = await client.SendAsync(request, ct);
         var raw = await response.Content.ReadAsStringAsync(ct);
@@ -218,9 +285,9 @@ public sealed class EnphaseConnector(
 
     private sealed record EnphaseSysteem(string SystemId, string? Name);
 
-    private async Task<List<EnphaseSysteem>> SystemenAsync(HttpClient client, CancellationToken ct)
+    private async Task<List<EnphaseSysteem>> SystemenAsync(HttpClient client, (string Id, string Secret, string Key) sleutels, CancellationToken ct)
     {
-        using var doc = await GetAsync(client, $"/api/v4/systems?key={Uri.EscapeDataString(ApiKey!)}", ct);
+        using var doc = await GetAsync(client, $"/api/v4/systems?key={Uri.EscapeDataString(sleutels.Key)}", sleutels.Id, ct);
         var lijst = new List<EnphaseSysteem>();
 
         if (!doc.RootElement.TryGetPropertyIgnoreCase("systems", out var systemen) || systemen.ValueKind != JsonValueKind.Array)
@@ -241,6 +308,21 @@ public sealed class EnphaseConnector(
         return lijst;
     }
 
+    /// <summary>
+    /// Stopt voordat de maandgrens van het developer-plan erdoorheen is. Zonder dit gaat het quotum
+    /// stil over en krijgt iedereen tegelijk foutmeldingen die nergens op slaan.
+    /// </summary>
+    private void Rem(string clientId)
+    {
+        if (EnphaseQuotum.Boek(clientId, options.MaxPerMaand, DateTimeOffset.UtcNow)) return;
+
+        logger.LogWarning("Enphase-maandquotum bereikt op sleutel {Sleutel}", Kort(clientId));
+        throw new ConnectorException(
+            "Het maandquotum van onze Enphase-koppeling is op. Je gegevens komen volgende maand vanzelf "
+            + "weer binnen. Wil je er niet op hoeven wachten, dan kun je je eigen Enphase-sleutels "
+            + "opgeven; die tellen apart.");
+    }
+
     private HttpClient Client(string accessToken)
     {
         var client = httpClientFactory.CreateClient(HttpClientName);
@@ -248,8 +330,10 @@ public sealed class EnphaseConnector(
         return client;
     }
 
-    private async Task<JsonDocument> GetAsync(HttpClient client, string url, CancellationToken ct)
+    private async Task<JsonDocument> GetAsync(HttpClient client, string url, string clientId, CancellationToken ct)
     {
+        Rem(clientId);
+
         using var response = await client.GetAsync(url, ct);
         var raw = await response.Content.ReadAsStringAsync(ct);
 
