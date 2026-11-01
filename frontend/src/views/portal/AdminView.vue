@@ -26,6 +26,8 @@ import {
   getAdminHouseholds,
   getAdminAccessLog,
   getAdminLeads,
+  setInstallerApproval,
+  type AdminInstaller,
   type AdminOverview,
   type AdminHousehold,
   type AdminAccessLogRow,
@@ -44,6 +46,32 @@ const installerFilter = ref<string | null>(null)
 
 /** Alleen de klanten waar iets te doen is: geen apparaat, of een apparaat dat hapert. */
 const alleenActie = ref(false)
+
+/** Welke aanmelding op dit moment wordt goedgekeurd, zodat alleen die knop op "bezig" staat. */
+const bezigMet = ref<string | null>(null)
+
+/** Installateurs die zich aanmeldden en nog wachten. Hun code werkt pas na goedkeuring. */
+const aanmeldingen = computed(() => (overview.value?.installers_ ?? []).filter((i) => !i.approvedAt))
+
+async function zetGoedkeuring(installer: AdminInstaller, goedgekeurd: boolean) {
+  bezigMet.value = installer.id
+  error.value = null
+  try {
+    const bijgewerkt = await setInstallerApproval(installer.id, goedgekeurd)
+    const lijst = overview.value?.installers_
+    if (lijst) {
+      const plek = lijst.findIndex((i) => i.id === bijgewerkt.id)
+      if (plek >= 0) lijst[plek] = bijgewerkt
+    }
+    if (overview.value) {
+      overview.value.pendingInstallers = lijst?.filter((i) => !i.approvedAt).length ?? 0
+    }
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'Dat lukte niet.'
+  } finally {
+    bezigMet.value = null
+  }
+}
 
 const zichtbaar = computed(() => {
   const term = search.value.trim().toLowerCase()
@@ -150,11 +178,79 @@ onMounted(load)
           :hint="`${overview.newLast30Days} in dertig dagen`"
         />
         <StatTile
+          label="App op de telefoon"
+          :value="String(overview.appInstalls)"
+          :hint="`${overview.appInstallsAndroid} Android, ${overview.appInstallsIos} iPhone`"
+        />
+        <StatTile
+          label="Accounts"
+          :value="String(overview.accounts)"
+          hint="bewoners, installateurs en beheer"
+        />
+        <StatTile
           label="Demo-aanvragen"
           :value="String(overview.openLeads)"
           hint="installateurs die zich meldden"
         />
       </div>
+
+      <!-- Aanmeldingen die wachten: dit is het enige blok met een knop, dus het staat bovenaan -->
+      <template v-if="aanmeldingen.length">
+        <h2>Aanmeldingen die wachten</h2>
+        <p class="admin__hint">
+          Deze bedrijven meldden zich via de site aan. Ze kunnen inloggen en hun logo invullen, maar hun
+          code werkt nog niet bij het aanmelden van bewoners. Dat gaat open als je goedkeurt.
+        </p>
+        <DataTable :value="aanmeldingen" data-key="id" class="admin__table">
+          <Column field="name" header="Bedrijf" />
+          <Column field="contactPerson" header="Contactpersoon" />
+          <Column header="Contact">
+            <template #body="{ data }">
+              <a v-if="data.contactEmail" :href="`mailto:${data.contactEmail}`">{{ data.contactEmail }}</a>
+              <span v-if="data.phone"> · {{ data.phone }}</span>
+            </template>
+          </Column>
+          <Column field="city" header="Plaats" />
+          <Column field="customerCount" header="Klanten (opgave)" />
+          <Column field="slug" header="Code" />
+          <Column header="Aangemeld">
+            <template #body="{ data }">{{ relativeTime(data.createdAt) }}</template>
+          </Column>
+          <Column header="">
+            <template #body="{ data }">
+              <button
+                type="button"
+                class="admin__knop"
+                :disabled="bezigMet === data.id"
+                @click="zetGoedkeuring(data, true)"
+              >
+                {{ bezigMet === data.id ? 'Bezig…' : 'Goedkeuren' }}
+              </button>
+            </template>
+          </Column>
+        </DataTable>
+      </template>
+
+      <!-- Abonnementen van bewoners -->
+      <h2>Wat bewoners kozen</h2>
+      <div class="trechter">
+        <div class="trechter__stap">
+          <strong>{{ overview.planViaInstaller }}</strong>
+          <span>via hun installateur</span>
+        </div>
+        <div class="trechter__stap">
+          <strong>{{ overview.planMonthly }}</strong>
+          <span>per maand</span>
+        </div>
+        <div class="trechter__stap">
+          <strong>{{ overview.planYearly }}</strong>
+          <span>per jaar</span>
+        </div>
+      </div>
+      <p class="admin__hint">
+        Dit is de keuze die ze bij het aanmelden maakten. Er wordt nog niets afgeschreven: er is geen
+        betaalpartij aangesloten, dus van bewoners komt vandaag geen euro binnen.
+      </p>
 
       <!-- De trechter: aanmelden is nog geen werkende koppeling -->
       <h2>Van aanmelding tot data</h2>
@@ -245,6 +341,22 @@ onMounted(load)
           <template #body="{ data }">
             {{ euro(data.monthlyRevenueEur) }}
             <span v-if="data.billableHouseholds === 0" class="admin__zacht">(nog gratis)</span>
+          </template>
+        </Column>
+        <Column header="Goedgekeurd">
+          <template #body="{ data }">
+            <Tag
+              :severity="data.approvedAt ? 'success' : 'warning'"
+              :value="data.approvedAt ? 'ja' : 'wacht'"
+            />
+            <button
+              type="button"
+              class="admin__knop admin__knop--zacht"
+              :disabled="bezigMet === data.id"
+              @click.stop="zetGoedkeuring(data, !data.approvedAt)"
+            >
+              {{ data.approvedAt ? 'Intrekken' : 'Goedkeuren' }}
+            </button>
           </template>
         </Column>
       </DataTable>
@@ -388,6 +500,41 @@ onMounted(load)
   cursor: pointer;
   opacity: 0.8;
 }
+/* Een echte knop, niet een klikbare div: toetsenbord, focus en schermlezer werken dan gewoon. */
+.admin__knop {
+  min-height: 36px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--wz-sun, #ffe11a);
+  background: var(--wz-sun, #ffe11a);
+  color: var(--wz-night, #0a1630);
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: filter 150ms ease;
+}
+.admin__knop:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.admin__knop:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.admin__knop--zacht {
+  margin-left: 8px;
+  background: none;
+  border-color: var(--wz-line-strong, #2e4573);
+  color: inherit;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin__knop {
+    transition: none;
+  }
+}
+
 .admin__hint {
   color: var(--wz-text-soft, #94a3b8);
   font-size: 0.88rem;

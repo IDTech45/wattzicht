@@ -53,6 +53,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
             e.Property(x => x.QuoteUrl).HasMaxLength(500);
             e.Property(x => x.Phone).HasMaxLength(40);
             e.Property(x => x.ContactEmail).HasMaxLength(320);
+            e.Property(x => x.ContactPerson).HasMaxLength(200);
+            e.Property(x => x.City).HasMaxLength(120);
         });
 
         modelBuilder.Entity<Household>(e =>
@@ -62,6 +64,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
             e.Property(x => x.Name).HasMaxLength(200).IsRequired();
             e.Property(x => x.PostalCode).HasMaxLength(10);
             e.Property(x => x.City).HasMaxLength(100);
+            e.Property(x => x.Plan).HasMaxLength(20).IsRequired();
             e.HasOne(x => x.Installer)
                 .WithMany(i => i.Households)
                 .HasForeignKey(x => x.InstallerId)

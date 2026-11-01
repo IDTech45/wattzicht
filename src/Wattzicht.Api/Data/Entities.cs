@@ -21,6 +21,25 @@ public sealed class Installer
     public string? ContactEmail { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 
+    /// <summary>Naam van de contactpersoon die zich aanmeldde.</summary>
+    public string? ContactPerson { get; set; }
+
+    /// <summary>Plaats, zodat het beheerpaneel een aanmelding kan plaatsen.</summary>
+    public string? City { get; set; }
+
+    /// <summary>Aantal klanten met zonnepanelen zoals bij de aanmelding opgegeven.</summary>
+    public int? CustomerCount { get; set; }
+
+    /// <summary>
+    /// Wanneer Wattzicht deze installateur goedkeurde, of <c>null</c> zolang de aanmelding open staat.
+    ///
+    /// Een installateur kan zichzelf aanmelden, en dan staat hij met een paar klikken in het systeem.
+    /// Zonder goedkeuring mag zijn code niet werken bij het aanmelden van bewoners: anders schrijft
+    /// iemand zich in als "installateur" en haalt hij klanten naar zijn eigen portal. Hij kan intussen
+    /// wel inloggen en zijn eigen gegevens invullen; hij ziet alleen nog geen klanten.
+    /// </summary>
+    public DateTimeOffset? ApprovedAt { get; set; }
+
     public List<Household> Households { get; set; } = [];
     public List<User> Users { get; set; } = [];
 }
@@ -44,6 +63,16 @@ public sealed class Household
 
     /// <summary>Wanneer de bewoner de toestemming voor het laatst aan- of uitzette.</summary>
     public DateTimeOffset? InstallerAccessChangedAt { get; set; }
+
+    /// <summary>
+    /// Welk abonnement de bewoner koos: <c>installer</c> (zijn installateur betaalt), <c>monthly</c>
+    /// of <c>yearly</c>. Dit legt alleen de keuze vast; er wordt nog niets afgeschreven, want er is
+    /// nog geen betaalpartij aangesloten.
+    /// </summary>
+    public string Plan { get; set; } = "installer";
+
+    /// <summary>Wanneer die keuze gemaakt is.</summary>
+    public DateTimeOffset? PlanChosenAt { get; set; }
 
     /// <summary>Locatie voor weerdata (afgeleid van de plaats; geen exact adres).</summary>
     public double? Latitude { get; set; }

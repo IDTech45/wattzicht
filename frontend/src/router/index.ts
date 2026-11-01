@@ -21,6 +21,13 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Download de app – Wattzicht' },
   },
   {
+    // Aanmelden voor beide doelgroepen: bewoners en installateurs.
+    path: '/aanmelden',
+    name: 'signup',
+    component: () => import('@/views/SignupView.vue'),
+    meta: { title: 'Aanmelden – Wattzicht' },
+  },
+  {
     // Koppelen vanaf de website. Nodig zolang de app in geen store staat: zonder deze pagina kan een
     // bewoner zijn apparaten niet koppelen. /oauth/enphase is het terugkeeradres van Enphase en komt
     // op dezelfde pagina uit, die de code dan inwisselt.

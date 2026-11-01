@@ -73,15 +73,19 @@ public static class DbSeeder
                 QuoteUrl = "https://www.triple-energie.nl/offerte",
                 LogoUrl = TripleEnergieLogoUrl,
                 ContactEmail = "info@triple-energie.nl",
+                City = "Enschede",
+                // De eerste installateur hoeft niet goedgekeurd te worden; die afspraak staat al.
+                ApprovedAt = now,
                 CreatedAt = now
             };
             db.Installers.Add(installer);
             await db.SaveChangesAsync(ct); // installer eerst, zodat FK's van users/households kloppen
             logger.LogInformation("Installateur Triple Energie aangemaakt");
         }
-        else if (string.IsNullOrEmpty(installer.LogoUrl))
+        else
         {
-            installer.LogoUrl = TripleEnergieLogoUrl;
+            if (string.IsNullOrEmpty(installer.LogoUrl)) installer.LogoUrl = TripleEnergieLogoUrl;
+            installer.ApprovedAt ??= installer.CreatedAt;
             await db.SaveChangesAsync(ct);
         }
 

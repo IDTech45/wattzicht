@@ -24,6 +24,7 @@ const links = [
       <nav class="nav__links" :class="{ 'is-open': open }" aria-label="Hoofdmenu">
         <RouterLink v-for="l in links" :key="l.to" :to="l.to" class="nav__link">{{ l.label }}</RouterLink>
         <RouterLink to="/portal" class="nav__link nav__link--portal">Installateursportal</RouterLink>
+        <RouterLink to="/aanmelden" class="nav__link nav__link--cta">Aanmelden</RouterLink>
       </nav>
 
       <button
@@ -41,6 +42,18 @@ const links = [
 </template>
 
 <style scoped>
+/* De aanmeldknop is de enige actie in de balk, dus die mag eruit springen; de rest blijft tekst. */
+.nav__link--cta {
+  background: var(--wz-cta-bg);
+  color: var(--wz-cta-fg);
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-weight: 700;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
 .nav {
   position: sticky;
   top: 0;

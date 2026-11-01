@@ -55,6 +55,12 @@ export interface AdminInstaller {
   billableHouseholds: number
   householdsWithoutDevice: number
   newLast30Days: number
+  approvedAt?: string | null
+  contactPerson?: string | null
+  city?: string | null
+  phone?: string | null
+  contactEmail?: string | null
+  customerCount?: number | null
 }
 
 export interface AdminHousehold {
@@ -111,6 +117,14 @@ export interface AdminOverview {
   newLast30Days: number
   openLeads: number
   brands?: AdminBrand[] | null
+  pendingInstallers: number
+  accounts: number
+  appInstalls: number
+  appInstallsAndroid: number
+  appInstallsIos: number
+  planViaInstaller: number
+  planMonthly: number
+  planYearly: number
 }
 
 export interface AdminAccessLogRow {
@@ -323,6 +337,27 @@ export interface RegisterRequest {
   householdName: string
   installerSlug?: string
   allowInstallerAccess?: boolean
+  /** 'installer' | 'monthly' | 'yearly' */
+  plan?: string
+}
+
+export interface RegisterInstallerRequest {
+  company: string
+  contactPerson: string
+  email: string
+  password: string
+  phone?: string
+  city?: string
+  customerCount?: number
+}
+
+/** Meldt een installateur aan; zijn code werkt pas na goedkeuring door Wattzicht. */
+export function registerInstaller(body: RegisterInstallerRequest): Promise<LoginResponse> {
+  return request<LoginResponse>('/auth/register-installer', {
+    method: 'POST',
+    body: JSON.stringify(body),
+    auth: false,
+  })
 }
 
 /** Maakt een huishouden met de eerste gebruiker aan en logt direct in. */
@@ -373,6 +408,13 @@ export function getAdminHouseholds(params: { installerId?: string; search?: stri
   if (params.search) q.set('search', params.search)
   const suffix = q.toString() ? `?${q}` : ''
   return request<AdminHousehold[]>(`/admin/households${suffix}`)
+}
+
+export function setInstallerApproval(id: string, approved: boolean): Promise<AdminInstaller> {
+  return request<AdminInstaller>(`/admin/installers/${id}/approval`, {
+    method: 'POST',
+    body: JSON.stringify({ approved }),
+  })
 }
 
 export function getAdminLeads(): Promise<AdminLead[]> {

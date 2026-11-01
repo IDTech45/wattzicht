@@ -18,6 +18,12 @@ public static class AuthEndpoints
             .ProducesValidationProblem()
             .Produces(StatusCodes.Status409Conflict);
 
+        group.MapPost("/register-installer", RegisterInstallerAsync)
+            .WithSummary("Meldt een installateur aan: bedrijf plus eerste gebruiker, in afwachting van goedkeuring.")
+            .Produces<AuthResponse>(StatusCodes.Status201Created)
+            .ProducesValidationProblem()
+            .Produces(StatusCodes.Status409Conflict);
+
         group.MapPost("/login", LoginAsync)
             .WithSummary("Logt in met e-mail en wachtwoord.")
             .Produces<AuthResponse>()
@@ -78,7 +84,10 @@ public static class AuthEndpoints
         {
             var slug = request.InstallerSlug.Trim().ToLowerInvariant();
             installer = await db.Installers.FirstOrDefaultAsync(i => i.Slug == slug, ct);
-            if (installer is null)
+
+            // Een nog niet goedgekeurde aanmelding mag geen klanten binnenhalen: anders schrijft iemand
+            // zich in als installateur en trekt hij bewoners naar zijn eigen portal.
+            if (installer is null || installer.ApprovedAt is null)
             {
                 return Results.ValidationProblem(new Dictionary<string, string[]>
                 {
@@ -101,6 +110,8 @@ public static class AuthEndpoints
             Installer = installer,
             InstallerAccessGranted = request.AllowInstallerAccess,
             InstallerAccessChangedAt = now,
+            Plan = Plans.Normaliseer(request.Plan),
+            PlanChosenAt = now,
             CreatedAt = now
         };
 
@@ -123,6 +134,103 @@ public static class AuthEndpoints
 
         var (token, expires) = tokens.CreateToken(user);
         return Results.Created("/me", new AuthResponse(token, expires, HouseholdQueries.ToDto(household), HouseholdQueries.ToDto(installer)));
+    }
+
+    /// <summary>
+    /// Een installateur meldt zich aan: bedrijf plus eerste gebruiker in een keer.
+    ///
+    /// Hij kan daarna inloggen en zijn eigen gegevens invullen, maar zijn code werkt nog niet bij het
+    /// aanmelden van bewoners. Dat gaat pas open als Wattzicht hem goedkeurt; zie Installer.ApprovedAt.
+    /// </summary>
+    private static async Task<IResult> RegisterInstallerAsync(
+        RegisterInstallerRequest request,
+        AppDbContext db,
+        PasswordHasher hasher,
+        TokenService tokens,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var errors = new Dictionary<string, string[]>();
+        var email = request.Email?.Trim().ToLowerInvariant() ?? string.Empty;
+        var bedrijf = request.Company?.Trim() ?? string.Empty;
+        var contact = request.ContactPerson?.Trim() ?? string.Empty;
+
+        if (bedrijf.Length is < 2 or > 200) errors["company"] = ["Vul je bedrijfsnaam in."];
+        if (contact.Length is < 2 or > 200) errors["contactPerson"] = ["Vul je naam in."];
+        if (!email.Contains('@') || email.Length > 320) errors["email"] = ["Vul een geldig e-mailadres in."];
+        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 8)
+        {
+            errors["password"] = ["Kies een wachtwoord van minimaal acht tekens."];
+        }
+
+        if (request.CustomerCount is < 0 or > 1_000_000) errors["customerCount"] = ["Ongeldig aantal klanten."];
+        if (request.Phone is { Length: > 40 }) errors["phone"] = ["Telefoonnummer is te lang."];
+        if (request.City is { Length: > 120 }) errors["city"] = ["Plaatsnaam is te lang."];
+
+        if (errors.Count > 0) return Results.ValidationProblem(errors);
+
+        if (await db.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == email, ct))
+        {
+            return Results.Conflict(new { message = "Er bestaat al een account met dit e-mailadres." });
+        }
+
+        var now = clock.GetUtcNow();
+        var installer = new Installer
+        {
+            Id = Guid.NewGuid(),
+            Name = bedrijf,
+            Slug = await VrijeSlugAsync(db, bedrijf, ct),
+            ContactPerson = contact,
+            ContactEmail = email,
+            Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim(),
+            City = string.IsNullOrWhiteSpace(request.City) ? null : request.City.Trim(),
+            CustomerCount = request.CustomerCount,
+            ApprovedAt = null,
+            CreatedAt = now
+        };
+
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Email = email,
+            PasswordHash = hasher.Hash(request.Password!),
+            Role = UserRole.Installer,
+            InstallerId = installer.Id,
+            Installer = installer,
+            CreatedAt = now
+        };
+
+        db.Installers.Add(installer);
+        db.Users.Add(user);
+        await db.SaveChangesAsync(ct);
+
+        var (token, expires) = tokens.CreateToken(user);
+        return Results.Created("/me", new AuthResponse(token, expires, null, HouseholdQueries.ToDto(installer),
+            UserRole.Installer));
+    }
+
+    /// <summary>
+    /// Een korte code uit de bedrijfsnaam, en bij een botsing een cijfer erachter. De code staat in
+    /// links en vullen bewoners over, dus alleen letters, cijfers en streepjes.
+    /// </summary>
+    private static async Task<string> VrijeSlugAsync(AppDbContext db, string naam, CancellationToken ct)
+    {
+        var basis = new string(naam.ToLowerInvariant()
+            .Select(c => char.IsLetterOrDigit(c) ? c : '-')
+            .ToArray());
+
+        while (basis.Contains("--")) basis = basis.Replace("--", "-");
+        basis = basis.Trim('-');
+        if (basis.Length > 50) basis = basis[..50].Trim('-');
+        if (basis.Length == 0) basis = "installateur";
+
+        var kandidaat = basis;
+        for (var n = 2; await db.Installers.IgnoreQueryFilters().AnyAsync(i => i.Slug == kandidaat, ct); n++)
+        {
+            kandidaat = $"{basis}-{n}";
+        }
+
+        return kandidaat;
     }
 
     private static async Task<IResult> LoginAsync(

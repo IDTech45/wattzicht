@@ -15,12 +15,30 @@ public sealed record LoginRequest(string Email, string Password);
 /// <param name="HouseholdName">Naam van het huishouden, bijvoorbeeld "Familie Jansen".</param>
 /// <param name="InstallerSlug">Optionele code van de installateur (white-label koppeling).</param>
 /// <param name="AllowInstallerAccess">Bewoner geeft toestemming dat de installateur meekijkt (standaard nee).</param>
+/// <summary>Aanmelding van een installateur op de website.</summary>
+/// <param name="Company">Bedrijfsnaam.</param>
+/// <param name="ContactPerson">Naam van de contactpersoon.</param>
+/// <param name="Email">E-mailadres waarmee hij inlogt.</param>
+/// <param name="Password">Zelf gekozen wachtwoord, minimaal acht tekens.</param>
+/// <param name="Phone">Telefoonnummer (optioneel).</param>
+/// <param name="City">Plaats (optioneel).</param>
+/// <param name="CustomerCount">Hoeveel klanten met zonnepanelen hij ongeveer heeft (optioneel).</param>
+public sealed record RegisterInstallerRequest(
+    string Company,
+    string ContactPerson,
+    string Email,
+    string Password,
+    string? Phone = null,
+    string? City = null,
+    int? CustomerCount = null);
+
 public sealed record RegisterRequest(
     string Email,
     string Password,
     string HouseholdName,
     string? InstallerSlug = null,
-    bool AllowInstallerAccess = false);
+    bool AllowInstallerAccess = false,
+    string? Plan = null);
 
 /// <summary>Antwoord op een geslaagde login of registratie.</summary>
 /// <param name="Token">JWT bearer-token.</param>
@@ -541,7 +559,13 @@ public sealed record AdminInstallerDto(
     int ActiveHouseholds = 0,
     int BillableHouseholds = 0,
     int HouseholdsWithoutDevice = 0,
-    int NewLast30Days = 0);
+    int NewLast30Days = 0,
+    DateTimeOffset? ApprovedAt = null,
+    string? ContactPerson = null,
+    string? City = null,
+    string? Phone = null,
+    string? ContactEmail = null,
+    int? CustomerCount = null);
 
 /// <summary>Eén huishouden op het beheeroverzicht, met de installateur erbij (GET /admin/households).</summary>
 /// <param name="Id">Unieke id.</param>
@@ -598,7 +622,15 @@ public sealed record AdminOverviewDto(
     int NewLast7Days = 0,
     int NewLast30Days = 0,
     int OpenLeads = 0,
-    IReadOnlyList<AdminBrandDto>? Brands = null);
+    IReadOnlyList<AdminBrandDto>? Brands = null,
+    int PendingInstallers = 0,
+    int Accounts = 0,
+    int AppInstalls = 0,
+    int AppInstallsAndroid = 0,
+    int AppInstallsIos = 0,
+    int PlanViaInstaller = 0,
+    int PlanMonthly = 0,
+    int PlanYearly = 0);
 
 /// <summary>
 /// Eén merk over alle installateurs heen (onderdeel van GET /admin/overview).
@@ -618,6 +650,10 @@ public sealed record AdminBrandDto(
     int WithProblem,
     int Households,
     bool Supported);
+
+/// <summary>Goedkeuren of intrekken van een installateursaanmelding.</summary>
+/// <param name="Approved">True = goedkeuren, false = goedkeuring intrekken.</param>
+public sealed record AdminApprovalRequest(bool Approved);
 
 /// <summary>Een demo-aanvraag van de website (GET /admin/leads).</summary>
 /// <param name="Id">Unieke id.</param>

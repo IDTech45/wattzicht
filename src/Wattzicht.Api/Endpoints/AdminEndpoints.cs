@@ -41,6 +41,11 @@ public static class AdminEndpoints
             .WithSummary("Alle huishoudens over alle installateurs heen; filter op installateur of zoekterm.")
             .Produces<List<AdminHouseholdDto>>();
 
+        group.MapPost("/installers/{id:guid}/approval", ApprovalAsync)
+            .WithSummary("Keurt een aangemelde installateur goed, of trekt die goedkeuring in.")
+            .Produces<AdminInstallerDto>()
+            .Produces(StatusCodes.Status404NotFound);
+
         group.MapGet("/leads", LeadsAsync)
             .WithSummary("Demo-aanvragen van de website, nieuwste eerst.")
             .Produces<List<AdminLeadDto>>();
@@ -75,6 +80,18 @@ public static class AdminEndpoints
         var nieuw30 = await db.Households.IgnoreQueryFilters().CountAsync(h => h.CreatedAt > now.AddDays(-30), ct);
         var leads = await db.Leads.IgnoreQueryFilters().CountAsync(ct);
 
+        // Hoeveel mensen de app echt op hun telefoon hebben. Eén rij per installatie: opnieuw
+        // installeren geeft een nieuw token, en iemand met telefoon en tablet staat er twee keer.
+        var appAndroid = await db.PushDevices.IgnoreQueryFilters().CountAsync(d => d.Platform == "android", ct);
+        var appIos = await db.PushDevices.IgnoreQueryFilters().CountAsync(d => d.Platform == "ios", ct);
+        var accounts = await db.Users.IgnoreQueryFilters().CountAsync(ct);
+        var openAanmeldingen = await db.Installers.IgnoreQueryFilters().CountAsync(i => i.ApprovedAt == null, ct);
+
+        var planViaInstallateur = await db.Households.IgnoreQueryFilters()
+            .CountAsync(h => h.Plan == Plans.ViaInstaller, ct);
+        var planMaand = await db.Households.IgnoreQueryFilters().CountAsync(h => h.Plan == Plans.Monthly, ct);
+        var planJaar = await db.Households.IgnoreQueryFilters().CountAsync(h => h.Plan == Plans.Yearly, ct);
+
         var merken = await MerkenAsync(db, registry, ct);
 
         var tarief = Billing.PrijsUitConfig(config);
@@ -96,7 +113,15 @@ public static class AdminEndpoints
             nieuw7,
             nieuw30,
             leads,
-            merken));
+            merken,
+            openAanmeldingen,
+            accounts,
+            appAndroid + appIos,
+            appAndroid,
+            appIos,
+            planViaInstallateur,
+            planMaand,
+            planJaar));
     }
 
     /// <summary>
@@ -122,6 +147,28 @@ public static class AdminEndpoints
             .Select(r => new AdminBrandDto(
                 r.Brand.ToString(), r.Devices, r.WithProblem, r.Households, registry.IsSupported(r.Brand)))
             .ToList();
+    }
+
+    /// <summary>
+    /// Goedkeuren of weer intrekken. Zolang een installateur niet is goedgekeurd werkt zijn code niet
+    /// bij het aanmelden van bewoners; intrekken sluit die deur weer zonder zijn gegevens te wissen.
+    /// </summary>
+    private static async Task<IResult> ApprovalAsync(
+        Guid id,
+        AdminApprovalRequest request,
+        AppDbContext db,
+        IConfiguration config,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var installer = await db.Installers.IgnoreQueryFilters().FirstOrDefaultAsync(i => i.Id == id, ct);
+        if (installer is null) return Results.NotFound(new { message = "Installateur niet gevonden." });
+
+        installer.ApprovedAt = request.Approved ? installer.ApprovedAt ?? clock.GetUtcNow() : null;
+        await db.SaveChangesAsync(ct);
+
+        var alle = await LaadInstallateursAsync(db, config, clock.GetUtcNow(), ct);
+        return Results.Ok(alle.First(i => i.Id == id));
     }
 
     private static async Task<IResult> LeadsAsync(AppDbContext db, CancellationToken ct)
@@ -153,13 +200,20 @@ public static class AdminEndpoints
         // Eén vraag voor alle installateurs: met een telling per installateur erbij blijft dit ook
         // bij honderden installateurs één rondje naar de database.
         var rijen = await db.Installers.IgnoreQueryFilters()
-            .OrderBy(i => i.Name)
+            // Openstaande aanmeldingen eerst: daar moet iemand iets mee.
+            .OrderBy(i => i.ApprovedAt != null).ThenBy(i => i.Name)
             .Select(i => new
             {
                 i.Id,
                 i.Name,
                 i.Slug,
                 i.CreatedAt,
+                i.ApprovedAt,
+                i.ContactPerson,
+                i.City,
+                i.Phone,
+                i.ContactEmail,
+                i.CustomerCount,
                 Huishoudens = i.Households.Count,
                 MetToegang = i.Households.Count(h => h.InstallerAccessGranted),
                 Apparaten = i.Households.SelectMany(h => h.Devices).Count(),
@@ -180,7 +234,8 @@ public static class AdminEndpoints
             return new AdminInstallerDto(
                 r.Id, r.Name, r.Slug, r.Huishoudens, r.MetToegang, r.Apparaten, r.MetProbleem,
                 r.LaatsteData, Billing.PerMaand(r.Actief, gratis, tarief), r.CreatedAt,
-                r.Actief, facturabel, r.ZonderApparaat, r.Nieuw30);
+                r.Actief, facturabel, r.ZonderApparaat, r.Nieuw30,
+                r.ApprovedAt, r.ContactPerson, r.City, r.Phone, r.ContactEmail, r.CustomerCount);
         }).ToList();
     }
 

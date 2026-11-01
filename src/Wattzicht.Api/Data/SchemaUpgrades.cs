@@ -57,6 +57,18 @@ public static class SchemaUpgrades
 
         // 2026-10: terugleverkosten van de leverancier per kWh.
         """ALTER TABLE tariffs ADD COLUMN IF NOT EXISTS "FeedInCostPerKwh" numeric(10,4) NOT NULL DEFAULT 0""",
+
+        // 2026-11: installateurs kunnen zich zelf aanmelden en worden daarna goedgekeurd.
+        """ALTER TABLE installers ADD COLUMN IF NOT EXISTS "ContactPerson" character varying(200) NULL""",
+        """ALTER TABLE installers ADD COLUMN IF NOT EXISTS "City" character varying(120) NULL""",
+        """ALTER TABLE installers ADD COLUMN IF NOT EXISTS "CustomerCount" integer NULL""",
+        """ALTER TABLE installers ADD COLUMN IF NOT EXISTS "ApprovedAt" timestamp with time zone NULL""",
+        // Wat er al stond is bestaand werk en dus goedgekeurd; alleen nieuwe aanmeldingen staan open.
+        """UPDATE installers SET "ApprovedAt" = "CreatedAt" WHERE "ApprovedAt" IS NULL""",
+
+        // 2026-11: abonnementskeuze van de bewoner (alleen vastleggen; er wordt nog niets afgeschreven).
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "Plan" character varying(20) NOT NULL DEFAULT 'installer'""",
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "PlanChosenAt" timestamp with time zone NULL""",
     ];
 
     public static async Task ApplyAsync(AppDbContext db, CancellationToken ct = default)
