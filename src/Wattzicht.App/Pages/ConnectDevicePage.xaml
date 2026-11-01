@@ -146,6 +146,28 @@
                         </VerticalStackLayout>
                     </Border>
 
+                    <!-- Zaptec: hetzelfde account als in de Zaptec-app zelf -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding IsZaptec}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="Gebruik het e-mailadres en wachtwoord waarmee je in de Zaptec-app inlogt. Wij lezen alleen uit; sturen doen we niet."
+                                   Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="E-mailadres" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding Username}" Placeholder="jij@voorbeeld.nl" Keyboard="Email" IsSpellCheckEnabled="False" />
+                                </Border>
+                                <Label Text="{Binding UsernameError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasUsernameError}" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Wachtwoord" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding Password}" IsPassword="True" />
+                                </Border>
+                                <Label Text="{Binding PasswordError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasPasswordError}" />
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
                     <!-- HomeWizard -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsHomeWizard}">
                         <VerticalStackLayout Spacing="12">

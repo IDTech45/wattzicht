@@ -44,6 +44,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         new(DeviceBrand.Solax, "SolaX", "Omvormer of hybride met batterij via SolaXCloud", "Accent500", DeviceType.Inverter),
         new(DeviceBrand.Solax, "SolaX laadpaal", "Smart EV Charger met MID-meter via SolaXCloud", "EnergyCharger", DeviceType.Charger),
         new(DeviceBrand.Sessy, "Sessy", "Thuisbatterij met Sessy-dongle", "EnergyBattery", DeviceType.Battery),
+        new(DeviceBrand.Zaptec, "Zaptec", "Laadpaal via je eigen Zaptec-account", "EnergyCharger", DeviceType.Charger),
         new(DeviceBrand.Demo, "Demo", "Voorbeelddata om de app te proberen", "TextMuted", DeviceType.Inverter),
     ];
 
@@ -73,6 +74,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(SolaxSnPlaceholder))]
     [NotifyPropertyChangedFor(nameof(SolaxHelp))]
     [NotifyPropertyChangedFor(nameof(IsSessy))]
+    [NotifyPropertyChangedFor(nameof(IsZaptec))]
     [NotifyPropertyChangedFor(nameof(IsHomeWizard))]
     [NotifyPropertyChangedFor(nameof(IsDemo))]
     [NotifyPropertyChangedFor(nameof(BrandName))]
@@ -91,6 +93,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         : "Log in op solaxcloud.com, ga naar Service → API en kopieer je TokenID. Het registratienummer (10 tekens) staat op de wifi-stick aan je omvormer.";
     public bool IsSessy => SelectedBrand?.Brand == DeviceBrand.Sessy;
     public bool IsHomeWizard => SelectedBrand?.Brand == DeviceBrand.HomeWizard;
+    public bool IsZaptec => SelectedBrand?.Brand == DeviceBrand.Zaptec;
     public bool IsDemo => SelectedBrand?.Brand == DeviceBrand.Demo;
     public string BrandName => SelectedBrand?.Name ?? "";
 
@@ -200,6 +203,10 @@ public partial class ConnectDeviceViewModel : BaseViewModel
             case DeviceBrand.HomeWizard:
                 credentials["ip"] = IpAddress.Trim();
                 break;
+            case DeviceBrand.Zaptec:
+                credentials["username"] = Username.Trim();
+                credentials["password"] = Password;
+                break;
         }
 
         await RunSafeAsync(async () =>
@@ -225,6 +232,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                 else if (IsSolax) ApiTokenError = "SolaXCloud accepteert dit token of dongle-nummer niet. Controleer beide.";
                 else if (IsSessy) PasswordError = "De dongle accepteert deze gegevens niet.";
                 else if (IsHomeWizard) IpAddressError = "Geen HomeWizard-meter gevonden op dit adres.";
+                else if (IsZaptec) PasswordError = "Zaptec accepteert deze gegevens niet. Werkt het wel in de Zaptec-app zelf?";
                 else ErrorMessage = ex.Message;
             }
         }, _auth);
@@ -261,6 +269,11 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         {
             if (string.IsNullOrWhiteSpace(Username)) UsernameError = "Vul de gebruikersnaam van de dongle in.";
             if (string.IsNullOrEmpty(Password)) PasswordError = "Vul het wachtwoord van de dongle in.";
+        }
+        if (IsZaptec)
+        {
+            if (string.IsNullOrWhiteSpace(Username)) UsernameError = "Vul het e-mailadres van je Zaptec-account in.";
+            if (string.IsNullOrEmpty(Password)) PasswordError = "Vul het wachtwoord van je Zaptec-account in.";
         }
 
         return !HasApiTokenError && !HasIpAddressError && !HasUsernameError && !HasPasswordError && !HasDongleSnError;

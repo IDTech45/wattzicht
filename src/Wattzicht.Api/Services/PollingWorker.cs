@@ -115,6 +115,9 @@ public sealed class PollingWorker(
     private static TimeSpan KortsteInterval(DeviceBrand brand) => brand switch
     {
         DeviceBrand.Enphase => TimeSpan.FromMinutes(60),
+        // Elke uitlezing is een login plus een state-aanroep, en Zaptec knijpt af op ons IP-adres en
+        // niet op het account. Tien minuten is voor een laadpaal ruim genoeg: een laadbeurt duurt uren.
+        DeviceBrand.Zaptec => TimeSpan.FromMinutes(10),
         _ => TimeSpan.Zero,
     };
 
