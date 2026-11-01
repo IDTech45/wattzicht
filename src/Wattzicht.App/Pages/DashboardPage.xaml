@@ -22,7 +22,7 @@
                                     <Label.FormattedText>
                                         <FormattedString>
                                             <Span Text="watt" TextColor="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}" />
-                                            <Span Text="zicht" TextColor="{StaticResource Accent500}" />
+                                            <Span Text="zicht" TextColor="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource Accent500}}" />
                                         </FormattedString>
                                     </Label.FormattedText>
                                 </Label>
@@ -30,13 +30,16 @@
                             <Label Text="{Binding Greeting}" Style="{StaticResource PageTitle}" />
                             <Label Text="{Binding UpdatedAtText}" Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>
-                        <!-- Jouw installateur: klein, op een wit plaatje. Wattzicht blijft het merk van de app. -->
-                        <Border Grid.Column="1" IsVisible="{Binding HasInstallerLogo}" BackgroundColor="{StaticResource White}"
-                                StrokeThickness="0" StrokeShape="RoundRectangle 10" Padding="8,4" VerticalOptions="Center">
-                            <Image Source="{Binding InstallerLogo, Converter={StaticResource LogoSource}}"
-                                   HeightRequest="32" MaximumWidthRequest="96" Aspect="AspectFit"
-                                   SemanticProperties.Description="{Binding InstallerName, StringFormat='Jouw installateur: {0}'}" />
-                        </Border>
+                        <!--
+                            Jouw installateur: alleen de naam. Wattzicht blijft het merk van de app, en een
+                            logo van de installateur ernaast leest als een tweede merk op hetzelfde scherm.
+                        -->
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" HorizontalOptions="End"
+                                             IsVisible="{Binding InstallerName, Converter={StaticResource IsNotNullOrEmpty}}">
+                            <Label Text="Jouw installateur" Style="{StaticResource StatCaption}" HorizontalTextAlignment="End" />
+                            <Label Text="{Binding InstallerName}" Style="{StaticResource CardTitle}" FontSize="14"
+                                   HorizontalTextAlignment="End" />
+                        </VerticalStackLayout>
                     </Grid>
 
                     <!-- Foutmelding -->
@@ -100,13 +103,13 @@
                             <Border Grid.Column="0" Style="{StaticResource Card}" Padding="12">
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="Bespaard" Style="{StaticResource StatCaption}" />
-                                    <Label Text="{Binding SavedTodayText}" Style="{StaticResource StatValue}" FontSize="20" TextColor="{StaticResource Accent500}" />
+                                    <Label Text="{Binding SavedTodayText}" Style="{StaticResource StatValue}" FontSize="20" TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
                                 </VerticalStackLayout>
                             </Border>
                             <Border Grid.Column="1" Style="{StaticResource Card}" Padding="12">
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="Zelfverbruik" Style="{StaticResource StatCaption}" />
-                                    <Label Text="{Binding SelfUsePercentText}" Style="{StaticResource StatValue}" FontSize="20" TextColor="{StaticResource EnergyBattery}" />
+                                    <Label Text="{Binding SelfUsePercentText}" Style="{StaticResource StatValue}" FontSize="20" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
                                 </VerticalStackLayout>
                             </Border>
                             <Border Grid.Column="2" Style="{StaticResource Card}" Padding="12">
@@ -123,25 +126,25 @@
                             <VerticalStackLayout Spacing="12">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <Label Text="Bespaard" Style="{StaticResource CardTitle}" VerticalOptions="Center" />
-                                    <Label Grid.Column="1" Text="{Binding MonthSavedText}" Style="{StaticResource StatValue}" TextColor="{StaticResource Accent500}" />
+                                    <Label Grid.Column="1" Text="{Binding MonthSavedText}" Style="{StaticResource StatValue}" TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
                                 </Grid>
                                 <BoxView Style="{StaticResource DividerLine}" />
                                 <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" RowSpacing="12" ColumnSpacing="12">
                                     <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="2">
                                         <Label Text="Opgewekt" Style="{StaticResource StatCaption}" />
-                                        <Label Text="{Binding MonthPvText}" FontAttributes="Bold" TextColor="{StaticResource EnergySolar}" />
+                                        <Label Text="{Binding MonthPvText}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource WarningTextDark}}" />
                                     </VerticalStackLayout>
                                     <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="2">
                                         <Label Text="Zelf gebruikt" Style="{StaticResource StatCaption}" />
-                                        <Label Text="{Binding MonthSelfUseText}" FontAttributes="Bold" TextColor="{StaticResource EnergyBattery}" />
+                                        <Label Text="{Binding MonthSelfUseText}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
                                     </VerticalStackLayout>
                                     <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="2">
                                         <Label Text="Teruggeleverd" Style="{StaticResource StatCaption}" />
-                                        <Label Text="{Binding MonthExportText}" FontAttributes="Bold" TextColor="{StaticResource EnergyGrid}" />
+                                        <Label Text="{Binding MonthExportText}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}" />
                                     </VerticalStackLayout>
                                     <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="2">
                                         <Label Text="Geladen (auto)" Style="{StaticResource StatCaption}" />
-                                        <Label Text="{Binding MonthChargedText}" FontAttributes="Bold" TextColor="{StaticResource EnergyCharger}" />
+                                        <Label Text="{Binding MonthChargedText}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource PendingText}, Dark={StaticResource PendingTextDark}}" />
                                     </VerticalStackLayout>
                                 </Grid>
                                 <BoxView Style="{StaticResource DividerLine}" />

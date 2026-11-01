@@ -8,8 +8,8 @@
        Shell.ForegroundColor="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}"
        Shell.TitleColor="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}"
        Shell.TabBarBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Teal800}}"
-       Shell.TabBarForegroundColor="{StaticResource Accent500}"
-       Shell.TabBarTitleColor="{StaticResource Accent500}"
+       Shell.TabBarForegroundColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}"
+       Shell.TabBarTitleColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}"
        Shell.TabBarUnselectedColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}">
 
     <!-- Login staat buiten de tabs: geen TabBar zichtbaar -->

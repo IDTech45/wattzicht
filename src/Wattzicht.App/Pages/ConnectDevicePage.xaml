@@ -67,7 +67,7 @@
                                             <Label Text="{Binding Description}" Style="{StaticResource SubtitleLabel}" />
                                         </VerticalStackLayout>
                                         <Label Grid.Column="2" Text="✓" FontSize="22" FontAttributes="Bold"
-                                               TextColor="{StaticResource Accent500}" VerticalOptions="Center"
+                                               TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" VerticalOptions="Center"
                                                IsVisible="{Binding IsSelected}" />
                                     </Grid>
                                 </Border>
@@ -192,7 +192,7 @@
                             BackgroundColor="{AppThemeBinding Light={StaticResource EnergyBatterySoft}, Dark={StaticResource EnergyBatterySoftDark}}"
                             Stroke="{StaticResource EnergyBattery}">
                         <VerticalStackLayout Spacing="8">
-                            <Label Text="✓" FontSize="36" TextColor="{StaticResource EnergyBattery}" />
+                            <Label Text="✓" FontSize="36" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
                             <Label Text="{Binding DoneText}" FontSize="16" />
                             <Label Text="Binnen een paar minuten zie je de eerste metingen op Home." Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>

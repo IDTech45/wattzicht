@@ -23,7 +23,7 @@
                 <VerticalStackLayout Padding="32,48" Spacing="12" HorizontalOptions="Center">
                     <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
                     <VerticalStackLayout Spacing="8" IsVisible="{Binding HasLoaded}">
-                        <Label Text="✓" FontSize="40" TextColor="{StaticResource EnergyBattery}" HorizontalTextAlignment="Center" />
+                        <Label Text="✓" FontSize="40" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" HorizontalTextAlignment="Center" />
                         <Label Text="Alles werkt" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" Margin="0" />
                         <Label Text="Er zijn op dit moment geen storingen." Style="{StaticResource SubtitleLabel}" HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>

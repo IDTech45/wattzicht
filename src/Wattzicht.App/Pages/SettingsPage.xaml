@@ -79,7 +79,7 @@
                         <Label Text="{Binding FeedInCostError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasFeedInCostError}" />
                     </VerticalStackLayout>
 
-                    <Label Text="{Binding TariffSavedText}" FontSize="13" TextColor="{StaticResource EnergyBattery}"
+                    <Label Text="{Binding TariffSavedText}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}"
                            IsVisible="{Binding TariffSavedText, Converter={StaticResource IsNotNullOrEmpty}}" />
 
                     <Grid>
@@ -95,18 +95,13 @@
             <Label Text="Je installateur" Style="{StaticResource SectionTitle}" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12">
-                    <Grid ColumnDefinitions="72,*" ColumnSpacing="12">
-                        <!-- Logo's van installateurs zijn voor een lichte achtergrond gemaakt: wit plaatje. -->
-                        <Border WidthRequest="72" HeightRequest="48" StrokeThickness="0" StrokeShape="RoundRectangle 12"
-                                BackgroundColor="{StaticResource White}" VerticalOptions="Center">
-                            <Grid>
-                                <Label Text="⚡" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" TextColor="{StaticResource Navy900}"
-                                       IsVisible="{Binding HasInstallerLogo, Converter={StaticResource InvertedBool}}" />
-                                <Image Source="{Binding InstallerLogo, Converter={StaticResource LogoSource}}" Aspect="AspectFit" Margin="4"
-                                       IsVisible="{Binding HasInstallerLogo}" />
-                            </Grid>
-                        </Border>
-                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                    <Grid ColumnDefinitions="*" ColumnSpacing="12">
+                        <!--
+                            Alleen de naam en het telefoonnummer. Wattzicht blijft het merk van de app;
+                            een logo van de installateur ernaast leest als een tweede merk.
+                        -->
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="Jouw installateur" Style="{StaticResource StatCaption}" />
                             <Label Text="{Binding InstallerName}" Style="{StaticResource CardTitle}" />
                             <Label Text="{Binding InstallerPhone}" Style="{StaticResource SubtitleLabel}" IsVisible="{Binding HasInstallerPhone}" />
                             <Label Text="Voor vragen over je installatie" Style="{StaticResource SubtitleLabel}" IsVisible="{Binding HasInstallerPhone, Converter={StaticResource InvertedBool}}" />

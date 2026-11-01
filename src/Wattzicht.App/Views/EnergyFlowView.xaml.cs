@@ -86,7 +86,11 @@ public partial class EnergyFlowView : ContentView
         bool exporting = grid < -50;
         bool importing = grid > 50;
         GridHint = exporting ? "▲ Teruglevering" : importing ? "▼ Afname" : "Geen uitwisseling";
-        GridAccent = exporting ? Res("EnergyGrid") : importing ? Res("EnergyGrid") : Res("TextMuted");
+        // Bij uitwisseling de netkleur; staat er niets op het net, dan de gewone tekstkleur. Die moet
+        // wel met het thema meegaan: TextMuted is voor een lichte achtergrond en haalt op donker 2,2:1.
+        GridAccent = exporting || importing
+            ? Res("EnergyGrid")
+            : ThemeRes("TextMuted", "TextMutedDark");
         GridCardBackground = exporting
             ? ThemeRes("EnergyGridSoft", "EnergyGridSoftDark")
             : importing

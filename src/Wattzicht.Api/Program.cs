@@ -40,7 +40,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Data Protection: sleutelring in Postgres, versleuteld met WZ_PROTECTION_KEY.
 var masterKey = new ProtectionMasterKey(protectionKey);
 builder.Services.AddSingleton(masterKey);
-builder.Services.AddSingleton<ProtectionKeyXmlDecryptor>(); // door Data Protection via DI geïnstantieerd
+// Expliciet een fabriek en geen AddSingleton<T>(): de decryptor heeft twee constructors (één met de
+// hoofdsleutel, één met IServiceProvider omdat Data Protection hem zo zelf aanmaakt) en DI kan dan
+// niet kiezen. In Production viel dat niet op, want daar staat ValidateOnBuild uit; in Development
+// startte de API helemaal niet meer met "The following constructors are ambiguous".
+builder.Services.AddSingleton(sp => new ProtectionKeyXmlDecryptor(sp.GetRequiredService<ProtectionMasterKey>()));
 builder.Services.AddDataProtection()
     .SetApplicationName("wattzicht")
     .PersistKeysToDbContext<AppDbContext>();

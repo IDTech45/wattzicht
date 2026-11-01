@@ -76,7 +76,7 @@
                         <VerticalStackLayout Spacing="8">
                             <Label Text="{Binding PeriodTitle}" Style="{StaticResource SubtitleLabel}" />
                             <Grid ColumnDefinitions="*,Auto">
-                                <Label Text="{Binding TotalSavedText}" Style="{StaticResource StatValueLarge}" TextColor="{StaticResource Accent500}" />
+                                <Label Text="{Binding TotalSavedText}" Style="{StaticResource StatValueLarge}" TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
                                 <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
                             </Grid>
                             <GraphicsView x:Name="ChartView"
@@ -88,19 +88,19 @@
                             <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
                                 <VerticalStackLayout Grid.Column="0" Spacing="2">
                                     <Label Text="Opgewekt" Style="{StaticResource StatCaption}" />
-                                    <Label Text="{Binding TotalPvText}" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource EnergySolar}" />
+                                    <Label Text="{Binding TotalPvText}" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource WarningTextDark}}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="1" Spacing="2">
                                     <Label Text="Zelf gebruikt" Style="{StaticResource StatCaption}" />
-                                    <Label Text="{Binding TotalSelfUseText}" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource EnergyBattery}" />
+                                    <Label Text="{Binding TotalSelfUseText}" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="2" Spacing="2">
                                     <Label Text="Teruggeleverd" Style="{StaticResource StatCaption}" />
-                                    <Label Text="{Binding TotalExportText}" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource EnergyGrid}" />
+                                    <Label Text="{Binding TotalExportText}" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="3" Spacing="2">
                                     <Label Text="Geladen" Style="{StaticResource StatCaption}" />
-                                    <Label Text="{Binding TotalChargedText}" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource EnergyCharger}" />
+                                    <Label Text="{Binding TotalChargedText}" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource PendingText}, Dark={StaticResource PendingTextDark}}" />
                                 </VerticalStackLayout>
                             </Grid>
                         </VerticalStackLayout>
@@ -112,11 +112,11 @@
                             <Label Text="Dit jaar" Style="{StaticResource SubtitleLabel}" />
                             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                                 <VerticalStackLayout Spacing="2">
-                                    <Label Text="{Binding YearPvText}" FontAttributes="Bold" FontSize="16" TextColor="{StaticResource EnergySolar}" />
+                                    <Label Text="{Binding YearPvText}" FontAttributes="Bold" FontSize="16" TextColor="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource WarningTextDark}}" />
                                     <Label Text="opgewekt" Style="{StaticResource StatCaption}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                    <Label Text="{Binding Co2Text}" FontAttributes="Bold" FontSize="16" TextColor="{StaticResource EnergyBattery}" />
+                                    <Label Text="{Binding Co2Text}" FontAttributes="Bold" FontSize="16" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
                                     <Label Text="CO₂ vermeden" Style="{StaticResource StatCaption}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="2" Spacing="2">
@@ -139,7 +139,7 @@
                     <Border Style="{StaticResource Card}" IsVisible="{Binding HasFeedIn}">
                         <VerticalStackLayout Spacing="6">
                             <Label Text="Terugleveren" Style="{StaticResource SubtitleLabel}" />
-                            <Label Text="{Binding FeedInMonthText}" Style="{StaticResource CardTitle}" TextColor="{StaticResource EnergyGrid}" />
+                            <Label Text="{Binding FeedInMonthText}" Style="{StaticResource CardTitle}" TextColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}" />
                             <Label Text="{Binding FeedInYearText}" Style="{StaticResource StatCaption}" />
                             <Label Text="{Binding FeedIn2027Text}" FontSize="14" Margin="0,4,0,0" />
                         </VerticalStackLayout>
@@ -161,7 +161,7 @@
                     <Border Style="{StaticResource Card}" Margin="16,4" Padding="14,12">
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="6">
                             <Label Grid.Row="0" Grid.Column="0" Text="{Binding DateText}" Style="{StaticResource CardTitle}" />
-                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding SavedText}" FontAttributes="Bold" FontSize="16" TextColor="{StaticResource Accent500}" />
+                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding SavedText}" FontAttributes="Bold" FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
                             <HorizontalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="12">
                                 <Label Text="{Binding PvText, StringFormat='☀ {0}'}" Style="{StaticResource StatCaption}" />
                                 <Label Text="{Binding SelfUseText, StringFormat='⌂ {0}'}" Style="{StaticResource StatCaption}" />

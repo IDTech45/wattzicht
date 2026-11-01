@@ -6,7 +6,7 @@
              x:DataType="vm:LoginViewModel"
              Title="Inloggen"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="{StaticResource Navy900}">
+             BackgroundColor="{AppThemeBinding Light={StaticResource BgApp}, Dark={StaticResource BgAppDark}}">
 
     <ScrollView>
         <Grid RowDefinitions="*,Auto,*" Padding="24" RowSpacing="24">
@@ -15,17 +15,18 @@
             <VerticalStackLayout Grid.Row="0" Spacing="12" VerticalOptions="End" HorizontalOptions="Center">
                 <Image Source="logo.png" HeightRequest="96" WidthRequest="96"
                        SemanticProperties.Description="Wattzicht-logo" />
-                <Label HorizontalTextAlignment="Center" FontSize="30" TextColor="{StaticResource TextBodyDark}">
+                <Label HorizontalTextAlignment="Center" FontSize="30" FontFamily="Display"
+                       TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource TextBodyDark}}">
                     <Label.FormattedText>
                         <FormattedString>
-                            <Span Text="Watt" FontAttributes="Bold" />
+                            <Span Text="Watt" FontFamily="DisplayBold" />
                             <Span Text="zicht" />
                         </FormattedString>
                     </Label.FormattedText>
                 </Label>
                 <Label Text="Zie wat je bespaart"
                        FontSize="15"
-                       TextColor="{StaticResource TextMutedDark}"
+                       TextColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}"
                        HorizontalTextAlignment="Center" />
             </VerticalStackLayout>
 
@@ -63,7 +64,8 @@
                                 <Button Grid.Column="1"
                                         Style="{StaticResource LinkButton}"
                                         Text="Toon"
-                                        WidthRequest="56"
+                                        MinimumWidthRequest="72"
+                                        Padding="8,0"
                                         Command="{Binding TogglePasswordVisibilityCommand}"
                                         SemanticProperties.Description="Wachtwoord tonen of verbergen" />
                             </Grid>
@@ -84,7 +86,7 @@
                                 IsEnabled="{Binding IsNotBusy}" />
                         <ActivityIndicator IsRunning="{Binding IsBusy}"
                                            IsVisible="{Binding IsBusy}"
-                                           Color="{StaticResource Navy900}"
+                                           Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource TextOnAccent}}"
                                            HorizontalOptions="End"
                                            Margin="0,0,16,0" />
                     </Grid>

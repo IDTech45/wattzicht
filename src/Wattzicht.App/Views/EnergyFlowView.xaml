@@ -18,7 +18,8 @@
                 Stroke="{StaticResource EnergySolar}">
             <VerticalStackLayout Spacing="4">
                 <Label Text="Zon" Style="{StaticResource StatCaption}" />
-                <Label Text="{Binding PvKwText}" Style="{StaticResource StatValue}" TextColor="{StaticResource EnergySolar}" />
+                <Label Text="{Binding PvKwText}" Style="{StaticResource StatValue}"
+                       TextColor="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource WarningTextDark}}" />
                 <Label Text="{Binding PvHint}" Style="{StaticResource StatCaption}" />
             </VerticalStackLayout>
         </Border>
@@ -41,7 +42,8 @@
                     <Label Text="Batterij" Style="{StaticResource StatCaption}" />
                     <Label Grid.Column="1" Text="{Binding SocText}" Style="{StaticResource StatCaption}" FontAttributes="Bold" />
                 </Grid>
-                <Label Text="{Binding BatteryKwText}" Style="{StaticResource StatValue}" TextColor="{StaticResource EnergyBattery}" />
+                <Label Text="{Binding BatteryKwText}" Style="{StaticResource StatValue}"
+                       TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
                 <Label Text="{Binding BatteryHint}" Style="{StaticResource StatCaption}" />
                 <ProgressBar Progress="{Binding SocFraction}"
                              ProgressColor="{StaticResource EnergyBattery}"
@@ -71,7 +73,8 @@
                     <Label Text="Laadpaal" Style="{StaticResource StatCaption}" />
                     <Label Text="{Binding ChargerHint}" Style="{StaticResource StatCaption}" />
                 </VerticalStackLayout>
-                <Label Grid.Column="1" Text="{Binding ChargerKwText}" Style="{StaticResource StatValue}" TextColor="{StaticResource EnergyCharger}" VerticalOptions="Center" />
+                <Label Grid.Column="1" Text="{Binding ChargerKwText}" Style="{StaticResource StatValue}" VerticalOptions="Center"
+                       TextColor="{AppThemeBinding Light={StaticResource PendingText}, Dark={StaticResource PendingTextDark}}" />
             </Grid>
         </Border>
     </Grid>
