@@ -56,6 +56,19 @@ services:
       Connectors__Enphase__ClientId: ${ENPHASE_CLIENT_ID:-}
       Connectors__Enphase__ClientSecret: ${ENPHASE_CLIENT_SECRET:-}
       Connectors__Enphase__ApiKey: ${ENPHASE_API_KEY:-}
+
+      # Plus. Staat uit tot 1 januari 2027; de abonnementen worden intussen wel bijgehouden.
+      Plus__Enabled: ${PLUS_ENABLED:-false}
+
+      # Aankopen controleren bij de stores. Zonder deze waarden kan er niets gekocht worden; zie
+      # docs/STORES.md. Liever niemand Plus dan iemand Plus op een bonnetje dat niet nagekeken is.
+      Store__Apple__KeyId: ${STORE_APPLE_KEY_ID:-}
+      Store__Apple__IssuerId: ${STORE_APPLE_ISSUER_ID:-}
+      Store__Apple__BundleId: ${STORE_APPLE_BUNDLE_ID:-nl.wattzicht.app}
+      Store__Apple__PrivateKeyPem: ${STORE_APPLE_PRIVATE_KEY_PEM:-}
+      Store__Apple__BaseUrl: ${STORE_APPLE_BASE_URL:-https://api.storekit.itunes.apple.com}
+      Store__Google__PackageName: ${STORE_GOOGLE_PACKAGE_NAME:-nl.wattzicht.app}
+      Store__Google__ServiceAccountFile: /run/secrets/wattzicht/play.json
       TZ: Europe/Amsterdam
       # Pushmeldingen: eigen Firebase-project 'wattzicht'. De servicesleutel staat als bestand op de server
       # en wordt alleen-lezen ingehangen: niet in de repo, niet in een env-variabele. Zonder bestand: push uit.

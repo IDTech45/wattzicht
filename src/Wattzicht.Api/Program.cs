@@ -56,6 +56,21 @@ builder.Services.AddSingleton<CredentialProtector>();
 builder.Services.AddScoped<EntitlementService>();
 builder.Services.AddScoped<SubscriptionWriter>();
 
+// Aankopen controleren bij de store. Zonder sleutels staan ze uit en kennen ze niets toe; liever
+// niemand Plus dan iemand Plus op een bonnetje dat niet nagekeken is.
+builder.Services.AddHttpClient(AppleStoreVerifier.HttpClientName, client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Store:Apple:BaseUrl"] ?? AppleStoreVerifier.ProductionBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(20);
+});
+builder.Services.AddHttpClient(GoogleStoreVerifier.HttpClientName, client =>
+{
+    client.BaseAddress = new Uri(GoogleStoreVerifier.BaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(20);
+});
+builder.Services.AddSingleton<IStoreVerifier, AppleStoreVerifier>();
+builder.Services.AddSingleton<IStoreVerifier, GoogleStoreVerifier>();
+
 // Auth
 builder.Services.AddSingleton(jwtOptions);
 builder.Services.AddSingleton<TokenService>();
@@ -237,6 +252,7 @@ app.MapLeadEndpoints();
 app.MapAdviceEndpoints();
 app.MapPushEndpoints();
 app.MapPlanEndpoints();
+app.MapSubscriptionEndpoints();
 
 app.Run();
 

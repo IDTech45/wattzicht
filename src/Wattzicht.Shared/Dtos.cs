@@ -651,6 +651,33 @@ public sealed record AdminBrandDto(
     int Households,
     bool Supported);
 
+/// <summary>Een aankoop uit de store die gecontroleerd moet worden.</summary>
+/// <param name="Platform">apple of google.</param>
+/// <param name="Receipt">
+/// Bij Apple het originele transactienummer, bij Google de purchase token. Wat de app van de store
+/// kreeg; wij vragen het daar zelf na.
+/// </param>
+public sealed record VerifyPurchaseRequest(string Platform, string Receipt);
+
+/// <summary>Uitkomst van een gecontroleerde aankoop.</summary>
+/// <param name="Entitlement">De stand van zaken voor deze woning ná de aankoop.</param>
+/// <param name="StartsLater">Of het nieuwe abonnement pas begint als een lopende periode afloopt.</param>
+/// <param name="Message">Eén regel voor op het scherm.</param>
+public sealed record VerifyPurchaseResultDto(object Entitlement, bool StartsLater, string Message);
+
+/// <summary>Een melding van Apple (App Store Server Notifications v2).</summary>
+/// <param name="SignedPayload">De ondertekende inhoud.</param>
+public sealed record AppleNotificationRequest(string? SignedPayload);
+
+/// <summary>Eén bericht uit Google Pub/Sub.</summary>
+/// <param name="Data">De inhoud, base64.</param>
+/// <param name="MessageId">Nummer van het bericht.</param>
+public sealed record GooglePubSubMessage(string? Data, string? MessageId);
+
+/// <summary>Een melding van Google Play (Real-time Developer Notifications via Pub/Sub).</summary>
+/// <param name="Message">Het bericht.</param>
+public sealed record GoogleNotificationRequest(GooglePubSubMessage? Message);
+
 /// <summary>Wat een installateur deze maand kost (GET /api/installer/billing).</summary>
 /// <param name="BillingMode">free of per_household.</param>
 /// <param name="PricePerHouseholdEur">Prijs per actief huishouden per maand, exclusief btw.</param>
