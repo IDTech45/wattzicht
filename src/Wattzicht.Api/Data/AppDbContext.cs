@@ -35,12 +35,24 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
     public DbSet<PushDevice> PushDevices => Set<PushDevice>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<PromoEvent> PromoEvents => Set<PromoEvent>();
+    public DbSet<SupplierTariff> SupplierTariffs => Set<SupplierTariff>();
 
     /// <summary>Sleutelring van de Data Protection API (versleuteld met WZ_PROTECTION_KEY).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<SupplierTariff>(e =>
+        {
+            e.ToTable("supplier_tariffs");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Supplier).HasMaxLength(100).IsRequired();
+            e.Property(x => x.ExportPricePerKwh).HasPrecision(10, 4);
+            e.Property(x => x.FeedInCostPerKwh).HasPrecision(10, 4);
+            e.Property(x => x.Source).HasMaxLength(500);
+            e.HasIndex(x => new { x.Supplier, x.ValidFrom }).IsUnique();
+        });
+
         modelBuilder.Entity<PromoEvent>(e =>
         {
             e.ToTable("promo_events");
@@ -92,6 +104,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
             e.Property(x => x.PostalCode).HasMaxLength(10);
             e.Property(x => x.City).HasMaxLength(100);
             e.Property(x => x.Plan).HasMaxLength(20).IsRequired();
+            e.Property(x => x.SupplierName).HasMaxLength(100);
             e.HasOne(x => x.Installer)
                 .WithMany(i => i.Households)
                 .HasForeignKey(x => x.InstallerId)

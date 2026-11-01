@@ -111,6 +111,22 @@ public static class SchemaUpgrades
         )
         """,
         """CREATE INDEX IF NOT EXISTS ix_promo_events_woning ON promo_events ("HouseholdId", "Campaign", "Channel", "SentAt")""",
+
+        // 2026-11: tarieven per leverancier. Vanaf 2027 stopt de saldering en verschilt het per
+        // leverancier wat je voor teruglevering krijgt en wat hij ervoor rekent.
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "SupplierName" character varying(100) NULL""",
+        """
+        CREATE TABLE IF NOT EXISTS supplier_tariffs (
+            "Id" uuid NOT NULL PRIMARY KEY,
+            "Supplier" character varying(100) NOT NULL,
+            "ValidFrom" date NOT NULL,
+            "ExportPricePerKwh" numeric(10,4) NOT NULL,
+            "FeedInCostPerKwh" numeric(10,4) NOT NULL,
+            "Source" character varying(500) NULL,
+            "CreatedAt" timestamp with time zone NOT NULL
+        )
+        """,
+        """CREATE UNIQUE INDEX IF NOT EXISTS ux_supplier_tariffs ON supplier_tariffs ("Supplier", "ValidFrom")""",
     ];
 
     public static async Task ApplyAsync(AppDbContext db, CancellationToken ct = default)

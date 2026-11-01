@@ -100,6 +100,12 @@ public sealed class Household
     /// </summary>
     public bool LaadcashOptOut { get; set; }
 
+    /// <summary>
+    /// De energieleverancier van deze woning, zoals die in supplier_tariffs staat. Alleen Plus
+    /// rekent hiermee; zonder Plus geldt het landelijke gemiddelde.
+    /// </summary>
+    public string? SupplierName { get; set; }
+
     /// <summary>Locatie voor weerdata (afgeleid van de plaats; geen exact adres).</summary>
     public double? Latitude { get; set; }
 
@@ -404,4 +410,36 @@ public sealed class PromoEvent
     public string Action { get; set; } = string.Empty;
 
     public DateTimeOffset SentAt { get; set; }
+}
+
+/// <summary>
+/// Wat één energieleverancier vanaf een datum betaalt voor teruglevering, en wat hij ervoor rekent.
+///
+/// Met de hand gevuld: deze bedragen staan in de voorwaarden van elke leverancier en veranderen een
+/// paar keer per jaar, en er is geen bron die ze allemaal betrouwbaar bij elkaar zet. Een datum per
+/// rij, zodat een oude berekening blijft kloppen: wie in maart terugleverde moet het tarief van
+/// maart houden, ook als de leverancier het in juni verhoogt.
+///
+/// De rij met naam "standaard" is het landelijke gemiddelde dat Gratis krijgt.
+/// </summary>
+public sealed class SupplierTariff
+{
+    public Guid Id { get; set; }
+
+    /// <summary>Naam van de leverancier, of "standaard" voor het landelijke gemiddelde.</summary>
+    public string Supplier { get; set; } = string.Empty;
+
+    /// <summary>Vanaf welke dag dit tarief geldt.</summary>
+    public DateOnly ValidFrom { get; set; }
+
+    /// <summary>Wat de leverancier per teruggeleverde kWh vergoedt.</summary>
+    public decimal ExportPricePerKwh { get; set; }
+
+    /// <summary>Wat de leverancier per teruggeleverde kWh in rekening brengt.</summary>
+    public decimal FeedInCostPerKwh { get; set; }
+
+    /// <summary>Waar dit vandaan komt, zodat het na te lopen is.</summary>
+    public string? Source { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; }
 }

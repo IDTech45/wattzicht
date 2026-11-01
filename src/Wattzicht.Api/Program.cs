@@ -57,6 +57,7 @@ builder.Services.AddScoped<EntitlementService>();
 builder.Services.AddScoped<SubscriptionWriter>();
 builder.Services.AddScoped<LaadcashPromotie>();
 builder.Services.AddScoped<Aanbiedingen>();
+builder.Services.AddScoped<TariefBron>();
 
 // Aankopen controleren bij de store. Zonder sleutels staan ze uit en kennen ze niets toe; liever
 // niemand Plus dan iemand Plus op een bonnetje dat niet nagekeken is.
