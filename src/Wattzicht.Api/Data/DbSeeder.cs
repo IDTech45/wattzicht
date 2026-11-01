@@ -9,9 +9,11 @@ namespace Wattzicht.Api.Data;
 /// bestaande rijen worden niet overschreven.
 ///
 /// Wachtwoorden komen uit configuratie (<c>Seed:AdminPassword</c>, <c>Seed:InstallerPassword</c>,
-/// <c>Seed:DemoPassword</c>). Buiten Development is er geen terugvaloptie: staat een wachtwoord niet
-/// ingesteld, dan maken we dat account niet aan. Anders zou er op de productieserver een beheerder
-/// klaarstaan met een wachtwoord dat in deze broncode te lezen is.
+/// <c>Seed:DemoPassword</c>) en het adres van de beheerder uit <c>Seed:AdminAccount</c>. Buiten
+/// Development is er geen terugvaloptie: staat een wachtwoord niet ingesteld, dan maken we dat account
+/// niet aan. Anders zou er op de productieserver een beheerder klaarstaan met een wachtwoord dat in
+/// deze broncode te lezen is. Wie zo'n broncode-wachtwoord alsnog als instelling invult krijgt hetzelfde
+/// antwoord: dat is geen wachtwoord meer, het staat in de git-geschiedenis.
 ///
 /// Het demo-huishouden met Demo-apparaten (een gesimuleerde dagcurve) hoort bij ontwikkelen en
 /// demonstreren, niet bij de echte klanten van een installateur. Het komt er daarom alleen bij als
@@ -26,8 +28,18 @@ public static class DbSeeder
     public const string DemoEmail = "demo@wattzicht.nl";
     public const string InstallerEmail = "installateur@triple-energie.nl";
 
-    /// <summary>Het beheeraccount van Wattzicht zelf; wachtwoord uit <c>Seed:AdminPassword</c>.</summary>
+    /// <summary>
+    /// Het beheeraccount van Wattzicht zelf als er niets is ingesteld. Een ander adres kies je met
+    /// <c>Seed:AdminAccount</c>; het wachtwoord komt uit <c>Seed:AdminPassword</c>.
+    /// </summary>
     public const string AdminEmail = "admin@wattzicht.nl";
+
+    /// <summary>
+    /// Wachtwoorden die ooit als terugvaloptie in deze broncode stonden. Wie ze alsnog als instelling
+    /// invult, denkt iets dicht te zetten maar laat het open: ze staan in de git-geschiedenis en in elke
+    /// kopie van deze repo. Buiten Development weigeren we ze daarom.
+    /// </summary>
+    private static readonly string[] BekendeWachtwoorden = ["Admin123!", "Installateur123!", "Demo1234!"];
 
     /// <summary>Logo van Triple Energie (van hun eigen site) tot ze er zelf een uploaden in het portal.</summary>
     public const string TripleEnergieLogoUrl = "https://www.triple-energie.nl/wp-content/uploads/2025/04/Triple-energie-logo-768x351.png";
@@ -73,13 +85,13 @@ public static class DbSeeder
             await db.SaveChangesAsync(ct);
         }
 
-        var installerPassword = Wachtwoord(config, "Seed:InstallerPassword", "Installateur123!", devFallback);
-        await ZetWachtwoordOpnieuwAsync(db, InstallerEmail, Ingesteld(config, "Seed:InstallerPassword"), hasher, logger, ct);
+        var installerPassword = Wachtwoord(config, "Seed:InstallerPassword", "Installateur123!", devFallback, logger, InstallerEmail);
+        await ZetWachtwoordOpnieuwAsync(db, InstallerEmail, installerPassword is null ? null : Ingesteld(config, "Seed:InstallerPassword"), hasher, logger, ct);
         if (!await db.Users.AnyAsync(u => u.Email == InstallerEmail, ct))
         {
             if (installerPassword is null)
             {
-                logger.LogWarning("Installateursaccount {Email} niet aangemaakt: Seed:InstallerPassword staat niet ingesteld.", InstallerEmail);
+                logger.LogWarning("Installateursaccount {Email} niet aangemaakt: Seed:InstallerPassword staat niet (bruikbaar) ingesteld.", InstallerEmail);
             }
             else
             {
@@ -98,27 +110,29 @@ public static class DbSeeder
         // Beheerder van Wattzicht zelf. Hij hangt administratief aan Triple Energie omdat elke
         // gebruiker een installateur nodig heeft, maar zijn rol bepaalt wat hij ziet: alles, dwars
         // door de tenantgrens heen. Zie AdminEndpoints.
-        var adminPassword = Wachtwoord(config, "Seed:AdminPassword", "Admin123!", devFallback);
-        await ZetWachtwoordOpnieuwAsync(db, AdminEmail, Ingesteld(config, "Seed:AdminPassword"), hasher, logger, ct);
-        if (!await db.Users.AnyAsync(u => u.Email == AdminEmail, ct))
+        // Het adres van de beheerder mag je zelf kiezen; zonder instelling blijft het admin@wattzicht.nl.
+        var adminEmail = (Ingesteld(config, "Seed:AdminAccount") ?? AdminEmail).Trim().ToLowerInvariant();
+        var adminPassword = Wachtwoord(config, "Seed:AdminPassword", "Admin123!", devFallback, logger, adminEmail);
+        await ZetWachtwoordOpnieuwAsync(db, adminEmail, adminPassword is null ? null : Ingesteld(config, "Seed:AdminPassword"), hasher, logger, ct);
+        if (!await db.Users.AnyAsync(u => u.Email == adminEmail, ct))
         {
             if (adminPassword is null)
             {
-                logger.LogWarning("Beheeraccount {Email} niet aangemaakt: Seed:AdminPassword staat niet ingesteld. "
-                                  + "Zet die variabele en herstart; een beheerder met een wachtwoord uit de broncode zetten we niet klaar.", AdminEmail);
+                logger.LogWarning("Beheeraccount {Email} niet aangemaakt: Seed:AdminPassword staat niet (bruikbaar) ingesteld. "
+                                  + "Zet die variabele en herstart; een beheerder met een wachtwoord uit de broncode zetten we niet klaar.", adminEmail);
             }
             else
             {
                 db.Users.Add(new User
                 {
                     Id = Guid.NewGuid(),
-                    Email = AdminEmail,
+                    Email = adminEmail,
                     PasswordHash = hasher.Hash(adminPassword),
                     Role = UserRole.Admin,
                     InstallerId = installer.Id,
                     CreatedAt = now
                 });
-                logger.LogInformation("Beheeraccount {Email} aangemaakt.", AdminEmail);
+                logger.LogInformation("Beheeraccount {Email} aangemaakt.", adminEmail);
             }
         }
 
@@ -131,7 +145,7 @@ public static class DbSeeder
             return;
         }
 
-        var demoPassword = Wachtwoord(config, "Seed:DemoPassword", "Demo1234!", devFallback);
+        var demoPassword = Wachtwoord(config, "Seed:DemoPassword", "Demo1234!", devFallback, logger, DemoEmail);
         if (demoPassword is null)
         {
             await db.SaveChangesAsync(ct);
@@ -258,10 +272,19 @@ public static class DbSeeder
     /// Een lege env-variabele telt als niet gezet; compose geeft die namelijk leeg door zodra je hem
     /// vergeet te vullen, en juist dan mag er geen wachtwoord uit deze broncode gelden.
     /// </summary>
-    private static string? Wachtwoord(IConfiguration config, string key, string devFallbackWaarde, bool devFallback)
+    private static string? Wachtwoord(IConfiguration config, string key, string devFallbackWaarde, bool devFallback,
+        ILogger logger, string email)
     {
         var value = config[key];
-        if (!string.IsNullOrWhiteSpace(value)) return value;
-        return devFallback ? devFallbackWaarde : null;
+        if (string.IsNullOrWhiteSpace(value)) return devFallback ? devFallbackWaarde : null;
+
+        if (!devFallback && BekendeWachtwoorden.Contains(value, StringComparer.Ordinal))
+        {
+            logger.LogError("{Key} staat op een wachtwoord dat in onze eigen broncode en git-geschiedenis staat. "
+                            + "Het account {Email} is daarmee niet beschermd; kies een eigen wachtwoord en herstart.", key, email);
+            return null;
+        }
+
+        return value;
     }
 }

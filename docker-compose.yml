@@ -45,6 +45,7 @@ services:
       Cors__AllowedOrigins__0: ${CORS_ORIGIN_0:-https://wattzicht.nl}
       Cors__AllowedOrigins__1: ${CORS_ORIGIN_1:-https://www.wattzicht.nl}
       Seed__Enabled: ${SEED_ENABLED:-true}
+      Seed__AdminAccount: ${SEED_ADMIN_ACCOUNT:-}
       Seed__AdminPassword: ${SEED_ADMIN_PASSWORD:-}
       Seed__InstallerPassword: ${SEED_INSTALLER_PASSWORD:-}
       # Demo-woning met een gesimuleerde dagcurve: alleen voor demonstreren, standaard uit.

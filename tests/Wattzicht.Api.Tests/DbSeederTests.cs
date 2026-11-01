@@ -173,6 +173,72 @@ public sealed class DbSeederTests
         Assert.False(hasher.Verify("Admin123!", admin.PasswordHash));
     }
 
+    [Fact]
+    public async Task Het_adres_van_de_beheerder_mag_je_zelf_kiezen()
+    {
+        await using var services = Bouw("Production", new Dictionary<string, string?>
+        {
+            ["Seed:AdminAccount"] = "Ibo@Wattzicht.NL",
+            ["Seed:AdminPassword"] = "een-eigen-wachtwoord",
+        });
+
+        await DbSeeder.SeedAsync(services);
+
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var users = await db.Users.IgnoreQueryFilters().ToListAsync();
+
+        // Adressen worden kleingeschreven bewaard, net als bij inloggen en registreren.
+        Assert.Contains(users, u => u.Email == "ibo@wattzicht.nl" && u.Role == UserRole.Admin);
+        Assert.DoesNotContain(users, u => u.Email == DbSeeder.AdminEmail);
+    }
+
+    [Fact]
+    public async Task Een_wachtwoord_uit_onze_eigen_broncode_wordt_geweigerd()
+    {
+        // Admin123! als instelling invullen voelt als iets dichtzetten, maar dat wachtwoord staat in de
+        // git-geschiedenis van deze repo. Dan is het geen wachtwoord meer.
+        await using var services = Bouw("Production", new Dictionary<string, string?>
+        {
+            ["Seed:AdminPassword"] = "Admin123!",
+            ["Seed:InstallerPassword"] = "Installateur123!",
+        });
+
+        await DbSeeder.SeedAsync(services);
+
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Empty(await db.Users.IgnoreQueryFilters().ToListAsync());
+    }
+
+    [Fact]
+    public async Task Een_geweigerd_wachtwoord_overschrijft_ook_geen_bestaand_account()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        await using (var eerst = Bouw("Production", new Dictionary<string, string?>
+        {
+            ["Seed:AdminPassword"] = "het-goede-wachtwoord",
+        }, dbName))
+        {
+            await DbSeeder.SeedAsync(eerst);
+        }
+
+        await using var services = Bouw("Production", new Dictionary<string, string?>
+        {
+            ["Seed:AdminPassword"] = "Admin123!",
+        }, dbName);
+
+        await DbSeeder.SeedAsync(services);
+
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var hasher = scope.ServiceProvider.GetRequiredService<PasswordHasher>();
+        var admin = await db.Users.IgnoreQueryFilters().SingleAsync(u => u.Email == DbSeeder.AdminEmail);
+
+        Assert.True(hasher.Verify("het-goede-wachtwoord", admin.PasswordHash));
+        Assert.False(hasher.Verify("Admin123!", admin.PasswordHash));
+    }
+
     private static ServiceProvider Bouw(string environment, Dictionary<string, string?> settings, string? dbName = null)
     {
         dbName ??= Guid.NewGuid().ToString();
