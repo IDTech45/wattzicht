@@ -96,6 +96,21 @@ public static class SchemaUpgrades
         // afspraak met Triple Energie en voor de rest is er nog niets afgesproken.
         """ALTER TABLE installers ADD COLUMN IF NOT EXISTS "BillingMode" character varying(20) NOT NULL DEFAULT 'free'""",
         """ALTER TABLE installers ADD COLUMN IF NOT EXISTS "PricePerHousehold" numeric(10,2) NOT NULL DEFAULT 1.25""",
+
+        // 2026-11: LaadCash-promotie.
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "LaadcashLinkedAt" timestamp with time zone NULL""",
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "LaadcashOptOut" boolean NOT NULL DEFAULT false""",
+        """
+        CREATE TABLE IF NOT EXISTS promo_events (
+            "Id" uuid NOT NULL PRIMARY KEY,
+            "HouseholdId" uuid NOT NULL REFERENCES households ("Id") ON DELETE CASCADE,
+            "Campaign" character varying(40) NOT NULL,
+            "Channel" character varying(20) NOT NULL,
+            "Action" character varying(20) NOT NULL,
+            "SentAt" timestamp with time zone NOT NULL
+        )
+        """,
+        """CREATE INDEX IF NOT EXISTS ix_promo_events_woning ON promo_events ("HouseholdId", "Campaign", "Channel", "SentAt")""",
     ];
 
     public static async Task ApplyAsync(AppDbContext db, CancellationToken ct = default)

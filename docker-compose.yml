@@ -69,6 +69,11 @@ services:
       Store__Apple__BaseUrl: ${STORE_APPLE_BASE_URL:-https://api.storekit.itunes.apple.com}
       Store__Google__PackageName: ${STORE_GOOGLE_PACKAGE_NAME:-nl.wattzicht.app}
       Store__Google__ServiceAccountFile: /run/secrets/wattzicht/play.json
+
+      # LaadCash: waar de aanmeldlink heen gaat en het geheim waarmee LaadCash terugmeldt dat een
+      # woning zich heeft aangemeld. Zonder geheim staat dat endpoint dicht.
+      Laadcash__RegisterUrl: ${LAADCASH_REGISTER_URL:-https://laadcash.nl/register}
+      Laadcash__SharedSecret: ${LAADCASH_SHARED_SECRET:-}
       TZ: Europe/Amsterdam
       # Pushmeldingen: eigen Firebase-project 'wattzicht'. De servicesleutel staat als bestand op de server
       # en wordt alleen-lezen ingehangen: niet in de repo, niet in een env-variabele. Zonder bestand: push uit.

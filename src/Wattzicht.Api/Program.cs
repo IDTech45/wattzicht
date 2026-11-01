@@ -55,6 +55,7 @@ builder.Services.AddSingleton<CredentialProtector>();
 // Plus: één plek die bepaalt of een woning Plus heeft, en één plek die abonnementen wegschrijft.
 builder.Services.AddScoped<EntitlementService>();
 builder.Services.AddScoped<SubscriptionWriter>();
+builder.Services.AddScoped<LaadcashPromotie>();
 
 // Aankopen controleren bij de store. Zonder sleutels staan ze uit en kennen ze niets toe; liever
 // niemand Plus dan iemand Plus op een bonnetje dat niet nagekeken is.
@@ -112,6 +113,9 @@ builder.Services.AddHostedService<SmartMomentWorker>();
 
 // Dagelijks: verlopen abonnementen afsluiten en waarschuwen dat een proefperiode bijna om is.
 builder.Services.AddHostedService<SubscriptionWorker>();
+
+// Herinneringen van de LaadCash-campagne (push en mail). Staat niet achter Plus.
+builder.Services.AddHostedService<LaadcashPromoWorker>();
 builder.Services.AddScoped<InsightsService>();
 
 // CORS voor de Vue-frontend en lokale ontwikkeling
@@ -253,6 +257,7 @@ app.MapAdviceEndpoints();
 app.MapPushEndpoints();
 app.MapPlanEndpoints();
 app.MapSubscriptionEndpoints();
+app.MapLaadcashEndpoints();
 
 app.Run();
 

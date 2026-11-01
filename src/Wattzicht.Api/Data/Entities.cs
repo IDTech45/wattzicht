@@ -87,6 +87,19 @@ public sealed class Household
     /// <summary>Wanneer die keuze gemaakt is.</summary>
     public DateTimeOffset? PlanChosenAt { get; set; }
 
+    /// <summary>
+    /// Wanneer deze woning bij LaadCash is aangemeld. LaadCash meldt dit terug via de bestaande
+    /// koppeling; zie docs/LAADCASH-KOPPELING.md. Zodra dit gevuld is stopt alle promotie en laat de
+    /// tegel de echte opbrengst zien.
+    /// </summary>
+    public DateTimeOffset? LaadcashLinkedAt { get; set; }
+
+    /// <summary>
+    /// De bewoner wil er niets meer over horen. Dan nooit meer promoten, ook niet over een jaar.
+    /// Iemand die "niet meer tonen" kiest en het toch weer ziet, zet de meldingen helemaal uit.
+    /// </summary>
+    public bool LaadcashOptOut { get; set; }
+
     /// <summary>Locatie voor weerdata (afgeleid van de plaats; geen exact adres).</summary>
     public double? Latitude { get; set; }
 
@@ -365,4 +378,30 @@ public sealed class Subscription
     /// deze vlag zou de dagelijkse controle hem zeven dagen achter elkaar sturen.
     /// </summary>
     public DateTimeOffset? TrialReminderSentAt { get; set; }
+}
+
+/// <summary>
+/// Eén keer dat we iemand iets over een campagne hebben laten zien, en wat hij deed.
+///
+/// Alle timing wordt hieruit afgeleid: of de popup al is geweest, hoeveel pushmeldingen er al uit
+/// zijn en wanneer de laatste was. Zo kan hetzelfde bericht nooit twee keer komen, ook niet als er
+/// twee servers draaien of een taak opnieuw begint.
+/// </summary>
+public sealed class PromoEvent
+{
+    public Guid Id { get; set; }
+
+    public Guid HouseholdId { get; set; }
+    public Household Household { get; set; } = null!;
+
+    /// <summary>Welke campagne; nu alleen "laadcash".</summary>
+    public string Campaign { get; set; } = string.Empty;
+
+    /// <summary>popup, tile, push of email.</summary>
+    public string Channel { get; set; } = string.Empty;
+
+    /// <summary>shown, clicked, dismissed of optout.</summary>
+    public string Action { get; set; } = string.Empty;
+
+    public DateTimeOffset SentAt { get; set; }
 }

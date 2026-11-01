@@ -34,12 +34,24 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
     public DbSet<InstallerAccessLog> InstallerAccessLogs => Set<InstallerAccessLog>();
     public DbSet<PushDevice> PushDevices => Set<PushDevice>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<PromoEvent> PromoEvents => Set<PromoEvent>();
 
     /// <summary>Sleutelring van de Data Protection API (versleuteld met WZ_PROTECTION_KEY).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<PromoEvent>(e =>
+        {
+            e.ToTable("promo_events");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Campaign).HasMaxLength(40).IsRequired();
+            e.Property(x => x.Channel).HasMaxLength(20).IsRequired();
+            e.Property(x => x.Action).HasMaxLength(20).IsRequired();
+            e.HasIndex(x => new { x.HouseholdId, x.Campaign, x.Channel, x.SentAt });
+            e.HasOne(x => x.Household).WithMany().HasForeignKey(x => x.HouseholdId).OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<Subscription>(e =>
         {
             e.ToTable("subscriptions");

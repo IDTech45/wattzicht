@@ -651,6 +651,16 @@ public sealed record AdminBrandDto(
     int Households,
     bool Supported);
 
+/// <summary>Een promotie is getoond, aangeklikt of weggeklikt.</summary>
+/// <param name="Channel">popup, tile, push of email.</param>
+/// <param name="Action">shown, clicked, dismissed of optout.</param>
+public sealed record PromoActionRequest(string Channel, string Action);
+
+/// <summary>LaadCash meldt dat een woning zich heeft aangemeld.</summary>
+/// <param name="HomeId">De woning, zoals die in de deeplink stond.</param>
+/// <param name="LinkedAt">Wanneer; leeg betekent nu.</param>
+public sealed record LaadcashLinkedRequest(Guid HomeId, DateTimeOffset? LinkedAt);
+
 /// <summary>Een aankoop uit de store die gecontroleerd moet worden.</summary>
 /// <param name="Platform">apple of google.</param>
 /// <param name="Receipt">
