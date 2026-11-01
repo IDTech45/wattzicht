@@ -651,6 +651,19 @@ public sealed record AdminBrandDto(
     int Households,
     bool Supported);
 
+/// <summary>Wat een installateur deze maand kost (GET /api/installer/billing).</summary>
+/// <param name="BillingMode">free of per_household.</param>
+/// <param name="PricePerHouseholdEur">Prijs per actief huishouden per maand, exclusief btw.</param>
+/// <param name="ActiveHouseholds">Huishoudens met een lopend abonnement via deze installateur.</param>
+/// <param name="MonthlyAmountEur">Het bedrag; nul bij free.</param>
+/// <param name="Note">Eén regel uitleg voor op het scherm.</param>
+public sealed record InstallerBillingDto(
+    string BillingMode,
+    decimal PricePerHouseholdEur,
+    int ActiveHouseholds,
+    decimal MonthlyAmountEur,
+    string Note);
+
 /// <summary>Eén abonnement zoals de app het toont (GET /api/plans).</summary>
 /// <param name="Key">Vaste sleutel: free, plus_monthly of plus_yearly.</param>
 /// <param name="Name">Naam voor op het scherm.</param>

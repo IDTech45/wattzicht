@@ -42,6 +42,7 @@ public static class AuthEndpoints
         AppDbContext db,
         PasswordHasher hasher,
         TokenService tokens,
+        SubscriptionWriter subscriptions,
         TimeProvider clock,
         CancellationToken ct)
     {
@@ -61,6 +62,14 @@ public static class AuthEndpoints
         if (string.IsNullOrWhiteSpace(request.HouseholdName))
         {
             errors["householdName"] = ["Geef je huishouden een naam."];
+        }
+
+        // Met een installateurscode hoort een expliciet vinkje: zonder toestemming mag die installateur
+        // de gegevens van deze woning niet zien, en dan is er ook geen grond om hem eraan te koppelen.
+        if (!string.IsNullOrWhiteSpace(request.InstallerSlug) && !request.AllowInstallerAccess)
+        {
+            errors["allowInstallerAccess"] =
+                ["Vink aan dat je installateur je gegevens mag zien, of laat de code leeg."];
         }
 
         if (errors.Count > 0)
@@ -131,6 +140,19 @@ public static class AuthEndpoints
         db.Households.Add(household);
         db.Users.Add(user);
         await db.SaveChangesAsync(ct);
+
+        // Kwam hij binnen met de code van zijn installateur, dan regelt die installateur zijn Plus.
+        // Bij een gratis installateur (Triple Energie) is dat twaalf maanden; bij een betalende loopt
+        // het door zolang hij klant is. Zonder code gebeurt er niets: dan is hij gewoon gratis, en
+        // krijgt hij zijn proefperiode zodra hij zijn eerste apparaat koppelt.
+        if (!string.IsNullOrWhiteSpace(request.InstallerSlug))
+        {
+            var duur = installer.BillingMode == InstallerBillingMode.Free
+                ? TimeSpan.FromDays(365)
+                : (TimeSpan?)null;
+            await subscriptions.StartAsync(
+                household.Id, SubscriptionSource.Installer, duur, installerId: installer.Id, ct: ct);
+        }
 
         var (token, expires) = tokens.CreateToken(user);
         return Results.Created("/me", new AuthResponse(token, expires, HouseholdQueries.ToDto(household), HouseholdQueries.ToDto(installer)));

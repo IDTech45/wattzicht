@@ -68,6 +68,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
             e.Property(x => x.ContactEmail).HasMaxLength(320);
             e.Property(x => x.ContactPerson).HasMaxLength(200);
             e.Property(x => x.City).HasMaxLength(120);
+            e.Property(x => x.BillingMode).HasMaxLength(20).IsRequired();
+            e.Property(x => x.PricePerHousehold).HasPrecision(10, 2);
         });
 
         modelBuilder.Entity<Household>(e =>

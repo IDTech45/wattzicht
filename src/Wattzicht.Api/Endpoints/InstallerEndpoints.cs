@@ -43,6 +43,10 @@ public static partial class InstallerEndpoints
             .ProducesValidationProblem()
             .Produces(StatusCodes.Status404NotFound);
 
+        group.MapGet("/billing", BillingAsync)
+            .WithSummary("Wat deze maand te factureren valt: actieve huishoudens maal de prijs.")
+            .Produces<InstallerBillingDto>();
+
         group.MapGet("/branding", GetBrandingAsync)
             .WithSummary("Eigen white-label instellingen: naam, logo (data-URL), kleur en offertelink.")
             .Produces<BrandingDto>();
@@ -312,6 +316,44 @@ public static partial class InstallerEndpoints
         return Results.Ok(sent > 0
             ? new InstallerActionResult(true, "Verstuurd. Je klant krijgt het als melding in Wattzicht.")
             : new InstallerActionResult(false, "Niet verstuurd: deze klant heeft Wattzicht nog niet met meldingen op de telefoon staan."));
+    }
+
+    /// <summary>
+    /// Het maandoverzicht. Alleen tonen, niet factureren: er is nog geen betaalpartij voor bedrijven,
+    /// en zolang Triple Energie de enige installateur is valt er ook niets te innen.
+    ///
+    /// Actief = een huishouden met een lopend abonnement waarvoor déze installateur de bron is. Een
+    /// klant die zelf in de store betaalt telt dus niet mee, want dan betaalt hij al zelf; per woning
+    /// betaalt precies één partij.
+    /// </summary>
+    private static async Task<IResult> BillingAsync(
+        HttpContext http, AppDbContext db, TimeProvider clock, CancellationToken ct)
+    {
+        var installerId = http.User.GetInstallerId();
+        var now = clock.GetUtcNow();
+
+        var installer = await db.Installers.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(i => i.Id == installerId, ct);
+        if (installer is null) return Results.NotFound();
+
+        var actief = await db.Subscriptions.IgnoreQueryFilters()
+            .CountAsync(s => s.InstallerId == installerId
+                             && s.Source == SubscriptionSource.Installer
+                             && (s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.Pending)
+                             && s.StartsAt <= now
+                             && (s.EndsAt == null || s.EndsAt > now), ct);
+
+        var gratis = installer.BillingMode == InstallerBillingMode.Free;
+        var bedrag = gratis ? 0m : actief * installer.PricePerHousehold;
+
+        return Results.Ok(new InstallerBillingDto(
+            BillingMode: installer.BillingMode,
+            PricePerHouseholdEur: installer.PricePerHousehold,
+            ActiveHouseholds: actief,
+            MonthlyAmountEur: bedrag,
+            Note: gratis
+                ? "Je betaalt niets. Je klanten krijgen twaalf maanden Plus van jou cadeau."
+                : "Dit is wat deze maand te factureren valt. Er gaat nog niets automatisch; we bellen je voordat er iets verandert."));
     }
 
     private static async Task<IResult> GetBrandingAsync(HttpContext http, AppDbContext db, CancellationToken ct)

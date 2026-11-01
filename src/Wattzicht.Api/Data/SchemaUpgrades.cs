@@ -91,6 +91,11 @@ public static class SchemaUpgrades
         // dat twee partijen voor hetzelfde huishouden betalen. Een gedeeltelijke unieke index laat
         // afgelopen periodes gewoon staan als geschiedenis.
         """CREATE UNIQUE INDEX IF NOT EXISTS ux_subscriptions_een_actief ON subscriptions ("HouseholdId") WHERE "Status" = 'active'""",
+
+        // 2026-11: wat een installateur betaalt. Bestaande installateurs staan op free; dat is de
+        // afspraak met Triple Energie en voor de rest is er nog niets afgesproken.
+        """ALTER TABLE installers ADD COLUMN IF NOT EXISTS "BillingMode" character varying(20) NOT NULL DEFAULT 'free'""",
+        """ALTER TABLE installers ADD COLUMN IF NOT EXISTS "PricePerHousehold" numeric(10,2) NOT NULL DEFAULT 1.25""",
     ];
 
     public static async Task ApplyAsync(AppDbContext db, CancellationToken ct = default)

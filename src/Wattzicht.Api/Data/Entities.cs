@@ -1,3 +1,4 @@
+using Wattzicht.Api.Services;
 using Wattzicht.Shared;
 
 namespace Wattzicht.Api.Data;
@@ -39,6 +40,18 @@ public sealed class Installer
     /// wel inloggen en zijn eigen gegevens invullen; hij ziet alleen nog geen klanten.
     /// </summary>
     public DateTimeOffset? ApprovedAt { get; set; }
+
+    /// <summary>
+    /// Wat deze installateur betaalt: <c>free</c> of <c>per_household</c>.
+    ///
+    /// Triple Energie staat op <c>free</c> en betaalt niets; die levert in ruil klanten. Hun bewoners
+    /// krijgen twaalf maanden Plus cadeau. Bij <c>per_household</c> loopt het abonnement van de
+    /// bewoner door zolang hij klant is, en zien we per maand wat er te factureren valt.
+    /// </summary>
+    public string BillingMode { get; set; } = InstallerBillingMode.Free;
+
+    /// <summary>Prijs per actief huishouden per maand, exclusief btw.</summary>
+    public decimal PricePerHousehold { get; set; } = 1.25m;
 
     public List<Household> Households { get; set; } = [];
     public List<User> Users { get; set; } = [];
