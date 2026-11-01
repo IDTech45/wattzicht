@@ -480,7 +480,7 @@ async function alIngelogd() {
 
 .keuze__prijs {
   margin-top: 4px;
-  color: var(--wz-sun, #ffe11a);
+  color: var(--wz-accent-500, #f5c518);
   font-weight: 600;
   font-size: 0.9rem;
 }
@@ -551,7 +551,7 @@ input:not([type]) {
 }
 
 input[aria-invalid='true'] {
-  border-color: var(--wz-danger, #ff6b6b);
+  border-color: var(--wz-error-text, #ff6b6b);
 }
 
 .veld__hint {
@@ -561,7 +561,7 @@ input[aria-invalid='true'] {
 }
 
 .veld__fout {
-  color: var(--wz-danger, #ff6b6b);
+  color: var(--wz-error-text, #ff6b6b);
   font-size: 0.85rem;
   margin: 0;
   font-weight: 600;
@@ -595,14 +595,14 @@ input[aria-invalid='true'] {
 }
 
 .plan--aan {
-  border-color: var(--wz-sun, #ffe11a);
+  border-color: var(--wz-accent-500, #f5c518);
 }
 
 .plan input {
   grid-area: radio;
   width: 20px;
   height: 20px;
-  accent-color: var(--wz-sun, #ffe11a);
+  accent-color: var(--wz-accent-500, #f5c518);
 }
 
 .plan__kop {
@@ -648,7 +648,7 @@ input[aria-invalid='true'] {
 }
 
 .samenvatting {
-  border: 1.5px solid var(--wz-danger, #ff6b6b);
+  border: 1.5px solid var(--wz-error-text, #ff6b6b);
   border-radius: 12px;
   padding: 14px 16px;
   margin-bottom: 1rem;

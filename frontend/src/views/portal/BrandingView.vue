@@ -1,4 +1,10 @@
 <script setup lang="ts">
+/*
+  Let op: het logo dat hier geüpload kan worden, wordt sinds de huisstijl-gelijktrekking nergens meer
+  getoond. Wattzicht blijft het merk; een installateur staat erbij als naam ("jouw installateur"),
+  niet als tweede logo. Het veld is bewust blijven staan omdat het weghalen een functionele wijziging
+  is en de opgeslagen logo's dan weg zouden vallen; dat is een aparte beslissing.
+*/
 import { onMounted, reactive, ref } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import InputText from 'primevue/inputtext'
@@ -14,7 +20,7 @@ const toast = useToast()
 const form = reactive<Branding>({
   name: auth.installer?.name ?? '',
   logoDataUrl: auth.installer?.logoDataUrl ?? null,
-  primaryColor: auth.installer?.primaryColor ?? '#FFE11A',
+  primaryColor: auth.installer?.primaryColor ?? '#F5C518',
   quoteUrl: auth.installer?.quoteUrl ?? '',
 })
 const saving = ref(false)
@@ -22,12 +28,12 @@ const loadError = ref<string | null>(null)
 const logoError = ref<string | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 
-const presets = ['#FFE11A', '#0E7490', '#16A34A', '#2563EB', '#DC2626', '#0F172A', '#7C3AED', '#EA580C']
+const presets = ['#F5C518', '#0E7490', '#16A34A', '#2563EB', '#DC2626', '#0F172A', '#7C3AED', '#EA580C']
 
 onMounted(async () => {
   try {
     const b = await getBranding()
-    Object.assign(form, b, { primaryColor: normalize(b.primaryColor) || '#FFE11A' })
+    Object.assign(form, b, { primaryColor: normalize(b.primaryColor) || '#F5C518' })
   } catch {
     loadError.value = 'Je bedrijfsgegevens konden niet geladen worden. Je ziet de laatst bekende instellingen.'
   }
@@ -142,7 +148,7 @@ async function save() {
               aria-label="Hex-kleurcode"
               class="hex"
               maxlength="7"
-              @blur="form.primaryColor = normalize(form.primaryColor) || '#FFE11A'"
+              @blur="form.primaryColor = normalize(form.primaryColor) || '#F5C518'"
             />
             <div class="presets" role="group" aria-label="Voorbeeldkleuren">
               <button
@@ -207,7 +213,7 @@ async function save() {
 .logo-box {
   width: 84px;
   height: 84px;
-  border-radius: var(--wz-radius-m);
+  border-radius: var(--wz-radius-panel);
   border: 1px solid var(--wz-line);
   background: #fff;
   display: grid;
@@ -267,7 +273,7 @@ async function save() {
   justify-self: start;
 }
 .err {
-  color: var(--wz-danger);
+  color: var(--wz-error-text);
   font-size: 0.9rem;
 }
 .preview {

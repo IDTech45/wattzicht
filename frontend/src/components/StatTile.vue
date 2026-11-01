@@ -27,18 +27,18 @@ defineProps<{
   display: grid;
   gap: 2px;
   padding: 16px 18px;
-  border-radius: var(--wz-radius-m);
+  border-radius: var(--wz-radius-panel);
   background: var(--wz-surface);
   border: 1px solid var(--wz-line);
   border-left: 4px solid var(--c);
   min-width: 0;
 }
-.tile--sun { --c: var(--wz-sun); }
-.tile--battery { --c: var(--wz-battery); }
-.tile--grid { --c: var(--wz-grid); }
-.tile--export { --c: var(--wz-export); }
-.tile--charger { --c: var(--wz-charger); }
-.tile--danger { --c: var(--wz-danger); }
+.tile--sun { --c: var(--wz-accent-500); }
+.tile--battery { --c: var(--wz-energy-battery); }
+.tile--grid { --c: var(--wz-energy-grid); }
+.tile--export { --c: var(--wz-energy-grid); }
+.tile--charger { --c: var(--wz-energy-charger); }
+.tile--danger { --c: var(--wz-error-text); }
 .tile--neutral { --c: var(--wz-line-strong); }
 
 .tile__label {
@@ -53,7 +53,7 @@ defineProps<{
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
-  color: var(--wz-brand-fg);
+  color: var(--wz-heading);
 }
 .tile__unit {
   font-size: 0.95rem;

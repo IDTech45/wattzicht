@@ -1,11 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 160" width="600" height="160" role="img" aria-label="Wattzicht">
-  <!-- Beeldmerk: geel vlak met lacivert oog (zicht), zon als iris en bliksem (watt) -->
+  <!-- Beeldmerk: navy vlak met geel oog (zicht), zon als iris en bliksem (watt) -->
   <g transform="translate(16,16) scale(0.25)">
-    <rect width="512" height="512" rx="112" fill="#FFE11A"/>
-    <path d="M256 120 C 342 120, 404 194, 432 256 C 404 318, 342 392, 256 392 C 170 392, 108 318, 80 256 C 108 194, 170 120, 256 120 Z" fill="none" stroke="#0A1630" stroke-width="46" stroke-linejoin="round"/>
-    <circle cx="256" cy="256" r="100" fill="#0A1630"/>
-    <path d="M274 172 L212 274 L254 274 L238 340 L304 236 L262 236 Z" fill="#FFE11A"/>
+    <rect width="512" height="512" rx="112" fill="#0A2540"/>
+    <path d="M256 120 C 342 120, 404 194, 432 256 C 404 318, 342 392, 256 392 C 170 392, 108 318, 80 256 C 108 194, 170 120, 256 120 Z" fill="none" stroke="#F5C518" stroke-width="46" stroke-linejoin="round"/>
+    <circle cx="256" cy="256" r="100" fill="#F5C518"/>
+    <path d="M274 172 L212 274 L254 274 L238 340 L304 236 L262 236 Z" fill="#0A2540"/>
   </g>
-  <!-- Woordmerk: watt (lacivert) + zicht (geel op donker gebruik: zie BRAND.md) -->
-  <text x="172" y="102" font-family="Unbounded, Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="64" font-weight="800" letter-spacing="-2" fill="#0A1630">watt<tspan fill="#C9A800">zicht</tspan></text>
+  <!-- Woordmerk. "zicht" staat in een donkerder geel (#A9850B): het accent zelf haalt op wit
+       geen leesbaar contrast, en dit is de accent-600 uit de tokens een stap donkerder. -->
+  <text x="172" y="102" font-family="Bricolage Grotesque, Instrument Sans, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="64" font-weight="700" letter-spacing="-2" fill="#0A2540">watt<tspan fill="#A9850B">zicht</tspan></text>
 </svg>

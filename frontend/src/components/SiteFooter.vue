@@ -64,10 +64,10 @@ const year = new Date().getFullYear()
   font-size: 1.6rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: var(--wz-ink);
+  color: var(--wz-text);
 }
 .foot__logo-sun {
-  color: var(--wz-sun);
+  color: var(--wz-accent-500);
 }
 .foot__col {
   display: grid;

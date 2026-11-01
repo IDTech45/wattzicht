@@ -10,41 +10,49 @@ import App from './App.vue'
 import router from './router'
 import './style.css'
 
-// Aura-preset met geel als primary en lacivert als surface (huisstijl, altijd donker).
+/*
+  Aura-preset met de tokens van docs/DESIGN-TOKENS.md. Primary is het gele accent, surface is de koele
+  grijsschaal van LaadCash met navy als 950. Op geel staat navy-tekst (contrastColor): geel met wit
+  haalt geen 4,5:1.
+
+  In dark mode is navy de achtergrond en blijft het accent gelijk, zoals in de app.
+*/
+const SURFACE = {
+  0: '#FFFFFF',
+  50: '#F6F8F7',
+  100: '#EEF2F0',
+  200: '#E6EBE8',
+  300: '#DFE6E2',
+  400: '#C6D1CB',
+  500: '#AEBAB5',
+  600: '#5F6F75',
+  700: '#5C6B66',
+  800: '#36474C',
+  900: '#0E3A4A',
+  950: '#0A2540',
+}
+
 const WattzichtPreset = definePreset(Aura, {
   semantic: {
     primary: {
-      50: '#FFFDE6',
-      100: '#FFF9BF',
-      200: '#FFF38A',
-      300: '#FFEB66',
-      400: '#FFE11A',
-      500: '#FFE11A',
-      600: '#E6C800',
-      700: '#B39C00',
-      800: '#806F00',
-      900: '#4D4300',
-      950: '#262100',
+      50: '#FFFBEB',
+      100: '#FEF3C7',
+      200: '#FDE68A',
+      300: '#FFE89A',
+      400: '#F5C518',
+      500: '#F5C518',
+      600: '#D9AC0F',
+      700: '#A9850B',
+      800: '#7A5F08',
+      900: '#4C3B05',
+      950: '#2A2103',
     },
     colorScheme: {
       light: {
-        surface: {
-          0: '#FFFFFF',
-          50: '#F4F6FB',
-          100: '#DCE2EF',
-          200: '#B8C3DA',
-          300: '#9AA8C4',
-          400: '#6A7899',
-          500: '#4A5C82',
-          600: '#2E4573',
-          700: '#22365F',
-          800: '#172C5C',
-          900: '#12234A',
-          950: '#0A1630',
-        },
+        surface: SURFACE,
         primary: {
           color: '{primary.500}',
-          contrastColor: '#0A1630',
+          contrastColor: '#0A2540',
           hoverColor: '{primary.600}',
           activeColor: '{primary.700}',
         },
@@ -56,23 +64,10 @@ const WattzichtPreset = definePreset(Aura, {
         },
       },
       dark: {
-        surface: {
-          0: '#FFFFFF',
-          50: '#F4F6FB',
-          100: '#DCE2EF',
-          200: '#B8C3DA',
-          300: '#9AA8C4',
-          400: '#6A7899',
-          500: '#4A5C82',
-          600: '#2E4573',
-          700: '#22365F',
-          800: '#172C5C',
-          900: '#12234A',
-          950: '#0A1630',
-        },
+        surface: SURFACE,
         primary: {
           color: '{primary.400}',
-          contrastColor: '#0A1630',
+          contrastColor: '#0A2540',
           hoverColor: '{primary.300}',
           activeColor: '{primary.200}',
         },
@@ -94,8 +89,8 @@ app.use(PrimeVue, {
   theme: {
     preset: WattzichtPreset,
     options: {
-      // Altijd donker, net als de app: <html class="wz-dark"> in index.html.
-      darkModeSelector: '.wz-dark',
+      // Volgt de telefoon of computer, net als de app. Geen afgedwongen thema meer.
+      darkModeSelector: 'system',
       cssLayer: {
         name: 'primevue',
         order: 'base, primevue, app',

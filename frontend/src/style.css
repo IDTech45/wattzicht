@@ -2,45 +2,137 @@
 
 @layer base {
   :root {
-    /* Huisstijl Wattzicht (zie skill wattzicht-design): lacivert als nacht, geel als de zon. */
-    --wz-night: #0a1630;
-    --wz-night-soft: #12234a;
-    --wz-sun: #ffe11a;
-    --wz-sun-light: #ffeb66;
-    --wz-battery: #5eead4;
-    --wz-grid: #b69cff; /* net */
-    --wz-export: #b69cff; /* teruglevering = net */
-    --wz-charger: #ff7a3d;
-    --wz-ink: #f4f6fb;
-    --wz-muted: #9aa8c4;
-    --wz-paper: #0a1630;
-    --wz-card: #12234a;
-    --wz-danger: #ff6b6b;
+    /*
+      Design-tokens van Wattzicht. Zelfde namen als de --lc-*-variabelen van laadcash.nl, zodat de
+      twee sites een systeem delen; zie docs/DESIGN-TOKENS.md. Het enige verschil is het accent:
+      LaadCash groen, Wattzicht geel.
+    */
 
-    /* Rollen: de site is altijd donker, net als de app */
-    --wz-bg: var(--wz-night);
-    --wz-surface: var(--wz-card);
-    --wz-surface-2: #172c5c;
-    --wz-text: var(--wz-ink);
-    --wz-text-soft: var(--wz-muted);
-    --wz-line: #22365f;
-    --wz-line-strong: #2e4573;
-    --wz-brand-fg: var(--wz-ink);
-    --wz-cta-bg: var(--wz-sun);
-    --wz-cta-fg: var(--wz-night);
-    --wz-focus: var(--wz-sun);
+    /* Merk */
+    --wz-navy-900: #0a2540;
+    --wz-teal-800: #0e3a4a;
 
-    --wz-font: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    --wz-font-display: 'Unbounded', var(--wz-font);
+    /* Accent: geel. Op geel hoort navy-tekst, want geel met wit haalt geen 4,5:1. */
+    --wz-accent-500: #f5c518;
+    --wz-accent-600: #d9ac0f;
+    --wz-accent-300: #ffe89a;
+    --wz-text-on-accent: #0a2540;
 
-    --wz-radius-s: 8px;
-    --wz-radius-m: 14px;
-    --wz-radius-l: 22px;
+    /* Tekst */
+    --wz-text-body: #36474c;
+    --wz-text-muted: #5c6b66;
+    --wz-text-faint: #5f6f75;
+    --wz-text-ondark-muted: #9db4bc;
+    --wz-placeholder: #aebab5;
+
+    /* Vlakken */
+    --wz-bg-app: #f6f8f7;
+    --wz-bg-canvas: #f6f8f7;
+    --wz-surface: #ffffff;
+    --wz-surface-2: #eef2f0;
+    --wz-surface-tint: #eef6f1;
+    --wz-border: #dfe6e2;
+    --wz-border-strong: #c6d1cb;
+    --wz-divider: #e6ebe8;
+
+    /* Status */
+    --wz-success-bg: #e6f3ea;
+    --wz-success-dot: #0e9f6e;
+    --wz-success-text: #0e7a55;
+    --wz-pending-bg: #eaf0ff;
+    --wz-pending-dot: #3b6fe0;
+    --wz-pending-text: #2b59c3;
+    --wz-warning-bg: #fbf1dd;
+    --wz-warning-dot: #e0a82e;
+    --wz-warning-text: #946200;
+    --wz-error-bg: #fbe6e7;
+    --wz-error-dot: #e5484d;
+    --wz-error-text: #c2363b;
+
+    /*
+      Energiekleuren, gelijk in Wattzicht en LaadCash. Laadpaal is blauw en niet groen, omdat groen
+      in LaadCash het merk-accent is. Deze vijf gelden overal, ook in grafieken.
+    */
+    --wz-energy-solar: #f5c518;
+    --wz-energy-battery: #1fa67a;
+    --wz-energy-charger: #3b6fe0;
+    --wz-energy-grid: #9db4bc;
+    --wz-energy-home: #36474c;
+
+    /* Fonts */
+    --wz-font-sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --wz-font-display: 'Bricolage Grotesque', 'Instrument Sans', -apple-system, sans-serif;
+    --wz-font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+    /* Radius */
+    --wz-radius-btn: 10px;
+    --wz-radius-input: 10px;
+    --wz-radius-card: 12px;
+    --wz-radius-panel: 14px;
+    --wz-radius-pill: 999px;
+
+    /* Schaduw: navy met 6%, niet zwart. Zwart maakt een kaart op een koele achtergrond grauw. */
+    --wz-shadow-card: 0 1px 2px rgba(10, 37, 64, 0.06), 0 6px 18px rgba(10, 37, 64, 0.06);
+    --wz-shadow-soft: 0 3px 10px rgba(10, 37, 64, 0.05);
+
+    --wz-focus-ring: 0 0 0 3px rgba(245, 197, 24, 0.35);
+
+    /* Rollen: hiermee werkt de rest van de stylesheet, en die wisselen in dark mode. */
+    --wz-bg: var(--wz-bg-app);
+    --wz-surface-raised: var(--wz-surface);
+    --wz-text: var(--wz-text-body);
+    --wz-text-soft: var(--wz-text-muted);
+    --wz-line: var(--wz-border);
+    --wz-line-strong: var(--wz-border-strong);
+    --wz-heading: var(--wz-navy-900);
+    --wz-cta-bg: var(--wz-navy-900);
+    --wz-cta-fg: #ffffff;
+    --wz-focus: var(--wz-accent-500);
 
     --wz-maxw: 1120px;
     --wz-gutter: clamp(16px, 4vw, 40px);
 
-    color-scheme: dark;
+    color-scheme: light dark;
+  }
+
+  /*
+    Dark mode met dezelfde logica als LaadCash: navy wordt de achtergrond in plaats van de
+    tekstkleur. Het accent verschuift niet; geel op navy haalt ruim contrast, en een accent dat per
+    thema van kleur wisselt maakt een merk onherkenbaar.
+  */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --wz-bg: var(--wz-navy-900);
+      --wz-surface: var(--wz-teal-800);
+      --wz-surface-2: #123f52;
+      --wz-surface-tint: #123f52;
+      --wz-surface-raised: var(--wz-teal-800);
+      --wz-text: #f0f0f0;
+      --wz-text-soft: var(--wz-text-ondark-muted);
+      --wz-border: #1c4a5c;
+      --wz-border-strong: #2a5e72;
+      --wz-divider: #1c4a5c;
+      --wz-line: #1c4a5c;
+      --wz-line-strong: #2a5e72;
+      --wz-heading: #f0f0f0;
+      --wz-placeholder: #7d97a1;
+
+      /* Op navy is de accentknop de primaire knop; navy op navy werkt niet. */
+      --wz-cta-bg: var(--wz-accent-500);
+      --wz-cta-fg: var(--wz-text-on-accent);
+
+      --wz-success-bg: #0d3d30;
+      --wz-success-text: #5fd3a8;
+      --wz-pending-bg: #13284f;
+      --wz-pending-text: #9bb8f5;
+      --wz-warning-bg: #3d3015;
+      --wz-warning-text: #f3ce7a;
+      --wz-error-bg: #45191b;
+      --wz-error-text: #f79a9d;
+
+      --wz-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.22);
+      --wz-shadow-soft: 0 3px 10px rgba(0, 0, 0, 0.25);
+    }
   }
 
   *,
@@ -56,7 +148,7 @@
 
   body {
     margin: 0;
-    font-family: var(--wz-font);
+    font-family: var(--wz-font-sans);
     font-size: 17px;
     line-height: 1.55;
     color: var(--wz-text);
@@ -70,9 +162,9 @@
   h3,
   h4 {
     margin: 0;
-    color: var(--wz-brand-fg);
+    color: var(--wz-heading);
     font-family: var(--wz-font-display);
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1.1;
     text-wrap: balance;
@@ -116,6 +208,15 @@
   :focus-visible {
     outline: 3px solid var(--wz-focus);
     outline-offset: 2px;
+  }
+
+  /* Cijfers in mono, zoals in de app: dan staan ze in een lijst onder elkaar. */
+  .wz-num,
+  .wz-mono {
+    font-family: var(--wz-font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -167,8 +268,8 @@
     justify-content: center;
     gap: 8px;
     padding: 13px 22px;
-    border-radius: 999px;
-    font-weight: 700;
+    border-radius: var(--wz-radius-btn);
+    font-weight: 600;
     min-height: 48px;
     text-decoration: none;
     border: 1.5px solid transparent;
@@ -186,12 +287,15 @@
   .wz-btn--primary:hover {
     filter: brightness(1.1);
   }
+  /* De accentknop: geel met navy tekst. Eén per sectie, anders springt er niets meer uit. */
+  .wz-btn--accent,
   .wz-btn--sun {
-    background: var(--wz-sun);
-    color: var(--wz-night);
+    background: var(--wz-accent-500);
+    color: var(--wz-text-on-accent);
   }
+  .wz-btn--accent:hover,
   .wz-btn--sun:hover {
-    background: var(--wz-sun-light);
+    background: var(--wz-accent-600);
   }
   .wz-btn--ghost {
     background: transparent;
@@ -210,7 +314,25 @@
   .wz-panel {
     background: var(--wz-surface);
     border: 1px solid var(--wz-line);
-    border-radius: var(--wz-radius-l);
+    border-radius: var(--wz-radius-panel);
+  }
+
+  .wz-card {
+    background: var(--wz-surface);
+    border: 1px solid var(--wz-border);
+    border-radius: var(--wz-radius-card);
+    box-shadow: var(--wz-shadow-card);
+  }
+
+  /* Donker paneel met cijfers erin, zoals de financiële blokken op laadcash.nl. */
+  .wz-dark-panel {
+    background: var(--wz-teal-800);
+    color: #ffffff;
+    border-radius: var(--wz-radius-panel);
+  }
+  .wz-dark-panel .wz-lead,
+  .wz-dark-panel .wz-kicker {
+    color: var(--wz-text-ondark-muted);
   }
 
   /* Formulieren (portal, demo) */
@@ -232,15 +354,19 @@
     color: var(--wz-text-soft);
   }
 
-  /* Energiestroomkleuren als utility */
-  .c-sun { color: var(--wz-sun); }
-  .c-battery { color: var(--wz-battery); }
-  .c-grid { color: var(--wz-grid); }
-  .c-export { color: var(--wz-export); }
-  .c-charger { color: var(--wz-charger); }
-  /* Getallen in de displayletter, zoals in de app */
-  .wz-num { font-family: var(--wz-font-display); font-weight: 800; letter-spacing: -0.03em; }
-  .c-danger { color: var(--wz-danger); }
+  /*
+    Energiekleuren als utility. Dezelfde vijf als in de app en in LaadCash; de oude namen (c-sun,
+    c-grid, c-export, c-charger) blijven staan zodat bestaande pagina's niet omvallen, maar ze wijzen
+    nu naar de juiste bron: c-grid is het net en c-charger de laadpaal.
+  */
+  .c-solar,
+  .c-sun { color: var(--wz-energy-solar); }
+  .c-battery { color: var(--wz-energy-battery); }
+  .c-charger { color: var(--wz-energy-charger); }
+  .c-grid,
+  .c-export { color: var(--wz-energy-grid); }
+  .c-home { color: var(--wz-energy-home); }
+  .c-danger { color: var(--wz-error-text); }
 
   .sr-only {
     position: absolute;

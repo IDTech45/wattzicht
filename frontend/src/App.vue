@@ -26,9 +26,9 @@ const isPortal = computed(() => route.meta.layout === 'portal')
   top: -60px;
   z-index: 100;
   padding: 10px 14px;
-  background: var(--wz-sun);
-  color: var(--wz-night);
-  border-radius: var(--wz-radius-s);
+  background: var(--wz-accent-500);
+  color: var(--wz-navy-900);
+  border-radius: var(--wz-radius-btn);
   font-weight: 600;
   text-decoration: none;
 }

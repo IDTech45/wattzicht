@@ -71,7 +71,7 @@ function logout() {
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  color: var(--wz-brand-fg);
+  color: var(--wz-heading);
   font-size: 1.15rem;
   padding: 4px 8px;
 }
@@ -83,7 +83,7 @@ function logout() {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: var(--wz-radius-m);
+  border-radius: var(--wz-radius-panel);
   background: var(--wz-surface-2);
   font-size: 0.9rem;
   font-weight: 600;
@@ -111,7 +111,7 @@ function logout() {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: var(--wz-radius-m);
+  border-radius: var(--wz-radius-panel);
   text-decoration: none;
   color: var(--wz-text);
   font-weight: 500;
@@ -125,8 +125,8 @@ function logout() {
   background: var(--wz-surface-2);
 }
 .side__link.router-link-active {
-  background: color-mix(in srgb, var(--wz-sun) 16%, transparent);
-  color: var(--wz-brand-fg);
+  background: color-mix(in srgb, var(--wz-accent-500) 16%, transparent);
+  color: var(--wz-heading);
   font-weight: 600;
 }
 .side__link--quiet {

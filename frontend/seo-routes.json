@@ -1,0 +1,134 @@
+{
+  "baseUrl": "https://wattzicht.nl",
+  "defaults": {
+    "title": "Wattzicht — zie wat je opwekt, gebruikt en bespaart",
+    "description": "Eén app voor je zonnepanelen, thuisbatterij en laadpaal. Welk merk je ook hebt. Live inzicht, besparing in euro's en een melding zodra er iets stilstaat.",
+    "ogImage": "/wattzicht-logo.svg"
+  },
+  "routes": [
+    {
+      "name": "home",
+      "path": "/",
+      "title": "Wattzicht — zie wat je opwekt, gebruikt en bespaart",
+      "description": "Eén app voor je zonnepanelen, thuisbatterij en laadpaal. Welk merk je ook hebt. Live inzicht, besparing in euro's en een melding zodra er iets stilstaat.",
+      "jsonLd": [
+        {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Wattzicht",
+          "url": "https://wattzicht.nl",
+          "logo": "https://wattzicht.nl/wattzicht-logo.svg",
+          "description": "Eén app voor zonnepanelen, thuisbatterij en laadpaal van verschillende merken. Een product van Dogantech B.V.",
+          "email": "hallo@wattzicht.nl",
+          "areaServed": "NL"
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Werkt het met mijn merk?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Nu met Growatt, SolaX en Sessy, en met de SolaX-laadpaal. Daar komen HomeWizard, SolarEdge, Enphase, Zaptec en Easee bij."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Moet ik er iets voor installeren?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Nee. Wattzicht praat met de cloud van je merk, dus er komt geen kastje bij en er hoeft niemand langs. Wil je ook zien wat je huis uit het net haalt, dan heb je een P1-meter nodig in je meterkast."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Wat kost Wattzicht?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Via je installateur niets: die betaalt voor zijn klanten. Zonder installateur is het twee euro per maand, of twintig euro per jaar."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Wie kan mijn gegevens zien?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Alleen jij, tenzij je je installateur toestemming geeft om mee te kijken. Die toestemming zet je in de app aan en uit, en je ziet in een logboek wanneer hij heeft gekeken."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "installers",
+      "path": "/installateurs",
+      "title": "Wattzicht voor installateurs — jouw klanten in één scherm",
+      "description": "Geef je klanten een app die met al hun merken werkt, en zie zelf in één scherm welke installatie aandacht nodig heeft. Gratis voor je eerste vijftig klanten.",
+      "jsonLd": [
+        {
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "Wattzicht voor installateurs",
+          "provider": {
+            "@type": "Organization",
+            "name": "Wattzicht",
+            "url": "https://wattzicht.nl"
+          },
+          "areaServed": "NL",
+          "description": "White-label monitoring-app en installateursportal voor zonnepanelen, thuisbatterijen en laadpalen van verschillende merken."
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Wat moet ik zelf doen om te beginnen?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Je meldt je bedrijf aan, wij keuren het goed, en dan krijg je een code. Die code geef je aan je klanten; zij maken er zelf een account mee aan."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Kan ik bij de gegevens van mijn klanten?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Alleen als die klant dat aanzet. Hij ziet in zijn app wanneer jij hebt meegekeken, en kan die toestemming op elk moment weer intrekken."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Wat kost het na de eerste vijftig klanten?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Dat spreken we met je af voordat er iets verandert. We bellen je ruim van tevoren; je krijgt geen factuur die je niet aan zag komen."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "signup",
+      "path": "/aanmelden",
+      "title": "Aanmelden bij Wattzicht",
+      "description": "Maak een account voor je woning, of meld je bedrijf aan als installateur. Gratis via je installateur, of twee euro per maand."
+    },
+    {
+      "name": "app",
+      "path": "/app",
+      "title": "De Wattzicht-app",
+      "description": "Wattzicht op je telefoon: live energiestroom, je besparing in euro's en een melding zodra er iets stilstaat."
+    },
+    {
+      "name": "privacy",
+      "path": "/privacy",
+      "title": "Privacy — Wattzicht",
+      "description": "Wat Wattzicht met je gegevens doet, wie er kan meekijken en hoe je dat zelf aan- en uitzet."
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import Message from 'primevue/message'
 import PhonePreview from '@/components/PhonePreview.vue'
 import { useLeadsStore } from '@/stores/leads'
 import { partners } from '@/utils/partners'
+import FaqList from '@/components/FaqList.vue'
 
 const featured = partners[0]!
 
@@ -37,7 +38,7 @@ async function send() {
 const steps = [
   {
     title: 'Je klant installeert Wattzicht',
-    text: 'Met jouw installateurscode. Jij staat er meteen in als "jouw installateur", met logo, telefoonnummer en offerteknop.',
+    text: 'Met jouw installateurscode. Jij staat er meteen in als "jouw installateur", met je telefoonnummer en een offerteknop.',
   },
   {
     title: 'Je klant koppelt z’n apparaten',
@@ -71,6 +72,34 @@ const scenarios = [
     text: 'Veel teruglevering: batterij. Auto ’s avonds laden: slim laden op zon. Je ziet het per klant, met wat het oplevert.',
   },
 ]
+
+const vragen = [
+  {
+    vraag: 'Wat moet ik zelf doen om te beginnen?',
+    antwoord:
+      'Je meldt je bedrijf aan, wij keuren het goed, en dan krijg je een code. Die code geef je aan je klanten; zij maken er zelf een account mee aan. Je hoeft bij niemand langs en er komt geen kastje bij.',
+  },
+  {
+    vraag: 'Welke merken kunnen jullie uitlezen?',
+    antwoord:
+      'Nu Growatt, SolaX, Sessy en de SolaX-laadpaal. Daarna HomeWizard, SolarEdge, Enphase, Zaptec en Easee. Plaats je vooral één merk dat er nog niet bij staat, zeg dat dan bij je aanmelding: wij bouwen op volgorde van wat er echt bij klanten hangt.',
+  },
+  {
+    vraag: 'Zien mijn klanten mijn naam of die van Wattzicht?',
+    antwoord:
+      'Wattzicht blijft het merk van de app. Jouw bedrijfsnaam staat erbij als "jouw installateur", bij contact en bij storingen, zodat je klant weet wie hij moet bellen.',
+  },
+  {
+    vraag: 'Kan ik bij de gegevens van mijn klanten?',
+    antwoord:
+      'Alleen als die klant dat aanzet. Hij ziet in zijn app wanneer jij hebt meegekeken, en kan die toestemming op elk moment weer intrekken. Zonder toestemming staat hij niet in jouw portal.',
+  },
+  {
+    vraag: 'Wat kost het na de eerste vijftig klanten?',
+    antwoord:
+      'Dat spreken we met je af voordat er iets verandert. We bellen je ruim van tevoren; je krijgt geen factuur die je niet aan zag komen.',
+  },
+]
 </script>
 
 <template>
@@ -90,7 +119,7 @@ const scenarios = [
         </div>
       </div>
       <div class="top__phone">
-        <PhonePreview :name="featured.name" :logo-data-url="featured.logo" />
+        <PhonePreview :name="featured.name" />
         <p class="top__caption">Wattzicht bij een klant van Triple Energie in Enschede.</p>
       </div>
     </div>
@@ -102,7 +131,7 @@ const scenarios = [
       <ul class="partners__list">
         <li v-for="p in partners" :key="p.name">
           <a :href="p.url" target="_blank" rel="noopener" class="partner">
-            <span class="partner__plate"><img :src="p.logo" :alt="p.name" loading="lazy" /></span>
+            <span class="partner__plate">{{ p.name }}</span>
             <span class="partner__city">{{ p.city }}</span>
           </a>
         </li>
@@ -158,10 +187,18 @@ const scenarios = [
         <ul class="price__list">
           <li>Onbeperkt installaties in het portal</li>
           <li>Storingsmeldingen voor jou en je klant</li>
-          <li>Jouw logo, telefoon en offerteknop bij elke klant</li>
+          <li>Jouw naam, telefoon en offerteknop bij elke klant</li>
           <li>Nieuwe merkkoppelingen zonder extra kosten</li>
         </ul>
       </div>
+    </div>
+  </section>
+
+  <section class="wz-section" id="vragen">
+    <div class="wz-wrap">
+      <p class="wz-kicker">Vragen</p>
+      <h2 class="h2-tight">Wat installateurs ons vragen</h2>
+      <FaqList :items="vragen" class="vragen" />
     </div>
   </section>
 
@@ -236,10 +273,14 @@ const scenarios = [
 </template>
 
 <style scoped>
+.vragen {
+  margin-top: 24px;
+}
+
 .top {
   padding-block: clamp(40px, 7vw, 96px) clamp(40px, 6vw, 72px);
   background:
-    radial-gradient(ellipse 50% 60% at 90% 40%, color-mix(in srgb, var(--wz-sun) 12%, transparent), transparent 70%),
+    radial-gradient(ellipse 50% 60% at 90% 40%, color-mix(in srgb, var(--wz-accent-500) 12%, transparent), transparent 70%),
     var(--wz-bg);
 }
 .top__grid {
@@ -294,14 +335,15 @@ const scenarios = [
   font-size: 0.9rem;
 }
 .partner__plate {
-  /* Logo's van installateurs zijn meestal voor een lichte achtergrond gemaakt. */
-  display: grid;
-  place-items: center;
-  width: 150px;
-  height: 64px;
-  padding: 8px 14px;
-  border-radius: var(--wz-radius-m);
-  background: #fff;
+  /* Alleen de naam: Wattzicht blijft het merk, een installateurslogo zou een tweede merk zijn. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: var(--wz-radius-pill);
+  border: 1px solid var(--wz-border);
+  background: var(--wz-surface);
+  font-weight: 600;
 }
 .partner__plate img {
   max-width: 100%;
@@ -309,7 +351,7 @@ const scenarios = [
   object-fit: contain;
 }
 .partner:hover .partner__plate {
-  outline: 2px solid var(--wz-sun);
+  outline: 2px solid var(--wz-accent-500);
 }
 
 .scenarios {
@@ -318,9 +360,9 @@ const scenarios = [
   gap: 16px;
 }
 .scenario {
-  --c: var(--wz-sun);
+  --c: var(--wz-accent-500);
   padding: 24px;
-  border-radius: var(--wz-radius-l);
+  border-radius: var(--wz-radius-panel);
   background: var(--wz-surface);
   border: 1px solid var(--wz-line);
   display: grid;
@@ -337,9 +379,9 @@ const scenarios = [
 .scenario p {
   color: var(--wz-text-soft);
 }
-.scenario--danger { --c: var(--wz-danger); }
-.scenario--grid { --c: var(--wz-grid); }
-.scenario--battery { --c: var(--wz-battery); }
+.scenario--danger { --c: var(--wz-error-text); }
+.scenario--grid { --c: var(--wz-energy-grid); }
+.scenario--battery { --c: var(--wz-energy-battery); }
 
 .h2-tight {
   margin-bottom: clamp(24px, 4vw, 40px);
@@ -366,8 +408,8 @@ const scenarios = [
   place-items: center;
   font-family: var(--wz-font-display);
   font-weight: 800;
-  background: var(--wz-sun);
-  color: var(--wz-night);
+  background: var(--wz-accent-500);
+  color: var(--wz-navy-900);
 }
 .steps h3 {
   margin-bottom: 6px;
@@ -403,14 +445,14 @@ const scenarios = [
   font-size: clamp(2.4rem, 5vw, 3.4rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: var(--wz-brand-fg);
+  color: var(--wz-heading);
 }
 .price__rule {
   height: 1px;
   background: var(--wz-line);
 }
 .price__after b {
-  color: var(--wz-brand-fg);
+  color: var(--wz-heading);
 }
 .price__list {
   margin: 0;
@@ -426,7 +468,7 @@ const scenarios = [
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--wz-battery);
+  background: var(--wz-energy-battery);
   margin-right: 12px;
   vertical-align: middle;
 }
@@ -461,7 +503,7 @@ const scenarios = [
   color: var(--wz-text-soft);
 }
 .err {
-  color: var(--wz-danger);
+  color: var(--wz-error-text);
   font-size: 0.9rem;
 }
 

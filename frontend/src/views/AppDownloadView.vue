@@ -147,8 +147,8 @@ const guides = [
   gap: 12px;
   padding: 10px 20px 10px 16px;
   border-radius: 14px;
-  background: var(--wz-ink);
-  color: var(--wz-night);
+  background: var(--wz-text);
+  color: var(--wz-navy-900);
   text-decoration: none;
   min-width: 190px;
   border: 1.5px solid transparent;
@@ -209,8 +209,8 @@ const guides = [
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--wz-battery) 16%, transparent);
-  color: var(--wz-battery);
+  background: color-mix(in srgb, var(--wz-energy-battery) 16%, transparent);
+  color: var(--wz-energy-battery);
   white-space: nowrap;
 }
 .guide--soon .guide__state {

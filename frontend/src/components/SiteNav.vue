@@ -74,7 +74,7 @@ const links = [
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  color: var(--wz-brand-fg);
+  color: var(--wz-heading);
 }
 .nav__brand img {
   border-radius: 9px;
@@ -84,10 +84,21 @@ const links = [
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: var(--wz-ink);
+  color: var(--wz-text);
 }
 .nav__word-sun {
-  color: var(--wz-sun);
+  /*
+    Niet het accent zelf: #F5C518 op een witte balk haalt 1,7:1 en is dan onleesbaar. Dit is het
+    accent twee stappen donkerder (dezelfde waarde als in het woordmerk-SVG). In dark mode staat de
+    balk op navy en mag het accent zelf weer.
+  */
+  color: #a9850b;
+}
+
+@media (prefers-color-scheme: dark) {
+  .nav__word-sun {
+    color: var(--wz-accent-500);
+  }
 }
 .nav__links {
   display: flex;
@@ -147,7 +158,7 @@ const links = [
   }
   .nav__link {
     padding: 14px;
-    border-radius: var(--wz-radius-m);
+    border-radius: var(--wz-radius-panel);
   }
   .nav__link--portal {
     margin: 8px 0 0;

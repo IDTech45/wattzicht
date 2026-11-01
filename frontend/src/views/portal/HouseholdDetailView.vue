@@ -383,7 +383,7 @@ const typeLabel: Record<string, string> = {
   grid-template-columns: auto 1fr;
   gap: 14px;
   padding: 14px 16px;
-  border-radius: var(--wz-radius-m);
+  border-radius: var(--wz-radius-panel);
   border: 1px solid var(--wz-line);
   background: var(--wz-surface);
   color: var(--wz-text-soft);
@@ -392,12 +392,12 @@ const typeLabel: Record<string, string> = {
   margin-top: 3px;
 }
 .alert--open {
-  border-color: color-mix(in srgb, var(--wz-danger) 40%, transparent);
-  background: color-mix(in srgb, var(--wz-danger) 6%, var(--wz-surface));
+  border-color: color-mix(in srgb, var(--wz-error-text) 40%, transparent);
+  background: color-mix(in srgb, var(--wz-error-text) 6%, var(--wz-surface));
   color: var(--wz-text);
 }
 .alert--open .pi {
-  color: var(--wz-danger);
+  color: var(--wz-error-text);
 }
 .alert p {
   margin: 4px 0;
@@ -410,7 +410,7 @@ const typeLabel: Record<string, string> = {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--wz-battery);
+  color: var(--wz-energy-battery);
   font-weight: 600;
 }
 .history {
@@ -462,7 +462,7 @@ const typeLabel: Record<string, string> = {
   display: grid;
   gap: 4px;
   padding: 12px 14px;
-  border-radius: var(--wz-radius-m);
+  border-radius: var(--wz-radius-panel);
   border-left: 4px solid var(--wz-line-strong);
   background: var(--wz-surface-2);
 }
@@ -470,10 +470,10 @@ const typeLabel: Record<string, string> = {
   font-size: 1.6rem;
 }
 .perf--ok {
-  border-left-color: var(--wz-battery);
+  border-left-color: var(--wz-energy-battery);
 }
 .perf--low {
-  border-left-color: var(--wz-danger);
+  border-left-color: var(--wz-error-text);
 }
 .opps {
   list-style: none;
@@ -483,13 +483,13 @@ const typeLabel: Record<string, string> = {
   gap: 8px;
 }
 .opp {
-  --c: var(--wz-sun);
+  --c: var(--wz-accent-500);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: var(--wz-radius-m);
+  border-radius: var(--wz-radius-panel);
   border-left: 4px solid var(--c);
   background: var(--wz-surface-2);
 }
@@ -497,24 +497,24 @@ const typeLabel: Record<string, string> = {
   display: grid;
   gap: 2px;
 }
-.opp--battery { --c: var(--wz-battery); }
-.opp--charger { --c: var(--wz-charger); }
-.opp--danger { --c: var(--wz-danger); }
-.opp--grid { --c: var(--wz-grid); }
+.opp--battery { --c: var(--wz-energy-battery); }
+.opp--charger { --c: var(--wz-energy-charger); }
+.opp--danger { --c: var(--wz-error-text); }
+.opp--grid { --c: var(--wz-energy-grid); }
 .opp__value {
   color: var(--c);
   font-size: 1.1rem;
   white-space: nowrap;
 }
 .opp__value small {
-  font-family: var(--wz-font);
+  font-family: var(--wz-font-sans);
   font-weight: 500;
   font-size: 0.75rem;
   color: var(--wz-text-soft);
   margin-left: 2px;
 }
 .dev__err {
-  color: var(--wz-danger);
+  color: var(--wz-error-text);
   font-size: 0.85rem;
 }
 </style>

@@ -27,7 +27,7 @@ defineProps<{
   display: grid;
   gap: 8px;
   padding: 18px 20px;
-  border-radius: var(--wz-radius-m);
+  border-radius: var(--wz-radius-panel);
   border: 1.5px dashed var(--wz-line-strong);
   background: transparent;
   color: var(--wz-text-soft);
@@ -68,7 +68,7 @@ defineProps<{
   font-weight: 600;
 }
 .is-connected .badge__state {
-  color: var(--wz-battery);
+  color: var(--wz-energy-battery);
 }
 .badge__state .pi {
   font-size: 0.75rem;

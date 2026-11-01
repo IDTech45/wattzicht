@@ -243,7 +243,7 @@ function open(row: HouseholdSummary) {
 }
 .table {
   border: 1px solid var(--wz-line);
-  border-radius: var(--wz-radius-m);
+  border-radius: var(--wz-radius-panel);
   overflow: hidden;
 }
 .table :deep(.p-datatable-tbody > tr) {
@@ -264,7 +264,7 @@ function open(row: HouseholdSummary) {
   gap: 6px;
 }
 .chip {
-  --c: var(--wz-grid);
+  --c: var(--wz-energy-grid);
   display: inline-flex;
   align-items: baseline;
   gap: 5px;
@@ -280,12 +280,12 @@ function open(row: HouseholdSummary) {
   font-weight: 400;
   opacity: 0.85;
 }
-.chip--Inverter { --c: var(--wz-sun); }
-.chip--Battery { --c: var(--wz-battery); }
-.chip--Charger { --c: var(--wz-charger); }
-.chip--P1Meter { --c: var(--wz-muted); }
-.chip--low { --c: var(--wz-danger); }
-.chip--opp { --c: var(--wz-battery); }
+.chip--Inverter { --c: var(--wz-accent-500); }
+.chip--Battery { --c: var(--wz-energy-battery); }
+.chip--Charger { --c: var(--wz-energy-charger); }
+.chip--P1Meter { --c: var(--wz-text-soft); }
+.chip--low { --c: var(--wz-error-text); }
+.chip--opp { --c: var(--wz-energy-battery); }
 .num {
   font-variant-numeric: tabular-nums;
 }

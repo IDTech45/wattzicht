@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
  * Geanimeerde energiestroom: zon → huis → batterij / net.
- * Kleuren per stroom komen uit BRAND (zon = sun, batterij = battery, net = grid, teruglevering = export).
+ * Kleuren per stroom komen uit de energiekleuren in docs/DESIGN-TOKENS.md: zon geel,
+ * batterij groen, laadpaal blauw, net grijs. Dezelfde vijf als in de app en in LaadCash.
  * De getallen "ademen" licht mee zodat het schema leeft zonder dat het echte data is.
  */
 import { onMounted, onBeforeUnmount, ref } from 'vue'
@@ -51,7 +52,7 @@ const fmt = (w: number) => (w >= 1000 ? `${(w / 1000).toFixed(1).replace('.', ',
     <defs>
       <linearGradient id="sunFill" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stop-color="#FFEB66" />
-        <stop offset="1" stop-color="#FFE11A" />
+        <stop offset="1" stop-color="#F5C518" />
       </linearGradient>
       <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
         <feGaussianBlur stdDeviation="10" />
@@ -76,7 +77,7 @@ const fmt = (w: number) => (w >= 1000 ? `${(w / 1000).toFixed(1).replace('.', ',
     <g class="node node--sun" transform="translate(92 92)">
       <circle r="44" fill="url(#sunFill)" opacity=".35" filter="url(#glow)" class="sun-glow" />
       <circle r="30" fill="url(#sunFill)" />
-      <g class="rays" stroke="#FFE11A" stroke-width="3.5" stroke-linecap="round">
+      <g class="rays" stroke="#F5C518" stroke-width="3.5" stroke-linecap="round">
         <line x1="0" y1="-44" x2="0" y2="-52" />
         <line x1="31" y1="-31" x2="37" y2="-37" />
         <line x1="44" y1="0" x2="52" y2="0" />
@@ -103,9 +104,9 @@ const fmt = (w: number) => (w >= 1000 ? `${(w / 1000).toFixed(1).replace('.', ',
     <g class="node node--battery" transform="translate(120 400)">
       <rect x="-30" y="-16" width="56" height="32" rx="6" class="bat-shell" />
       <rect x="26" y="-7" width="7" height="14" rx="2" class="bat-cap" />
-      <rect x="-25" y="-11" width="12" height="22" rx="2" fill="#5EEAD4" />
-      <rect x="-10" y="-11" width="12" height="22" rx="2" fill="#5EEAD4" />
-      <rect x="5" y="-11" width="12" height="22" rx="2" fill="#5EEAD4" class="bat-cell--last" />
+      <rect x="-25" y="-11" width="12" height="22" rx="2" fill="var(--wz-energy-battery)" />
+      <rect x="-10" y="-11" width="12" height="22" rx="2" fill="var(--wz-energy-battery)" />
+      <rect x="5" y="-11" width="12" height="22" rx="2" fill="var(--wz-energy-battery)" class="bat-cell--last" />
     </g>
     <text x="120" y="442" class="label label--battery" text-anchor="middle">Batterij · 72%</text>
     <text x="120" y="464" class="value" text-anchor="middle">+{{ fmt(battery) }}</text>
@@ -128,7 +129,7 @@ const fmt = (w: number) => (w >= 1000 ? `${(w / 1000).toFixed(1).replace('.', ',
 .flow {
   width: 100%;
   height: auto;
-  font-family: var(--wz-font);
+  font-family: var(--wz-font-sans);
 }
 
 .rails path {
@@ -140,14 +141,14 @@ const fmt = (w: number) => (w >= 1000 ? `${(w / 1000).toFixed(1).replace('.', ',
   animation: travel 1.4s linear infinite;
 }
 .stream--sun {
-  stroke: var(--wz-sun);
+  stroke: var(--wz-accent-500);
 }
 .stream--battery {
-  stroke: var(--wz-battery);
+  stroke: var(--wz-energy-battery);
   animation-duration: 2s;
 }
 .stream--export {
-  stroke: var(--wz-export);
+  stroke: var(--wz-energy-grid);
   animation-duration: 2.4s;
 }
 @keyframes travel {
@@ -191,16 +192,16 @@ const fmt = (w: number) => (w >= 1000 ? `${(w / 1000).toFixed(1).replace('.', ',
 }
 .house {
   fill: none;
-  stroke: var(--wz-brand-fg);
+  stroke: var(--wz-heading);
   stroke-width: 3;
 }
 .bat-shell {
   fill: var(--wz-surface);
-  stroke: var(--wz-brand-fg);
+  stroke: var(--wz-heading);
   stroke-width: 2.5;
 }
 .bat-cap {
-  fill: var(--wz-brand-fg);
+  fill: var(--wz-heading);
 }
 .bat-cell--last {
   animation: fill 2.4s ease-in-out infinite;
@@ -216,7 +217,7 @@ const fmt = (w: number) => (w >= 1000 ? `${(w / 1000).toFixed(1).replace('.', ',
 }
 .pylon {
   fill: none;
-  stroke: var(--wz-brand-fg);
+  stroke: var(--wz-heading);
   stroke-width: 2.5;
 }
 
@@ -226,19 +227,19 @@ const fmt = (w: number) => (w >= 1000 ? `${(w / 1000).toFixed(1).replace('.', ',
   fill: var(--wz-text-soft);
 }
 .label--sun {
-  fill: var(--wz-sun);
+  fill: var(--wz-accent-500);
 }
 .label--battery {
-  fill: var(--wz-battery);
+  fill: var(--wz-energy-battery);
 }
 .label--export {
-  fill: var(--wz-export);
+  fill: var(--wz-energy-grid);
 }
 .value {
   font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  fill: var(--wz-brand-fg);
+  fill: var(--wz-heading);
   font-variant-numeric: tabular-nums;
 }
 

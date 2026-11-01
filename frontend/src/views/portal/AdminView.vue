@@ -505,9 +505,9 @@ onMounted(load)
   min-height: 36px;
   padding: 7px 14px;
   border-radius: 999px;
-  border: 1.5px solid var(--wz-sun, #ffe11a);
-  background: var(--wz-sun, #ffe11a);
-  color: var(--wz-night, #0a1630);
+  border: 1.5px solid var(--wz-accent-500, #f5c518);
+  background: var(--wz-accent-500, #f5c518);
+  color: var(--wz-navy-900, #0a2540);
   font: inherit;
   font-weight: 700;
   font-size: 0.86rem;

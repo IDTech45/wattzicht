@@ -40,13 +40,13 @@ const text = computed(() => {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent);
 }
 .dot--online {
-  --c: var(--wz-battery);
+  --c: var(--wz-energy-battery);
 }
 .dot--fault {
-  --c: var(--wz-danger);
+  --c: var(--wz-error-text);
 }
 .dot--nodata {
-  --c: var(--wz-muted);
+  --c: var(--wz-text-soft);
 }
 .dot--fault .dot__mark {
   animation: pulse 1.6s ease-in-out infinite;
