@@ -51,6 +51,10 @@ export interface AdminInstaller {
   lastDataAt?: string | null
   monthlyRevenueEur: number
   createdAt: string
+  activeHouseholds: number
+  billableHouseholds: number
+  householdsWithoutDevice: number
+  newLast30Days: number
 }
 
 export interface AdminHousehold {
@@ -67,6 +71,26 @@ export interface AdminHousehold {
   createdAt: string
 }
 
+export interface AdminBrand {
+  brand: string
+  devices: number
+  withProblem: number
+  households: number
+  supported: boolean
+}
+
+export interface AdminLead {
+  id: string
+  name: string
+  company: string
+  email: string
+  phone?: string | null
+  customerCount?: number | null
+  source?: string | null
+  createdAt: string
+  isCustomer: boolean
+}
+
 export interface AdminOverview {
   installers: number
   households: number
@@ -78,6 +102,15 @@ export interface AdminOverview {
   pricePerHouseholdEur: number
   monthlyRevenueEur: number
   installers_: AdminInstaller[]
+  freeHouseholdsPerInstaller: number
+  activeHouseholds: number
+  billableHouseholds: number
+  householdsWithoutDevice: number
+  householdsWithDataToday: number
+  newLast7Days: number
+  newLast30Days: number
+  openLeads: number
+  brands?: AdminBrand[] | null
 }
 
 export interface AdminAccessLogRow {
@@ -340,6 +373,10 @@ export function getAdminHouseholds(params: { installerId?: string; search?: stri
   if (params.search) q.set('search', params.search)
   const suffix = q.toString() ? `?${q}` : ''
   return request<AdminHousehold[]>(`/admin/households${suffix}`)
+}
+
+export function getAdminLeads(): Promise<AdminLead[]> {
+  return request<AdminLead[]>('/admin/leads')
 }
 
 export function getAdminAccessLog(): Promise<AdminAccessLogRow[]> {

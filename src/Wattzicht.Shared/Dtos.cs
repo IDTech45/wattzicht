@@ -537,7 +537,11 @@ public sealed record AdminInstallerDto(
     int DevicesWithProblem,
     DateTimeOffset? LastDataAt,
     decimal MonthlyRevenueEur,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    int ActiveHouseholds = 0,
+    int BillableHouseholds = 0,
+    int HouseholdsWithoutDevice = 0,
+    int NewLast30Days = 0);
 
 /// <summary>Eén huishouden op het beheeroverzicht, met de installateur erbij (GET /admin/households).</summary>
 /// <param name="Id">Unieke id.</param>
@@ -585,7 +589,56 @@ public sealed record AdminOverviewDto(
     int OpenAlerts,
     decimal PricePerHouseholdEur,
     decimal MonthlyRevenueEur,
-    IReadOnlyList<AdminInstallerDto> Installers_);
+    IReadOnlyList<AdminInstallerDto> Installers_,
+    int FreeHouseholdsPerInstaller = 0,
+    int ActiveHouseholds = 0,
+    int BillableHouseholds = 0,
+    int HouseholdsWithoutDevice = 0,
+    int HouseholdsWithDataToday = 0,
+    int NewLast7Days = 0,
+    int NewLast30Days = 0,
+    int OpenLeads = 0,
+    IReadOnlyList<AdminBrandDto>? Brands = null);
+
+/// <summary>
+/// Eén merk over alle installateurs heen (onderdeel van GET /admin/overview).
+///
+/// Dit is het antwoord op de enige vraag die de bouwvolgorde bepaalt: welk merk hangt er echt bij
+/// klanten, en werkt het. Een merk met veel apparaten en veel fouten is dringender dan een merk dat
+/// nog nergens hangt.
+/// </summary>
+/// <param name="Brand">Merknaam.</param>
+/// <param name="Devices">Aantal gekoppelde apparaten van dit merk.</param>
+/// <param name="WithProblem">Daarvan met een foutmelding.</param>
+/// <param name="Households">Aantal huishoudens waar dit merk hangt.</param>
+/// <param name="Supported">Of wij dit merk kunnen uitlezen.</param>
+public sealed record AdminBrandDto(
+    string Brand,
+    int Devices,
+    int WithProblem,
+    int Households,
+    bool Supported);
+
+/// <summary>Een demo-aanvraag van de website (GET /admin/leads).</summary>
+/// <param name="Id">Unieke id.</param>
+/// <param name="Name">Naam van de aanvrager.</param>
+/// <param name="Company">Bedrijfsnaam.</param>
+/// <param name="Email">E-mailadres.</param>
+/// <param name="Phone">Telefoonnummer, als het is ingevuld.</param>
+/// <param name="CustomerCount">Opgegeven aantal klanten met zonnepanelen.</param>
+/// <param name="Source">Van welk formulier hij kwam.</param>
+/// <param name="CreatedAt">Wanneer hij binnenkwam.</param>
+/// <param name="IsCustomer">Of er al een installateur met dit e-mailadres bestaat.</param>
+public sealed record AdminLeadDto(
+    Guid Id,
+    string Name,
+    string Company,
+    string Email,
+    string? Phone,
+    int? CustomerCount,
+    string? Source,
+    DateTimeOffset CreatedAt,
+    bool IsCustomer);
 
 /// <summary>Wie keek er bij wie mee (GET /admin/access-log).</summary>
 /// <param name="At">Wanneer.</param>

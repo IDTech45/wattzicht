@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Wattzicht.Api.Connectors;
 using Wattzicht.Api.Data;
 using Wattzicht.Api.Services;
 using Wattzicht.Shared;
@@ -40,6 +41,10 @@ public static class AdminEndpoints
             .WithSummary("Alle huishoudens over alle installateurs heen; filter op installateur of zoekterm.")
             .Produces<List<AdminHouseholdDto>>();
 
+        group.MapGet("/leads", LeadsAsync)
+            .WithSummary("Demo-aanvragen van de website, nieuwste eerst.")
+            .Produces<List<AdminLeadDto>>();
+
         group.MapGet("/access-log", AccessLogAsync)
             .WithSummary("Wie keek er bij wie mee: de laatste handelingen van installateurs bij klanten.")
             .Produces<List<AdminAccessLogDto>>();
@@ -47,7 +52,8 @@ public static class AdminEndpoints
         return app;
     }
 
-    private static async Task<IResult> OverviewAsync(AppDbContext db, IConfiguration config, TimeProvider clock, CancellationToken ct)
+    private static async Task<IResult> OverviewAsync(
+        AppDbContext db, IConfiguration config, ConnectorRegistry registry, TimeProvider clock, CancellationToken ct)
     {
         var now = clock.GetUtcNow();
         var installateurs = await LaadInstallateursAsync(db, config, now, ct);
@@ -60,10 +66,80 @@ public static class AdminEndpoints
             .CountAsync(d => d.LastSeenAt == null || d.LastSeenAt < now - StilNa, ct);
         var meldingen = await db.Alerts.IgnoreQueryFilters().CountAsync(a => a.ResolvedAt == null, ct);
 
-        var tarief = PrijsPerHuishouden(config);
+        // De trechter. Aanmelden is niet hetzelfde als werken: een huishouden zonder apparaat heeft een
+        // account en verder niets, en dat is precies de groep waar iemand voor gebeld moet worden.
+        var zonderApparaat = await db.Households.IgnoreQueryFilters().CountAsync(h => !h.Devices.Any(), ct);
+        var metDataVandaag = await db.Households.IgnoreQueryFilters()
+            .CountAsync(h => h.Devices.Any(d => d.LastSeenAt != null && d.LastSeenAt > now - StilNa), ct);
+        var nieuw7 = await db.Households.IgnoreQueryFilters().CountAsync(h => h.CreatedAt > now.AddDays(-7), ct);
+        var nieuw30 = await db.Households.IgnoreQueryFilters().CountAsync(h => h.CreatedAt > now.AddDays(-30), ct);
+        var leads = await db.Leads.IgnoreQueryFilters().CountAsync(ct);
+
+        var merken = await MerkenAsync(db, registry, ct);
+
+        var tarief = Billing.PrijsUitConfig(config);
+        var gratis = Billing.GratisUitConfig(config);
+
         return Results.Ok(new AdminOverviewDto(
             installateurs.Count, huishoudens, metToegang, apparaten, metProbleem, stil, meldingen,
-            tarief, tarief * huishoudens, installateurs));
+            tarief,
+            // Niet huishoudens maal tarief: de eerste vijftig per installateur zijn gratis en een klant
+            // telt pas als hij een apparaat gekoppeld heeft. Anders staat er omzet op het dashboard die
+            // niemand kan factureren.
+            installateurs.Sum(i => i.MonthlyRevenueEur),
+            installateurs,
+            gratis,
+            installateurs.Sum(i => i.ActiveHouseholds),
+            installateurs.Sum(i => i.BillableHouseholds),
+            zonderApparaat,
+            metDataVandaag,
+            nieuw7,
+            nieuw30,
+            leads,
+            merken));
+    }
+
+    /// <summary>
+    /// Welke merken hangen er echt bij klanten. Dit bepaalt welke koppeling als volgende gebouwd moet
+    /// worden: een merk met apparaten die allemaal falen is dringender dan een merk dat nog nergens hangt.
+    /// </summary>
+    private static async Task<List<AdminBrandDto>> MerkenAsync(
+        AppDbContext db, ConnectorRegistry registry, CancellationToken ct)
+    {
+        var rijen = await db.Devices.IgnoreQueryFilters()
+            .GroupBy(d => d.Brand)
+            .Select(g => new
+            {
+                Brand = g.Key,
+                Devices = g.Count(),
+                WithProblem = g.Count(d => d.LastError != null),
+                Households = g.Select(d => d.HouseholdId).Distinct().Count(),
+            })
+            .ToListAsync(ct);
+
+        return rijen
+            .OrderByDescending(r => r.Devices)
+            .Select(r => new AdminBrandDto(
+                r.Brand.ToString(), r.Devices, r.WithProblem, r.Households, registry.IsSupported(r.Brand)))
+            .ToList();
+    }
+
+    private static async Task<IResult> LeadsAsync(AppDbContext db, CancellationToken ct)
+    {
+        var rijen = await db.Leads.IgnoreQueryFilters()
+            .OrderByDescending(l => l.CreatedAt)
+            .Select(l => new
+            {
+                l.Id, l.Name, l.Company, l.Email, l.Phone, l.CustomerCount, l.Source, l.CreatedAt,
+                // Is dit al een klant? Dan hoeft er niet meer gebeld te worden voor een demo.
+                IsCustomer = db.Users.IgnoreQueryFilters().Any(u => u.Email == l.Email),
+            })
+            .ToListAsync(ct);
+
+        return Results.Ok(rijen
+            .Select(r => new AdminLeadDto(
+                r.Id, r.Name, r.Company, r.Email, r.Phone, r.CustomerCount, r.Source, r.CreatedAt, r.IsCustomer))
+            .ToList());
     }
 
     private static async Task<IResult> InstallersAsync(AppDbContext db, IConfiguration config, TimeProvider clock, CancellationToken ct) =>
@@ -72,7 +148,7 @@ public static class AdminEndpoints
     private static async Task<List<AdminInstallerDto>> LaadInstallateursAsync(
         AppDbContext db, IConfiguration config, DateTimeOffset now, CancellationToken ct)
     {
-        var tarief = PrijsPerHuishouden(config);
+        var tarief = Billing.PrijsUitConfig(config);
 
         // Eén vraag voor alle installateurs: met een telling per installateur erbij blijft dit ook
         // bij honderden installateurs één rondje naar de database.
@@ -88,13 +164,24 @@ public static class AdminEndpoints
                 MetToegang = i.Households.Count(h => h.InstallerAccessGranted),
                 Apparaten = i.Households.SelectMany(h => h.Devices).Count(),
                 MetProbleem = i.Households.SelectMany(h => h.Devices).Count(d => d.LastError != null),
-                LaatsteData = i.Households.SelectMany(h => h.Devices).Max(d => (DateTimeOffset?)d.LastSeenAt)
+                LaatsteData = i.Households.SelectMany(h => h.Devices).Max(d => (DateTimeOffset?)d.LastSeenAt),
+                // Actief = minstens een gekoppeld apparaat. Zo staat het ook op de installateurspagina.
+                Actief = i.Households.Count(h => h.Devices.Any()),
+                ZonderApparaat = i.Households.Count(h => !h.Devices.Any()),
+                Nieuw30 = i.Households.Count(h => h.CreatedAt > now.AddDays(-30))
             })
             .ToListAsync(ct);
 
-        return rijen.Select(r => new AdminInstallerDto(
-            r.Id, r.Name, r.Slug, r.Huishoudens, r.MetToegang, r.Apparaten, r.MetProbleem,
-            r.LaatsteData, tarief * r.Huishoudens, r.CreatedAt)).ToList();
+        var gratis = Billing.GratisUitConfig(config);
+
+        return rijen.Select(r =>
+        {
+            var facturabel = Billing.Facturabel(r.Actief, gratis);
+            return new AdminInstallerDto(
+                r.Id, r.Name, r.Slug, r.Huishoudens, r.MetToegang, r.Apparaten, r.MetProbleem,
+                r.LaatsteData, Billing.PerMaand(r.Actief, gratis, tarief), r.CreatedAt,
+                r.Actief, facturabel, r.ZonderApparaat, r.Nieuw30);
+        }).ToList();
     }
 
     private static async Task<IResult> HouseholdsAsync(
@@ -158,16 +245,4 @@ public static class AdminEndpoints
             .ToList());
     }
 
-    /// <summary>
-    /// Het maandtarief per huishouden, instelbaar via <c>Billing:PricePerHouseholdEur</c>.
-    ///
-    /// Staat op 2 euro, want dat is wat een installateur zijn klant rekent. Het staat hier in de
-    /// configuratie en niet hard in de code: dit is een prijs die gaat veranderen, en dan wil je
-    /// geen nieuwe versie hoeven uitrollen om je eigen omzetoverzicht te laten kloppen.
-    /// </summary>
-    private static decimal PrijsPerHuishouden(IConfiguration config) =>
-        decimal.TryParse(config["Billing:PricePerHouseholdEur"], System.Globalization.NumberStyles.Any,
-            System.Globalization.CultureInfo.InvariantCulture, out var prijs) && prijs >= 0
-            ? prijs
-            : 2m;
 }
