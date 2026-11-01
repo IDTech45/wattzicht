@@ -265,6 +265,7 @@ public static class HouseholdEndpoints
         AppDbContext db,
         ConnectorRegistry registry,
         CredentialProtector protector,
+        SubscriptionWriter subscriptions,
         TimeProvider clock,
         ILoggerFactory loggerFactory,
         CancellationToken ct)
@@ -360,6 +361,11 @@ public static class HouseholdEndpoints
         }
 
         await db.SaveChangesAsync(ct);
+
+        // Eerste koppeling van deze woning: dertig dagen Plus, zonder betaalgegevens. Dit is het
+        // moment waarop iemand de app voor het eerst echt gebruikt, en pas dan is Plus iets waard.
+        // Eén keer per woning; opnieuw koppelen geeft geen tweede proefperiode.
+        await subscriptions.StartTrialIfFirstAsync(householdId, ct);
 
         var dtos = created.Select(d => HouseholdQueries.ToDto(d, now)).ToList();
         return Results.Created("/devices", dtos);

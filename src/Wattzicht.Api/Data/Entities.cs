@@ -308,3 +308,48 @@ public sealed class PushDevice
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset LastSeenAt { get; set; }
 }
+
+/// <summary>
+/// Eén abonnementsperiode van één woning: waar Plus vandaan komt en hoe lang het loopt.
+///
+/// Per woning is er hoogstens één rij actief. Dat staat ook als index in de database (zie
+/// SchemaUpgrades), want twee actieve rijen zou betekenen dat twee partijen voor dezelfde woning
+/// betalen, en dat is precies wat we nooit willen. Bij een bronwissel loopt de oude rij netjes uit
+/// en begint de nieuwe daarna; afgelopen periodes blijven staan als geschiedenis.
+/// </summary>
+public sealed class Subscription
+{
+    public Guid Id { get; set; }
+
+    public Guid HouseholdId { get; set; }
+    public Household Household { get; set; } = null!;
+
+    /// <summary>trial, installer, apple, google of manual; zie <c>SubscriptionSource</c>.</summary>
+    public string Source { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Het nummer waaronder dit abonnement bij de bron bekend staat: het originele transactie-id bij
+    /// Apple, de purchase token bij Google. Leeg bij een proefperiode of bij de installateur.
+    /// Hierop herkennen we een melding van de store als een verlenging van een bestaande rij.
+    /// </summary>
+    public string? ExternalId { get; set; }
+
+    /// <summary>Bij bron "installer": welke installateur betaalt.</summary>
+    public Guid? InstallerId { get; set; }
+
+    /// <summary>active, cancelled of expired; zie <c>SubscriptionStatus</c>.</summary>
+    public string Status { get; set; } = string.Empty;
+
+    public DateTimeOffset StartsAt { get; set; }
+
+    /// <summary>Einde van deze periode, of <c>null</c> bij een doorlopend abonnement.</summary>
+    public DateTimeOffset? EndsAt { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>
+    /// Of er al gewaarschuwd is dat de proefperiode bijna afloopt. Eén melding per proefperiode; zonder
+    /// deze vlag zou de dagelijkse controle hem zeven dagen achter elkaar sturen.
+    /// </summary>
+    public DateTimeOffset? TrialReminderSentAt { get; set; }
+}

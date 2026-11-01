@@ -52,6 +52,10 @@ builder.Services.Configure<KeyManagementOptions>(options =>
     options.XmlEncryptor = new ProtectionKeyXmlEncryptor(masterKey));
 builder.Services.AddSingleton<CredentialProtector>();
 
+// Plus: één plek die bepaalt of een woning Plus heeft, en één plek die abonnementen wegschrijft.
+builder.Services.AddScoped<EntitlementService>();
+builder.Services.AddScoped<SubscriptionWriter>();
+
 // Auth
 builder.Services.AddSingleton(jwtOptions);
 builder.Services.AddSingleton<TokenService>();
@@ -90,6 +94,9 @@ builder.Services.AddSingleton<IWeatherProvider, OpenMeteoWeatherProvider>();
 builder.Services.AddHostedService<WeatherWorker>();
 // Brengt het laadadvies naar de bewoner in plaats van andersom; zie SmartMomentWorker.
 builder.Services.AddHostedService<SmartMomentWorker>();
+
+// Dagelijks: verlopen abonnementen afsluiten en waarschuwen dat een proefperiode bijna om is.
+builder.Services.AddHostedService<SubscriptionWorker>();
 builder.Services.AddScoped<InsightsService>();
 
 // CORS voor de Vue-frontend en lokale ontwikkeling
@@ -229,6 +236,7 @@ app.MapAdminEndpoints();
 app.MapLeadEndpoints();
 app.MapAdviceEndpoints();
 app.MapPushEndpoints();
+app.MapPlanEndpoints();
 
 app.Run();
 

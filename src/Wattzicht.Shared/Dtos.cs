@@ -651,6 +651,27 @@ public sealed record AdminBrandDto(
     int Households,
     bool Supported);
 
+/// <summary>Eén abonnement zoals de app het toont (GET /api/plans).</summary>
+/// <param name="Key">Vaste sleutel: free, plus_monthly of plus_yearly.</param>
+/// <param name="Name">Naam voor op het scherm.</param>
+/// <param name="PriceEur">Prijs inclusief btw in euro.</param>
+/// <param name="Period">forever, month of year.</param>
+/// <param name="StoreProductId">Het product-id bij Apple en Google; <c>null</c> bij gratis.</param>
+/// <param name="Description">Eén regel uitleg.</param>
+public sealed record PlanDto(
+    string Key,
+    string Name,
+    decimal PriceEur,
+    string Period,
+    string? StoreProductId,
+    string Description);
+
+/// <summary>De abonnementen plus de stand van zaken (GET /api/plans).</summary>
+/// <param name="PlusEnabled">Of Plus al open staat. Tot 1 januari 2027 niet.</param>
+/// <param name="Plans">De abonnementen.</param>
+/// <param name="TrialDays">Hoeveel dagen de proefperiode duurt.</param>
+public sealed record PlansDto(bool PlusEnabled, IReadOnlyList<PlanDto> Plans, int TrialDays);
+
 /// <summary>Goedkeuren of intrekken van een installateursaanmelding.</summary>
 /// <param name="Approved">True = goedkeuren, false = goedkeuring intrekken.</param>
 public sealed record AdminApprovalRequest(bool Approved);

@@ -69,6 +69,28 @@ public static class SchemaUpgrades
         // 2026-11: abonnementskeuze van de bewoner (alleen vastleggen; er wordt nog niets afgeschreven).
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "Plan" character varying(20) NOT NULL DEFAULT 'installer'""",
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "PlanChosenAt" timestamp with time zone NULL""",
+
+        // 2026-11: abonnementen (Plus). Per woning precies één actieve rij.
+        """
+        CREATE TABLE IF NOT EXISTS subscriptions (
+            "Id" uuid NOT NULL PRIMARY KEY,
+            "HouseholdId" uuid NOT NULL REFERENCES households ("Id") ON DELETE CASCADE,
+            "Source" character varying(20) NOT NULL,
+            "ExternalId" character varying(255) NULL,
+            "InstallerId" uuid NULL,
+            "Status" character varying(20) NOT NULL,
+            "StartsAt" timestamp with time zone NOT NULL,
+            "EndsAt" timestamp with time zone NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            "TrialReminderSentAt" timestamp with time zone NULL
+        )
+        """,
+        """CREATE INDEX IF NOT EXISTS ix_subscriptions_household_status ON subscriptions ("HouseholdId", "Status")""",
+        """CREATE INDEX IF NOT EXISTS ix_subscriptions_external ON subscriptions ("ExternalId")""",
+        // De regel die ertoe doet: nooit twee actieve rijen voor dezelfde woning. Dat zou betekenen
+        // dat twee partijen voor hetzelfde huishouden betalen. Een gedeeltelijke unieke index laat
+        // afgelopen periodes gewoon staan als geschiedenis.
+        """CREATE UNIQUE INDEX IF NOT EXISTS ux_subscriptions_een_actief ON subscriptions ("HouseholdId") WHERE "Status" = 'active'""",
     ];
 
     public static async Task ApplyAsync(AppDbContext db, CancellationToken ct = default)

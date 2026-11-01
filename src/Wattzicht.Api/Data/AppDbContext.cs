@@ -33,12 +33,25 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
     public DbSet<Lead> Leads => Set<Lead>();
     public DbSet<InstallerAccessLog> InstallerAccessLogs => Set<InstallerAccessLog>();
     public DbSet<PushDevice> PushDevices => Set<PushDevice>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
 
     /// <summary>Sleutelring van de Data Protection API (versleuteld met WZ_PROTECTION_KEY).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Subscription>(e =>
+        {
+            e.ToTable("subscriptions");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Source).HasMaxLength(20).IsRequired();
+            e.Property(x => x.Status).HasMaxLength(20).IsRequired();
+            e.Property(x => x.ExternalId).HasMaxLength(255);
+            e.HasIndex(x => new { x.HouseholdId, x.Status });
+            e.HasIndex(x => x.ExternalId);
+            e.HasOne(x => x.Household).WithMany().HasForeignKey(x => x.HouseholdId).OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<Installer>(e =>
         {
             e.ToTable("installers");
