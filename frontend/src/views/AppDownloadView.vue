@@ -51,10 +51,14 @@ const guides = [
     steps: ['Koppeling via je laadpaalaccount of OCPP.', 'We testen dit nu met de eerste installateurs.'],
   },
   {
-    brand: 'HomeWizard',
-    kind: 'P1-meter',
+    brand: 'P1-meter',
+    kind: 'Slimme meter uitlezen',
     connected: false,
-    steps: ['Lokale uitlezing via de P1-meter in je meterkast.', 'Komt zodra lokale uitlezing in de app zit.'],
+    steps: [
+      'Een dongle in de P1-poort van je slimme meter laat zien wat je van het net haalt en teruglevert.',
+      'Werkt straks met de gangbare kastjes; je hoeft geen bepaald merk te hebben.',
+      'Komt zodra de app lokaal kan uitlezen, want zo’n dongle praat alleen op je eigen wifi.',
+    ],
   },
 ]
 </script>

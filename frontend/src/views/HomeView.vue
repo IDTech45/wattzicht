@@ -4,6 +4,10 @@ import BrandBadge from '@/components/BrandBadge.vue'
 import StilstandCalculator from '@/components/StilstandCalculator.vue'
 import FaqList from '@/components/FaqList.vue'
 
+// Merken, met één uitzondering: de P1-meter staat er als categorie en niet als merk. Elke dongle
+// leest diezelfde poort van de slimme meter uit, dus we zijn van geen enkel merk afhankelijk, en
+// de bekendste leverancier heeft een eigen app die met ons concurreert. Die naam hoort niet op onze
+// voorpagina; in de uitleg staat wél welke kastjes werken, want dat wil iemand weten.
 const brands = [
   { name: 'Growatt', kind: 'Omvormer', connected: true },
   { name: 'SolaX', kind: 'Hybride omvormer', connected: true },
@@ -14,7 +18,7 @@ const brands = [
   { name: 'Deye', kind: 'Hybride omvormer', connected: false },
   { name: 'Alfen', kind: 'Laadpaal', connected: false },
   { name: 'Zaptec', kind: 'Laadpaal', connected: false },
-  { name: 'HomeWizard', kind: 'P1-meter', connected: false },
+  { name: 'P1-meter', kind: 'Slimme meter uitlezen', connected: false },
 ]
 
 const stappen = [
