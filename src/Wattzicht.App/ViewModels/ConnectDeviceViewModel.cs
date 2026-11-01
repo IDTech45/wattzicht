@@ -33,13 +33,17 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     private readonly ApiClient _api;
     private readonly AuthService _auth;
 
+    // Alleen merken waar echt een connector voor draait. HomeWizard stond hier wel in de lijst maar
+    // heeft er geen: wie hem koos kwam na het invullen uit op "Merk HomeWizard wordt nog niet
+    // ondersteund". De invoervelden ervoor blijven in de pagina staan, dus zodra de connector er is
+    // gaat deze regel er weer bij. De P1-meter moet lokaal uitgelezen worden en dat kan onze server
+    // niet; dat hoort in de app te gebeuren.
     public IReadOnlyList<BrandOption> Brands { get; } =
     [
         new(DeviceBrand.Growatt, "Growatt", "Omvormer of batterij via ShinePhone-account", "Accent500", DeviceType.Inverter),
         new(DeviceBrand.Solax, "SolaX", "Omvormer of hybride met batterij via SolaXCloud", "Accent500", DeviceType.Inverter),
         new(DeviceBrand.Solax, "SolaX laadpaal", "Smart EV Charger met MID-meter via SolaXCloud", "EnergyCharger", DeviceType.Charger),
         new(DeviceBrand.Sessy, "Sessy", "Thuisbatterij met Sessy-dongle", "EnergyBattery", DeviceType.Battery),
-        new(DeviceBrand.HomeWizard, "HomeWizard", "P1-meter op je slimme meter", "EnergyGrid", DeviceType.P1Meter),
         new(DeviceBrand.Demo, "Demo", "Voorbeelddata om de app te proberen", "TextMuted", DeviceType.Inverter),
     ];
 
