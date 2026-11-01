@@ -29,6 +29,69 @@
                             <Label Text="Uurprijzen inclusief belasting (schatting)" Style="{StaticResource StatCaption}" />
                         </VerticalStackLayout>
                     </Border>
+                    <!--
+                        De laadplanner. Hij stond al op de server maar nergens in de app, terwijl dit
+                        de concretere vraag beantwoordt die een bewoner echt heeft: ik moet er
+                        morgenvroeg zoveel in hebben, wanneer zet ik hem aan. De planner weegt de
+                        uurprijs tegen de zon die op zijn eigen dak verwacht wordt.
+                    -->
+                    <Border Style="{StaticResource Card}" Margin="16,8,16,0">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="Wanneer laad ik mijn auto?" Style="{StaticResource CardTitle}" />
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="Hoeveel erin moet" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource InputBorder}">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Entry Text="{Binding PlanKwh}" Keyboard="Numeric" />
+                                            <Label Grid.Column="1" Text="kWh" VerticalOptions="Center"
+                                                   Style="{StaticResource SubtitleLabel}" />
+                                        </Grid>
+                                    </Border>
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                    <Label Text="Klaar om" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource InputBorder}">
+                                        <TimePicker Time="{Binding PlanKlaarOm}" VerticalOptions="Center" />
+                                    </Border>
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <Button Text="Bereken" Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding MaakLaadplanCommand}" IsEnabled="{Binding PlanBusy, Converter={StaticResource InvertedBool}}" />
+
+                            <Label Text="{Binding PlanError}" Style="{StaticResource ErrorLabel}"
+                                   IsVisible="{Binding PlanHasError}" />
+
+                            <VerticalStackLayout Spacing="8" IsVisible="{Binding HasPlan}">
+                                <Label Text="{Binding PlanSummary}" Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding PlanSavingText}" Style="{StaticResource CardTitle}" FontSize="14"
+                                       IsVisible="{Binding PlanHasSaving}"
+                                       TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
+
+                                <BoxView Style="{StaticResource DividerLine}" />
+
+                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding PlanSlots}" Spacing="6">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:ChargeSlotRow">
+                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                                <Label Text="{Binding TimeText}" Style="{StaticResource StatValue}" FontSize="15" />
+                                                <VerticalStackLayout Grid.Column="1">
+                                                    <Label Text="{Binding KwhText}" Style="{StaticResource CardTitle}" FontSize="14" />
+                                                    <Label Text="{Binding SolarText}" Style="{StaticResource StatCaption}"
+                                                           IsVisible="{Binding HasSolar}" />
+                                                </VerticalStackLayout>
+                                                <Label Grid.Column="2" Text="{Binding CostText}" Style="{StaticResource StatValue}"
+                                                       FontSize="15" VerticalOptions="Center" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
                 </VerticalStackLayout>
             </CollectionView.Header>
 

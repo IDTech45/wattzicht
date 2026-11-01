@@ -31,6 +31,12 @@ public partial class DashboardViewModel : BaseViewModel
     [ObservableProperty] private bool _hasInstallerLogo;
 
     /// <summary>Banner "je levert nu terug": alleen bij een verse meting en minstens 1,5 kW naar het net.</summary>
+    // De tip van vandaag. Een kaart op het scherm dat iedereen opent, geen popup: wie bij elke
+    // opstart iets moet wegklikken gaat de app mijden, en deze tip is die onderbreking niet waard.
+    [ObservableProperty] private bool _hasDayTip;
+    [ObservableProperty] private string _dayTipHeadline = string.Empty;
+    [ObservableProperty] private string _dayTipBody = string.Empty;
+
     [ObservableProperty] private bool _hasSurplus;
     [ObservableProperty] private string _surplusText = string.Empty;
 
@@ -111,6 +117,11 @@ public partial class DashboardViewModel : BaseViewModel
             {
                 var dashboard = await _api.GetDashboardAsync();
                 Apply(dashboard);
+
+                var tip = await _api.GetDayTipAsync();
+                HasDayTip = tip is not null;
+                DayTipHeadline = tip?.Headline ?? string.Empty;
+                DayTipBody = tip?.Body ?? string.Empty;
             }
 
             if (InstallerName is null)

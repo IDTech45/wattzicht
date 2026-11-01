@@ -391,6 +391,23 @@ public sealed record AdviceTipDto(
     decimal SavingEur,
     string? Note = null);
 
+/// <summary>Hoe de dag eruitziet, voor de kaart op het startscherm.</summary>
+/// <param name="Headline">Eén regel over vandaag, bijvoorbeeld "Vandaag veel zon".</param>
+/// <param name="Body">Wat je er concreet mee kunt, met het bedrag of het aantal kWh erin.</param>
+/// <param name="ExpectedSolarKwh">Wat de panelen vandaag naar verwachting maken.</param>
+/// <param name="Kind">zon, prijs of niets; waarop deze tip gebaseerd is.</param>
+/// <param name="From">Begin van het aangeraden venster.</param>
+/// <param name="To">Einde van dat venster.</param>
+/// <param name="SavingEur">Wat het ongeveer scheelt; nul als er niets te verdienen valt.</param>
+public sealed record DayTipDto(
+    string Headline,
+    string Body,
+    double ExpectedSolarKwh,
+    string Kind,
+    DateTimeOffset? From,
+    DateTimeOffset? To,
+    decimal SavingEur);
+
 /// <summary>Slim-sturen-advies voor vandaag (GET /advice).</summary>
 /// <param name="Date">Dag in Nederlandse tijd.</param>
 /// <param name="IsDynamic">Of het huishouden een dynamisch contract heeft.</param>

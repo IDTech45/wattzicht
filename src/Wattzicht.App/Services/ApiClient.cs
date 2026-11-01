@@ -101,6 +101,33 @@ public sealed class ApiClient
     public Task<AdviceDto> GetAdviceAsync(CancellationToken ct = default) =>
         GetAsync<AdviceDto>("/advice", ct);
 
+    /// <summary>
+    /// De tip van vandaag voor de kaart op het startscherm. Geeft null als er niets te melden valt;
+    /// de server stuurt dan 204, en dan blijft de kaart weg in plaats van iets algemeens te zeggen.
+    /// </summary>
+    public async Task<DayTipDto?> GetDayTipAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            return await GetAsync<DayTipDto?>("/today", ct);
+        }
+        catch (ApiException ex) when (!ex.IsUnauthorized)
+        {
+            // Geen tip is geen storing; het startscherm moet gewoon laden.
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Wanneer de auto laden het voordeligst is. De planner weegt de uurprijs tegen de zon die op het
+    /// eigen dak wordt verwacht; een kilowattuur van je eigen panelen kost alleen de
+    /// terugleververgoeding die je misloopt.
+    /// </summary>
+    public Task<ChargePlanDto> GetChargePlanAsync(double kwh, DateTimeOffset klaarOm, CancellationToken ct = default) =>
+        GetAsync<ChargePlanDto>(
+            $"/charge-plan?kwh={kwh.ToString(System.Globalization.CultureInfo.InvariantCulture)}"
+            + $"&by={Uri.EscapeDataString(klaarOm.ToString("O"))}", ct);
+
     // ---------- Tarief & installateur ----------
 
     public Task<TariffDto> GetTariffAsync(CancellationToken ct = default) =>

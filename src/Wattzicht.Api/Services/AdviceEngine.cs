@@ -15,6 +15,11 @@ namespace Wattzicht.Api.Services;
 /// <param name="AvgDailyExportKwh">Gemiddeld per dag teruggeleverd (laatste 14 dagen).</param>
 /// <param name="TypicalBatteryKwh">Hoeveel de batterij op een dag ontlaadt (max van laatste 14 dagen).</param>
 /// <param name="SurchargePerKwh">Energiebelasting + opslag incl. btw bovenop de marktprijs.</param>
+/// <param name="Forecast">
+/// Verwachte zonnestraling per uur. Mag leeg zijn (geen plaats bekend, weerdienst onbereikbaar); dan
+/// valt het advies terug op de middaguren, zoals het hiervoor altijd deed.
+/// </param>
+/// <param name="PvPeakKw">Piekvermogen van de panelen, om straling naar kilowatturen te rekenen.</param>
 public sealed record AdviceInput(
     DateTimeOffset NowUtc,
     IReadOnlyList<HourPrice> Prices,
@@ -26,7 +31,9 @@ public sealed record AdviceInput(
     double AvgDailyChargedKwh,
     double AvgDailyExportKwh,
     double TypicalBatteryKwh,
-    decimal SurchargePerKwh = AdviceEngine.DefaultSurchargePerKwh);
+    decimal SurchargePerKwh = AdviceEngine.DefaultSurchargePerKwh,
+    IReadOnlyList<HourlyIrradiance>? Forecast = null,
+    double PvPeakKw = 4.0);
 
 /// <summary>
 /// Slim sturen v1: rekent uit wanneer je het beste laadt en verbruikt, en wat dat oplevert. Stuurt zelf nog niets aan.
@@ -57,6 +64,75 @@ public static class AdviceEngine
     public const decimal MinimumSavingEur = 0.05m;
 
     private const int WindowHours = 3;
+
+    /// <summary>
+    /// Het aaneengesloten venster van drie uur met de meeste verwachte zon, vanaf nu. Zijn de zonnige
+    /// uren van vandaag voorbij of is er geen verwachting, dan wordt het de middag van de eerstvolgende
+    /// dag waarop het nog kan.
+    /// </summary>
+    internal static (DateTimeOffset From, DateTimeOffset To) ZonnigsteVenster(AdviceInput input, DateOnly today)
+    {
+        var vanaf = input.NowUtc;
+        var uren = (input.Forecast ?? [])
+            .Where(u => u.StartUtc >= vanaf && u.WattPerM2 > 0)
+            .OrderBy(u => u.StartUtc)
+            .ToList();
+
+        if (uren.Count >= WindowHours)
+        {
+            DateTimeOffset? beste = null;
+            double besteSom = 0;
+
+            foreach (var start in uren)
+            {
+                // Alleen echt aaneengesloten uren; een gat in de verwachting mag niet als venster tellen.
+                var blok = uren.Where(u => u.StartUtc >= start.StartUtc
+                                           && u.StartUtc < start.StartUtc.AddHours(WindowHours)).ToList();
+                if (blok.Count < WindowHours) continue;
+
+                var som = blok.Sum(u => u.WattPerM2);
+                if (som > besteSom)
+                {
+                    besteSom = som;
+                    beste = start.StartUtc;
+                }
+            }
+
+            if (beste is { } gevonden)
+            {
+                return (gevonden, gevonden.AddHours(WindowHours));
+            }
+        }
+
+        var from = DutchTime.StartOfLocalDayUtc(today).AddHours(12);
+        var to = from.AddHours(WindowHours);
+        if (input.NowUtc >= to)
+        {
+            // Zonnige uren van vandaag zijn voorbij: advies voor morgen.
+            from = DutchTime.StartOfLocalDayUtc(today.AddDays(1)).AddHours(12);
+            to = from.AddHours(WindowHours);
+        }
+
+        return (from, to);
+    }
+
+    /// <summary>
+    /// Hoeveel kilowattuur de panelen in dit venster naar verwachting maken. Straling in watt per
+    /// vierkante meter gedeeld door 1000 geeft het aandeel van het piekvermogen; dat is de gangbare
+    /// vuistregel en nauwkeurig genoeg voor een tip. Zonder verwachting: nul, dan rekent de beller
+    /// verder met het eigen gemiddelde.
+    /// </summary>
+    internal static double VerwachteKwh(AdviceInput input, DateTimeOffset from, DateTimeOffset to) =>
+        (input.Forecast ?? [])
+            .Where(u => u.StartUtc >= from && u.StartUtc < to)
+            .Sum(u => u.WattPerM2 / 1000.0 * input.PvPeakKw);
+
+    /// <summary>Wat de panelen vandaag naar verwachting in totaal maken.</summary>
+    public static double VerwachtVandaagKwh(AdviceInput input, DateOnly today)
+    {
+        var begin = DutchTime.StartOfLocalDayUtc(today);
+        return VerwachteKwh(input, begin, begin.AddDays(1));
+    }
     private static readonly CultureInfo Nl = CultureInfo.GetCultureInfo("nl-NL");
 
     public static AdviceDto Build(AdviceInput input)
@@ -179,18 +255,19 @@ public static class AdviceEngine
             return;
         }
 
-        var from = DutchTime.StartOfLocalDayUtc(today).AddHours(12);
-        var to = from.AddHours(WindowHours);
-        if (input.NowUtc >= to)
-        {
-            // Zonnige uren van vandaag zijn voorbij: advies voor morgen.
-            from = DutchTime.StartOfLocalDayUtc(today.AddDays(1)).AddHours(12);
-            to = from.AddHours(WindowHours);
-        }
+        // De zonnigste uren van vandaag, uit de echte verwachting. Zonder verwachting de middag, zoals
+        // dit hiervoor altijd deed. Dat verschil doet ertoe: met een vast middagvenster zegt de app op
+        // een grijze novemberdag precies hetzelfde als op een heldere dag in juni, en dan is het geen
+        // advies meer maar een spreuk.
+        var (from, to) = ZonnigsteVenster(input, today);
 
         var saldering = SavingsCalculator.IsSalderingActive(DutchTime.LocalDate(from));
         var gainPerKwh = Math.Max(0m, input.Rates.ImportPricePerKwh - input.Rates.ExportPricePerKwh);
-        var surplus = Math.Max(0, input.AvgDailyExportKwh);
+
+        // Hoeveel er te verdelen valt: wat de verwachting voor dat venster zegt, of anders wat deze
+        // woning de afgelopen twee weken gemiddeld terugleverde.
+        var verwacht = VerwachteKwh(input, from, to);
+        var surplus = verwacht > 0 ? verwacht : Math.Max(0, input.AvgDailyExportKwh);
 
         if (input.HasCharger)
         {

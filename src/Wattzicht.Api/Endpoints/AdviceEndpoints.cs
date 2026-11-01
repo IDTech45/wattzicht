@@ -16,6 +16,13 @@ public static class AdviceEndpoints
             .WithSummary("Tips voor vandaag op basis van uurprijzen, zon en de eigen apparaten, met de besparing in euro.")
             .Produces<AdviceDto>();
 
+        app.MapGet("/today", DagTipAsync)
+            .RequireAuthorization(AuthPolicies.Resident)
+            .WithTags("Slim sturen")
+            .WithSummary("De tip van vandaag in één regel, voor de kaart op het startscherm.")
+            .Produces<DayTipDto>()
+            .Produces(StatusCodes.Status204NoContent);
+
         app.MapGet("/feed-in", FeedInAsync)
             .RequireAuthorization(AuthPolicies.Resident)
             .WithTags("Slim sturen")
@@ -39,17 +46,43 @@ public static class AdviceEndpoints
         return app;
     }
 
-    private static async Task<IResult> AdviceAsync(
+    /// <summary>
+    /// De tip van vandaag voor de kaart op het startscherm. Geeft 204 als er niets te melden valt:
+    /// een dag zonder zon en zonder prijsverschil levert geen tip op, en dan blijft de kaart weg in
+    /// plaats van iets algemeens te zeggen.
+    /// </summary>
+    private static async Task<IResult> DagTipAsync(
         HttpContext http,
         AppDbContext db,
         SummaryService summaries,
-        HouseholdQueries queries,
         IPriceProvider prices,
+        IWeatherProvider weather,
         IConfiguration configuration,
         TimeProvider clock,
         CancellationToken ct)
     {
         var householdId = http.User.GetHouseholdId()!.Value;
+        var (input, today, _) = await BouwInvoerAsync(
+            householdId, db, summaries, prices, weather, configuration, clock, ct);
+
+        var tip = DagTip.Bouw(input, today, AdviceEngine.Build(input));
+        return tip is null ? Results.NoContent() : Results.Ok(tip);
+    }
+
+    /// <summary>
+    /// Alles wat de adviesmotor nodig heeft voor één woning. Gedeeld door /advice en /today, zodat de
+    /// kaart op het startscherm niet met andere cijfers kan komen dan de tab erachter.
+    /// </summary>
+    private static async Task<(AdviceInput Input, DateOnly Today, IReadOnlyList<HourPrice> Prices)> BouwInvoerAsync(
+        Guid householdId,
+        AppDbContext db,
+        SummaryService summaries,
+        IPriceProvider prices,
+        IWeatherProvider weather,
+        IConfiguration configuration,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
         var now = clock.GetUtcNow();
         var today = DutchTime.LocalDate(now);
 
@@ -74,6 +107,17 @@ public static class AdviceEndpoints
         var hourPrices = await prices.GetPricesAsync(today, ct);
         var surcharge = configuration.GetValue("Advice:SurchargePerKwh", AdviceEngine.DefaultSurchargePerKwh);
 
+        // De zonverwachting van deze woning. Zonder plaats of zonder bereikbare weerdienst blijft hij
+        // leeg; het advies valt dan terug op de middaguren.
+        var plaats = await db.Households
+            .Where(h => h.Id == householdId)
+            .Select(h => new { h.Latitude, h.Longitude })
+            .FirstOrDefaultAsync(ct);
+
+        var forecast = plaats is { Latitude: { } lat, Longitude: { } lon }
+            ? await weather.HourlyForecastAsync(lat, lon, ct)
+            : [];
+
         var input = new AdviceInput(
             now,
             hourPrices,
@@ -85,7 +129,27 @@ public static class AdviceEndpoints
             AvgDailyChargedKwh: history.Count > 0 ? history.Average(h => h.ChargedKwh) : 0,
             AvgDailyExportKwh: history.Count > 0 ? history.Average(h => h.ExportKwh) : 0,
             TypicalBatteryKwh: history.Count > 0 ? history.Max(h => h.BatteryDischargedKwh) : 0,
-            SurchargePerKwh: surcharge);
+            SurchargePerKwh: surcharge,
+            Forecast: forecast,
+            PvPeakKw: configuration.GetValue("Advice:PvPeakKw", 4.0));
+
+        return (input, today, hourPrices);
+    }
+
+    private static async Task<IResult> AdviceAsync(
+        HttpContext http,
+        AppDbContext db,
+        SummaryService summaries,
+        HouseholdQueries queries,
+        IPriceProvider prices,
+        IWeatherProvider weather,
+        IConfiguration configuration,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var (input, _, hourPrices) = await BouwInvoerAsync(
+            householdId, db, summaries, prices, weather, configuration, clock, ct);
 
         var advice = AdviceEngine.Build(input);
 
@@ -93,7 +157,7 @@ public static class AdviceEndpoints
         if (input.HasPv)
         {
             var live = await queries.LiveAsync(householdId, ct);
-            var liveTip = FeedInCalculator.LiveSurplusTip(live, now, input.HasCharger, rates);
+            var liveTip = FeedInCalculator.LiveSurplusTip(live, input.NowUtc, input.HasCharger, input.Rates);
             if (liveTip is not null)
             {
                 advice = advice with { Tips = [liveTip, .. advice.Tips] };

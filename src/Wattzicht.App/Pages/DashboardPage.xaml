@@ -93,6 +93,26 @@
                             </Grid>
                         </Border>
 
+                        <!--
+                            De tip van vandaag. Staat op het scherm dat iedereen opent, want wie niet op
+                            "Sturen" klikt zag anders nooit een tip. Een kaart en geen popup: bij elke
+                            opstart iets moeten wegklikken is precies waarom mensen een app gaan mijden.
+                        -->
+                        <Border Style="{StaticResource Card}" IsVisible="{Binding HasDayTip}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource WarningBg}, Dark={StaticResource WarningBgDark}}"
+                                Stroke="{StaticResource EnergySolar}">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="{Binding DayTipHeadline}" Style="{StaticResource CardTitle}" />
+                                    <Label Text="{Binding DayTipBody}" Style="{StaticResource SubtitleLabel}" />
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="›" FontSize="24" VerticalOptions="Center" Style="{StaticResource SubtitleLabel}" />
+                            </Grid>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding OpenAdviceCommand}" />
+                            </Border.GestureRecognizers>
+                        </Border>
+
                         <!-- Energiestroom -->
                         <Label Text="Energiestroom nu" Style="{StaticResource SectionTitle}" />
                         <views:EnergyFlowView Snapshot="{Binding Live}" />
