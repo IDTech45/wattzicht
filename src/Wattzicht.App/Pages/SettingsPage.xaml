@@ -17,6 +17,17 @@
             </Border>
 
             <!-- ===== Tarief ===== -->
+            <Label Text="Weergave" Style="{StaticResource SectionTitle}" />
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
+                    <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                        <Label Text="Donker thema" Style="{StaticResource CardTitle}" />
+                        <Label Text="Uit zet de app op een lichte achtergrond" Style="{StaticResource SubtitleLabel}" />
+                    </VerticalStackLayout>
+                    <Switch Grid.Column="1" IsToggled="{Binding IsDonkerThema}" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
             <Label Text="Je energietarief" Style="{StaticResource SectionTitle}" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="14">

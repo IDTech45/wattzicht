@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Eén app voor je zonnepanelen, thuisbatterij en laadpaal. Welk merk je ook hebt." />
-    <!-- Navy, zoals LaadCash. In dark mode blijft de balk navy, dus één waarde volstaat. -->
+    <!-- Navy, zoals LaadCash. Donker is de standaard; kiest iemand licht, dan zet utils/thema.ts
+         deze kleur mee om, anders houdt de telefoonbalk een navy rand om een lichte pagina. -->
     <meta name="theme-color" content="#0A2540" />
     <link rel="icon" type="image/svg+xml" href="/wattzicht-icon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -14,6 +15,18 @@
       rel="stylesheet"
     />
     <title>Wattzicht – zie wat je bespaart</title>
+    <!--
+      Het thema vóór de eerste verfbeurt op <html> zetten. Zonder dit flitst er bij wie licht heeft
+      gekozen eerst een donkere pagina voorbij, want de CSS gaat standaard uit van donker.
+    -->
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          localStorage.getItem('wz-thema') === 'light' ? 'light' : 'dark'
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark'
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>

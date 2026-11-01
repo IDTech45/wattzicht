@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { thema, wisselThema } from '@/utils/thema'
 
 const open = ref(false)
 const route = useRoute()
@@ -27,6 +28,18 @@ const links = [
         <RouterLink to="/aanmelden" class="nav__link nav__link--cta">Aanmelden</RouterLink>
       </nav>
 
+      <div class="nav__acties">
+      <button
+        class="nav__thema"
+        type="button"
+        :title="thema === 'dark' ? 'Overschakelen naar licht' : 'Overschakelen naar donker'"
+        :aria-pressed="thema === 'light'"
+        @click="wisselThema()"
+      >
+        <span class="sr-only">{{ thema === 'dark' ? 'Licht thema aanzetten' : 'Donker thema aanzetten' }}</span>
+        <i :class="thema === 'dark' ? 'pi pi-sun' : 'pi pi-moon'" aria-hidden="true"></i>
+      </button>
+
       <button
         class="nav__toggle"
         type="button"
@@ -37,6 +50,7 @@ const links = [
         <span class="sr-only">Menu</span>
         <i :class="open ? 'pi pi-times' : 'pi pi-bars'" aria-hidden="true"></i>
       </button>
+      </div>
     </div>
   </header>
 </template>
@@ -125,6 +139,37 @@ const links = [
   color: var(--wz-text);
   border: 1.5px solid var(--wz-line-strong);
 }
+/* De twee ronde knoppen rechts horen bij elkaar; zonder dit zet space-between er 24px tussen. */
+.nav__acties {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Zelfde maat als de menuknop, en op elk scherm zichtbaar: ook op de telefoon wil je kunnen
+   wisselen zonder eerst het menu open te klappen. 42px haalt het minimum van 44 niet, dus het
+   raakvlak wordt met padding opgerekt. */
+.nav__thema {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1.5px solid var(--wz-line-strong);
+  background: transparent;
+  color: var(--wz-text);
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+.nav__thema:hover {
+  border-color: var(--wz-accent-500);
+  color: var(--wz-accent-500);
+}
+.nav__thema:focus-visible {
+  outline: 2px solid var(--wz-accent-500);
+  outline-offset: 2px;
+}
+
 .nav__toggle {
   display: none;
   width: 42px;

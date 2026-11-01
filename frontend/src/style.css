@@ -92,47 +92,56 @@
     --wz-maxw: 1120px;
     --wz-gutter: clamp(16px, 4vw, 40px);
 
-    color-scheme: light dark;
+    color-scheme: dark;
   }
 
   /*
-    Dark mode met dezelfde logica als LaadCash: navy wordt de achtergrond in plaats van de
-    tekstkleur. Het accent verschuift niet; geel op navy haalt ruim contrast, en een accent dat per
-    thema van kleur wisselt maakt een merk onherkenbaar.
+    Donker is bij Wattzicht de standaard, niet de uitzondering: de app laat energie zien en dat
+    leest op navy nu eenmaal rustiger dan op wit. Wie liever licht werkt zet dat om met de knop in
+    de balk; die zet data-theme="light" op <html> en dan wint het blok hierboven weer.
+
+    Bewust niet op prefers-color-scheme: dan krijgt iemand met een lichte telefoon een andere site
+    dan wij bedoelen, en de knop zou zijn eigen keuze niet kunnen overrulen.
+
+    Dezelfde logica als LaadCash: navy wordt de achtergrond in plaats van de tekstkleur. Het accent
+    verschuift niet; geel op navy haalt ruim contrast, en een accent dat per thema van kleur wisselt
+    maakt een merk onherkenbaar.
   */
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --wz-bg: var(--wz-navy-900);
-      --wz-surface: var(--wz-teal-800);
-      --wz-surface-2: #123f52;
-      --wz-surface-tint: #123f52;
-      --wz-surface-raised: var(--wz-teal-800);
-      --wz-text: #f0f0f0;
-      --wz-text-soft: var(--wz-text-ondark-muted);
-      --wz-border: #1c4a5c;
-      --wz-border-strong: #2a5e72;
-      --wz-divider: #1c4a5c;
-      --wz-line: #1c4a5c;
-      --wz-line-strong: #2a5e72;
-      --wz-heading: #f0f0f0;
-      --wz-placeholder: #7d97a1;
+  :root:not([data-theme='light']) {
+    --wz-bg: var(--wz-navy-900);
+    --wz-surface: var(--wz-teal-800);
+    --wz-surface-2: #123f52;
+    --wz-surface-tint: #123f52;
+    --wz-surface-raised: var(--wz-teal-800);
+    --wz-text: #f0f0f0;
+    --wz-text-soft: var(--wz-text-ondark-muted);
+    --wz-border: #1c4a5c;
+    --wz-border-strong: #2a5e72;
+    --wz-divider: #1c4a5c;
+    --wz-line: #1c4a5c;
+    --wz-line-strong: #2a5e72;
+    --wz-heading: #f0f0f0;
+    --wz-placeholder: #7d97a1;
 
-      /* Op navy is de accentknop de primaire knop; navy op navy werkt niet. */
-      --wz-cta-bg: var(--wz-accent-500);
-      --wz-cta-fg: var(--wz-text-on-accent);
+    /* Op navy is de accentknop de primaire knop; navy op navy werkt niet. */
+    --wz-cta-bg: var(--wz-accent-500);
+    --wz-cta-fg: var(--wz-text-on-accent);
 
-      --wz-success-bg: #0d3d30;
-      --wz-success-text: #5fd3a8;
-      --wz-pending-bg: #13284f;
-      --wz-pending-text: #9bb8f5;
-      --wz-warning-bg: #3d3015;
-      --wz-warning-text: #f3ce7a;
-      --wz-error-bg: #45191b;
-      --wz-error-text: #f79a9d;
+    --wz-success-bg: #0d3d30;
+    --wz-success-text: #5fd3a8;
+    --wz-pending-bg: #13284f;
+    --wz-pending-text: #9bb8f5;
+    --wz-warning-bg: #3d3015;
+    --wz-warning-text: #f3ce7a;
+    --wz-error-bg: #45191b;
+    --wz-error-text: #f79a9d;
 
-      --wz-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.22);
-      --wz-shadow-soft: 0 3px 10px rgba(0, 0, 0, 0.25);
-    }
+    --wz-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.22);
+    --wz-shadow-soft: 0 3px 10px rgba(0, 0, 0, 0.25);
+  }
+
+  :root[data-theme='light'] {
+    color-scheme: light;
   }
 
   *,

@@ -28,6 +28,21 @@ public partial class SettingsViewModel : BaseViewModel
     public bool HasImportTariffError => !string.IsNullOrEmpty(ImportTariffError);
     public bool HasExportTariffError => !string.IsNullOrEmpty(ExportTariffError);
 
+    // ---- Weergave ----
+    //
+    // Donker is de standaard, net als op de site. Geen "volg mijn telefoon": dan ziet de ene
+    // bewoner een andere app dan de andere en kan een eigen keuze het systeem niet overrulen.
+    public bool IsDonkerThema
+    {
+        get => ThemaVoorkeur.IsDonker;
+        set
+        {
+            if (ThemaVoorkeur.IsDonker == value) return;
+            ThemaVoorkeur.IsDonker = value;
+            OnPropertyChanged();
+        }
+    }
+
     // ---- Installateur ----
     [ObservableProperty] private InstallerBrandingDto? _installer;
     [ObservableProperty] private string _installerName = "Je installateur";

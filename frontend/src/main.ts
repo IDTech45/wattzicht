@@ -9,6 +9,7 @@ import 'primeicons/primeicons.css'
 import App from './App.vue'
 import router from './router'
 import './style.css'
+import { gekozenThema, zetThema } from './utils/thema'
 
 /*
   Aura-preset met de tokens van docs/DESIGN-TOKENS.md. Primary is het gele accent, surface is de koele
@@ -82,6 +83,10 @@ const WattzichtPreset = definePreset(Aura, {
   },
 })
 
+// Het thema staat al op <html> uit het scriptje in index.html; dit houdt alleen de opslag,
+// de themakleur van de telefoonbalk en PrimeVue gelijk.
+zetThema(gekozenThema())
+
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)
@@ -89,8 +94,9 @@ app.use(PrimeVue, {
   theme: {
     preset: WattzichtPreset,
     options: {
-      // Volgt de telefoon of computer, net als de app. Geen afgedwongen thema meer.
-      darkModeSelector: 'system',
+      // Donker is de standaard en de bezoeker zet het zelf om; <html data-theme> is de bron.
+      // Niet 'system': dan zou PrimeVue de telefoon volgen terwijl de rest van de site de knop volgt.
+      darkModeSelector: '[data-theme="dark"]',
       cssLayer: {
         name: 'primevue',
         order: 'base, primevue, app',
