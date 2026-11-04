@@ -92,6 +92,21 @@ services:
       - "8080"
     networks:
       - dokploy-network
+    # Traefik-routers staan hier in plaats van in het Dokploy-scherm, zodat de adressen in de repo
+    # staan en een nieuwe server ze meekrijgt. Dokploy zet zijn eigen routers er bij deploy naast;
+    # die hebben andere namen en bijten elkaar niet.
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.wz-api-web.rule=Host(`api.wattzicht.nl`)
+      - traefik.http.routers.wz-api-web.entrypoints=web
+      - traefik.http.routers.wz-api-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.wz-api-web.service=wz-api
+      - traefik.http.routers.wz-api-websecure.rule=Host(`api.wattzicht.nl`)
+      - traefik.http.routers.wz-api-websecure.entrypoints=websecure
+      - traefik.http.routers.wz-api-websecure.tls.certresolver=letsencrypt
+      - traefik.http.routers.wz-api-websecure.service=wz-api
+      - traefik.http.services.wz-api.loadbalancer.server.port=8080
 
   frontend:
     build:
@@ -105,6 +120,21 @@ services:
       - "80"
     networks:
       - dokploy-network
+    # Alle vier de adressen komen hier binnen; nginx stuurt .com en de www-varianten door naar
+    # https://wattzicht.nl. Let's Encrypt geeft per hostnaam een certificaat, dus ook de adressen die
+    # alleen doorsturen hebben er een nodig.
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.wz-site-web.rule=Host(`wattzicht.nl`) || Host(`www.wattzicht.nl`) || Host(`wattzicht.com`) || Host(`www.wattzicht.com`)
+      - traefik.http.routers.wz-site-web.entrypoints=web
+      - traefik.http.routers.wz-site-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.wz-site-web.service=wz-site
+      - traefik.http.routers.wz-site-websecure.rule=Host(`wattzicht.nl`) || Host(`www.wattzicht.nl`) || Host(`wattzicht.com`) || Host(`www.wattzicht.com`)
+      - traefik.http.routers.wz-site-websecure.entrypoints=websecure
+      - traefik.http.routers.wz-site-websecure.tls.certresolver=letsencrypt
+      - traefik.http.routers.wz-site-websecure.service=wz-site
+      - traefik.http.services.wz-site.loadbalancer.server.port=80
 
 volumes:
   wattzicht-postgres-data:
