@@ -44,6 +44,10 @@ services:
       # De website praat via nginx (/api) met de API, dus CORS is alleen nodig voor losse clients.
       Cors__AllowedOrigins__0: ${CORS_ORIGIN_0:-https://wattzicht.nl}
       Cors__AllowedOrigins__1: ${CORS_ORIGIN_1:-https://www.wattzicht.nl}
+      # De .com stuurt door naar de .nl, maar staat er toch bij: een app of koppeling die nog het oude
+      # adres gebruikt moet niet stilvallen op een CORS-fout waar niemand iets van ziet.
+      Cors__AllowedOrigins__2: ${CORS_ORIGIN_2:-https://wattzicht.com}
+      Cors__AllowedOrigins__3: ${CORS_ORIGIN_3:-https://wattzicht.laadcash.nl}
       Seed__Enabled: ${SEED_ENABLED:-true}
       Seed__AdminAccount: ${SEED_ADMIN_ACCOUNT:-}
       Seed__AdminPassword: ${SEED_ADMIN_PASSWORD:-}

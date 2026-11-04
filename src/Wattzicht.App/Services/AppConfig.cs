@@ -25,8 +25,7 @@ public static class AppConfig
             return "http://localhost:8080/";
 #endif
 #else
-            // Tijdelijk via de testomgeving zolang er geen eigen domein is. Nieuw domein = alleen deze regel.
-            return "https://wattzicht.laadcash.nl/api/";
+            return "https://api.wattzicht.nl/api/";
 #endif
         }
     }

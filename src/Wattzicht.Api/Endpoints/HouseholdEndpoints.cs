@@ -232,9 +232,13 @@ public static class HouseholdEndpoints
     /// </summary>
     private static readonly string[] EnphaseRedirects =
     [
-        "https://wattzicht.laadcash.nl/oauth/enphase",
         "https://wattzicht.nl/oauth/enphase",
         "https://www.wattzicht.nl/oauth/enphase",
+        "https://wattzicht.com/oauth/enphase",
+        "https://www.wattzicht.com/oauth/enphase",
+        // Blijft erin zolang het oude adres nog bestaat; een app of bladwijzer van voor de verhuizing
+        // komt daar anders klem te zitten halverwege het toestemmingsscherm van Enphase.
+        "https://wattzicht.laadcash.nl/oauth/enphase",
         "http://localhost:5173/oauth/enphase",
     ];
 

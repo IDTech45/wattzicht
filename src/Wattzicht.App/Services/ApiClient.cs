@@ -270,7 +270,7 @@ public sealed class ApiClient
     }
 
     /// <summary>
-    /// Paden relatief aan de basis-URL maken. De API staat nu onder <c>https://wattzicht.laadcash.nl/api/</c>;
+    /// Paden relatief aan de basis-URL maken. De API staat nu onder <c>https://api.wattzicht.nl/api/</c>;
     /// een pad met voorloop-slash zou dat <c>/api</c> overslaan.
     /// </summary>
     private static string Relative(string path) => path.TrimStart('/');

@@ -80,12 +80,41 @@ teruglevering aan het net zitten in de meter-telemetrie en die hoort bij het bet
 ($249 per maand). Voor de besparing van een Enphase-huis is dus een P1-meter ernaast nodig, of de
 lokale IQ Gateway in het thuisnetwerk.
 
-## 8. Later: eigen domein
+## 8. Eigen domein: wattzicht.nl en wattzicht.com
 
-1. Registreer `wattzicht.nl`, DNS `A`-records `wattzicht.nl`, `www.wattzicht.nl` en `api.wattzicht.nl` → VPS-IP.
-2. Dokploy → Domains: voeg de drie hosts toe aan dezelfde services (frontend: `wattzicht.nl` + `www`; api: `api.wattzicht.nl`), HTTPS aan.
-3. Environment: `CORS_ORIGIN_0=https://wattzicht.nl`, `CORS_ORIGIN_1=https://www.wattzicht.nl`. Redeploy.
-4. `AppConfig.cs` terug naar `https://api.wattzicht.nl`.
+Beide domeinen staan al op de nameservers van Leaseweb (`ns0.leaseweb.eu`, `ns1.leaseweb.nl`), dus
+alles gaat in het Leaseweb-DNS-paneel. De VPS is **82.192.69.90**.
+
+**1. DNS bij Leaseweb** (nu wijzen ze naar 85.17.96.111, een parkeeradres):
+
+| Domein | Type | Naam | Waarde |
+| --- | --- | --- | --- |
+| wattzicht.nl | A | `@` | 82.192.69.90 |
+| wattzicht.nl | A | `www` | 82.192.69.90 |
+| wattzicht.nl | A | `api` | 82.192.69.90 |
+| wattzicht.nl | MX | `@` | `mailfilter1.leaseweb.com`, `mailfilter2…`, `mailfilter3…` (prioriteit 10) |
+| wattzicht.nl | TXT | `@` | `v=spf1 include:mh-spf.leaseweb.com ~all` |
+| wattzicht.nl | TXT | `_dmarc` | `v=DMARC1; p=quarantine; rua=mailto:ibo.dogan45@gmail.com; fo=1` |
+| wattzicht.com | A | `@` | 82.192.69.90 |
+| wattzicht.com | A | `www` | 82.192.69.90 |
+
+De `.com` krijgt bewust geen mail en geen `api`: die stuurt alleen door naar de `.nl`.
+
+**2. Dokploy → Domains.** Frontend: `wattzicht.nl`, `www.wattzicht.nl`, `wattzicht.com`,
+`www.wattzicht.com`. API: `api.wattzicht.nl`. Overal HTTPS aan. `wattzicht.laadcash.nl` laten staan
+zolang de oude app-versies nog in omloop zijn.
+
+**3. Doorsturen.** Nginx stuurt `.com`, `www.com` en `www.nl` met een 301 naar `https://wattzicht.nl`,
+zodat zoekmachines één adres zien. Dat zit al in `frontend/nginx.conf`.
+
+**4. Enphase.** De terugkeeradressen van de `.nl` en `.com` staan in de API; zet ze ook in de
+Enphase-developer-app, anders weigert Enphase ze bij het toestemmingsscherm.
+
+**5. Mail.** `hallo@wattzicht.nl` aanmaken in het Leaseweb-mailpaneel zodra de MX staat; dat adres
+staat al in de voettekst van de site.
+
+**6. De app** wijst na deze wijziging naar `https://api.wattzicht.nl/api/`. Een nieuwe build is pas
+nodig als het oude adres eruit gaat; tot die tijd werken beide.
 
 ## Problemen
 
