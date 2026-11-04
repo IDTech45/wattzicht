@@ -19,8 +19,6 @@ import {
   register as apiRegister,
   type DeviceSummary,
 } from '@/api/client'
-import SiteNav from '@/components/SiteNav.vue'
-import SiteFooter from '@/components/SiteFooter.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -36,7 +34,7 @@ const gelukt = ref<string | null>(null)
 const apparaten = ref<DeviceSummary[]>([])
 
 /** Het merk dat de klant gekozen heeft, of null zolang hij nog kiest. */
-const merk = ref<'Enphase' | 'Growatt' | 'Solax' | null>(null)
+const merk = ref<'Enphase' | 'Growatt' | 'Solax' | 'Sessy' | 'Zaptec' | null>(null)
 
 /** Inloggen of een nieuw account maken. Zonder dit tweede kan niemand hier beginnen. */
 const nieuwAccount = ref(false)
@@ -44,6 +42,11 @@ const huishoudnaam = ref('')
 const installateurscode = ref('')
 
 const growattToken = ref('')
+const sessyIp = ref('')
+const sessyGebruiker = ref('')
+const sessyWachtwoord = ref('')
+const zaptecEmail = ref('')
+const zaptecWachtwoord = ref('')
 const solaxToken = ref('')
 const solaxSerienummer = ref('')
 
@@ -123,7 +126,16 @@ async function apparatenOphalen() {
   try {
     apparaten.value = await getMyDevices()
   } catch (e) {
-    if (e instanceof ApiError && e.status === 401) uitloggen()
+    if (e instanceof ApiError && e.status === 401) { uitloggen(); return }
+    // 403 betekent hier niet "storing" maar "dit account hoort bij geen woning": een installateur of
+    // beheerder die hier binnenloopt heeft geen huishouden in zijn token. Tot 04-11-2026 stond er dan
+    // kaal "Forbidden" op het scherm, en daar kan niemand iets mee.
+    if (e instanceof ApiError && e.status === 403) {
+      fout.value = 'Dit account hoort niet bij een woning. Log in met het account van de bewoner, '
+        + 'of maak hieronder een nieuw account aan.'
+      return
+    }
+    fout.value = 'We konden je apparaten even niet ophalen. Probeer het zo nog eens.'
   }
 }
 
@@ -151,7 +163,27 @@ async function koppelSolax() {
   })
 }
 
-async function koppel(body: { brand: 'Growatt' | 'Solax'; type: 'Inverter'; credentials: Record<string, string> }) {
+async function koppelSessy() {
+  await koppel({
+    brand: 'Sessy',
+    type: 'Battery',
+    credentials: {
+      host: sessyIp.value.trim(),
+      username: sessyGebruiker.value.trim(),
+      password: sessyWachtwoord.value,
+    },
+  })
+}
+
+async function koppelZaptec() {
+  await koppel({
+    brand: 'Zaptec',
+    type: 'Charger',
+    credentials: { username: zaptecEmail.value.trim(), password: zaptecWachtwoord.value },
+  })
+}
+
+async function koppel(body: Parameters<typeof connectDevice>[0]) {
   fout.value = null
   gelukt.value = null
   bezig.value = true
@@ -219,8 +251,6 @@ onMounted(async () => {
 </script>
 
 <template>
-  <SiteNav />
-
   <main class="wz-section">
     <div class="wz-wrap koppel">
       <h1>Apparaten koppelen</h1>
@@ -297,6 +327,8 @@ onMounted(async () => {
             <button class="wz-btn wz-btn--primary" type="button" @click="merk = 'Enphase'">Enphase</button>
             <button class="wz-btn wz-btn--primary" type="button" @click="merk = 'Growatt'">Growatt</button>
             <button class="wz-btn wz-btn--primary" type="button" @click="merk = 'Solax'">SolaX</button>
+            <button class="wz-btn wz-btn--primary" type="button" @click="merk = 'Sessy'">Sessy</button>
+            <button class="wz-btn wz-btn--primary" type="button" @click="merk = 'Zaptec'">Zaptec</button>
           </div>
 
           <!-- Enphase: toestemming, geen sleutel -->
@@ -332,7 +364,7 @@ onMounted(async () => {
           </form>
 
           <!-- SolaX: token + serienummer van de dongle -->
-          <form v-else @submit.prevent="koppelSolax">
+          <form v-else-if="merk === 'Solax'" @submit.prevent="koppelSolax">
             <label for="k-solax-token">SolaX TokenID</label>
             <input id="k-solax-token" v-model="solaxToken" required />
             <p class="hint">In SolaXCloud onder Service → API.</p>
@@ -340,6 +372,42 @@ onMounted(async () => {
             <label for="k-solax-sn">Registratienummer van de dongle</label>
             <input id="k-solax-sn" v-model="solaxSerienummer" required />
             <p class="hint">Tien tekens; staat op de wifi-dongle en in SolaXCloud bij het apparaat.</p>
+
+            <div class="rij">
+              <button class="wz-btn wz-btn--primary" type="submit" :disabled="bezig">
+                {{ bezig ? 'Bezig…' : 'Koppelen' }}
+              </button>
+              <button class="wz-btn wz-btn--ghost" type="button" @click="merk = null">Terug</button>
+            </div>
+          </form>
+
+          <!-- Sessy: praat alleen op het eigen netwerk, dus het adres van de dongle erbij -->
+          <form v-else-if="merk === 'Sessy'" @submit.prevent="koppelSessy">
+            <label for="k-sessy-ip">IP-adres van je Sessy</label>
+            <input id="k-sessy-ip" v-model="sessyIp" required placeholder="192.168.1.50" />
+            <p class="hint">Staat in je router of in de Sessy-app. Je batterij moet vanaf buitenaf bereikbaar zijn.</p>
+
+            <label for="k-sessy-gebruiker">Gebruikersnaam</label>
+            <input id="k-sessy-gebruiker" v-model="sessyGebruiker" required />
+            <label for="k-sessy-wachtwoord">Wachtwoord</label>
+            <input id="k-sessy-wachtwoord" v-model="sessyWachtwoord" type="password" required />
+            <p class="hint">Allebei te vinden op de sticker van de dongle.</p>
+
+            <div class="rij">
+              <button class="wz-btn wz-btn--primary" type="submit" :disabled="bezig">
+                {{ bezig ? 'Bezig…' : 'Koppelen' }}
+              </button>
+              <button class="wz-btn wz-btn--ghost" type="button" @click="merk = null">Terug</button>
+            </div>
+          </form>
+
+          <!-- Zaptec: hetzelfde account als in hun eigen app -->
+          <form v-else @submit.prevent="koppelZaptec">
+            <label for="k-zaptec-email">E-mailadres van je Zaptec-account</label>
+            <input id="k-zaptec-email" v-model="zaptecEmail" type="email" required />
+            <label for="k-zaptec-wachtwoord">Wachtwoord</label>
+            <input id="k-zaptec-wachtwoord" v-model="zaptecWachtwoord" type="password" required />
+            <p class="hint">Dezelfde gegevens als waarmee je in de Zaptec-app inlogt. Wij lezen alleen uit.</p>
 
             <div class="rij">
               <button class="wz-btn wz-btn--primary" type="submit" :disabled="bezig">
@@ -357,7 +425,6 @@ onMounted(async () => {
     </div>
   </main>
 
-  <SiteFooter />
 </template>
 
 <style scoped>

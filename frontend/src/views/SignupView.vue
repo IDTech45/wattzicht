@@ -14,8 +14,6 @@
 import { computed, nextTick, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ApiError, login as apiLogin, register, registerInstaller } from '@/api/client'
-import SiteNav from '@/components/SiteNav.vue'
-import SiteFooter from '@/components/SiteFooter.vue'
 
 const router = useRouter()
 
@@ -159,8 +157,6 @@ async function alIngelogd() {
 </script>
 
 <template>
-  <SiteNav />
-
   <main class="wz-section">
     <div class="wz-wrap aanmeld">
       <h1 id="aanmeld-titel">Aanmelden</h1>
@@ -432,7 +428,6 @@ async function alIngelogd() {
     </div>
   </main>
 
-  <SiteFooter />
 </template>
 
 <style scoped>
