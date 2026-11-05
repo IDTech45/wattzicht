@@ -36,5 +36,20 @@
 	<string>Assets.xcassets/appicon.appiconset</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<!-- Uitlezen op het thuisnetwerk. Zonder deze twee sleutels doet de app op een iPhone niets met
+	     een P1-meter of een Sessy, en zonder foutmelding ook nog.
+
+	     De eerste: iOS vraagt toestemming zodra een app een adres op het eigen netwerk aanspreekt, en
+	     zonder uitleg mag hij het niet eens vragen. De tweede: App Transport Security blokkeert sinds
+	     iOS 17 ook http:// naar een privé-adres, en die kastjes spreken geen https. Met
+	     NSAllowsLocalNetworking geldt die uitzondering alleen voor adressen binnen het huis; alles
+	     naar buiten blijft verplicht versleuteld. -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Wattzicht leest je P1-meter of thuisbatterij rechtstreeks uit op je eigen wifi. Die gegevens gaan niet langs de fabrikant.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 </dict>
 </plist>
