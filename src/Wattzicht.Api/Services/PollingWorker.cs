@@ -21,6 +21,7 @@ public sealed class PollingWorker(
     {
         var interval = TimeSpan.FromMinutes(configuration.GetValue("Polling:IntervalMinutes", 5));
         var enabled = configuration.GetValue("Polling:Enabled", true);
+        EnphaseMaandbudget = Math.Max(1, configuration.GetValue("Polling:EnphaseMaandbudget", 100));
 
         if (!enabled)
         {
@@ -141,8 +142,14 @@ public sealed class PollingWorker(
     private const int EnphaseEersteUur = 6;
     private const int EnphaseLaatsteUur = 21;
 
-    /// <summary>Wat wij van de maandlimiet voor onszelf houden; de rest is voor LaadCash.</summary>
-    internal const int EnphaseMaandbudget = 600;
+    /// <summary>
+    /// Wat wij van de maandlimiet voor onszelf houden. Het gratis plan geeft er 1.000, maar dat is
+    /// gedeeld met LaadCash en niemand wil erachter komen dat het op is doordat een klant belt. Honderd
+    /// is bewust ruim onder de grens: genoeg om een opbrengstgrafiek te vullen, te weinig om ooit een
+    /// rekening te veroorzaken. Te verhogen met Polling:EnphaseMaandbudget als de cloud ooit de
+    /// hoofdweg wordt in plaats van de achterdeur.
+    /// </summary>
+    internal static int EnphaseMaandbudget { get; private set; } = 100;
 
     internal static TimeSpan EnphaseInterval(int apparaten)
     {

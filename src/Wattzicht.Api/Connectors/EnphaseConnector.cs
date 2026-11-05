@@ -15,10 +15,11 @@ namespace Wattzicht.Api.Connectors;
 /// <param name="ApiKey">De API-sleutel die bij elke aanroep als <c>key=</c> mee moet.</param>
 /// <param name="MaxPerMaand">
 /// De noodrem. Het gratis plan geeft 1.000 verzoeken per maand en LaadCash deelt dat account mee, dus
-/// houden wij 600 aan: haalt onze eigen begroting het mis, dan valt die andere koppeling niet om.
+/// houden wij er ruim onder: de begroting in de poller mikt op 100 en deze noodrem staat op 150, zodat
+/// een fout in die begroting zichtbaar wordt lang voordat de limiet in zicht komt.
 /// De normale rem is het uitleesritme in de poller; deze teller is wat er overblijft als dat faalt.
 /// </param>
-public sealed record EnphaseOptions(string? ClientId, string? ClientSecret, string? ApiKey, int MaxPerMaand = 600);
+public sealed record EnphaseOptions(string? ClientId, string? ClientSecret, string? ApiKey, int MaxPerMaand = 150);
 
 /// <summary>
 /// Hoeveel aanroepen er deze maand op een Enphase-sleutel zijn gedaan.
