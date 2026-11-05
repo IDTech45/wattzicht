@@ -75,10 +75,19 @@ zelf niet met een sleutel regelen.
 3. Vul in Dokploy → Environment de drie waarden:
    `ENPHASE_CLIENT_ID`, `ENPHASE_CLIENT_SECRET` en `ENPHASE_API_KEY`, en redeploy.
 
-Wat Enphase daarna oplevert: het actuele vermogen van de panelen en de opwek-teller. Afname van en
-teruglevering aan het net zitten in de meter-telemetrie en die hoort bij het betaalde plan
-($249 per maand). Voor de besparing van een Enphase-huis is dus een P1-meter ernaast nodig, of de
-lokale IQ Gateway in het thuisnetwerk.
+Wat Enphase oplevert: het actuele vermogen van de panelen en de opwek-teller, en ook afname van en
+teruglevering aan het net via `/api/v4/systems/{id}/energy_import_lifetime` en
+`/energy_export_lifetime`.
+
+Hier stond dat die laatste twee $249 per maand kosten. Dat klopt niet. Die $249 is het Kilowatt-plan
+en dat koopt VOLUME (50.000 aanroepen per maand in plaats van 1.000), geen extra soort gegevens;
+site-level consumption staat gewoon in de opsomming van het gratis Watt-plan. Nagekeken 05-11-2026 op
+developer-v4.enphase.com/developer-plans. Die verkeerde aanname was de enige reden om een route te
+bedenken waarbij elke bewoner zelf een token moet plakken.
+
+Wel een harde voorwaarde, en die heeft niets met het plan te maken: er moeten consumption-CT's in de
+woning zitten (IQ Gateway Metered). Zonder die klemmen bestaat afname en teruglevering niet, op geen
+enkel plan.
 
 ## 8. Eigen domein: wattzicht.nl en wattzicht.com (staat, 04-11-2026)
 
