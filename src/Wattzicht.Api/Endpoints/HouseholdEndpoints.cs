@@ -405,7 +405,8 @@ public static class HouseholdEndpoints
         var device = await db.Devices.FirstOrDefaultAsync(d => d.Id == id && d.HouseholdId == householdId, ct);
         if (device is null) return Results.NotFound();
 
-        if (registry.Get(device.Brand)?.IsLokaal != true)
+        var connector = registry.Get(device.Brand);
+        if (connector is null || !connector.KanDoorDeAppGelezenWorden)
         {
             return Results.Problem(
                 title: "Dit apparaat lezen wij zelf uit; metingen opsturen kan hier niet.",
@@ -426,7 +427,7 @@ public static class HouseholdEndpoints
         DeviceReading meting;
         try
         {
-            meting = HomeWizardConnector.LeesP1(request.Raw, gemeten);
+            meting = connector.LeesLokaal(request.Raw, gemeten);
         }
         catch (Exception)
         {

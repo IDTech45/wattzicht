@@ -27,6 +27,8 @@ public sealed class HomeWizardConnector : IDeviceConnector
     /// <summary>Dit apparaat wordt door de app uitgelezen, niet door de server.</summary>
     public bool IsLokaal => true;
 
+    public DeviceReading LeesLokaal(JsonElement rauw, DateTimeOffset gemeten) => LeesP1(rauw, gemeten);
+
     public Task<ConnectResult> ConnectAsync(ConnectRequest request, CancellationToken ct)
     {
         var host = request.Credentials.Get("host") ?? request.Credentials.Get("ip");

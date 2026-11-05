@@ -70,6 +70,9 @@ public sealed class PollingWorker(
                 .Where(h => h.Devices.Any())
                 .Select(h => h.Id)
                 .ToListAsync(ct);
+            // Hoe meer Enphase-huizen, hoe rustiger elk van hen aan de beurt komt. Hier tellen en niet
+            // per apparaat opzoeken: het is één telling per ronde in plaats van één per koppeling.
+            _enphaseApparaten = await db.Devices.CountAsync(d => d.Brand == DeviceBrand.Enphase, ct);
         }
 
         var okCount = 0;
@@ -106,30 +109,94 @@ public sealed class PollingWorker(
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, DateTimeOffset> LaatstePoging = new();
 
     /// <summary>
+    /// Hoeveel Enphase-apparaten er op dit moment gekoppeld zijn. Bepaalt hoe vaak elk van hen aan de
+    /// beurt komt; wordt per pollronde bijgewerkt.
+    /// </summary>
+    private static int _enphaseApparaten = 1;
+
+    /// <summary>
     /// Het kortste interval per merk. De poller draait elke vijf minuten, maar niet elk merk mag dat.
     ///
-    /// Enphase staat op het gratis plan "Watt" met 1.000 verzoeken per maand. Elke vijf minuten uitlezen
-    /// is 8.640 verzoeken per maand: dan is het quotum na drie dagen op en stopt ook de Enphase-koppeling
-    /// van LaadCash, want die hangt aan hetzelfde developer-account. Eén keer per uur past wel.
+    /// Enphase staat op het gratis plan "Watt": 1.000 verzoeken per maand, gedeeld met LaadCash want
+    /// dat hangt aan hetzelfde developer-account. Hier stond een vast uur, en dat leek genoeg tot je
+    /// het uitrekent: 24 maal 30 is 720 verzoeken per maand voor ÉÉN huis. Het tweede huis trekt het
+    /// quotum er dus doorheen en neemt de Enphase-koppeling van LaadCash mee in de val.
+    ///
+    /// Daarom twee dingen. We lezen alleen overdag uit, want 's nachts maakt een zonnepaneel niets en
+    /// verandert er niets aan de teller. En we delen wat er overblijft door het aantal huizen, zodat
+    /// het tiende huis het eerste niet omver duwt. Bij één huis komt daar ongeveer een uur uit, bij
+    /// vier huizen ruim twee uur, en dat is voor een opbrengstgrafiek nog steeds ruim genoeg.
     /// </summary>
-    private static TimeSpan KortsteInterval(DeviceBrand brand) => brand switch
+    internal static TimeSpan KortsteInterval(DeviceBrand brand, int enphaseApparaten = 1) => brand switch
     {
-        DeviceBrand.Enphase => TimeSpan.FromMinutes(60),
+        DeviceBrand.Enphase => EnphaseInterval(enphaseApparaten),
         // Elke uitlezing is een login plus een state-aanroep, en Zaptec knijpt af op ons IP-adres en
         // niet op het account. Tien minuten is voor een laadpaal ruim genoeg: een laadbeurt duurt uren.
         DeviceBrand.Zaptec => TimeSpan.FromMinutes(10),
         _ => TimeSpan.Zero,
     };
 
+    /// <summary>Het aantal uren per etmaal dat we Enphase uitlezen (zie <see cref="InDeUitleesuren"/>).</summary>
+    internal const int EnphaseUrenPerDag = EnphaseLaatsteUur - EnphaseEersteUur + 1;
+    private const int EnphaseEersteUur = 6;
+    private const int EnphaseLaatsteUur = 21;
+
+    /// <summary>Wat wij van de maandlimiet voor onszelf houden; de rest is voor LaadCash.</summary>
+    internal const int EnphaseMaandbudget = 600;
+
+    internal static TimeSpan EnphaseInterval(int apparaten)
+    {
+        var huizen = Math.Max(1, apparaten);
+        // Verzoeken die één huis per maand mag doen, omgerekend naar een pauze tussen twee uitlezingen.
+        var perHuisPerMaand = (double)EnphaseMaandbudget / huizen;
+        var uitleesurenPerMaand = EnphaseUrenPerDag * 30.0;
+        var minuten = uitleesurenPerMaand * 60.0 / Math.Max(1.0, perHuisPerMaand);
+        // Nooit vaker dan een keer per uur, ook niet als er maar één huis is: zo vaak verandert een
+        // dagopbrengst niet, en er moet ruimte blijven voor een handmatige "opnieuw uitlezen".
+        return TimeSpan.FromMinutes(Math.Max(60, minuten));
+    }
+
+    /// <summary>
+    /// Is dit een uur waarop we Enphase uitlezen? Tussen tien voor tien 's avonds en zes uur
+    /// 's ochtends staat de zon niet op en blijft de teller staan, dus daar is geen verzoek voor nodig.
+    /// Nederlandse tijd, want daar wonen de klanten en daar hoort de dagindeling bij.
+    /// </summary>
+    internal static bool InDeUitleesuren(DateTimeOffset nu)
+    {
+        var uur = TimeZoneInfo.ConvertTime(nu, Tijdzone).Hour;
+        return uur is >= EnphaseEersteUur and <= EnphaseLaatsteUur;
+    }
+
+    private static readonly TimeZoneInfo Tijdzone = Zoek("Europe/Amsterdam", "W. Europe Standard Time");
+
+    private static TimeZoneInfo Zoek(params string[] namen)
+    {
+        foreach (var naam in namen)
+        {
+            try { return TimeZoneInfo.FindSystemTimeZoneById(naam); }
+            catch (TimeZoneNotFoundException) { }
+            catch (InvalidTimeZoneException) { }
+        }
+        return TimeZoneInfo.Utc;
+    }
+
     private bool NogTeVroeg(Device device, out DateTimeOffset wachtTot)
     {
         wachtTot = default;
-        var minimum = KortsteInterval(device.Brand);
+        var nu = clock.GetUtcNow();
+
+        if (device.Brand == DeviceBrand.Enphase && !InDeUitleesuren(nu))
+        {
+            wachtTot = nu.AddHours(1);
+            return true;
+        }
+
+        var minimum = KortsteInterval(device.Brand, _enphaseApparaten);
         if (minimum == TimeSpan.Zero) return false;
         if (!LaatstePoging.TryGetValue(device.Id, out var vorige)) return false;
 
         wachtTot = vorige + minimum;
-        return clock.GetUtcNow() < wachtTot;
+        return nu < wachtTot;
     }
 
     /// <summary>Eén huishouden nu uitlezen (ook gebruikt door "opnieuw uitlezen" in het installateursportal).</summary>
@@ -194,6 +261,14 @@ public sealed class PollingWorker(
             try
             {
                 var credentials = new DeviceCredentials(protector.Unprotect(device.EncryptedCredentials));
+
+                // Sommige merken kunnen het allebei: een Sessy op 192.168.1.50 hoort bij de app, een
+                // Sessy achter een opengezette poort bij ons. Dat is pas te zien als de gegevens
+                // ontsleuteld zijn, vandaar hier en niet bij de controle hierboven.
+                if (connector.IsLokaalVoor(credentials))
+                {
+                    continue;
+                }
 
                 using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
                 timeout.CancelAfter(TimeSpan.FromSeconds(30));

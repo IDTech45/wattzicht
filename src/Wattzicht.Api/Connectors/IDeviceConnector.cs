@@ -138,6 +138,34 @@ public interface IDeviceConnector
     /// </summary>
     bool IsLokaal => false;
 
+    /// <summary>
+    /// Hetzelfde, maar dan met de gegevens van één koppeling erbij.
+    ///
+    /// Nodig voor merken die het allebei kunnen. Een Sessy-thuisbatterij staat bij vrijwel iedereen op
+    /// een adres als 192.168.1.50, en daar komt onze server nooit; maar wie een poort heeft
+    /// opengezet of een VPN gebruikt geeft een adres op dat wél vanaf buiten bereikbaar is, en dan is
+    /// uitlezen vanaf de server juist handiger, want dan hoeft er niemand thuis een app te openen.
+    /// </summary>
+    bool IsLokaalVoor(IReadOnlyDictionary<string, string> credentials) => IsLokaal;
+
+    /// <summary>
+    /// Kan dit merk überhaupt vanuit de app worden aangeleverd? Bepaalt of <c>POST /devices/{id}/readings</c>
+    /// een meting van dit apparaat aanneemt. Ruimer dan <see cref="IsLokaalVoor"/>: een Sessy achter een
+    /// opengezette poort wordt normaal door de server gelezen, maar als de app er thuis toch eentje
+    /// opstuurt is dat geen fout en gooien we die meting niet weg.
+    /// </summary>
+    bool KanDoorDeAppGelezenWorden => IsLokaal;
+
+    /// <summary>
+    /// Zet het rauwe antwoord dat de app op het thuisnetwerk ophaalde om naar een meting.
+    ///
+    /// De omzetting hoort hier en niet in de app: een telefoon die een half jaar niet is bijgewerkt
+    /// moet nog steeds bruikbare gegevens opsturen, en dat lukt alleen als hij het antwoord
+    /// onvertaald doorgeeft en wij het uitleggen.
+    /// </summary>
+    DeviceReading LeesLokaal(System.Text.Json.JsonElement rauw, DateTimeOffset gemeten) =>
+        throw new ConnectorException($"{Brand} wordt niet vanuit de app uitgelezen.");
+
     /// <summary>Valideert de credentials en haalt de apparaten op.</summary>
     Task<ConnectResult> ConnectAsync(ConnectRequest request, CancellationToken ct);
 

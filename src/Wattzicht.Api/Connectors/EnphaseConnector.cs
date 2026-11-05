@@ -13,7 +13,12 @@ namespace Wattzicht.Api.Connectors;
 /// <param name="ClientId">Client-id van de developer-app (developer-v4.enphase.com).</param>
 /// <param name="ClientSecret">Client secret van die app.</param>
 /// <param name="ApiKey">De API-sleutel die bij elke aanroep als <c>key=</c> mee moet.</param>
-public sealed record EnphaseOptions(string? ClientId, string? ClientSecret, string? ApiKey, int MaxPerMaand = 1000);
+/// <param name="MaxPerMaand">
+/// De noodrem. Het gratis plan geeft 1.000 verzoeken per maand en LaadCash deelt dat account mee, dus
+/// houden wij 600 aan: haalt onze eigen begroting het mis, dan valt die andere koppeling niet om.
+/// De normale rem is het uitleesritme in de poller; deze teller is wat er overblijft als dat faalt.
+/// </param>
+public sealed record EnphaseOptions(string? ClientId, string? ClientSecret, string? ApiKey, int MaxPerMaand = 600);
 
 /// <summary>
 /// Hoeveel aanroepen er deze maand op een Enphase-sleutel zijn gedaan.

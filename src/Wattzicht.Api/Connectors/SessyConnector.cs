@@ -17,6 +17,21 @@ public sealed class SessyConnector(IHttpClientFactory httpClientFactory, ILogger
 
     public DeviceBrand Brand => DeviceBrand.Sessy;
 
+    /// <summary>
+    /// Bijna elke Sessy hangt op een adres als 192.168.1.50 en is dus alleen van binnen het huis te
+    /// bereiken. Onze server probeerde dat tot 05-11-2026 toch, elke vijf minuten, bij elke klant, en
+    /// kon per definitie niets anders dan mislukken. Staat er een adres dat van buiten wél bestaat
+    /// (poort opengezet of VPN), dan blijft de server het gewoon doen.
+    /// </summary>
+    public bool IsLokaalVoor(IReadOnlyDictionary<string, string> credentials) =>
+        ThuisAdres.IsPrive(credentials.Get("host"));
+
+    /// <summary>De app mag een Sessy altijd aanleveren, ook eentje die wij zelf zouden kunnen bereiken.</summary>
+    public bool KanDoorDeAppGelezenWorden => true;
+
+    public DeviceReading LeesLokaal(JsonElement rauw, DateTimeOffset gemeten) =>
+        Parse(rauw) with { Timestamp = gemeten };
+
     public async Task<ConnectResult> ConnectAsync(ConnectRequest request, CancellationToken ct)
     {
         var host = request.Credentials.Get("host");
