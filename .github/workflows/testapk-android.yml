@@ -1,0 +1,53 @@
+name: testapk-android
+
+# Een .apk die je rechtstreeks op je eigen telefoon zet, zonder Google Play en zonder keystore.
+#
+# De andere workflow (release-android) maakt een .aab. Dat bestand kun je alleen naar Play uploaden;
+# je telefoon doet er niets mee. Voor een test thuis met je eigen laadpaal en zonnepanelen wil je
+# gewoon een bestand dat je aantikt en installeert. Daar is dit voor.
+#
+# Starten: Actions -> testapk-android -> Run workflow. Na afloop staat onderaan de run een bestand
+# "wattzicht-apk" dat je downloadt, naar je telefoon stuurt en aantikt. Android vraagt eenmalig om
+# installeren uit onbekende bron toe te staan.
+#
+# Hij wordt ondertekend met de debug-sleutel die de build zelf aanmaakt. Dat is prima om te testen,
+# maar niet om te verspreiden: een update over een Play-versie heen gaat niet, en andersom ook niet.
+#
+# De app praat altijd met https://api.wattzicht.nl/api/; dat adres zit in AppConfig en is in een
+# Release-build niet te veranderen. Een keuzeveld hier zou dus doen alsof dat wel kan.
+on:
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+      - name: MAUI Android workload
+        run: dotnet workload install maui-android
+
+      - name: Bouwen
+        # Versiecode = runnummer, zodat een nieuwere test over een oudere heen gaat.
+        run: >
+          dotnet publish src/Wattzicht.App/Wattzicht.App.csproj -c Release
+          -p:AndroidOnly=true
+          -p:AcceptAndroidSDKLicenses=true
+          -p:AndroidPackageFormats=apk
+          -p:ApplicationVersion=${{ github.run_number }}
+          -o out
+
+      - name: Laten zien wat eruit kwam
+        run: ls -la out/*.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wattzicht-apk
+          path: out/*-Signed.apk
+          if-no-files-found: error
