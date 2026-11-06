@@ -2,7 +2,7 @@ using Wattzicht.Shared;
 
 namespace Wattzicht.Api.Connectors;
 
-/// <summary>Geeft per merk de juiste connector. Merken zonder connector (Deye, Alfen) geven <c>null</c>.</summary>
+/// <summary>Geeft per merk de juiste connector. Merken zonder connector (Deye) geven <c>null</c>.</summary>
 public sealed class ConnectorRegistry
 {
     private readonly IReadOnlyDictionary<DeviceBrand, IDeviceConnector> _connectors;
@@ -44,6 +44,18 @@ public static class ConnectorServiceCollectionExtensions
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Wattzicht/0.1");
         });
 
+        // Een laadpaal draagt een zelfondertekend certificaat op een IP-adres. Daar valt niets aan te
+        // controleren, dus voor deze ene client zetten we de controle uit. Dat mag hier: het verkeer
+        // blijft binnen het huis en de app praat rechtstreeks met de paal.
+        services.AddHttpClient(AlfenConnector.HttpClientName, client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(10);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Wattzicht/0.1");
+        }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+        });
+
         services.AddHttpClient(EnphaseConnector.HttpClientName, client =>
         {
             var baseUrl = configuration["Connectors:Enphase:BaseUrl"] ?? EnphaseConnector.DefaultBaseUrl;
@@ -71,6 +83,7 @@ public static class ConnectorServiceCollectionExtensions
         services.AddSingleton<IDeviceConnector, GrowattConnector>();
         services.AddSingleton<IDeviceConnector, SolaxConnector>();
         services.AddSingleton<IDeviceConnector, SessyConnector>();
+        services.AddSingleton<IDeviceConnector, AlfenConnector>();
         services.AddSingleton<IDeviceConnector, ZaptecConnector>();
         services.AddSingleton<IDeviceConnector, HomeWizardConnector>();
         services.AddSingleton(new EnphaseOptions(
