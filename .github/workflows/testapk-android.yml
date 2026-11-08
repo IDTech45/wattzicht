@@ -35,8 +35,14 @@ jobs:
 
       - name: Bouwen
         # Versiecode = runnummer, zodat een nieuwere test over een oudere heen gaat.
+        #
+        # -f net9.0-android moet er expliciet bij. Het project richt zich op meerdere platformen en
+        # publish weigert dan zonder doel, ook met AndroidOnly=true: dat schakelt alleen iOS uit in de
+        # projectbestanden, niet in de aanroep. Zonder deze regel stopte de build na vijftig seconden
+        # met NETSDK1129 en kwam er nooit een apk uit (08-11-2026).
         run: >
           dotnet publish src/Wattzicht.App/Wattzicht.App.csproj -c Release
+          -f net9.0-android
           -p:AndroidOnly=true
           -p:AcceptAndroidSDKLicenses=true
           -p:AndroidPackageFormats=apk
