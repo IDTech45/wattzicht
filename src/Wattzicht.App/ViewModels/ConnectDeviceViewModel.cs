@@ -44,6 +44,11 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         new(DeviceBrand.Solax, "SolaX laadpaal", "Smart EV Charger met MID-meter via SolaXCloud", "EnergyCharger", DeviceType.Charger),
         new(DeviceBrand.Sessy, "Sessy", "Thuisbatterij met Sessy-dongle", "EnergyBattery", DeviceType.Battery),
         new(DeviceBrand.Zaptec, "Zaptec", "Laadpaal via je eigen Zaptec-account", "EnergyCharger", DeviceType.Charger),
+        // Een Alfen heeft geen cloud waar wij bij mogen: wie hem via 50five, E-Flux of de lease heeft,
+        // ziet zijn data alleen in hún portaal. De paal zelf heeft wel een lokale interface, dezelfde
+        // die de monteur gebruikt. Daarom staat hij hier en niet op de website: dit kan alleen vanuit
+        // het huis, net als de Sessy en de P1-meter.
+        new(DeviceBrand.Alfen, "Alfen", "Laadpaal op je eigen wifi of netwerkkabel", "EnergyCharger", DeviceType.Charger),
         new(DeviceBrand.HomeWizard, "P1-meter", "Dongle op je slimme meter, leest je netafname", "EnergyGrid", DeviceType.P1Meter),
         new(DeviceBrand.Demo, "Demo", "Voorbeelddata om de app te proberen", "TextMuted", DeviceType.Inverter),
     ];
@@ -75,6 +80,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(SolaxHelp))]
     [NotifyPropertyChangedFor(nameof(IsSessy))]
     [NotifyPropertyChangedFor(nameof(IsZaptec))]
+    [NotifyPropertyChangedFor(nameof(IsAlfen))]
     [NotifyPropertyChangedFor(nameof(IsHomeWizard))]
     [NotifyPropertyChangedFor(nameof(IsDemo))]
     [NotifyPropertyChangedFor(nameof(BrandName))]
@@ -94,6 +100,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     public bool IsSessy => SelectedBrand?.Brand == DeviceBrand.Sessy;
     public bool IsHomeWizard => SelectedBrand?.Brand == DeviceBrand.HomeWizard;
     public bool IsZaptec => SelectedBrand?.Brand == DeviceBrand.Zaptec;
+    public bool IsAlfen => SelectedBrand?.Brand == DeviceBrand.Alfen;
     public bool IsDemo => SelectedBrand?.Brand == DeviceBrand.Demo;
     public string BrandName => SelectedBrand?.Name ?? "";
 
@@ -122,6 +129,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         DeviceBrand.Solax => $"TokenID {Mask(ApiToken)}, {(IsSolaxCharger ? "laadpaal" : "dongle")} {DongleSn.Trim().ToUpperInvariant()}",
         DeviceBrand.Sessy => $"Dongle op {IpAddress} als {Username}",
         DeviceBrand.HomeWizard => $"P1-meter op {IpAddress}",
+        DeviceBrand.Alfen => $"Laadpaal op {IpAddress}",
         DeviceBrand.Demo => "Voorbeeldapparaten worden toegevoegd",
         _ => ""
     };
@@ -208,6 +216,13 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                 credentials["username"] = Username.Trim();
                 credentials["password"] = Password;
                 break;
+            case DeviceBrand.Alfen:
+                credentials["ip"] = IpAddress.Trim();
+                // De gebruikersnaam van een Alfen is altijd admin. Daar een veld voor tonen levert
+                // alleen typefouten op in iets wat niet kan variëren.
+                credentials["username"] = "admin";
+                credentials["password"] = Password;
+                break;
         }
 
         await RunSafeAsync(async () =>
@@ -262,9 +277,26 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                 else if (IsSessy) PasswordError = "De dongle accepteert deze gegevens niet.";
                 else if (IsHomeWizard) IpAddressError = "Geen HomeWizard-meter gevonden op dit adres.";
                 else if (IsZaptec) PasswordError = "Zaptec accepteert deze gegevens niet. Werkt het wel in de Zaptec-app zelf?";
+                // Een Alfen laat maar één sessie tegelijk toe. Staat de ACE Service Installer van de
+                // monteur open, dan word je geweigerd met een wachtwoord dat gewoon klopt.
+                else if (IsAlfen) PasswordError = "De laadpaal accepteert dit niet. Controleer het wachtwoord, en sluit de ACE Service Installer als die openstaat.";
                 else ErrorMessage = ex.Message;
             }
         }, _auth);
+    }
+
+    /// <summary>
+    /// Vier getallen met punten ertussen, en niets anders.
+    ///
+    /// IPAddress.TryParse accepteert de oude verkorte schrijfwijze: "192.168.1" wordt daar stilletjes
+    /// 192.168.0.1. Iemand die zijn adres half overtypt kreeg dus geen foutmelding maar een poging naar
+    /// een heel ander apparaat in zijn huis, met als resultaat een time-out die nergens op slaat.
+    /// </summary>
+    private static bool IsVolledigIpAdres(string waarde)
+    {
+        var delen = waarde.Trim().Split('.');
+        return delen.Length == 4
+               && delen.All(d => d.Length is > 0 and <= 3 && d.All(char.IsAsciiDigit) && int.Parse(d) <= 255);
     }
 
     private bool ValidateFields()
@@ -289,16 +321,18 @@ public partial class ConnectDeviceViewModel : BaseViewModel
             else if (string.IsNullOrWhiteSpace(sn)) DongleSnError = "Vul het registratienummer van de dongle in.";
             else if (sn.Length != 10) DongleSnError = "Het registratienummer heeft 10 tekens.";
         }
-        if (IsSessy || IsHomeWizard)
+        if (IsSessy || IsHomeWizard || IsAlfen)
         {
             if (string.IsNullOrWhiteSpace(IpAddress)) IpAddressError = "Vul het IP-adres in.";
-            else if (!IPAddress.TryParse(IpAddress.Trim(), out _)) IpAddressError = "Dit is geen geldig IP-adres, bijv. 192.168.1.50.";
+            else if (!IsVolledigIpAdres(IpAddress)) IpAddressError = "Dit is geen geldig IP-adres, bijv. 192.168.1.50.";
         }
         if (IsSessy)
         {
             if (string.IsNullOrWhiteSpace(Username)) UsernameError = "Vul de gebruikersnaam van de dongle in.";
             if (string.IsNullOrEmpty(Password)) PasswordError = "Vul het wachtwoord van de dongle in.";
         }
+        if (IsAlfen && string.IsNullOrEmpty(Password))
+            PasswordError = "Vul het wachtwoord van je laadpaal in. Dat heb je van je installateur gekregen.";
         if (IsZaptec)
         {
             if (string.IsNullOrWhiteSpace(Username)) UsernameError = "Vul het e-mailadres van je Zaptec-account in.";
