@@ -17,7 +17,11 @@ artifacts/
 *.apk
 *.aab
 *.ipa
-*.app/
+# Let op: hier stond *.app/ voor macOS-bundels. Op Windows vergelijkt git hoofdletterloos, dus die
+# regel sloot de hele map src/Wattzicht.App/ uit. Nieuwe bestanden in de app verdwenen daardoor
+# stilzwijgend: ze stonden lokaal, git status zweeg erover, en op de bouwserver faalde de
+# Android-build op een type dat niet bestond (LokaleMeter, 06-11-2026). Een gebouwde .app-bundel
+# staat altijd onder bin/, en die map wordt hieronder al genegeerd.
 *.dSYM/
 
 # Node / frontend
