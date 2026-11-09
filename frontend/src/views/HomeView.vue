@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import EnergyFlowIllustration from '@/components/EnergyFlowIllustration.vue'
 import BrandBadge from '@/components/BrandBadge.vue'
 import StilstandCalculator from '@/components/StilstandCalculator.vue'
@@ -8,18 +9,26 @@ import FaqList from '@/components/FaqList.vue'
 // leest diezelfde poort van de slimme meter uit, dus we zijn van geen enkel merk afhankelijk, en
 // de bekendste leverancier heeft een eigen app die met ons concurreert. Die naam hoort niet op onze
 // voorpagina; in de uitleg staat wél welke kastjes werken, want dat wil iemand weten.
+// Deze lijst liep achter op wat er werkelijk werkt, in allebei de richtingen. Alfen, Zaptec en de
+// P1-meter stonden op "nog niet" terwijl ze het doen, en Enphase stond op "werkt" terwijl de sleutels
+// van onze developer-app nog leeg zijn en er dus niets opgehaald kan worden. Een merkenlijst die te
+// weinig belooft kost klanten, een die te veel belooft kost vertrouwen; allebei erger dan de waarheid.
 const brands = [
   { name: 'Growatt', kind: 'Omvormer', connected: true },
   { name: 'SolaX', kind: 'Hybride omvormer', connected: true },
-  { name: 'Enphase', kind: 'Micro-omvormers', connected: true },
   { name: 'Sessy', kind: 'Thuisbatterij', connected: true },
   { name: 'SolaX laadpaal', kind: 'Laadpaal (MID)', connected: true },
+  { name: 'Alfen', kind: 'Laadpaal', connected: true },
+  { name: 'Zaptec', kind: 'Laadpaal', connected: true },
+  { name: 'P1-meter', kind: 'Slimme meter uitlezen', connected: true },
+  { name: 'Enphase', kind: 'Micro-omvormers', connected: false },
   { name: 'SolarEdge', kind: 'Omvormer', connected: false },
   { name: 'Deye', kind: 'Hybride omvormer', connected: false },
-  { name: 'Alfen', kind: 'Laadpaal', connected: false },
-  { name: 'Zaptec', kind: 'Laadpaal', connected: false },
-  { name: 'P1-meter', kind: 'Slimme meter uitlezen', connected: false },
 ]
+
+// Geteld in plaats van opgeschreven: een getal dat je met de hand bijhoudt loopt achter zodra er een
+// merk bijkomt, en dan staat er een belofte op de pagina die niemand meer nakijkt.
+const werkendeKoppelingen = computed(() => brands.filter((b) => b.connected).length)
 
 const stappen = [
   {
@@ -122,6 +131,27 @@ const features = [
   </section>
 
   <!-- Zo werkt het -->
+  <!-- Drie harde feiten, direct onder de hero. Het patroon voor dit soort pagina's zet hier een
+       cijferbalk; bij ons mogen dat geen gebruikscijfers zijn, want die hebben we nog niet en
+       verzinnen is het laatste wat een nieuw merk moet doen. Dit zijn drie dingen die iemand
+       onmiddellijk wil weten en die wij kunnen waarmaken. -->
+  <section class="feiten" aria-label="In het kort">
+    <div class="wz-wrap feiten__grid">
+      <div class="feit">
+        <span class="feit__kop">{{ werkendeKoppelingen }}</span>
+        <span class="feit__uitleg">koppelingen die vandaag werken, van omvormer tot laadpaal</span>
+      </div>
+      <div class="feit">
+        <span class="feit__kop">5 min</span>
+        <span class="feit__uitleg">zo vaak halen we een nieuwe meting op</span>
+      </div>
+      <div class="feit">
+        <span class="feit__kop">€2</span>
+        <span class="feit__uitleg">per maand, of niets als je installateur je aanmeldt</span>
+      </div>
+    </div>
+  </section>
+
   <section class="wz-section" id="zo-werkt-het">
     <div class="wz-wrap">
       <p class="wz-kicker">In drie stappen</p>
@@ -279,6 +309,42 @@ const features = [
 }
 
 /* Hero */
+.feiten {
+  /* Tegen de hero aan, als afsluiting ervan en niet als losse sectie: daarom donker, want dat is het
+     enige vlak op de pagina dat de aandacht vasthoudt zonder een tweede kleur te introduceren. */
+  background: var(--wz-navy-900);
+  color: #fff;
+  padding-block: clamp(20px, 3vw, 28px);
+}
+.feiten__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(12px, 3vw, 32px);
+}
+.feit {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.feit__kop {
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--wz-accent-500);
+  font-variant-numeric: tabular-nums;
+}
+.feit__uitleg {
+  font-size: clamp(12.5px, 1.6vw, 14px);
+  line-height: 1.4;
+  color: var(--wz-text-ondark-muted);
+}
+/* Op een telefoon passen drie kolommen niet zonder dat de uitleg een sliert van losse woorden wordt. */
+@media (max-width: 560px) {
+  .feiten__grid { grid-template-columns: 1fr; gap: 14px; }
+  .feit { flex-direction: row; align-items: baseline; gap: 10px; }
+  .feit__kop { font-size: 22px; flex: 0 0 auto; min-width: 64px; }
+}
 .hero {
   padding-block: clamp(40px, 7vw, 96px) clamp(48px, 7vw, 88px);
   background:
