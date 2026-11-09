@@ -97,6 +97,78 @@ public sealed class EnphaseConnector(
 
     public DeviceBrand Brand => DeviceBrand.Enphase;
 
+    /// <summary>
+    /// Een IQ Gateway op het thuisnetwerk mag de app uitlezen. Dat is de snelste route en de enige
+    /// die vandaag werkt: de cloudroute hangt op een developer-app van ons, en zolang die sleutels
+    /// leeg zijn komt er langs die kant niets binnen. De gateway zelf heeft geen sleutel van ons
+    /// nodig, alleen een token van de bewoner, en die staat gewoon in het huis.
+    /// </summary>
+    public bool KanDoorDeAppGelezenWorden => true;
+
+    /// <summary>Een gateway op 192.168.x.x kan onze server niet bereiken; de telefoon wel.</summary>
+    public bool IsLokaalVoor(IReadOnlyDictionary<string, string> credentials) =>
+        ThuisAdres.IsPrive(credentials.Get("host"));
+
+    /// <summary>
+    /// Het antwoord van /production.json?details=1 omzetten naar een meting.
+    ///
+    /// De gateway zet alles in twee lijsten. In "production" staat de zonkant: een regel van het type
+    /// "inverters" (de som van de micro-omvormers, altijd aanwezig) en, als er CT-klemmen hangen, een
+    /// regel van het type "eim" die nauwkeuriger is. In "consumption" staan twee regels die allebei
+    /// "eim" heten en alleen in measurementType verschillen: "total-consumption" is wat het huis
+    /// verbruikt, "net-consumption" is wat er over de meter gaat. Dat laatste is de enige plek waar
+    /// afname en teruglevering vandaan komen, en meteen de reden om dit lokaal te doen.
+    ///
+    /// Zonder CT-klemmen ontbreekt de hele consumption-lijst. Dan is er alleen opwek, en dat is geen
+    /// fout: dat is een installatie zonder meters.
+    /// </summary>
+    public DeviceReading LeesLokaal(JsonElement rauw, DateTimeOffset gemeten)
+    {
+        var zon = Regel(rauw, "production", "eim") ?? Regel(rauw, "production", "inverters");
+        var netto = Regel(rauw, "consumption", "net-consumption");
+        var huis = Regel(rauw, "consumption", "total-consumption");
+
+        // De gateway rekent teruglevering negatief op de netkant, net als onze eigen afspraak, dus
+        // het getal kan rechtstreeks mee. Laten we dat aan de app over, dan hangt de betekenis van
+        // een min-teken af van de versie die op de telefoon staat.
+        return new DeviceReading(
+            gemeten,
+            PvPowerW: Getal(zon, "wNow") ?? 0,
+            LoadPowerW: Getal(huis, "wNow") ?? 0,
+            GridPowerW: Getal(netto, "wNow") ?? 0,
+            PvEnergyWh: Getal(zon, "whLifetime"),
+            ImportEnergyWh: Getal(netto, "whLifetimeImport"),
+            ExportEnergyWh: Getal(netto, "whLifetimeExport"));
+    }
+
+    /// <summary>Zoekt in production/consumption de regel met het gevraagde type of measurementType.</summary>
+    internal static JsonElement? Regel(JsonElement root, string lijst, string soort)
+    {
+        if (root.ValueKind != JsonValueKind.Object) return null;
+        if (!root.TryGetProperty(lijst, out var regels) || regels.ValueKind != JsonValueKind.Array) return null;
+
+        foreach (var regel in regels.EnumerateArray())
+        {
+            if (regel.ValueKind != JsonValueKind.Object) continue;
+            var type = Tekst(regel, "type");
+            var meting = Tekst(regel, "measurementType");
+            if (string.Equals(type, soort, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(meting, soort, StringComparison.OrdinalIgnoreCase))
+            {
+                return regel;
+            }
+        }
+        return null;
+    }
+
+    private static string? Tekst(JsonElement regel, string naam) =>
+        regel.TryGetProperty(naam, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+    private static double? Getal(JsonElement? regel, string naam) =>
+        regel is { } r && r.TryGetProperty(naam, out var v) && v.ValueKind == JsonValueKind.Number
+            ? v.GetDouble()
+            : null;
+
     private string? ClientId => options.ClientId;
     private string? ClientSecret => options.ClientSecret;
     private string? ApiKey => options.ApiKey;
@@ -126,6 +198,22 @@ public sealed class EnphaseConnector(
 
     public async Task<ConnectResult> ConnectAsync(ConnectRequest request, CancellationToken ct)
     {
+        // De lokale route eerst, want die heeft onze developer-app niet nodig. Komt er een adres in
+        // het huis binnen met een token van de bewoner, dan is de gateway zelf de bron en hoeft hier
+        // niets te worden gecontroleerd: dat doet de app, die er wél bij kan. Onze server zou een
+        // adres als 192.168.1.30 nooit kunnen bereiken, dus een proefaanroep vanaf hier zou altijd
+        // mislukken en de koppeling onterecht weigeren.
+        var thuisAdres = request.Credentials.Get("host") ?? request.Credentials.Get("ip");
+        if (ThuisAdres.IsPrive(thuisAdres) && !string.IsNullOrWhiteSpace(request.Credentials.Get("token")))
+        {
+            return ConnectResult.Ok([
+                new DiscoveredDevice(
+                    ExternalId: $"enphase-lokaal-{thuisAdres}",
+                    Name: "Zonnepanelen",
+                    Type: DeviceType.Inverter)
+            ]);
+        }
+
         if (!Ingesteld)
         {
             return ConnectResult.Fail("Enphase is op de server nog niet ingesteld (Connectors:Enphase:ClientId, ClientSecret en ApiKey).");

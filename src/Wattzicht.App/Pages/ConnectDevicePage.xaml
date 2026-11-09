@@ -146,6 +146,30 @@
                         </VerticalStackLayout>
                     </Border>
 
+                    <!-- Enphase: de gateway in de meterkast, niet de cloud van Enphase -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding IsEnphase}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="Je telefoon praat rechtstreeks met de IQ Gateway in je meterkast, dus dit werkt alleen thuis op je eigen wifi. Zo kunnen we ook zien wat je van het net haalt en teruglevert; via de cloud van Enphase kan dat niet."
+                                   Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="IP-adres van de gateway" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding IpAddress}" Placeholder="192.168.1.30" Keyboard="Url" />
+                                </Border>
+                                <Label Text="{Binding IpAddressError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasIpAddressError}" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Token van je gateway" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding ApiToken}" Placeholder="eyJ..." IsSpellCheckEnabled="False" />
+                                </Border>
+                                <Label Text="{Binding ApiTokenError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasApiTokenError}" />
+                            </VerticalStackLayout>
+                            <Label Text="Het token haal je op bij entrez.enphaseenergy.com: log in met je eigen Enphase-account en vul het serienummer van de gateway in. Met je eigen account is het een jaar geldig."
+                                   Style="{StaticResource SubtitleLabel}" FontSize="13" />
+                        </VerticalStackLayout>
+                    </Border>
+
                     <!-- Alfen: de paal zelf op het thuisnetwerk, niet via een portaal -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsAlfen}">
                         <VerticalStackLayout Spacing="12">

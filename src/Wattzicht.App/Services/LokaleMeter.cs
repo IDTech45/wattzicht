@@ -69,6 +69,7 @@ public sealed class LokaleMeter(ApiClient api, ILogger<LokaleMeter> logger)
                 {
                     DeviceBrand.Sessy => await HaalSessyAsync(adres, apparaat.Id, ct),
                     DeviceBrand.Alfen => await HaalAlfenAsync(adres, apparaat.Id, ct),
+                    DeviceBrand.Enphase => await HaalEnphaseAsync(adres, apparaat.Id, ct),
                     _ => await HaalAsync(adres, ct),
                 };
                 if (rauw is null) continue;
@@ -108,6 +109,10 @@ public sealed class LokaleMeter(ApiClient api, ILogger<LokaleMeter> logger)
         // leverancier, dan praat hij met hún backoffice en zien wij niets; op het thuisnetwerk is
         // hij wél aan te spreken, en daar is de telefoon.
         DeviceBrand.Alfen => true,
+        // De IQ Gateway van Enphase net zo. De cloudroute hangt op een developer-app van ons met een
+        // limiet van duizend aanroepen per maand voor álle huizen samen; de gateway in het huis kent
+        // die limiet niet en geeft bovendien de netkant, die via de cloud niet te krijgen is.
+        DeviceBrand.Enphase => true,
         _ => false,
     };
 
@@ -199,6 +204,48 @@ public sealed class LokaleMeter(ApiClient api, ILogger<LokaleMeter> logger)
             return null;
         }
     }
+
+    /// <summary>
+    /// De Enphase IQ Gateway aanspreken.
+    ///
+    /// Eén aanroep is genoeg: /production.json?details=1 geeft de zonkant, het huisverbruik en de
+    /// netkant in één antwoord. Het token komt van de bewoner zelf, via entrez.enphaseenergy.com met
+    /// zijn Enphase-account en het serienummer van de gateway; bij een eigenaarsaccount is het een
+    /// jaar geldig. Wij bewaren het op de telefoon en niet op de server, want de server kan toch niet
+    /// bij een adres als 192.168.1.30.
+    ///
+    /// De gateway draagt een zelfondertekend certificaat, net als een laadpaal; daarvoor gebruiken we
+    /// dezelfde client die dat accepteert.
+    /// </summary>
+    private async Task<JsonElement?> HaalEnphaseAsync(string adres, Guid deviceId, CancellationToken ct)
+    {
+        var token = await SecureStorage.Default.GetAsync(EnphaseSleutel(deviceId));
+        if (string.IsNullOrWhiteSpace(token)) return null;
+
+        try
+        {
+            using var verzoek = new HttpRequestMessage(HttpMethod.Get, $"https://{adres}/production.json?details=1");
+            verzoek.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var antwoord = await PaalClient.SendAsync(verzoek, ct);
+            // 401 betekent dat het token is verlopen. Niets om te herstellen vanuit de app: de bewoner
+            // haalt een nieuw token op. Stilletjes overslaan is hier beter dan een foutmelding die hij
+            // midden in de nacht niet kan oplossen; het koppelscherm zegt het wél meteen.
+            if (!antwoord.IsSuccessStatusCode) return null;
+
+            var inhoud = await antwoord.Content.ReadFromJsonAsync<JsonElement>(ct);
+            return inhoud.ValueKind == JsonValueKind.Object ? inhoud.Clone() : null;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Het token van de bewoner voor zijn eigen gateway.</summary>
+    public static Task BewaarEnphaseTokenAsync(Guid deviceId, string token) =>
+        SecureStorage.Default.SetAsync(EnphaseSleutel(deviceId), token.Trim());
+
+    private static string EnphaseSleutel(Guid deviceId) => $"enphase-token-{deviceId}";
 
     /// <summary>Meterstand socket 1 en 2 in kWh, en het actieve vermogen in watt.</summary>
     private static readonly string[] AlfenEigenschappen = ["2221_22", "3221_22", "2221_16"];
