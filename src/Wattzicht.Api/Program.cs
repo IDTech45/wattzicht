@@ -112,6 +112,8 @@ builder.Services.AddSingleton<IWeatherProvider, OpenMeteoWeatherProvider>();
 builder.Services.AddHostedService<WeatherWorker>();
 // Brengt het laadadvies naar de bewoner in plaats van andersom; zie SmartMomentWorker.
 builder.Services.AddHostedService<SmartMomentWorker>();
+// De andere helft van datzelfde advies: na afloop vertellen wat de laadbeurt heeft gedaan.
+builder.Services.AddHostedService<LaadsessieWorker>();
 
 // Dagelijks: verlopen abonnementen afsluiten en waarschuwen dat een proefperiode bijna om is.
 builder.Services.AddHostedService<SubscriptionWorker>();

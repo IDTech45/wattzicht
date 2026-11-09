@@ -134,6 +134,16 @@ public sealed class Household
     /// <summary>Laatste laadmoment-melding; hoogstens één per dag, zie PushPolicy.</summary>
     public DateTimeOffset? LastSmartMomentPushAt { get; set; }
 
+    /// <summary>Bericht na afloop van een laadbeurt: wat erin ging en hoeveel daarvan van eigen dak kwam.</summary>
+    public bool NotifyChargeSession { get; set; } = true;
+
+    /// <summary>
+    /// Einde van de laatste laadbeurt waarover we een bericht stuurden. Zonder dit zou elke ronde
+    /// dezelfde beurt opnieuw gemeld worden, want we herkennen ze uit de metingen en niet uit een
+    /// gebeurtenis die maar één keer langskomt.
+    /// </summary>
+    public DateTimeOffset? LastChargeSessionEndUtc { get; set; }
+
     public List<User> Users { get; set; } = [];
     public List<Device> Devices { get; set; } = [];
     public List<Tariff> Tariffs { get; set; } = [];

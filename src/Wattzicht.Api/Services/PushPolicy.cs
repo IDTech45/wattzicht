@@ -32,6 +32,61 @@ public static class PushPolicy
     public const int SmartMomentUntilHour = 23;
 
     /// <summary>
+    /// Een bericht na een laadbeurt mag ook 's avonds laat, maar niet midden in de nacht. Wie om
+    /// drie uur klaar is met laden hoort het 's ochtends; het nieuws loopt niet weg.
+    /// </summary>
+    public const int SessieFromHour = 7;
+
+    /// <summary>En tot elf uur 's avonds; daarna is het geen nieuws meer maar een storing van je rust.</summary>
+    public const int SessieUntilHour = 23;
+
+    /// <summary>Mag er nu een bericht over een afgelopen laadbeurt uit?</summary>
+    public static bool MaySendChargeSession(Household household, DateTimeOffset now)
+    {
+        if (!household.NotifyChargeSession) return false;
+        var uur = DutchTime.LocalHour(now);
+        return uur >= SessieFromHour && uur < SessieUntilHour;
+    }
+
+    /// <summary>
+    /// Het bericht na een laadbeurt.
+    ///
+    /// Eerst wat er gebeurde, dan pas wat je er de volgende keer mee kunt. Die volgorde is bewust:
+    /// wie net geladen heeft wil weten wat het heeft gedaan, niet meteen een nieuwe les. De
+    /// verwachting voor morgen komt er alleen bij als er iets te winnen viel, dus als het grootste
+    /// deel van het net kwam terwijl het morgen een zonnige dag wordt.
+    /// </summary>
+    /// <param name="sessie">De afgelopen laadbeurt.</param>
+    /// <param name="zonnigUurMorgen">Het zonnigste uur van morgen (lokaal), of null als we dat niet weten.</param>
+    public static (string Title, string Body) ChargeSessionMessage(Laadsessie sessie, int? zonnigUurMorgen)
+    {
+        var kwh = sessie.Kwh.ToString("0.#", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"));
+
+        if (!sessie.HerkomstBekend)
+        {
+            // Geen P1-meter of CT-klemmen: dan weten we alleen hoeveel erin ging. Een zonaandeel van
+            // nul tonen zou betekenen "alles van het net", en dat weten we niet.
+            return ("Je auto is klaar", $"Er ging {kwh} kWh in.");
+        }
+
+        var zon = sessie.ZonKwh.ToString("0.#", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"));
+        var aandeel = (int)Math.Round(sessie.ZonAandeel * 100);
+
+        if (aandeel >= 60)
+        {
+            return ("Geladen op je eigen zon",
+                $"Er ging {kwh} kWh in, waarvan {zon} kWh van je eigen dak. Dat is {aandeel} procent.");
+        }
+
+        var body = $"Er ging {kwh} kWh in, waarvan {zon} kWh van je eigen dak.";
+        if (zonnigUurMorgen is { } uur)
+        {
+            body += $" Morgen staat de zon rond {uur:00}:00 op zijn hoogst; laden rond dat uur scheelt je het meest.";
+        }
+        return ("Je auto is klaar", body);
+    }
+
+    /// <summary>
     /// Mag er nu een melding over het slimme laadmoment uit?
     ///
     /// Let op het verschil met de stille uren: het goedkope uur zelf ligt vaak juist 's nachts, en
