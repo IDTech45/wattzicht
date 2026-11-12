@@ -29,27 +29,27 @@ public sealed class GoogleLoginAndroid : ISocialeLogin
 
     internal const int VerzoekCode = 9001;
 
-    private static TaskCompletionSource<string?>? _wachtend;
+    private static TaskCompletionSource<SocialeLoginUitkomst>? _wachtend;
 
     public bool Ondersteunt(string provider) =>
         string.Equals(provider, "google", StringComparison.OrdinalIgnoreCase);
 
-    public Task<string?> TokenAsync(string provider, CancellationToken ct = default)
+    public Task<SocialeLoginUitkomst> TokenAsync(string provider, CancellationToken ct = default)
     {
         if (!Ondersteunt(provider))
         {
-            return Task.FromResult<string?>(null);
+            return Task.FromResult(SocialeLoginUitkomst.Mislukt("Deze manier van inloggen kent de app niet."));
         }
 
         if (Platform.CurrentActivity is not Activity activity)
         {
-            return Task.FromResult<string?>(null);
+            return Task.FromResult(SocialeLoginUitkomst.Mislukt("De app kon het inlogscherm niet openen."));
         }
 
         // Een vorige poging die nog open stond netjes afsluiten; anders blijft die voor altijd hangen
         // als iemand twee keer achter elkaar op de knop tikt.
-        _wachtend?.TrySetResult(null);
-        _wachtend = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _wachtend?.TrySetResult(SocialeLoginUitkomst.Weggeklikt());
+        _wachtend = new TaskCompletionSource<SocialeLoginUitkomst>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var opties = new GoogleSignInOptions.Builder(GoogleSignInOptions.DefaultSignIn)
             .RequestIdToken(WebClientId)
@@ -64,7 +64,7 @@ public sealed class GoogleLoginAndroid : ISocialeLogin
 
         activity.StartActivityForResult(client.SignInIntent, VerzoekCode);
 
-        ct.Register(() => _wachtend?.TrySetResult(null));
+        ct.Register(() => _wachtend?.TrySetResult(SocialeLoginUitkomst.Weggeklikt()));
         return _wachtend.Task;
     }
 
@@ -79,10 +79,9 @@ public sealed class GoogleLoginAndroid : ISocialeLogin
         var wachtend = _wachtend;
         _wachtend = null;
 
-        if (resultaat != Result.Ok || data is null)
+        if (data is null)
         {
-            // Weggeklikt of afgebroken. Dat is geen fout: dan gebeurt er gewoon niets.
-            wachtend.TrySetResult(null);
+            wachtend.TrySetResult(SocialeLoginUitkomst.Weggeklikt());
             return;
         }
 
@@ -91,13 +90,31 @@ public sealed class GoogleLoginAndroid : ISocialeLogin
             var taak = GoogleSignIn.GetSignedInAccountFromIntent(data);
             var account = taak.GetResult(Java.Lang.Class.FromType(typeof(GmsApiException)))
                 as GoogleSignInAccount;
-            wachtend.TrySetResult(account?.IdToken);
+
+            if (string.IsNullOrWhiteSpace(account?.IdToken))
+            {
+                // Aangemeld, maar zonder token. Dat gebeurt als de aanvraag zonder geldig
+                // serverClientId is gedaan, en dan hebben wij niets om te controleren.
+                wachtend.TrySetResult(SocialeLoginUitkomst.Mislukt(
+                    "Google gaf geen inlogtoken terug. Laat ons dit weten, dan zetten wij het recht."));
+                return;
+            }
+
+            wachtend.TrySetResult(SocialeLoginUitkomst.Gelukt(account.IdToken!));
         }
-        catch (GmsApiException)
+        catch (GmsApiException ex)
         {
-            // Google weigerde de aanmelding, bijvoorbeeld omdat de vingerafdruk van deze build niet
-            // bij de client staat. Niets om hier op te lossen; het inlogscherm meldt het.
-            wachtend.TrySetResult(null);
+            // De code van Google is het enige dat zegt wat er mis is. Hem opslokken was precies de
+            // fout: je drukt op de knop, er gebeurt niets, en niemand kan zien waarom.
+            wachtend.TrySetResult(ex.StatusCode switch
+            {
+                12501 => SocialeLoginUitkomst.Weggeklikt(),
+                12502 => SocialeLoginUitkomst.Mislukt("Er loopt al een aanmelding. Probeer het zo opnieuw."),
+                7 => SocialeLoginUitkomst.Mislukt("Geen verbinding met Google. Controleer je internet."),
+                10 => SocialeLoginUitkomst.Mislukt(
+                    "Google accepteert deze versie van de app nog niet (fout 10). Dit ligt aan onze instellingen, niet aan jou."),
+                _ => SocialeLoginUitkomst.Mislukt($"Google weigerde de aanmelding (fout {ex.StatusCode})."),
+            });
         }
     }
 }

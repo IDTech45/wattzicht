@@ -100,18 +100,23 @@ public partial class LoginViewModel : BaseViewModel
 
         await RunSafeAsync(async () =>
         {
-            var token = await _sociaal.TokenAsync(provider);
-            if (string.IsNullOrWhiteSpace(token))
+            var uitkomst = await _sociaal.TokenAsync(provider);
+
+            if (uitkomst.Afgebroken)
             {
-                // Weggeklikt, of de aanmelding werd geweigerd. In het eerste geval hoort er niets te
-                // gebeuren; in het tweede kan de gebruiker er niets aan doen en helpt alleen de
-                // gewone weg.
+                // Zelf weggeklikt. Dan hoort er niets te gebeuren en al helemaal geen foutmelding.
+                return;
+            }
+
+            if (uitkomst.Fout is { } reden)
+            {
+                ErrorMessage = reden;
                 return;
             }
 
             try
             {
-                await _auth.ExternalLoginAsync(provider, token);
+                await _auth.ExternalLoginAsync(provider, uitkomst.Token!);
                 await Shell.Current.GoToAsync(AppShell.Routes.Home);
             }
             catch (ApiException ex) when (ex.IsUnauthorized)
