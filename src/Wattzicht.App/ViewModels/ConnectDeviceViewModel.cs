@@ -213,7 +213,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     private async Task ZoekApparaatAsync()
     {
         IsZoeken = true;
-        ZoekResultaat = "Bezig met zoeken op je wifi-netwerk…";
+        ZoekResultaat = "Bezig met zoeken op je wifi-netwerk, dit duurt tot een halve minuut…";
 
         try
         {
@@ -225,9 +225,10 @@ public partial class ConnectDeviceViewModel : BaseViewModel
 
             if (gevonden is null)
             {
-                ZoekResultaat = ApparaatZoeker.EigenSubnet() is null
-                    ? "Je telefoon zit niet op wifi. Verbind met je thuisnetwerk en probeer opnieuw."
-                    : "Niets gevonden op dit netwerk. Zit je telefoon op dezelfde wifi als het apparaat?";
+                var subnet = ApparaatZoeker.EigenSubnet();
+                ZoekResultaat = subnet is null
+                    ? "Je telefoon zit niet op wifi. Verbind met je thuisnetwerk en probeer het opnieuw."
+                    : $"Niets gevonden op {subnet}.1 tot {subnet}.254. Zit je telefoon op dezelfde wifi als het apparaat?";
                 return;
             }
 

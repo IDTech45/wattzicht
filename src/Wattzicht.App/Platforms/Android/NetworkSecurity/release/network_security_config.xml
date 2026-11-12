@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- RELEASE: geen cleartext-verkeer -->
+<!--
+  RELEASE.
+
+  Hier stond "geen cleartext-verkeer, punt". Dat klinkt streng en veilig, maar het brak precies
+  waar deze app voor bestaat: apparaten op je eigen netwerk. Een P1-dongle, een Sessy en een
+  Peblar praten http op een adres als 192.168.1.50, want ze hebben geen certificaat en kunnen dat
+  ook niet krijgen voor een IP-adres. Android blokkeerde die verzoeken meteen, zonder dat de app
+  er iets van merkte: elke poging mislukte stil. In een Debug-build werkte alles, want daar stond
+  cleartext wel aan, en daardoor viel het bij het testen nooit op.
+
+  Android kan dit niet per IP-reeks regelen; je kunt alleen losse namen opgeven, geen 192.168.0.0/16.
+  Daarom staat cleartext hier aan.
+
+  Wat dat niet betekent: dat onze eigen server ineens over http bereikbaar is. Het adres van de API
+  staat als vaste https-waarde in AppConfig en is in een Release-build niet te veranderen. Cleartext
+  gaat dus alleen naar de kastjes bij iemand thuis, en dat verkeer verlaat het huis niet.
+-->
 <network-security-config>
-  <base-config cleartextTrafficPermitted="false" />
+  <base-config cleartextTrafficPermitted="true" />
 </network-security-config>

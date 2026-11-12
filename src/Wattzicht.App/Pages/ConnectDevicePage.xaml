@@ -173,7 +173,9 @@
                                         Style="{StaticResource SecondaryButton}"
                                         Command="{Binding ZoekApparaatCommand}"
                                         IsEnabled="{Binding IsZoeken, Converter={StaticResource InvertedBool}}" />
-                                <Label Text="{Binding ZoekResultaat}" Style="{StaticResource StatCaption}"
+                                <Label Text="{Binding ZoekResultaat}" Style="{StaticResource SubtitleLabel}"
+                                       FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}"
                                        IsVisible="{Binding ZoekResultaat, Converter={StaticResource IsNotNullOrEmpty}}" />
                             </VerticalStackLayout>
                             <VerticalStackLayout Spacing="4">
