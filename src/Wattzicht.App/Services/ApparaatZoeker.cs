@@ -59,14 +59,41 @@ public sealed class ApparaatZoeker
         return null;
     }
 
-    /// <summary>Zoekt een Enphase IQ Gateway. Geeft het eerste adres dat als envoy antwoordt.</summary>
-    public Task<Gevonden?> ZoekEnphaseAsync(CancellationToken ct = default) =>
-        ZoekAsync("/info", inhoud => inhoud.Contains("envoy", StringComparison.OrdinalIgnoreCase), "Enphase IQ Gateway", ct);
+    /// <summary>
+    /// Zoekt een Enphase IQ Gateway.
+    ///
+    /// Eerst op naam. Een Envoy meldt zich op het netwerk als envoy.local, en als de router of de
+    /// telefoon dat oplost is het antwoord er binnen een seconde. Lukt dat niet, dan pas het hele
+    /// subnet langs; dat werkt altijd maar duurt wat langer.
+    /// </summary>
+    public async Task<Gevonden?> ZoekEnphaseAsync(CancellationToken ct = default)
+    {
+        static bool IsEnvoy(string inhoud) => inhoud.Contains("envoy", StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>Zoekt een HomeWizard P1-dongle.</summary>
-    public Task<Gevonden?> ZoekP1Async(CancellationToken ct = default) =>
-        ZoekAsync("/api", inhoud => inhoud.Contains("HWE-P1", StringComparison.OrdinalIgnoreCase)
-                                    || inhoud.Contains("product_type", StringComparison.OrdinalIgnoreCase), "P1-meter", ct);
+        foreach (var naam in new[] { "envoy.local", "envoy" })
+        {
+            if (await AntwoordtAsync(naam, "/info", IsEnvoy, ct))
+            {
+                return new Gevonden(naam, "Enphase IQ Gateway");
+            }
+        }
+
+        return await ZoekAsync("/info", IsEnvoy, "Enphase IQ Gateway", ct);
+    }
+
+    /// <summary>Zoekt een HomeWizard P1-dongle; ook die meldt zich met een naam op het netwerk.</summary>
+    public async Task<Gevonden?> ZoekP1Async(CancellationToken ct = default)
+    {
+        static bool IsP1(string inhoud) => inhoud.Contains("HWE-P1", StringComparison.OrdinalIgnoreCase)
+                                           || inhoud.Contains("product_type", StringComparison.OrdinalIgnoreCase);
+
+        if (await AntwoordtAsync("p1meter.local", "/api", IsP1, ct))
+        {
+            return new Gevonden("p1meter.local", "P1-meter");
+        }
+
+        return await ZoekAsync("/api", IsP1, "P1-meter", ct);
+    }
 
     private async Task<Gevonden?> ZoekAsync(string pad, Func<string, bool> herkent, string soort, CancellationToken ct)
     {
