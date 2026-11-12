@@ -112,11 +112,21 @@ web-client gebruiken we niet en staat dus ook nergens.
 | Soort | Waarvoor |
 | --- | --- |
 | Web | De ontvanger van het token. Android vraagt zijn id-token met dit id als `serverClientId`. |
-| Android | Hoort bij pakket `nl.wattzicht.app` en de ondertekening van Play (SHA-1 7D:61:...:79) |
+| Android | Hoort bij pakket `nl.wattzicht.app`. Twee stuks: één op de **app-ondertekeningssleutel** van Play (03:5C:...:5F) en één op de **uploadsleutel** (7D:61:...:79) |
 | iOS | Hoort bij bundel `nl.wattzicht.app` |
 
-Draait er ooit een build buiten Play om (een losse apk), dan tekent die met een andere sleutel en
-moet die SHA-1 er als extra Android-client bij. Anders weigert Google de aanmelding op dat toestel.
+**De val waar ik zelf in liep:** Play toont op de pagina App-ondertekening twee vingerafdrukken, en
+alleen die van de uploadsleutel staat als tekst in de pagina. De andere zit achter een kopieerknop.
+Maar de app die mensen installeren is ondertekend met de **app-ondertekeningssleutel**, want Play
+tekent elke bundel opnieuw. Registreer je alleen de uploadsleutel, dan weigert Google de aanmelding
+met fout 10 (DEVELOPER_ERROR): "deze versie van de app wordt niet geaccepteerd". Dat gebeurde hier op
+12-11-2026, en aan de app is dan niets te zien of te repareren.
+
+Draait er ooit een build buiten Play om (een losse apk), dan tekent die met weer een andere sleutel
+en moet ook die SHA-1 erbij. Anders weigert Google de aanmelding op dat toestel.
+
+Na het toevoegen van een client kan het volgens Google vijf minuten tot een paar uur duren voordat
+het overal geldt. Werkt het niet meteen, wacht dan even voordat je verder zoekt.
 
 **Apple staat aan de serverkant klaar.** Het App-ID `nl.wattzicht.app` is op 12-11-2026 aangemaakt
 onder team ZP9APJFDZS (DoganTech B.V.), met Sign in with Apple en pushmeldingen erop, en het
