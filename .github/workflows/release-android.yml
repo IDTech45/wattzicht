@@ -5,9 +5,14 @@ name: release-android
 #
 # Benodigde GitHub-secrets (Settings -> Secrets and variables -> Actions), nooit in de repo:
 #   ANDROID_KEYSTORE_BASE64   upload-keystore als base64
-#   ANDROID_KEYSTORE_PASSWORD wachtwoord van de keystore (en van de sleutel)
-#   ANDROID_KEY_ALIAS         alias, bv. wattzicht-upload
+#   ANDROID_STORE_PASSWORD    wachtwoord van de keystore
+#   ANDROID_KEY_ALIAS         alias van de sleutel
+#   ANDROID_KEY_PASSWORD      wachtwoord van de sleutel
 #   PLAY_SERVICE_ACCOUNT_JSON JSON-sleutel van een serviceaccount met rechten in Play Console
+#
+# Die namen zijn met opzet precies dezelfde als in de LaadCash-repo. Het Play-account, de keystore en
+# het serviceaccount mogen gedeeld worden met een tweede app, dus kun je daar dezelfde vier waarden
+# overnemen in plaats van nieuwe te maken. Alleen de app in Play Console is nieuw.
 #
 # Keystore base64 maken (Git Bash):  base64 -w0 wattzicht-upload.keystore
 #
@@ -60,7 +65,8 @@ jobs:
 
       - name: Bouwen en ondertekenen
         env:
-          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          STORE_PASS: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
           KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         # Versiecode = runnummer, zodat elke upload naar Play hoger is dan de vorige.
         #
@@ -79,8 +85,8 @@ jobs:
           -p:AndroidKeyStore=true
           -p:AndroidSigningKeyStore=$RUNNER_TEMP/upload.keystore
           -p:AndroidSigningKeyAlias=$KS_ALIAS
-          -p:AndroidSigningKeyPass=env:KS_PASS
-          -p:AndroidSigningStorePass=env:KS_PASS
+          -p:AndroidSigningKeyPass=env:KEY_PASS
+          -p:AndroidSigningStorePass=env:STORE_PASS
           -o out
 
       - name: Keystore opruimen

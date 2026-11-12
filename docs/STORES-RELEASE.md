@@ -25,37 +25,47 @@ en een waarschuwing, geen mislukte run met een onleesbare fout.
 > Tot 12-11-2026 kón `release-android` helemaal niet slagen: de aanroep miste `-f net9.0-android` en
 > stopte met NETSDK1129, nog voordat er een bundel was. Dat is nu recht.
 
-## Jij: Google Play
+## Het meeste staat er al, bij LaadCash
 
-1. **App aanmaken** in Play Console, pakketnaam `nl.wattzicht.app`. Die naam ligt daarna vast en is
-   nooit meer te wijzigen.
-2. **Keystore maken** (eenmalig, en kwijtraken betekent: nooit meer een update op deze app):
-   ```
-   keytool -genkeypair -v -keystore wattzicht-upload.keystore -alias wattzicht-upload \
-     -keyalg RSA -keysize 2048 -validity 10000
-   ```
-   Bewaar het bestand buiten de repo, bijvoorbeeld in je wachtwoordkluis.
-3. **Serviceaccount** in Google Cloud, JSON-sleutel downloaden, en dat account in Play Console onder
-   Gebruikers en rechten toegang geven tot deze app met het recht releases beheren.
-4. **Geheimen zetten** in GitHub (Settings, Secrets and variables, Actions):
-   `ANDROID_KEYSTORE_BASE64` (`base64 -w0 wattzicht-upload.keystore`), `ANDROID_KEYSTORE_PASSWORD`,
-   `ANDROID_KEY_ALIAS`, `PLAY_SERVICE_ACCOUNT_JSON`.
-5. Eerste upload naar het kanaal **internal**. Pas als die binnenstaat kun je de winkelpagina
-   invullen; Google vraagt daar een bundel voor.
+Dit is de kortste weg: een Apple-account en een Play-account zijn per bedrijf, niet per app. Wat
+LaadCash gebruikt, geldt dus ook hier. De geheimen in deze repo heten daarom precies hetzelfde als
+daar, zodat je ze kunt overnemen in plaats van opnieuw aanmaken.
 
-## Jij: Apple
+| Geheim | Nieuw maken? |
+| --- | --- |
+| `APPLE_TEAM_ID` | Nee, zelfde team |
+| `APPSTORE_API_KEY_ID`, `APPSTORE_API_ISSUER_ID`, `APPSTORE_API_PRIVATE_KEY` | Nee, een API-sleutel geldt voor het hele account |
+| `IOS_DIST_CERT_P12`, `IOS_DIST_CERT_PASSWORD` | Nee, een distributiecertificaat is per team en niet per app |
+| `IOS_PROVISIONING_PROFILE` | **Ja.** Een profiel hoort bij één app-id, dus `nl.wattzicht.app` heeft zijn eigen |
+| `ANDROID_KEYSTORE_BASE64`, `ANDROID_STORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Nee, dezelfde upload-sleutel mag een tweede app ondertekenen |
+| `PLAY_SERVICE_ACCOUNT_JSON` | Nee, wel even rechten geven op de nieuwe app |
 
-1. **App-id** `nl.wattzicht.app` aanmaken op developer.apple.com, en in App Store Connect de app.
-2. **Distributiecertificaat** (Apple Distribution) en een **App Store-provisioningprofiel** voor dat
-   app-id maken en allebei downloaden.
-3. **App Store Connect API-sleutel** aanmaken met de rol App Manager; je krijgt een `.p8` dat je maar
-   één keer kunt downloaden.
-4. **Geheimen zetten**: `IOS_DIST_CERT_P12` (base64 van je .p12), `IOS_DIST_CERT_PASSWORD`,
-   `IOS_PROVISIONING_PROFILE` (base64 van het .mobileprovision), `APPLE_TEAM_ID`,
-   `APPSTORE_API_KEY_ID`, `APPSTORE_API_ISSUER_ID`, `APPSTORE_API_PRIVATE_KEY` (de inhoud van de .p8).
+Let op: GitHub geeft de waarde van een geheim nooit meer terug, ook niet aan jezelf. Overnemen gaat
+dus vanaf de bestanden die je zelf bewaard hebt, niet vanuit de LaadCash-repo. Ben je het `.p8` of
+het `.p12` kwijt, maak dan een nieuwe aan; dat kan allebei zonder Mac.
 
-Anders dan bij LaadCash maakt MAUI het profiel niet zelf aan. Het moet er dus echt zijn, en het
-verloopt na een jaar. Zet er een herinnering op.
+Over die gedeelde upload-sleutel: Play ondertekent in de winkel met een eigen sleutel per app, dus
+dit koppelt de twee apps niet aan elkaar. Het enige nadeel is dat één gelekte sleutel beide apps
+raakt. Voor twee apps van hetzelfde bedrijf is dat een prima ruil.
+
+## Jij: wat er dan nog overblijft
+
+**Google Play**
+
+1. App aanmaken in Play Console met pakketnaam `nl.wattzicht.app`. Die naam ligt daarna vast.
+2. Het bestaande serviceaccount onder Gebruikers en rechten toegang geven tot deze nieuwe app, met
+   het recht releases beheren.
+3. De vijf Android-geheimen overnemen in deze repo.
+
+**Apple**
+
+1. App-id `nl.wattzicht.app` aanmaken op developer.apple.com, en daarna de app in App Store Connect.
+2. Voor dat app-id één App Store-provisioningprofiel maken en downloaden. Dit is het enige echt
+   nieuwe stuk, en het verloopt na een jaar; zet er een herinnering op.
+3. De zes Apple-geheimen overnemen, plus `IOS_PROVISIONING_PROFILE` van het nieuwe profiel.
+
+Anders dan bij LaadCash maakt MAUI het profiel niet zelf aan. Bij Capacitor regelt xcodebuild dat met
+`-allowProvisioningUpdates`; hier moet het profiel er echt zijn.
 
 ## Wat er nog mist voordat ze de app doorlaten
 
@@ -83,7 +93,7 @@ week heen en weer.
 ## Volgorde die werkt
 
 1. Account verwijderen bouwen (punt 1), want daar struikel je anders op.
-2. Keystore en certificaten maken, geheimen zetten.
+2. De geheimen overnemen uit wat LaadCash al gebruikt, en het ene nieuwe provisioningprofiel maken.
 3. `release-android` naar internal, `release-ios` naar TestFlight. Zelf installeren en doorlopen.
 4. Winkelpagina's invullen, schermafbeeldingen maken, vragenlijsten beantwoorden.
 5. Indienen voor beoordeling.
