@@ -18,7 +18,15 @@ public sealed class SubscriptionWorker(
     ILogger<SubscriptionWorker> logger) : BackgroundService
 {
     /// <summary>Hoeveel dagen vóór het einde van de proefperiode we waarschuwen.</summary>
-    public static readonly TimeSpan WaarschuwVoor = TimeSpan.FromDays(7);
+    /// <summary>
+    /// Hoe ver voor het einde van de proefperiode we één keer waarschuwen.
+    ///
+    /// Twee dagen, niet zeven. De proef duurt sinds 12-11-2026 zelf een week, en een waarschuwing
+    /// zeven dagen van tevoren zou dus op dag één binnenkomen: "je proefperiode loopt af" terwijl
+    /// iemand net zijn eerste apparaat heeft gekoppeld. Twee dagen laat genoeg tijd om te beslissen
+    /// en valt niet samen met het kennismaken.
+    /// </summary>
+    public static readonly TimeSpan WaarschuwVoor = TimeSpan.FromDays(2);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -111,7 +119,7 @@ public sealed class SubscriptionWorker(
             var verstuurd = await push.SendToHouseholdAsync(
                 rij.HouseholdId,
                 "Je proefperiode loopt af",
-                $"Nog {dagen} dagen Plus. Daarna blijft Wattzicht gewoon werken, met dertig dagen historie.",
+                $"Nog {dagen} dagen Plus. Daarna blijft Wattzicht gewoon werken, met je apparaten en je dashboard.",
                 route: "settings",
                 ct);
 

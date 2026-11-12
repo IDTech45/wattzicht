@@ -76,8 +76,16 @@ public sealed class EntitlementService(AppDbContext db, TimeProvider clock, ICon
     /// <summary>Staat Plus aan? Tot 1 januari 2027 niet; de data wordt intussen wel bijgehouden.</summary>
     public bool PlusEnabled => config.GetValue("Plus:Enabled", false);
 
-    /// <summary>Hoe lang de proefperiode duurt bij de eerste koppeling.</summary>
-    public static readonly TimeSpan TrialDuur = TimeSpan.FromDays(30);
+    /// <summary>
+    /// Hoe lang de proefperiode duurt bij de eerste koppeling.
+    ///
+    /// Zeven dagen en niet dertig. Een maand gratis klinkt genereuzer, maar je proeft Plus niet in
+    /// die maand: je kijkt twee keer en vergeet het, en op dag dertig heb je geen idee meer waarom je
+    /// zou betalen. In een week zie je een weekend, een paar zonnige en een paar grijze dagen, en dus
+    /// het hele verschil tussen een advies dat klopt en een dat ernaast zit. De app vraagt ook niet om
+    /// betaalgegevens voor die week; dat regelt de store pas als iemand echt een abonnement neemt.
+    /// </summary>
+    public static readonly TimeSpan TrialDuur = TimeSpan.FromDays(7);
 
     /// <summary>Hoeveel maanden Plus een installateur met <c>billing_mode = free</c> weggeeft.</summary>
     public const int GratisMaandenViaInstallateur = 12;

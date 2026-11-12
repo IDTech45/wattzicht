@@ -60,14 +60,14 @@ public sealed class EntitlementTests
     }
 
     [Fact]
-    public async Task De_eerste_koppeling_geeft_dertig_dagen_proef()
+    public async Task De_eerste_koppeling_geeft_zeven_dagen_proef()
     {
         await using var db = Db();
         var rij = await Writer(db).StartTrialIfFirstAsync(Woning);
 
         Assert.NotNull(rij);
         Assert.Equal(SubscriptionSource.Trial, rij!.Source);
-        Assert.Equal(Nu.AddDays(30), rij.EndsAt);
+        Assert.Equal(Nu.AddDays(7), rij.EndsAt);
 
         var antwoord = await Entitlement(plusAan: true, db).GetForHomeAsync(Woning);
         Assert.True(antwoord.Plus);
@@ -268,8 +268,8 @@ public sealed class EntitlementTests
         await using var db = Db();
         await Writer(db).StartTrialIfFirstAsync(Woning);
 
-        // Dag 24 van de dertig: nog zes dagen te gaan, dus binnen het venster van zeven.
-        _klok.Advance(TimeSpan.FromDays(24));
+        // Dag zes van de zeven: nog één dag te gaan, dus binnen het venster van twee.
+        _klok.Advance(TimeSpan.FromDays(6));
         var worker = Worker(db);
 
         Assert.Equal(1, (await worker.RunAsync(default)).Gewaarschuwd);
@@ -284,7 +284,8 @@ public sealed class EntitlementTests
         await using var db = Db();
         await Writer(db).StartTrialIfFirstAsync(Woning);
 
-        _klok.Advance(TimeSpan.FromDays(5));
+        // Dag twee van de zeven: nog vijf dagen te gaan, dus ruim buiten het venster van twee.
+        _klok.Advance(TimeSpan.FromDays(2));
 
         Assert.Equal(0, (await Worker(db).RunAsync(default)).Gewaarschuwd);
     }

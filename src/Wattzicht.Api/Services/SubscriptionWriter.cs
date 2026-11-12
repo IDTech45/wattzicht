@@ -136,7 +136,7 @@ public sealed class SubscriptionWriter(AppDbContext db, TimeProvider clock, ILog
     }
 
     /// <summary>
-    /// De proefperiode van dertig dagen bij de eerste koppeling. Eén keer per woning: iemand die zijn
+    /// De proefperiode van zeven dagen bij de eerste koppeling. Eén keer per woning: iemand die zijn
     /// apparaat loskoppelt en opnieuw koppelt krijgt geen tweede proefperiode, en iemand die al een
     /// abonnement heeft krijgt hem ook niet (dat zou zijn betaalde periode onderbreken).
     /// </summary>

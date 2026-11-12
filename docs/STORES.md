@@ -15,15 +15,15 @@ Beide stores krijgen precies deze twee producten. De id's staan ook in de code
 | Product-id | Prijs incl. btw | Periode |
 | --- | --- | --- |
 | `nl.wattzicht.plus.monthly` | € 1,99 | per maand |
-| `nl.wattzicht.plus.yearly` | € 21,99 | per jaar |
+| `nl.wattzicht.plus.yearly` | € 19,99 | per jaar |
 
 Allebei auto-renewing en **in dezelfde subscription-groep**. Dat laatste doet ertoe: binnen één groep
 kan iemand van maand naar jaar wisselen zonder dubbel te betalen, en de store rekent het verschil
 zelf af. In twee aparte groepen zou hij twee lopende abonnementen krijgen.
 
-**Proefperiode in de store: uit.** Onze proefperiode van dertig dagen regelen wij zelf, zonder dat
+**Proefperiode in de store: uit.** Onze proefperiode van zeven dagen regelen wij zelf, zonder dat
 iemand zijn betaalgegevens hoeft te geven. Een introductieperiode in de store erbovenop zou betekenen
-dat sommige mensen zestig dagen gratis hebben en dat je niet meer kunt uitleggen waarom.
+dat sommige mensen veel langer gratis hebben dan andere en dat je niet meer kunt uitleggen waarom.
 
 ### App Store Connect
 

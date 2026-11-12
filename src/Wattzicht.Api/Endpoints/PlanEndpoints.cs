@@ -88,10 +88,10 @@ public static class PlanEndpoints
                 new PlanDto(
                     Key: "plus_yearly",
                     Name: "Plus per jaar",
-                    PriceEur: 21.99m,
+                    PriceEur: 19.99m,
                     Period: "year",
                     StoreProductId: "nl.wattzicht.plus.yearly",
-                    Description: "Acht procent goedkoper dan twaalf losse maanden."),
+                    Description: "Zestien procent goedkoper dan twaalf losse maanden."),
             ],
             TrialDays: (int)EntitlementService.TrialDuur.TotalDays));
 

@@ -24,8 +24,8 @@ en koppelen blijft altijd gratis.
 | --- | --- | --- |
 | Gratis | € 0 | – |
 | Plus per maand | € 1,99 incl. btw | Apple / Google, `nl.wattzicht.plus.monthly` |
-| Plus per jaar | € 21,99 incl. btw | Apple / Google, `nl.wattzicht.plus.yearly` |
-| Proefperiode | 30 dagen Plus, één keer per woning, zonder betaalgegevens | wij zelf |
+| Plus per jaar | € 19,99 incl. btw | Apple / Google, `nl.wattzicht.plus.yearly` |
+| Proefperiode | 7 dagen Plus, één keer per woning, zonder betaalgegevens | wij zelf |
 | Via Triple Energie | 12 maanden Plus gratis | bron `installer`, billing_mode `free` |
 | Installateur (later) | € 1,25 per actief huishouden per maand excl. btw | per installateur instelbaar |
 | Batterij-lead | € 75 | alleen registreren, facturatie met de hand |

@@ -371,7 +371,7 @@ public static class HouseholdEndpoints
 
         await db.SaveChangesAsync(ct);
 
-        // Eerste koppeling van deze woning: dertig dagen Plus, zonder betaalgegevens. Dit is het
+        // Eerste koppeling van deze woning: zeven dagen Plus, zonder betaalgegevens. Dit is het
         // moment waarop iemand de app voor het eerst echt gebruikt, en pas dan is Plus iets waard.
         // Eén keer per woning; opnieuw koppelen geeft geen tweede proefperiode.
         await subscriptions.StartTrialIfFirstAsync(householdId, ct);
