@@ -29,6 +29,16 @@ public static class AuthEndpoints
             .Produces<AuthResponse>()
             .Produces(StatusCodes.Status401Unauthorized);
 
+        group.MapPost("/external", ExternalAsync)
+            .WithSummary("Logt in of meldt aan met een token van Google of Apple.")
+            .Produces<AuthResponse>()
+            .ProducesValidationProblem()
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        group.MapGet("/providers", (ExternalAuthService extern_) => Results.Ok(extern_.Beschikbaar))
+            .WithSummary("Welke inlogknoppen de app mag tonen.")
+            .Produces<IReadOnlyList<string>>();
+
         group.MapPost("/refresh", RefreshAsync)
             .RequireAuthorization()
             .WithSummary("Geeft een nieuw token op basis van een nog geldig token.")
@@ -156,6 +166,117 @@ public static class AuthEndpoints
 
         var (token, expires) = tokens.CreateToken(user);
         return Results.Created("/me", new AuthResponse(token, expires, HouseholdQueries.ToDto(household), HouseholdQueries.ToDto(installer)));
+    }
+
+    /// <summary>
+    /// Inloggen of aanmelden met Google of Apple.
+    ///
+    /// Eén endpoint voor allebei, want het verschil zit alleen in het controleren van het token. Is
+    /// het adres bij ons bekend, dan logt diegene in; kennen we het niet, dan maken we het account
+    /// meteen aan. Dat is precies wat iemand verwacht als hij op "doorgaan met Google" drukt: hij
+    /// denkt niet in aanmelden tegenover inloggen.
+    ///
+    /// Koppelen gaat op het e-mailadres, en alleen als de aanbieder zegt dat hij het zelf heeft
+    /// gecontroleerd. Zonder die eis zou iemand een account bij een of andere partij kunnen maken met
+    /// jouw adres en daarmee bij jouw woning naar binnen lopen.
+    ///
+    /// Een account dat zo ontstaat heeft geen wachtwoord. De hash blijft leeg, en de controle wijst
+    /// een lege hash altijd af; inloggen met een wachtwoord kan dus niet, ook niet met een gokje.
+    /// </summary>
+    private static async Task<IResult> ExternalAsync(
+        ExternalLoginRequest request,
+        ExternalAuthService extern_,
+        AppDbContext db,
+        TokenService tokens,
+        ILoggerFactory logs,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.IdToken))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["idToken"] = ["Er kwam geen token mee."]
+            });
+        }
+
+        ExternalUser info;
+        try
+        {
+            info = await extern_.ControleerAsync(request.Provider, request.IdToken, ct);
+        }
+        catch (ExternalAuthException ex)
+        {
+            // De reden hoort in het logboek, niet op het scherm van de gebruiker: hij kan er niets
+            // mee, en een afgekeurd token is precies het geval waarin je niets wilt prijsgeven.
+            logs.CreateLogger("ExternalAuth").LogWarning("Inlogtoken afgekeurd: {Reden}", ex.Message);
+            return Results.Unauthorized();
+        }
+
+        if (!info.EmailVerified)
+        {
+            logs.CreateLogger("ExternalAuth").LogWarning(
+                "Token van {Provider} met een ongecontroleerd e-mailadres geweigerd.", info.Provider);
+            return Results.Unauthorized();
+        }
+
+        var bestaand = await db.Users
+            .Include(u => u.Household)
+            .Include(u => u.Installer)
+            .FirstOrDefaultAsync(u => u.Email == info.Email, ct);
+
+        if (bestaand is not null)
+        {
+            var (bestaandToken, bestaandTot) = tokens.CreateToken(bestaand);
+            return Results.Ok(new AuthResponse(bestaandToken, bestaandTot,
+                bestaand.Household is null ? null : HouseholdQueries.ToDto(bestaand.Household),
+                HouseholdQueries.ToDto(bestaand.Installer)));
+        }
+
+        var installer = await db.Installers.FirstOrDefaultAsync(i => i.Slug == DbSeeder.TripleEnergieSlug, ct)
+                        ?? await db.Installers.OrderBy(i => i.CreatedAt).FirstOrDefaultAsync(ct);
+        if (installer is null)
+        {
+            return Results.Problem(title: "Er is nog geen installateur ingesteld.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        var nu = clock.GetUtcNow();
+        var woning = new Household
+        {
+            Id = Guid.NewGuid(),
+            // Zonder opgegeven naam gewoon "Thuis". Iemand die met één druk op de knop binnenkomt,
+            // hoort niet eerst een formulier te krijgen; hij kan de naam later wijzigen.
+            Name = string.IsNullOrWhiteSpace(request.HouseholdName) ? "Thuis" : request.HouseholdName.Trim(),
+            InstallerId = installer.Id,
+            Installer = installer,
+            InstallerAccessGranted = false,
+            InstallerAccessChangedAt = nu,
+            Plan = Plans.Normaliseer(null),
+            PlanChosenAt = nu,
+            CreatedAt = nu
+        };
+
+        var nieuw = new User
+        {
+            Id = Guid.NewGuid(),
+            Email = info.Email,
+            PasswordHash = string.Empty,
+            Role = UserRole.Resident,
+            HouseholdId = woning.Id,
+            Household = woning,
+            InstallerId = installer.Id,
+            Installer = installer,
+            CreatedAt = nu
+        };
+
+        db.Households.Add(woning);
+        db.Users.Add(nieuw);
+        await db.SaveChangesAsync(ct);
+
+        var (token, tot) = tokens.CreateToken(nieuw);
+        return Results.Created("/me", new AuthResponse(token, tot,
+            HouseholdQueries.ToDto(woning), HouseholdQueries.ToDto(installer)));
     }
 
     /// <summary>

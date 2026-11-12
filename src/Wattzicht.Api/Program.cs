@@ -78,6 +78,20 @@ builder.Services.AddSingleton<IStoreVerifier, GoogleStoreVerifier>();
 builder.Services.AddSingleton(jwtOptions);
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddSingleton<PasswordHasher>();
+
+// Inloggen met Google of Apple. De client-id's zijn geen geheimen (ze zitten in elke app-build),
+// maar ze moeten wel kloppen: ze bepalen voor wie een token bedoeld mag zijn. Staan ze er niet, dan
+// zijn die knoppen uit en vertelt /auth/providers dat ook, zodat de app ze niet toont.
+builder.Services.AddSingleton(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    return new ExternalAuthSettings
+    {
+        GoogleClientIds = config["ExternalAuth:GoogleClientIds"],
+        AppleClientIds = config["ExternalAuth:AppleClientIds"],
+    };
+});
+builder.Services.AddSingleton<ExternalAuthService>();
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

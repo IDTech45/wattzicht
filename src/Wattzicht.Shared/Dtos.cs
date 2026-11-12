@@ -40,6 +40,15 @@ public sealed record RegisterRequest(
     bool AllowInstallerAccess = false,
     string? Plan = null);
 
+/// <summary>Inloggen of aanmelden met een token van Google of Apple.</summary>
+/// <param name="Provider">"google" of "apple".</param>
+/// <param name="IdToken">Het ondertekende token dat het toestel van die partij kreeg.</param>
+/// <param name="HouseholdName">Naam voor de woning als het account nog niet bestaat; leeg wordt "Thuis".</param>
+public sealed record ExternalLoginRequest(
+    string Provider,
+    string IdToken,
+    string? HouseholdName = null);
+
 /// <summary>Antwoord op een geslaagde login of registratie.</summary>
 /// <param name="Token">JWT bearer-token.</param>
 /// <param name="ExpiresAt">Moment waarop het token verloopt (UTC).</param>
