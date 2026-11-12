@@ -72,6 +72,31 @@ public static class LaadcashTeksten
         + "geweest.\n\nVanaf 1 januari telt het nieuwe jaar. Wat je dit jaar hebt geladen kan niet "
         + "meer ingeboekt worden, maar vanaf de dag dat je je aanmeldt telt alles mee.";
 
+    // ---- Kennismaking: meteen bij het koppelen van een laadpaal, nog zonder bedrag ----
+    //
+    // De promotie hieronder noemt altijd een bedrag, en dat kan pas als er laadsessies binnen zijn.
+    // Maar het moment waarop iemand zijn laadpaal koppelt is juist het moment dat hij erover nadenkt,
+    // en dan weet hij nog niet eens dat dit bestaat. Daarom deze variant: wel vertellen dat het kan,
+    // geen bedrag verzinnen. Zodra zijn eerste sessies binnen zijn neemt de gewone promotie het over
+    // en staat er wel een bedrag bij.
+    public const string KennisPopupTitel = "Wist je dat je laadpaal geld kan opleveren?";
+
+    public const string KennisPopupTekst =
+        "Thuis laden levert groene laadbewijzen op, ERE's. LaadCash registreert die voor je bij de "
+        + "Nederlandse Emissieautoriteit, verkoopt ze aan brandstofbedrijven en stort jouw deel op je "
+        + "rekening. Je laadt gewoon zoals je gewend bent en je stroom blijft van jou. LaadCash is net "
+        + "als Wattzicht van DoganTech, dus je koppelt binnen hetzelfde huis.";
+
+    public const string KennisTegelTitel = "Je laadpaal kan ERE's opleveren";
+
+    public const string KennisTegelTekst =
+        "Zodra we je eerste laadsessies zien, rekenen we voor wat dat per jaar waard is.";
+
+    public const string KennisPushTitel = "Je laadpaal kan meer dan laden";
+
+    public const string KennisPushTekst =
+        "Thuis laden levert ERE's op. Via LaadCash, ook van DoganTech, kun je die laten uitbetalen.";
+
     public const string Afmelden = "Geen berichten meer hierover";
 }
 
@@ -171,9 +196,36 @@ public sealed class LaadcashPromotie(AppDbContext db, TimeProvider clock, IConfi
         var (kwhPerJaar, heeftSessies) = await GeladenPerJaarAsync(homeId, ct);
         if (!heeftSessies)
         {
-            // Er is een laadpaal gekoppeld maar nog nooit iets uitgelezen. Een bedrag noemen zou
-            // gokken zijn, en een gegokt bedrag dat later niet klopt kost je het vertrouwen.
-            return Niets();
+            // Nog geen sessie uitgelezen. Een bedrag noemen zou gokken zijn, en een gegokt bedrag dat
+            // later niet klopt kost je het vertrouwen. Maar wie net een laadpaal heeft gekoppeld mag
+            // wél weten dát dit bestaat; dat is precies het moment dat hij erover nadenkt. Dus hier
+            // de kennismaking zonder bedrag, en zodra zijn sessies binnen zijn neemt de gewone
+            // promotie het hieronder over.
+            var heeftLaadpaal = await db.Devices.IgnoreQueryFilters()
+                .AnyAsync(d => d.HouseholdId == homeId && d.Type == DeviceType.Charger, ct);
+            if (!heeftLaadpaal)
+            {
+                return Niets();
+            }
+
+            var kennisPopupGehad = await db.PromoEvents
+                .AnyAsync(e => e.HouseholdId == homeId
+                               && e.Campaign == PromoCampaign.Laadcash
+                               && e.Channel == PromoChannel.Popup
+                               && e.Action == PromoAction.Shown, ct);
+
+            return new LaadcashPromoDto(
+                Show: true,
+                ShowPopup: !kennisPopupGehad,
+                EstimatedYearlyEur: 0,
+                ChargedKwhPerYear: 0,
+                Title: LaadcashTeksten.KennisTegelTitel,
+                Body: LaadcashTeksten.KennisTegelTekst,
+                PopupTitle: LaadcashTeksten.KennisPopupTitel,
+                PopupBody: LaadcashTeksten.KennisPopupTekst,
+                DeepLink: DeepLink(homeId, await EersteEmailAsync(homeId, ct)),
+                Linked: false,
+                EarnedThisYearEur: null);
         }
 
         var perJaar = Afgerond((decimal)kwhPerJaar * EuroPerKwh);
@@ -330,6 +382,14 @@ public sealed class LaadcashPromotie(AppDbContext db, TimeProvider clock, IConfi
             .Where(d => d.HouseholdId == homeId && d.Type == DeviceType.Charger)
             .OrderBy(d => d.CreatedAt)
             .Select(d => (DateTimeOffset?)d.CreatedAt)
+            .FirstOrDefaultAsync(ct);
+
+    /// <summary>Het adres waarmee de woning zich heeft aangemeld; gaat mee in de link naar LaadCash.</summary>
+    private Task<string?> EersteEmailAsync(Guid homeId, CancellationToken ct) =>
+        db.Users.IgnoreQueryFilters()
+            .Where(u => u.HouseholdId == homeId)
+            .OrderBy(u => u.CreatedAt)
+            .Select(u => u.Email)
             .FirstOrDefaultAsync(ct);
 
     /// <summary>De link naar LaadCash, met de woning en het e-mailadres erin zodat het formulier al vol staat.</summary>

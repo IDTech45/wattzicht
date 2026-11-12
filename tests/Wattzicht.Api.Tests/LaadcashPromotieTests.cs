@@ -54,13 +54,35 @@ public sealed class LaadcashPromotieTests
     }
 
     [Fact]
-    public async Task Een_laadpaal_zonder_uitgelezen_sessie_krijgt_geen_bedrag()
+    public async Task Een_laadpaal_zonder_uitgelezen_sessie_krijgt_de_kennismaking_zonder_bedrag()
     {
         // Het apparaat hangt er, maar er is nog nooit data binnengekomen. Een bedrag zou gokken zijn.
+        // Vertellen dát het kan mag wel: dit is juist het moment dat iemand erover nadenkt.
         await using var db = Db();
         var woning = await Woning(db, metLaadpaal: true);
 
-        Assert.False((await Promotie(db).VoorWoningAsync(woning)).Show);
+        var promo = await Promotie(db).VoorWoningAsync(woning);
+
+        Assert.True(promo.Show);
+        Assert.True(promo.ShowPopup);
+        Assert.Equal(0m, promo.EstimatedYearlyEur);
+        Assert.DoesNotContain("€", promo.PopupBody);
+        Assert.NotNull(promo.DeepLink);
+    }
+
+    [Fact]
+    public async Task De_kennismaking_komt_maar_een_keer_als_popup()
+    {
+        await using var db = Db();
+        var woning = await Woning(db, metLaadpaal: true);
+        var promotie = Promotie(db);
+
+        Assert.True((await promotie.VoorWoningAsync(woning)).ShowPopup);
+        await promotie.NoteerAsync(woning, PromoChannel.Popup, PromoAction.Shown);
+
+        var tweede = await promotie.VoorWoningAsync(woning);
+        Assert.True(tweede.Show);
+        Assert.False(tweede.ShowPopup);
     }
 
     [Fact]

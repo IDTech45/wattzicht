@@ -84,10 +84,17 @@ public sealed class LaadcashPromoWorker(
                 var kwh = await promotie.GeladenDezeMaandAsync(homeId, ct);
                 var euro = LaadcashPromotie.Afgerond((decimal)kwh * LaadcashPromotie.EuroPerKwh);
 
+                // Wie net gekoppeld heeft en nog geen sessie heeft geleverd, krijgt de kennismaking
+                // zonder bedrag. De gewone tekst zou daar "je hebt 0 kWh geladen, dat is € 0 aan
+                // ERE's" van maken, en dat is geen uitnodiging maar een rekenfout op je scherm.
+                var (titel, tekst) = kwh > 0
+                    ? (LaadcashTeksten.PushTitel, LaadcashTeksten.PushTekst(kwh, euro))
+                    : (LaadcashTeksten.KennisPushTitel, LaadcashTeksten.KennisPushTekst);
+
                 var verstuurd = await push.SendToHouseholdAsync(
                     homeId,
-                    LaadcashTeksten.PushTitel,
-                    LaadcashTeksten.PushTekst(kwh, euro),
+                    titel,
+                    tekst,
                     route: "home",
                     ct);
 
