@@ -399,15 +399,30 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// Vier getallen met punten ertussen, en niets anders.
+    /// Een adres waar een kastje op je eigen netwerk mee te bereiken is.
     ///
-    /// IPAddress.TryParse accepteert de oude verkorte schrijfwijze: "192.168.1" wordt daar stilletjes
-    /// 192.168.0.1. Iemand die zijn adres half overtypt kreeg dus geen foutmelding maar een poging naar
-    /// een heel ander apparaat in zijn huis, met als resultaat een time-out die nergens op slaat.
+    /// Vier getallen met punten ertussen, of een naam die het apparaat zelf op het netwerk omroept,
+    /// zoals envoy.local of p1meter.local. Dat tweede hoort erbij sinds de app het adres zelf
+    /// opzoekt: hij vindt de gateway op zijn naam, vult die in, en dan werd zijn eigen vondst
+    /// vervolgens afgekeurd als "geen geldig IP-adres".
+    ///
+    /// Voor de getalvorm niet IPAddress.TryParse gebruiken: die accepteert de oude verkorte
+    /// schrijfwijze, waarin "192.168.1" stilletjes 192.168.0.1 wordt. Wie zijn adres half overtypt
+    /// kreeg dan geen foutmelding maar een poging naar een heel ander apparaat in zijn huis.
     /// </summary>
-    private static bool IsVolledigIpAdres(string waarde)
+    private static bool IsBruikbaarAdres(string waarde)
     {
-        var delen = waarde.Trim().Split('.');
+        var schoon = waarde.Trim();
+        if (schoon.Length == 0) return false;
+
+        if (schoon.EndsWith(".local", StringComparison.OrdinalIgnoreCase)
+            || schoon.EndsWith(".home", StringComparison.OrdinalIgnoreCase)
+            || schoon.EndsWith(".lan", StringComparison.OrdinalIgnoreCase))
+        {
+            return schoon.Length > ".local".Length;
+        }
+
+        var delen = schoon.Split('.');
         return delen.Length == 4
                && delen.All(d => d.Length is > 0 and <= 3 && d.All(char.IsAsciiDigit) && int.Parse(d) <= 255);
     }
@@ -437,7 +452,8 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         if (IsSessy || IsHomeWizard || IsAlfen || IsEnphase || IsPeblar)
         {
             if (string.IsNullOrWhiteSpace(IpAddress)) IpAddressError = "Vul het IP-adres in.";
-            else if (!IsVolledigIpAdres(IpAddress)) IpAddressError = "Dit is geen geldig IP-adres, bijv. 192.168.1.50.";
+            else if (!IsBruikbaarAdres(IpAddress))
+                IpAddressError = "Vul een adres in zoals 192.168.1.50, of laat de app je apparaat opzoeken.";
         }
         if (IsSessy)
         {
