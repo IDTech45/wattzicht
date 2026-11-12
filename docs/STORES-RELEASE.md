@@ -118,7 +118,12 @@ web-client gebruiken we niet en staat dus ook nergens.
 Draait er ooit een build buiten Play om (een losse apk), dan tekent die met een andere sleutel en
 moet die SHA-1 er als extra Android-client bij. Anders weigert Google de aanmelding op dat toestel.
 
-**Apple moet nog.** Daarvoor is eerst het App-ID `nl.wattzicht.app` nodig in het Apple-account, met
-Sign in with Apple aangezet. Zodra dat er is, komt het bundel-id in `ExternalAuth:AppleClientIds` en
-doet de knop het. Tot die tijd meldt `GET /auth/providers` alleen google, en toont de app de
-Apple-knop niet.
+**Apple staat aan de serverkant klaar.** Het App-ID `nl.wattzicht.app` is op 12-11-2026 aangemaakt
+onder team ZP9APJFDZS (DoganTech B.V.), met Sign in with Apple en pushmeldingen erop, en het
+bundel-id staat in `ExternalAuth:AppleClientIds`. Datzelfde App-ID is ook wat de iOS-build nodig
+heeft; zonder dat kan er niets naar TestFlight.
+
+Wat er nog mist is de knop in de app zelf: op iPhone moet de ingebouwde Apple-aanmelding
+aangesproken worden, en dat is platformcode die er nog niet is. De app toont alleen knoppen die de
+server aan heeft staan én waarvoor dit toestel een uitvoering heeft, dus tot die code er is blijft
+de Apple-knop vanzelf weg.
