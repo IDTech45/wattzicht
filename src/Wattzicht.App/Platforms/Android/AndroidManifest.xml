@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
   <!--
+    Zonder deze regel staat er in het uiteindelijke pakket geen doel-API, en dan weigert Google Play
+    het met "Target SDK of artifact is too low: 1". Het bouwen zelf gaat wel goed, dus je merkt het
+    pas bij de upload; op 12-11-2026 liep de eerste release daarop stuk nadat alles al gelukt was.
+    Daarom staat het hier expliciet in plaats van dat we erop vertrouwen dat de build het invult.
+    35 is wat .NET 9 meelevert en wat Play op dit moment van een nieuwe app eist; 24 is Android 7,
+    de ondergrens die ook in het projectbestand staat.
+  -->
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="35" />
+  <!--
     Cleartext (HTTP) staat standaard uit. Het csproj koppelt per configuratie een
     network_security_config: DEBUG staat HTTP toe naar 10.0.2.2/localhost (emulator -> host),
     RELEASE blokkeert alles behalve HTTPS. Zie Platforms/Android/NetworkSecurity/.
