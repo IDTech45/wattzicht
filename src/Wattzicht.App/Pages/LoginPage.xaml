@@ -34,6 +34,22 @@
             <Border Grid.Row="1" Style="{StaticResource Card}" Padding="20">
                 <VerticalStackLayout Spacing="16">
 
+                    <!-- Alleen bij aanmelden: de naam van het huishouden, en optioneel de code van
+                         een installateur. Die code is nadrukkelijk niet verplicht; iedereen kan zich
+                         aanmelden en zijn apparaten koppelen. -->
+                    <VerticalStackLayout Spacing="4" IsVisible="{Binding IsRegistreren}">
+                        <Label Text="Naam van je huishouden" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource InputBorder}">
+                            <Entry Text="{Binding HouseholdName}"
+                                   Placeholder="Bijvoorbeeld Thuis"
+                                   ReturnType="Next"
+                                   AutomationId="HouseholdNameEntry" />
+                        </Border>
+                        <Label Text="{Binding HouseholdNameError}"
+                               Style="{StaticResource ErrorLabel}"
+                               IsVisible="{Binding HasHouseholdNameError}" />
+                    </VerticalStackLayout>
+
                     <VerticalStackLayout Spacing="4">
                         <Label Text="E-mailadres" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputBorder}">
@@ -79,7 +95,21 @@
                            Style="{StaticResource ErrorLabel}"
                            IsVisible="{Binding HasError}" />
 
-                    <Grid>
+                    <VerticalStackLayout Spacing="4" IsVisible="{Binding IsRegistreren}">
+                        <Label Text="Code van je installateur (niet verplicht)" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource InputBorder}">
+                            <Entry Text="{Binding InstallerCode}"
+                                   Placeholder="Alleen als je via een installateur komt"
+                                   IsSpellCheckEnabled="False"
+                                   IsTextPredictionEnabled="False"
+                                   AutomationId="InstallerCodeEntry" />
+                        </Border>
+                        <Label Text="Vul je een code in, dan mag die installateur je gegevens zien en je helpen."
+                               Style="{StaticResource SubtitleLabel}"
+                               FontSize="13" />
+                    </VerticalStackLayout>
+
+                    <Grid IsVisible="{Binding IsRegistreren, Converter={StaticResource InvertedBool}}">
                         <Button Text="Inloggen"
                                 Style="{StaticResource PrimaryButton}"
                                 Command="{Binding LoginCommand}"
@@ -91,9 +121,21 @@
                                            Margin="0,0,16,0" />
                     </Grid>
 
-                    <Button Text="Nog geen account? Vraag je installateur"
+                    <Grid IsVisible="{Binding IsRegistreren}">
+                        <Button Text="Account aanmaken"
+                                Style="{StaticResource PrimaryButton}"
+                                Command="{Binding RegisterCommand}"
+                                IsEnabled="{Binding IsNotBusy}" />
+                        <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                           IsVisible="{Binding IsBusy}"
+                                           Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource TextOnAccent}}"
+                                           HorizontalOptions="End"
+                                           Margin="0,0,16,0" />
+                    </Grid>
+
+                    <Button Text="{Binding WisselTekst}"
                             Style="{StaticResource LinkButton}"
-                            Command="{Binding NoAccountCommand}" />
+                            Command="{Binding ToggleRegistrerenCommand}" />
                 </VerticalStackLayout>
             </Border>
 

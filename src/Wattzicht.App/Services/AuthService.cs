@@ -33,6 +33,27 @@ public sealed class AuthService
         LoggedIn?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Een account aanmaken en er meteen mee binnen zijn.
+    ///
+    /// De server geeft bij een geslaagde registratie hetzelfde token terug als bij een login, dus
+    /// hoeft niemand zijn wachtwoord twee keer in te tikken. Een installateurscode mag, maar hoeft
+    /// niet: iedereen kan zich aanmelden en zijn apparaten koppelen. Vult iemand wél een code in,
+    /// dan geeft hij die installateur ook toegang tot zijn gegevens, en dat vraagt de server
+    /// expliciet.
+    /// </summary>
+    public async Task RegisterAsync(string email, string password, string householdName,
+        string? installerSlug = null, CancellationToken ct = default)
+    {
+        var code = string.IsNullOrWhiteSpace(installerSlug) ? null : installerSlug.Trim();
+        var response = await _api.RegisterAsync(
+            new RegisterRequest(email.Trim(), password, householdName.Trim(), code, code is not null), ct);
+
+        await _tokens.SetAsync(response.Token, response.ExpiresAt);
+        Household = response.Household;
+        LoggedIn?.Invoke(this, EventArgs.Empty);
+    }
+
     /// <summary>Na een geslaagde login (bv. om het toestel voor pushmeldingen aan te melden).</summary>
     public event EventHandler? LoggedIn;
 

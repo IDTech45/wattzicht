@@ -33,6 +33,9 @@ public sealed class ApiClient
     public Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken ct = default) =>
         PostAsync<LoginRequest, AuthResponse>("/auth/login", request, authenticated: false, ct);
 
+    public Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken ct = default) =>
+        PostAsync<RegisterRequest, AuthResponse>("/auth/register", request, authenticated: false, ct);
+
     public Task<AuthResponse> RefreshAsync(CancellationToken ct = default) =>
         PostAsync<object?, AuthResponse>("/auth/refresh", null, authenticated: true, ct);
 
