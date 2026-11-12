@@ -172,6 +172,14 @@ public sealed class ApiClient
     public Task<InstallerBrandingDto> GetInstallerAsync(CancellationToken ct = default) =>
         GetAsync<InstallerBrandingDto>("/installer", ct);
 
+    /// <summary>Wat de app over LaadCash mag tonen voor deze woning.</summary>
+    public Task<LaadcashPromoDto> LaadcashPromoAsync(CancellationToken ct = default) =>
+        GetAsync<LaadcashPromoDto>("/laadcash/promo", ct);
+
+    /// <summary>Legt vast dat de klant hem gezien of aangeklikt heeft.</summary>
+    public Task LaadcashActieAsync(string kanaal, string actie, CancellationToken ct = default) =>
+        PostAsync<object, object>("/laadcash/promo/action", new { channel = kanaal, action = actie }, authenticated: true, ct);
+
     // ---------- Intern ----------
 
     private async Task<T> GetAsync<T>(string path, CancellationToken ct)

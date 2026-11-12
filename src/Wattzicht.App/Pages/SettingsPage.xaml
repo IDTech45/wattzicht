@@ -28,6 +28,28 @@
                 </Grid>
             </Border>
 
+            <!-- LaadCash. Alleen zichtbaar als de server zegt dat er iets te tonen is. -->
+            <VerticalStackLayout Spacing="8" IsVisible="{Binding HeeftLaadcash}">
+                <Label Text="LaadCash" Style="{StaticResource SectionTitle}" />
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="{Binding LaadcashTitel}" Style="{StaticResource CardTitle}" />
+                        <Label Text="{Binding LaadcashTekst}" Style="{StaticResource SubtitleLabel}"
+                               IsVisible="{Binding LaadcashTekst, Converter={StaticResource IsNotNullOrEmpty}}" />
+                        <Label Text="LaadCash is net als Wattzicht van DoganTech. Je laadt gewoon zoals je gewend bent; zij boeken je groene laadbewijzen in en storten jouw deel."
+                               Style="{StaticResource SubtitleLabel}" FontSize="13"
+                               IsVisible="{Binding LaadcashNogNiet}" />
+                        <Button Text="Meer weten over LaadCash"
+                                Style="{StaticResource SecondaryButton}"
+                                Command="{Binding LaadcashOpenenCommand}"
+                                IsVisible="{Binding LaadcashNogNiet}" />
+                        <Label Text="Je bent gekoppeld met LaadCash."
+                               Style="{StaticResource SubtitleLabel}"
+                               IsVisible="{Binding LaadcashGekoppeld}" />
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+
             <Label Text="Je energietarief" Style="{StaticResource SectionTitle}" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="14">

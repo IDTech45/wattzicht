@@ -82,9 +82,42 @@ public partial class SettingsViewModel : BaseViewModel
     partial void OnExportTariffChanged(string value) { ExportTariffError = null; TariffSavedText = null; }
     partial void OnIsDynamicChanged(bool value) => TariffSavedText = null;
 
+    // ---- LaadCash ----
+    //
+    // Wattzicht en LaadCash zijn allebei van DoganTech, en wie thuis laadt laat geld liggen zolang
+    // hij zijn ERE's niet laat inboeken. De server bepaalt wat er te tonen valt: wie al klant is
+    // krijgt geen aanbieding meer, en wie "niet meer tonen" koos hoort er nooit meer iets over.
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftLaadcash))] private LaadcashPromoDto? _laadcash;
+
+    public bool HeeftLaadcash => Laadcash is { Show: true };
+    public bool LaadcashGekoppeld => Laadcash is { Linked: true };
+    public bool LaadcashNogNiet => Laadcash is { Show: true, Linked: false };
+
+    public string LaadcashTitel => Laadcash?.Title ?? "Verdien geld met je laadpaal";
+    public string LaadcashTekst => Laadcash?.Body ?? "";
+
+    [RelayCommand]
+    private async Task LaadcashOpenenAsync()
+    {
+        if (Laadcash?.DeepLink is not { Length: > 0 } link) return;
+
+        // Eerst vastleggen dat hij geklikt heeft, dan pas openen. Andersom is de app weg voordat het
+        // verzoek de deur uit is, en dan weten we niet wat er werkt.
+        try { await _api.LaadcashActieAsync("tile", "clicked"); } catch (Exception) { }
+        await Launcher.Default.OpenAsync(link);
+    }
+
+    public async Task LaadcashLadenAsync()
+    {
+        try { Laadcash = await _api.LaadcashPromoAsync(); }
+        catch (Exception) { Laadcash = null; }
+    }
+
     [RelayCommand]
     public async Task LoadAsync()
     {
+        await LaadcashLadenAsync();
+
         await RunSafeAsync(async () =>
         {
             // Tarief en installateur onafhankelijk ophalen; een 404 op één van beide mag de rest niet blokkeren.

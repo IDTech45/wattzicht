@@ -6,6 +6,16 @@ using Wattzicht.Shared;
 
 namespace Wattzicht.App.ViewModels;
 
+/// <summary>
+/// Een kopje met de merken die daaronder vallen.
+///
+/// Stap 1 was één lange lijst waarin een omvormer, een batterij en een laadpaal door elkaar stonden.
+/// Wie een thuisbatterij wil koppelen moest dan eerst alle laadpalen langs om te zien of de zijne
+/// erbij stond. Nu kijk je eerst naar wat voor apparaat je hebt en pas daarna naar het merk, en dat
+/// is ook de volgorde waarin mensen er zelf over denken.
+/// </summary>
+public sealed record BrandGroep(string Titel, string Uitleg, IReadOnlyList<BrandOption> Merken);
+
 /// <summary>Eén merk-keuzekaart in stap 1.</summary>
 public sealed partial class BrandOption : ObservableObject
 {
@@ -59,6 +69,26 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         new(DeviceBrand.Enphase, "Enphase", "Zonnepanelen via de IQ Gateway in je meterkast", "Accent500", DeviceType.Inverter),
         new(DeviceBrand.HomeWizard, "P1-meter", "Dongle op je slimme meter, leest je netafname", "EnergyGrid", DeviceType.P1Meter),
         new(DeviceBrand.Demo, "Demo", "Voorbeelddata om de app te proberen", "TextMuted", DeviceType.Inverter),
+    ];
+
+    /// <summary>
+    /// Dezelfde merken, maar op soort apparaat. De volgorde is niet willekeurig: zon staat bovenaan
+    /// omdat vrijwel iedereen daarmee begint, en de demo onderaan omdat dat geen apparaat is.
+    /// </summary>
+    public IReadOnlyList<BrandGroep> Groepen { get; }
+
+    private IReadOnlyList<BrandGroep> MaakGroepen() =>
+    [
+        new("Zonnepanelen", "Je omvormer, of de gateway in je meterkast",
+            Brands.Where(b => b.DefaultType == DeviceType.Inverter && b.Brand != DeviceBrand.Demo).ToList()),
+        new("Thuisbatterij", "Je batterij of de dongle die erbij hoort",
+            Brands.Where(b => b.DefaultType == DeviceType.Battery).ToList()),
+        new("Laadpaal", "De paal waar je je auto mee laadt",
+            Brands.Where(b => b.DefaultType == DeviceType.Charger).ToList()),
+        new("Slimme meter", "Een dongle op je P1-poort; leest wat je van het net haalt",
+            Brands.Where(b => b.DefaultType == DeviceType.P1Meter).ToList()),
+        new("Even proberen", "Zonder apparaat kijken hoe de app werkt",
+            Brands.Where(b => b.Brand == DeviceBrand.Demo).ToList()),
     ];
 
     // ---- Stap ----
@@ -160,6 +190,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         _auth = auth;
         _lokaal = lokaal;
         Title = "Apparaat koppelen";
+        Groepen = MaakGroepen();
     }
 
     partial void OnApiTokenChanged(string value) { ApiTokenError = null; OnPropertyChanged(nameof(SummaryLine)); }

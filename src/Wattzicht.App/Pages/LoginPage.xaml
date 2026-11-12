@@ -9,10 +9,17 @@
              BackgroundColor="{AppThemeBinding Light={StaticResource BgApp}, Dark={StaticResource BgAppDark}}">
 
     <ScrollView>
-        <Grid RowDefinitions="*,Auto,*" Padding="24" RowSpacing="24">
+        <!--
+            Rijen op Auto en niet op ster. In een ScrollView is de hoogte oneindig, dus een sterrij
+            krijgt daar geen zinnige maat: het scherm werd afgemeten op iets anders dan wat erin
+            paste en de knop viel onderlangs weg, zonder dat je eronder kon scrollen. Met Auto meet
+            alles zichzelf op en scrollt de pagina gewoon als er meer bij komt, zoals nu met
+            aanmelden en de Google-knop.
+        -->
+        <Grid RowDefinitions="Auto,Auto,Auto" Padding="24,32,24,24" RowSpacing="24">
 
             <!-- Logo en woordmerk -->
-            <VerticalStackLayout Grid.Row="0" Spacing="12" VerticalOptions="End" HorizontalOptions="Center">
+            <VerticalStackLayout Grid.Row="0" Spacing="12" HorizontalOptions="Center">
                 <Image Source="logo.png" HeightRequest="96" WidthRequest="96"
                        SemanticProperties.Description="Wattzicht-logo" />
                 <Label HorizontalTextAlignment="Center" FontSize="30" FontFamily="Display"
@@ -162,7 +169,7 @@
                 </VerticalStackLayout>
             </Border>
 
-            <BoxView Grid.Row="2" HeightRequest="1" Color="Transparent" />
+            <BoxView Grid.Row="2" HeightRequest="24" Color="Transparent" />
         </Grid>
     </ScrollView>
 </ContentPage>

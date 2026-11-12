@@ -8,9 +8,10 @@
        Shell.ForegroundColor="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}"
        Shell.TitleColor="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}"
        Shell.TabBarBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Teal800}}"
+       BackgroundColor="{AppThemeBinding Light={StaticResource BgApp}, Dark={StaticResource Navy900}}"
        Shell.TabBarForegroundColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}"
        Shell.TabBarTitleColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}"
-       Shell.TabBarUnselectedColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}">
+       Shell.TabBarUnselectedColor="{AppThemeBinding Light={StaticResource Navy600}, Dark={StaticResource TextMutedDark}}">
 
     <!-- Login staat buiten de tabs: geen TabBar zichtbaar -->
     <ShellContent Route="login"

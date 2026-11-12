@@ -39,10 +39,17 @@
 
                 <!-- ================= STAP 1: merk ================= -->
                 <VerticalStackLayout Spacing="12" IsVisible="{Binding IsStep1}">
-                    <Label Text="Welk merk heb je?" Style="{StaticResource PageTitle}" />
-                    <Label Text="Kies het merk van je omvormer, batterij of meter." Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                    <Label Text="Wat wil je koppelen?" Style="{StaticResource PageTitle}" />
+                    <Label Text="Kies eerst het soort apparaat, daarna het merk." Style="{StaticResource SubtitleLabel}" FontSize="14" />
 
-                    <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Brands}">
+                    <VerticalStackLayout Spacing="20" BindableLayout.ItemsSource="{Binding Groepen}">
+                      <BindableLayout.ItemTemplate>
+                       <DataTemplate x:DataType="vm:BrandGroep">
+                        <VerticalStackLayout Spacing="8">
+                         <Label Text="{Binding Titel}" Style="{StaticResource SectionTitle}" />
+                         <Label Text="{Binding Uitleg}" Style="{StaticResource SubtitleLabel}" FontSize="13" />
+
+                         <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Merken}">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="vm:BrandOption">
                                 <Border Style="{StaticResource Card}" Padding="12" MinimumHeightRequest="64">
@@ -73,6 +80,10 @@
                                 </Border>
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
+                         </VerticalStackLayout>
+                        </VerticalStackLayout>
+                       </DataTemplate>
+                      </BindableLayout.ItemTemplate>
                     </VerticalStackLayout>
                 </VerticalStackLayout>
 

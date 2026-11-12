@@ -100,30 +100,6 @@ public static class LaadcashTeksten
     public const string Afmelden = "Geen berichten meer hierover";
 }
 
-/// <summary>Wat de app moet tonen over LaadCash.</summary>
-/// <param name="Show">Of er iets te tonen valt.</param>
-/// <param name="ShowPopup">Of de eenmalige popup nog open mag; daarna alleen de tegel.</param>
-/// <param name="EstimatedYearlyEur">Het geschatte bedrag per jaar, afgerond op tientallen.</param>
-/// <param name="ChargedKwhPerYear">Waarop dat bedrag gebaseerd is.</param>
-/// <param name="Title">Titel voor de tegel.</param>
-/// <param name="Body">Tekst voor de tegel.</param>
-/// <param name="PopupTitle">Titel voor de popup.</param>
-/// <param name="PopupBody">Tekst voor de popup.</param>
-/// <param name="DeepLink">Waar de knop heen gaat, met woning en e-mailadres erin.</param>
-/// <param name="Linked">Of deze woning al bij LaadCash zit.</param>
-/// <param name="EarnedThisYearEur">De echte opbrengst, zodra er een koppeling is.</param>
-public sealed record LaadcashPromoDto(
-    bool Show,
-    bool ShowPopup,
-    decimal EstimatedYearlyEur,
-    double ChargedKwhPerYear,
-    string? Title,
-    string? Body,
-    string? PopupTitle,
-    string? PopupBody,
-    string? DeepLink,
-    bool Linked,
-    decimal? EarnedThisYearEur);
 
 /// <summary>
 /// De LaadCash-promotie: iedereen met een laadpaal die nog geen LaadCash heeft, hoort te weten wat

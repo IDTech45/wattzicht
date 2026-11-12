@@ -14,6 +14,9 @@
 
     <!-- ============ Merk ============ -->
     <Color x:Key="Navy900">#0A2540</Color>
+    <!-- Een lichtere navy voor de tabs die niet geselecteerd zijn. Die waren grijs en vielen daardoor
+         weg naast de geselecteerde; nu horen ze zichtbaar bij dezelfde familie. -->
+    <Color x:Key="Navy600">#2C4C6E</Color>
     <Color x:Key="Teal800">#0E3A4A</Color>
 
     <!-- Accent: geel. Op geel hoort navy-tekst, want geel met wit haalt geen 4,5:1. -->
@@ -23,21 +26,30 @@
     <Color x:Key="TextOnAccent">#0A2540</Color>
 
     <!-- ============ Vlakken (light) ============ -->
-    <Color x:Key="BgApp">#F6F8F7</Color>
-    <Color x:Key="BgCanvas">#F6F8F7</Color>
+    <!--
+        Deze tinten trokken eerst naar groengrijs, overgenomen van LaadCash. In het donkere thema
+        viel dat niet op, maar in het lichte werd de app daardoor gewoon wit met grijs: van het navy
+        en het geel van het merk was niets meer terug te zien. Nu trekken dezelfde vlakken naar het
+        navy van het logo. Het blijft rustig genoeg om de hele dag naar te kijken, maar je ziet
+        meteen van wie de app is.
+    -->
+    <Color x:Key="BgApp">#F2F6FB</Color>
+    <Color x:Key="BgCanvas">#F2F6FB</Color>
     <Color x:Key="Surface">#FFFFFF</Color>
-    <Color x:Key="Surface2">#EEF2F0</Color>
-    <Color x:Key="SurfaceTint">#EEF6F1</Color>
-    <Color x:Key="Border">#DFE6E2</Color>
-    <Color x:Key="BorderStrong">#C6D1CB</Color>
-    <Color x:Key="Divider">#E6EBE8</Color>
+    <Color x:Key="Surface2">#E8EFF8</Color>
+    <Color x:Key="SurfaceTint">#E6EEF9</Color>
+    <Color x:Key="Border">#D3DFEC</Color>
+    <Color x:Key="BorderStrong">#B5C7DA</Color>
+    <Color x:Key="Divider">#E0E8F2</Color>
 
     <!-- ============ Tekst ============ -->
-    <Color x:Key="TextBody">#36474C</Color>
-    <Color x:Key="TextMuted">#5C6B66</Color>
+    <!-- Ook de tekst trekt naar navy in plaats van naar grijsgroen; dat leest als één geheel met
+         de vlakken hierboven en haalt ruim het vereiste contrast. -->
+    <Color x:Key="TextBody">#1E3348</Color>
+    <Color x:Key="TextMuted">#4E6479</Color>
     <Color x:Key="TextFaint">#5F6F75</Color>
     <Color x:Key="TextOnDarkMuted">#9DB4BC</Color>
-    <Color x:Key="Placeholder">#AEBAB5</Color>
+    <Color x:Key="Placeholder">#9BAEC2</Color>
 
     <!-- ============ Status ============ -->
     <Color x:Key="SuccessDot">#0E9F6E</Color>
