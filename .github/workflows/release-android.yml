@@ -1,16 +1,41 @@
 name: release-android
 
-# Bouwt een ondertekende .aab voor Google Play (interne test). Handmatig starten via Actions → release-android → Run workflow.
-# Benodigde GitHub-secrets (Settings → Secrets and variables → Actions), nooit in de repo:
+# Bouwt een ondertekende .aab en zet hem in Google Play. Starten via Actions -> release-android ->
+# Run workflow, of met een tag android-v*.
+#
+# Benodigde GitHub-secrets (Settings -> Secrets and variables -> Actions), nooit in de repo:
 #   ANDROID_KEYSTORE_BASE64   upload-keystore als base64
 #   ANDROID_KEYSTORE_PASSWORD wachtwoord van de keystore (en van de sleutel)
 #   ANDROID_KEY_ALIAS         alias, bv. wattzicht-upload
+#   PLAY_SERVICE_ACCOUNT_JSON JSON-sleutel van een serviceaccount met rechten in Play Console
+#
+# Keystore base64 maken (Git Bash):  base64 -w0 wattzicht-upload.keystore
+#
+# Zonder PLAY_SERVICE_ACCOUNT_JSON stopt hij netjes na het bouwen: het bestand staat dan onder
+# Artifacts en je uploadt het zelf. Met die sleutel gaat het rechtstreeks naar het gekozen kanaal.
 on:
   workflow_dispatch:
+    inputs:
+      track:
+        description: 'Naar welk kanaal in Play'
+        required: true
+        default: internal
+        type: choice
+        options: [internal, alpha, beta, production]
+  push:
+    tags: ['android-v*']
 
 jobs:
   aab:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    # Of het geheim er is, bepalen we HIER en niet in de stap zelf. Een stap mag in zijn "if" niet bij
+    # secrets; schrijf je dat toch, dan keurt GitHub het hele bestand af en krijg je een mislukte run
+    # zonder ook maar één stap.
+    env:
+      HEEFT_PLAY: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -38,8 +63,15 @@ jobs:
           KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         # Versiecode = runnummer, zodat elke upload naar Play hoger is dan de vorige.
+        #
+        # -f net9.0-android moet erbij. Het project richt zich op meerdere platformen en publish
+        # weigert dan zonder doel, ook met AndroidOnly=true: dat schakelt alleen iOS uit in de
+        # projectbestanden, niet in de aanroep. Zonder deze regel stopt de build met NETSDK1129 en
+        # komt er nooit een bundel uit. Dat gebeurde hier tot 12-11-2026 bij elke run; de testapk-
+        # workflow had de regel al wel.
         run: >
           dotnet publish src/Wattzicht.App/Wattzicht.App.csproj -c Release
+          -f net9.0-android
           -p:AndroidOnly=true
           -p:AcceptAndroidSDKLicenses=true
           -p:AndroidPackageFormats=aab
@@ -55,8 +87,29 @@ jobs:
         if: always()
         run: rm -f "$RUNNER_TEMP/upload.keystore"
 
+      - name: Laten zien wat eruit kwam
+        run: ls -la out/*.aab
+
+      # Altijd bewaren, ook als het uploaden hieronder niet kan. Dan heb je het bestand alsnog.
       - uses: actions/upload-artifact@v4
         with:
           name: wattzicht-android-aab
           path: out/*-Signed.aab
           if-no-files-found: error
+
+      - name: Naar Google Play sturen
+        if: env.HEEFT_PLAY == 'true'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: nl.wattzicht.app
+          releaseFiles: out/*-Signed.aab
+          # Bij een tag is er geen keuzemenu, dan is intern het veilige standaardkanaal.
+          track: ${{ github.event.inputs.track || 'internal' }}
+          status: completed
+
+      - name: Wat er nog mist
+        if: env.HEEFT_PLAY != 'true'
+        run: |
+          echo "::warning::Niet geupload: PLAY_SERVICE_ACCOUNT_JSON ontbreekt."
+          echo "De bundel staat onder Artifacts; zie docs/STORES-RELEASE.md."

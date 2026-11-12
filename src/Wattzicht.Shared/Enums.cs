@@ -30,6 +30,7 @@ public enum DeviceBrand
     HomeWizard = 5,
     Solax = 6,
     Enphase = 7,
+    Peblar = 8,
 
     /// <summary>Demo-apparaat met gesimuleerde data; geen echte verbinding.</summary>
     Demo = 99

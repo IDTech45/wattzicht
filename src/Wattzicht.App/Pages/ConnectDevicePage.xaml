@@ -194,6 +194,30 @@
                         </VerticalStackLayout>
                     </Border>
 
+                    <!-- Peblar: de paal zelf op het thuisnetwerk, met een token uit de paal -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding IsPeblar}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="Je telefoon praat rechtstreeks met de laadpaal, dus dit werkt alleen thuis op je eigen wifi. Zet eerst in de webinterface van de paal de lokale API aan en maak daar een token aan."
+                                   Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="IP-adres van de laadpaal" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding IpAddress}" Placeholder="192.168.1.42" Keyboard="Url" />
+                                </Border>
+                                <Label Text="{Binding IpAddressError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasIpAddressError}" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="API-token van de laadpaal" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding ApiToken}" Placeholder="Uit de webinterface van de paal" />
+                                </Border>
+                                <Label Text="{Binding ApiTokenError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasApiTokenError}" />
+                            </VerticalStackLayout>
+                            <Label Text="Maak je later een nieuw token aan, dan vervalt dit token en moet je hier opnieuw koppelen."
+                                   Style="{StaticResource SubtitleLabel}" FontSize="13" />
+                        </VerticalStackLayout>
+                    </Border>
+
                     <!-- Zaptec: hetzelfde account als in de Zaptec-app zelf -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsZaptec}">
                         <VerticalStackLayout Spacing="12">

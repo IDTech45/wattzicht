@@ -149,7 +149,7 @@ public sealed class ConnectorContractTests
         var registry = sp.GetRequiredService<ConnectorRegistry>();
 
         Assert.Equal(
-            new[] { DeviceBrand.Growatt, DeviceBrand.Sessy, DeviceBrand.Alfen, DeviceBrand.Solax, DeviceBrand.Enphase, DeviceBrand.Zaptec, DeviceBrand.HomeWizard, DeviceBrand.Demo }.OrderBy(b => b),
+            new[] { DeviceBrand.Growatt, DeviceBrand.Sessy, DeviceBrand.Alfen, DeviceBrand.Solax, DeviceBrand.Enphase, DeviceBrand.Zaptec, DeviceBrand.Peblar, DeviceBrand.HomeWizard, DeviceBrand.Demo }.OrderBy(b => b),
             registry.SupportedBrands.OrderBy(b => b));
     }
 

@@ -72,6 +72,15 @@ public static class ConnectorServiceCollectionExtensions
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Wattzicht/0.1");
         });
 
+        // Een Peblar praat http op een privéadres in huis, dus hier geen basis-URL en geen
+        // certificaatgedoe: het adres komt per koppeling mee. Korte tijdslimiet, want een paal die
+        // uit staat hoort de app niet twintig tellen op te houden.
+        services.AddHttpClient(PeblarConnector.HttpClientName, client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(8);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Wattzicht/0.1");
+        });
+
         services.AddHttpClient(SolaxConnector.HttpClientName, client =>
         {
             var baseUrl = configuration["Connectors:Solax:BaseUrl"] ?? SolaxConnector.DefaultBaseUrl;
@@ -85,6 +94,7 @@ public static class ConnectorServiceCollectionExtensions
         services.AddSingleton<IDeviceConnector, SessyConnector>();
         services.AddSingleton<IDeviceConnector, AlfenConnector>();
         services.AddSingleton<IDeviceConnector, ZaptecConnector>();
+        services.AddSingleton<IDeviceConnector, PeblarConnector>();
         services.AddSingleton<IDeviceConnector, HomeWizardConnector>();
         services.AddSingleton(new EnphaseOptions(
             configuration["Connectors:Enphase:ClientId"],

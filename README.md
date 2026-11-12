@@ -46,10 +46,11 @@ Zonder Docker: `dotnet run --project src/Wattzicht.Api` en `cd frontend && npm i
 | SolaX | Omvormer, batterij, laadpaal | Cloud-token + registratienummer van de dongle |
 | Enphase | Micro-omvormers (zonkant) | OAuth op Enlighten v4; alleen opwek, net en verbruik zitten achter een betaald plan |
 | Sessy | Thuisbatterij | Lokale API op de dongle (basic auth) |
+| Peblar | Laadpaal met ingebouwde meter | Lokale REST API op de paal, token uit de webinterface; de app leest uit, niet de server |
 | Demo | Alles | Gesimuleerde dagcurve, alleen voor demonstreren (`SEED_DEMO=true`) |
 
-Alle drie de echte koppelingen zijn getest tegen opgenomen antwoorden, nog niet tegen een echt
-apparaat van een klant. Volgende merken: HomeWizard P1, SolarEdge, Marstek, Zaptec, Easee. Zie
+Elke koppeling is getest tegen opgenomen antwoorden, nog niet tegen een echt apparaat van een
+klant. Volgende merken: SolarEdge, Marstek, Easee. Zie
 `docs/MERKEN.md` voor het onderzoek per merk en `docs/ARCHITECTUUR.md` voor het connector-contract.
 
 Wattzicht leest apparaten alleen uit; sturen (batterij laden, laadsessie starten) zit nog niet in

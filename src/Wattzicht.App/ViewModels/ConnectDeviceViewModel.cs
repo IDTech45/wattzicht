@@ -52,6 +52,10 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         // Via de gateway in huis en niet via de cloud van Enphase. Die cloudroute loopt op een
         // developer-app van ons met duizend aanroepen per maand voor alle huizen samen, en geeft de
         // netkant niet. De gateway geeft opwek, huisverbruik en netkant in één antwoord.
+        // Peblar heeft wel een cloud, maar alleen voor hun eigen app. De paal zelf heeft een
+        // gedocumenteerde lokale API die de eigenaar aanzet in de webinterface. Dat kan alleen vanuit
+        // het huis, dus net als de Alfen staat hij hier en niet op de website.
+        new(DeviceBrand.Peblar, "Peblar", "Laadpaal op je eigen netwerk, met een token uit de paal", "EnergyCharger", DeviceType.Charger),
         new(DeviceBrand.Enphase, "Enphase", "Zonnepanelen via de IQ Gateway in je meterkast", "Accent500", DeviceType.Inverter),
         new(DeviceBrand.HomeWizard, "P1-meter", "Dongle op je slimme meter, leest je netafname", "EnergyGrid", DeviceType.P1Meter),
         new(DeviceBrand.Demo, "Demo", "Voorbeelddata om de app te proberen", "TextMuted", DeviceType.Inverter),
@@ -85,6 +89,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(IsSessy))]
     [NotifyPropertyChangedFor(nameof(IsZaptec))]
     [NotifyPropertyChangedFor(nameof(IsAlfen))]
+    [NotifyPropertyChangedFor(nameof(IsPeblar))]
     [NotifyPropertyChangedFor(nameof(IsEnphase))]
     [NotifyPropertyChangedFor(nameof(IsHomeWizard))]
     [NotifyPropertyChangedFor(nameof(IsDemo))]
@@ -106,10 +111,11 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     public bool IsHomeWizard => SelectedBrand?.Brand == DeviceBrand.HomeWizard;
     public bool IsZaptec => SelectedBrand?.Brand == DeviceBrand.Zaptec;
     public bool IsAlfen => SelectedBrand?.Brand == DeviceBrand.Alfen;
+    public bool IsPeblar => SelectedBrand?.Brand == DeviceBrand.Peblar;
     public bool IsEnphase => SelectedBrand?.Brand == DeviceBrand.Enphase;
 
     /// <summary>Merken die de app zelf uitleest; die moeten adres en inlog op de telefoon bewaren.</summary>
-    private bool IsLokaalGelezen => IsHomeWizard || IsSessy || IsAlfen || IsEnphase;
+    private bool IsLokaalGelezen => IsHomeWizard || IsSessy || IsAlfen || IsEnphase || IsPeblar;
     public bool IsDemo => SelectedBrand?.Brand == DeviceBrand.Demo;
     public string BrandName => SelectedBrand?.Name ?? "";
 
@@ -139,6 +145,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         DeviceBrand.Sessy => $"Dongle op {IpAddress} als {Username}",
         DeviceBrand.HomeWizard => $"P1-meter op {IpAddress}",
         DeviceBrand.Alfen => $"Laadpaal op {IpAddress}",
+        DeviceBrand.Peblar => $"Laadpaal op {IpAddress}, token {Mask(ApiToken)}",
         DeviceBrand.Enphase => $"Gateway op {IpAddress}, token {Mask(ApiToken)}",
         DeviceBrand.Demo => "Voorbeeldapparaten worden toegevoegd",
         _ => ""
@@ -230,6 +237,10 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                 credentials["ip"] = IpAddress.Trim();
                 credentials["token"] = ApiToken.Trim();
                 break;
+            case DeviceBrand.Peblar:
+                credentials["ip"] = IpAddress.Trim();
+                credentials["token"] = ApiToken.Trim();
+                break;
             case DeviceBrand.Alfen:
                 credentials["ip"] = IpAddress.Trim();
                 // De gebruikersnaam van een Alfen is altijd admin. Daar een veld voor tonen levert
@@ -280,6 +291,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                         if (IsSessy) await LokaleMeter.BewaarSessyInlogAsync(apparaat.Id, Username.Trim(), Password);
                         if (IsAlfen) await LokaleMeter.BewaarAlfenInlogAsync(apparaat.Id, "admin", Password);
                         if (IsEnphase) await LokaleMeter.BewaarEnphaseTokenAsync(apparaat.Id, ApiToken);
+                        if (IsPeblar) await LokaleMeter.BewaarPeblarTokenAsync(apparaat.Id, ApiToken);
                     }
                 }
                 var count = devices?.Count ?? 0;
@@ -304,6 +316,9 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                 // monteur open, dan word je geweigerd met een wachtwoord dat gewoon klopt.
                 else if (IsEnphase) ApiTokenError = "De gateway accepteert dit token niet. Haal een nieuw token op bij entrez.enphaseenergy.com.";
                 else if (IsAlfen) PasswordError = "De laadpaal accepteert dit niet. Controleer het wachtwoord, en sluit de ACE Service Installer als die openstaat.";
+                // Een nieuw token aanmaken in de webinterface maakt het vorige ongeldig. Dat is bij
+                // Peblar de gewone oorzaak van een weigering, dus noemen we hem meteen.
+                else if (IsPeblar) ApiTokenError = "De laadpaal accepteert dit token niet. Maak in de webinterface van de paal een nieuw token aan; een nieuw token maakt het oude ongeldig.";
                 else ErrorMessage = ex.Message;
             }
         }, _auth);
@@ -345,7 +360,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
             else if (string.IsNullOrWhiteSpace(sn)) DongleSnError = "Vul het registratienummer van de dongle in.";
             else if (sn.Length != 10) DongleSnError = "Het registratienummer heeft 10 tekens.";
         }
-        if (IsSessy || IsHomeWizard || IsAlfen || IsEnphase)
+        if (IsSessy || IsHomeWizard || IsAlfen || IsEnphase || IsPeblar)
         {
             if (string.IsNullOrWhiteSpace(IpAddress)) IpAddressError = "Vul het IP-adres in.";
             else if (!IsVolledigIpAdres(IpAddress)) IpAddressError = "Dit is geen geldig IP-adres, bijv. 192.168.1.50.";
@@ -357,6 +372,8 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         }
         if (IsEnphase && string.IsNullOrWhiteSpace(ApiToken))
             ApiTokenError = "Vul het token van je gateway in.";
+        if (IsPeblar && string.IsNullOrWhiteSpace(ApiToken))
+            ApiTokenError = "Vul het API-token van je laadpaal in.";
         if (IsAlfen && string.IsNullOrEmpty(Password))
             PasswordError = "Vul het wachtwoord van je laadpaal in. Dat heb je van je installateur gekregen.";
         if (IsZaptec)

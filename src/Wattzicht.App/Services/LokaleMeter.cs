@@ -70,6 +70,7 @@ public sealed class LokaleMeter(ApiClient api, ILogger<LokaleMeter> logger)
                     DeviceBrand.Sessy => await HaalSessyAsync(adres, apparaat.Id, ct),
                     DeviceBrand.Alfen => await HaalAlfenAsync(adres, apparaat.Id, ct),
                     DeviceBrand.Enphase => await HaalEnphaseAsync(adres, apparaat.Id, ct),
+                    DeviceBrand.Peblar => await HaalPeblarAsync(adres, apparaat.Id, ct),
                     _ => await HaalAsync(adres, ct),
                 };
                 if (rauw is null) continue;
@@ -113,6 +114,10 @@ public sealed class LokaleMeter(ApiClient api, ILogger<LokaleMeter> logger)
         // limiet van duizend aanroepen per maand voor álle huizen samen; de gateway in het huis kent
         // die limiet niet en geeft bovendien de netkant, die via de cloud niet te krijgen is.
         DeviceBrand.Enphase => true,
+        // Peblar heeft een cloud, maar alleen voor hun eigen app. Wat ze wel geven is een lokale API
+        // op de paal, die de eigenaar zelf aanzet en waar hij zelf een token voor maakt. Dat adres is
+        // een privéadres in huis, dus ook dit doet de telefoon.
+        DeviceBrand.Peblar => true,
         _ => false,
     };
 
@@ -240,6 +245,44 @@ public sealed class LokaleMeter(ApiClient api, ILogger<LokaleMeter> logger)
             return null;
         }
     }
+
+    /// <summary>
+    /// De Peblar aanspreken.
+    ///
+    /// Eén aanroep naar /api/v1/meter geeft de stand van de ingebouwde meter en het vermogen van dit
+    /// moment. Het token gaat mee als Authorization-header zonder schema, zo wil Peblar het; het is
+    /// geen Bearer-token en ook geen basic auth.
+    ///
+    /// Een 401 betekent hier bijna altijd dat de eigenaar in de webinterface een nieuw token heeft
+    /// aangemaakt, want dat maakt het oude ongeldig. Daar kan de app niets aan herstellen, dus slaan
+    /// we die meting over; het koppelscherm zegt het wél meteen als je opnieuw koppelt.
+    /// </summary>
+    private async Task<JsonElement?> HaalPeblarAsync(string adres, Guid deviceId, CancellationToken ct)
+    {
+        var token = await SecureStorage.Default.GetAsync(PeblarSleutel(deviceId));
+        if (string.IsNullOrWhiteSpace(token)) return null;
+
+        try
+        {
+            using var verzoek = new HttpRequestMessage(HttpMethod.Get, $"http://{adres}/api/v1/meter");
+            verzoek.Headers.TryAddWithoutValidation("Authorization", token);
+            using var antwoord = await Client.SendAsync(verzoek, ct);
+            if (!antwoord.IsSuccessStatusCode) return null;
+
+            var inhoud = await antwoord.Content.ReadFromJsonAsync<JsonElement>(ct);
+            return inhoud.ValueKind == JsonValueKind.Object ? inhoud.Clone() : null;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Het API-token dat de eigenaar in de webinterface van zijn Peblar aanmaakte.</summary>
+    public static Task BewaarPeblarTokenAsync(Guid deviceId, string token) =>
+        SecureStorage.Default.SetAsync(PeblarSleutel(deviceId), token.Trim());
+
+    private static string PeblarSleutel(Guid deviceId) => $"peblar-token-{deviceId}";
 
     /// <summary>Het token van de bewoner voor zijn eigen gateway.</summary>
     public static Task BewaarEnphaseTokenAsync(Guid deviceId, string token) =>
