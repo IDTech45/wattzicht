@@ -22,6 +22,15 @@
                         <Label Text="{Binding ErrorMessage}" />
                     </Border>
 
+                    <!-- Zon. Staat boven de prijzen, want wie panelen heeft begint daar. -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding HeeftZon}">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{Binding ZonTekst}" FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
+                            <Label Text="{Binding ZonBron}" Style="{StaticResource StatCaption}" />
+                        </VerticalStackLayout>
+                    </Border>
+
                     <Border Style="{StaticResource Card}" IsVisible="{Binding HasPrices}">
                         <VerticalStackLayout Spacing="6">
                             <Label Text="{Binding CheapestText}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />

@@ -138,6 +138,15 @@ public partial class AdviceViewModel : BaseViewModel
     [ObservableProperty] private string _cheapestText = string.Empty;
     [ObservableProperty] private string _expensiveText = string.Empty;
     [ObservableProperty] private bool _hasPrices;
+
+    // ---- Zon ----
+    //
+    // Of het weer meetelt hoorde zichtbaar te zijn. Er stond een tijdstip op het scherm en niemand
+    // kon zien of dat uit de zonverwachting kwam of alleen uit de uurprijzen. Zonder verwachting
+    // zeggen we dat ook, met wat eraan ontbreekt, in plaats van de regel stilletjes weg te laten.
+    [ObservableProperty] private string _zonTekst = string.Empty;
+    [ObservableProperty] private string _zonBron = string.Empty;
+    [ObservableProperty] private bool _heeftZon;
     [ObservableProperty] private bool _hasTips;
     [ObservableProperty] private bool _hasLoaded;
     [ObservableProperty] private bool _isRefreshing;
@@ -181,11 +190,29 @@ public partial class AdviceViewModel : BaseViewModel
         CheapestText = advice.Cheapest is null ? string.Empty : $"Goedkoopst {Span(advice.Cheapest)} · {Cents(advice.Cheapest.AverageAllInEur)}";
         ExpensiveText = advice.MostExpensive is null ? string.Empty : $"Duurst {Span(advice.MostExpensive)} · {Cents(advice.MostExpensive.AverageAllInEur)}";
 
+        HeeftZon = true;
+        if (advice.SolarSource is { Length: > 0 } bron && advice.ExpectedSolarKwh > 0)
+        {
+            var venster = advice.SunFrom is { } van && advice.SunTo is { } tot
+                ? $", het meest tussen {Tijd(van)} en {Tijd(tot)}"
+                : string.Empty;
+            ZonTekst = $"Zon vandaag: ongeveer {advice.ExpectedSolarKwh.ToString("0.#", Nl)} kWh{venster}";
+            ZonBron = $"Verwachting van {bron}, op jouw plaats en je eigen piekvermogen. Dit telt mee in de tips hieronder.";
+        }
+        else
+        {
+            ZonTekst = "Geen zonverwachting beschikbaar";
+            ZonBron = "De tips hieronder kijken nu alleen naar de prijs. Koppel je zonnepanelen en vul je postcode in, dan rekenen we het weer mee.";
+        }
+
         Tips.Clear();
         foreach (var tip in advice.Tips)
             Tips.Add(new AdviceTipRow(tip));
         HasTips = Tips.Count > 0;
     }
+
+    /// <summary>Tijd in de zone van het toestel; dat is voor onze gebruikers de Nederlandse.</summary>
+    private static string Tijd(DateTimeOffset moment) => moment.ToLocalTime().ToString("HH:mm");
 
     private static string Span(PriceWindowDto w)
     {

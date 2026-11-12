@@ -153,6 +153,9 @@ public static class AdviceEngine
         var cheapest = FindWindow(future, WindowHours, cheapest: true, input.SurchargePerKwh);
         var expensive = FindWindow(future, WindowHours, cheapest: false, input.SurchargePerKwh);
 
+        var heeftVerwachting = input.HasPv && input.Forecast is { Count: > 0 };
+        var (zonVan, zonTot) = heeftVerwachting ? ZonnigsteVenster(input, today) : (default, default);
+
         var tips = new List<AdviceTipDto>();
         if (input.IsDynamic && cheapest is not null && expensive is not null)
         {
@@ -177,7 +180,14 @@ public static class AdviceEngine
             expensive,
             tips,
             tips.Sum(t => t.SavingEur),
-            future.Count > 0 ? "EnergyZero (day-ahead)" : null);
+            future.Count > 0 ? "EnergyZero (day-ahead)" : null,
+            // De zon hoort zichtbaar te zijn, ook als hij het advies niet haalt. Anders staat er een
+            // tijdstip op het scherm en kan niemand zien of het weer is meegewogen of dat we alleen
+            // naar de prijs keken.
+            ExpectedSolarKwh: heeftVerwachting ? Math.Round(VerwachtVandaagKwh(input, today), 1) : 0,
+            SunFrom: heeftVerwachting ? zonVan : null,
+            SunTo: heeftVerwachting ? zonTot : null,
+            SolarSource: heeftVerwachting ? "Open-Meteo" : null);
     }
 
     /// <summary>

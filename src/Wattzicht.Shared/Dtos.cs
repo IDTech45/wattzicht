@@ -437,6 +437,10 @@ public sealed record DayTipDto(
 /// <param name="Tips">Tips, hoogste besparing eerst.</param>
 /// <param name="TotalSavingEur">Som van de besparingen.</param>
 /// <param name="PriceSource">Bron van de prijzen, of <c>null</c> als die niet beschikbaar waren.</param>
+/// <param name="ExpectedSolarKwh">Wat je panelen vandaag naar verwachting maken; 0 zonder verwachting.</param>
+/// <param name="SunFrom">Begin van het zonnigste blok van vandaag.</param>
+/// <param name="SunTo">Einde daarvan.</param>
+/// <param name="SolarSource">Waar die verwachting vandaan komt, of <c>null</c> als we er geen hebben.</param>
 public sealed record AdviceDto(
     DateOnly Date,
     bool IsDynamic,
@@ -445,7 +449,11 @@ public sealed record AdviceDto(
     PriceWindowDto? MostExpensive,
     List<AdviceTipDto> Tips,
     decimal TotalSavingEur,
-    string? PriceSource);
+    string? PriceSource,
+    double ExpectedSolarKwh = 0,
+    DateTimeOffset? SunFrom = null,
+    DateTimeOffset? SunTo = null,
+    string? SolarSource = null);
 
 // ---------------------------------------------------------------------------
 // Toestemming installateur (meekijken) en inzagelog
