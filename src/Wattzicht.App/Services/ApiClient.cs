@@ -36,6 +36,29 @@ public sealed class ApiClient
     public Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken ct = default) =>
         PostAsync<RegisterRequest, AuthResponse>("/auth/register", request, authenticated: false, ct);
 
+    public Task<AuthResponse> ExternalLoginAsync(ExternalLoginRequest request, CancellationToken ct = default) =>
+        PostAsync<ExternalLoginRequest, AuthResponse>("/auth/external", request, authenticated: false, ct);
+
+    /// <summary>
+    /// Welke inlogknoppen de server aan heeft staan.
+    ///
+    /// Gaat er iets mis, dan geeft dit een lege lijst en blijven de knoppen weg. Een knop die het
+    /// niet doet is vervelender dan geen knop: je tikt erop, er gebeurt niets, en je weet niet of het
+    /// aan jou ligt.
+    /// </summary>
+    public async Task<IReadOnlyList<string>> ProvidersAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Get, Relative("/auth/providers"));
+            return await SendAsync<List<string>>(req, ct) ?? [];
+        }
+        catch (Exception)
+        {
+            return [];
+        }
+    }
+
     public Task<AuthResponse> RefreshAsync(CancellationToken ct = default) =>
         PostAsync<object?, AuthResponse>("/auth/refresh", null, authenticated: true, ct);
 

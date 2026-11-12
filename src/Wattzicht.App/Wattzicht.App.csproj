@@ -53,6 +53,9 @@
   <!-- Pushmeldingen (Android): Firebase Cloud Messaging -->
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <PackageReference Include="Xamarin.Firebase.Messaging" Version="124.1.0.1" />
+    <!-- Inloggen met Google. Dit pakket levert het keuzescherm met je Google-accounts en geeft ons
+         het ondertekende token terug dat de server controleert. -->
+    <PackageReference Include="Xamarin.GooglePlayServices.Auth" Version="121.3.0.1" />
     <!-- Optioneel: zet google-services.json uit de Firebase-console hier neer; dan start Firebase vanzelf. -->
     <GoogleServicesJson Include="Platforms\Android\google-services.json" Condition="Exists('Platforms\Android\google-services.json')" />
   </ItemGroup>

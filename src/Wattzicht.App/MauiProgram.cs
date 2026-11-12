@@ -31,6 +31,14 @@ public static class MauiProgram
 
         // ---- Services ----
         builder.Services.AddSingleton<TokenStore>();
+
+        // Inloggen met Google of Apple. Per platform een eigen uitvoering; waar niets voor gebouwd
+        // is komt de lege variant en blijven die knoppen gewoon weg.
+#if ANDROID
+        builder.Services.AddSingleton<ISocialeLogin, Wattzicht.App.Platforms.Android.GoogleLoginAndroid>();
+#else
+        builder.Services.AddSingleton<ISocialeLogin, GeenSocialeLogin>();
+#endif
         builder.Services.AddSingleton(_ => new HttpClient
         {
             BaseAddress = new Uri(AppConfig.ApiBaseUrl),

@@ -133,6 +133,29 @@
                                            Margin="0,0,16,0" />
                     </Grid>
 
+                    <!-- Inloggen met een account dat je al hebt. Staat onder de gewone knop: wie een
+                         wachtwoord bij ons heeft hoort niet eerst langs Google te moeten. -->
+                    <VerticalStackLayout Spacing="12" IsVisible="{Binding ToonSociaal}">
+                        <Label Text="of"
+                               Style="{StaticResource SubtitleLabel}"
+                               FontSize="13"
+                               HorizontalOptions="Center" />
+
+                        <Button Text="Doorgaan met Google"
+                                Style="{StaticResource SecondaryButton}"
+                                IsVisible="{Binding ToonGoogle}"
+                                IsEnabled="{Binding IsNotBusy}"
+                                Command="{Binding SociaalCommand}"
+                                CommandParameter="google" />
+
+                        <Button Text="Doorgaan met Apple"
+                                Style="{StaticResource SecondaryButton}"
+                                IsVisible="{Binding ToonApple}"
+                                IsEnabled="{Binding IsNotBusy}"
+                                Command="{Binding SociaalCommand}"
+                                CommandParameter="apple" />
+                    </VerticalStackLayout>
+
                     <Button Text="{Binding WisselTekst}"
                             Style="{StaticResource LinkButton}"
                             Command="{Binding ToggleRegistrerenCommand}" />

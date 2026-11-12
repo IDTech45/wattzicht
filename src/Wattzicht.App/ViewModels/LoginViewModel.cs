@@ -10,6 +10,8 @@ public partial class LoginViewModel : BaseViewModel
     private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
 
     private readonly AuthService _auth;
+    private readonly ApiClient _api;
+    private readonly ISocialeLogin _sociaal;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasEmailError))]
@@ -61,10 +63,62 @@ public partial class LoginViewModel : BaseViewModel
     public bool HasEmailError => !string.IsNullOrEmpty(EmailError);
     public bool HasPasswordError => !string.IsNullOrEmpty(PasswordError);
 
-    public LoginViewModel(AuthService auth)
+    public LoginViewModel(AuthService auth, ApiClient api, ISocialeLogin sociaal)
     {
         _auth = auth;
+        _api = api;
+        _sociaal = sociaal;
         Title = "Inloggen";
+    }
+
+    /// <summary>
+    /// Welke knoppen er mogen staan. De server bepaalt dat, want daar staan de sleutels; het toestel
+    /// bepaalt het tweede deel, want zonder uitvoering voor dit platform doet een knop niets.
+    /// </summary>
+    public async Task LaadProvidersAsync()
+    {
+        var beschikbaar = await _api.ProvidersAsync();
+        ToonGoogle = beschikbaar.Contains("google") && _sociaal.Ondersteunt("google");
+        ToonApple = beschikbaar.Contains("apple") && _sociaal.Ondersteunt("apple");
+    }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ToonSociaal))]
+    private bool _toonGoogle;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ToonSociaal))]
+    private bool _toonApple;
+
+    /// <summary>Is er iets te tonen? Zo niet, dan blijft ook het streepje met "of" weg.</summary>
+    public bool ToonSociaal => ToonGoogle || ToonApple;
+
+    [RelayCommand]
+    private async Task SociaalAsync(string provider)
+    {
+        ErrorMessage = null;
+
+        await RunSafeAsync(async () =>
+        {
+            var token = await _sociaal.TokenAsync(provider);
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                // Weggeklikt, of de aanmelding werd geweigerd. In het eerste geval hoort er niets te
+                // gebeuren; in het tweede kan de gebruiker er niets aan doen en helpt alleen de
+                // gewone weg.
+                return;
+            }
+
+            try
+            {
+                await _auth.ExternalLoginAsync(provider, token);
+                await Shell.Current.GoToAsync(AppShell.Routes.Home);
+            }
+            catch (ApiException ex) when (ex.IsUnauthorized)
+            {
+                ErrorMessage = "Dat account is niet geaccepteerd. Probeer het opnieuw, of meld je aan met je e-mailadres.";
+            }
+        });
     }
 
     partial void OnEmailChanged(string value) => EmailError = null;

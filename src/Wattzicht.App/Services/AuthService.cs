@@ -54,6 +54,20 @@ public sealed class AuthService
         LoggedIn?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Inloggen met een token van Google of Apple.
+    ///
+    /// Kent de server het adres, dan log je in; kent hij het niet, dan maakt hij het account meteen
+    /// aan. Voor de app is dat hetzelfde: er komt een token terug en je bent binnen.
+    /// </summary>
+    public async Task ExternalLoginAsync(string provider, string idToken, CancellationToken ct = default)
+    {
+        var response = await _api.ExternalLoginAsync(new ExternalLoginRequest(provider, idToken), ct);
+        await _tokens.SetAsync(response.Token, response.ExpiresAt);
+        Household = response.Household;
+        LoggedIn?.Invoke(this, EventArgs.Empty);
+    }
+
     /// <summary>Na een geslaagde login (bv. om het toestel voor pushmeldingen aan te melden).</summary>
     public event EventHandler? LoggedIn;
 
