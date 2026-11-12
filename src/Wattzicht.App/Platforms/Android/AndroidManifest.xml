@@ -5,10 +5,14 @@
     het met "Target SDK of artifact is too low: 1". Het bouwen zelf gaat wel goed, dus je merkt het
     pas bij de upload; op 12-11-2026 liep de eerste release daarop stuk nadat alles al gelukt was.
     Daarom staat het hier expliciet in plaats van dat we erop vertrouwen dat de build het invult.
-    35 is wat .NET 9 meelevert en wat Play op dit moment van een nieuwe app eist; 24 is Android 7,
-    de ondergrens die ook in het projectbestand staat.
+    Met 35 weigerde Play het nog steeds. Sinds eind augustus 2026 moet een nieuwe app API 36 halen,
+    en LaadCash staat ook op 36. Play leest alleen deze waarde uit het pakket, dus die zetten we hier
+    op 36; .NET 9 bouwt nog tegen 35. Dat betekent dat gedragswijzigingen van Android 16 gelden
+    zonder dat we ertegen gebouwd hebben, en dat is voor een interne test prima maar geen eindstand:
+    zodra de android-workload 36 meelevert hoort het project daar gewoon tegen te bouwen.
+    24 is Android 7, de ondergrens die ook in het projectbestand staat.
   -->
-  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="35" />
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="36" />
   <!--
     Cleartext (HTTP) staat standaard uit. Het csproj koppelt per configuratie een
     network_security_config: DEBUG staat HTTP toe naar 10.0.2.2/localhost (emulator -> host),
