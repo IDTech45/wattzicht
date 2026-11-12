@@ -97,3 +97,28 @@ week heen en weer.
 3. `release-android` naar internal, `release-ios` naar TestFlight. Zelf installeren en doorlopen.
 4. Winkelpagina's invullen, schermafbeeldingen maken, vragenlijsten beantwoorden.
 5. Indienen voor beoordeling.
+
+## Inloggen met Google en Apple
+
+**Google staat klaar.** In het Cloud-project `wattzicht` (nummer 664049832837) is op 12-11-2026 het
+toestemmingsscherm ingericht op naam Wattzicht, met wattzicht.nl als domein en
+wattzicht.nl/privacy als privacyverklaring, en daarna op **In production** gezet. Dat laatste is
+nodig: zolang het op Testing staat kan alleen een handjevol testgebruikers inloggen.
+
+Er zijn drie client-id's, en alle drie staan ze in `appsettings.json` onder `ExternalAuth`. Dat mag:
+een client-id is geen geheim, het zit zichtbaar in elke app-build. Het client secret van de
+web-client gebruiken we niet en staat dus ook nergens.
+
+| Soort | Waarvoor |
+| --- | --- |
+| Web | De ontvanger van het token. Android vraagt zijn id-token met dit id als `serverClientId`. |
+| Android | Hoort bij pakket `nl.wattzicht.app` en de ondertekening van Play (SHA-1 7D:61:...:79) |
+| iOS | Hoort bij bundel `nl.wattzicht.app` |
+
+Draait er ooit een build buiten Play om (een losse apk), dan tekent die met een andere sleutel en
+moet die SHA-1 er als extra Android-client bij. Anders weigert Google de aanmelding op dat toestel.
+
+**Apple moet nog.** Daarvoor is eerst het App-ID `nl.wattzicht.app` nodig in het Apple-account, met
+Sign in with Apple aangezet. Zodra dat er is, komt het bundel-id in `ExternalAuth:AppleClientIds` en
+doet de knop het. Tot die tijd meldt `GET /auth/providers` alleen google, en toont de app de
+Apple-knop niet.
