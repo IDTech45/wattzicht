@@ -168,4 +168,63 @@ public sealed class AdviceEngineTests
         Assert.Equal(MidnightUtc, prices[0].StartUtc);
         Assert.Equal(-0.05m, prices[1].MarketEurPerKwh);
     }
+
+    // ---- Zon tegen net -----------------------------------------------------
+    //
+    // Het goedkoopste nachtuur is niet vanzelf het beste moment. Wie panelen heeft kan die
+    // kilowatturen ook zelf gebruiken, en dan betaalt hij alleen de gemiste terugleververgoeding.
+    // Na de saldering is dat meestal een paar cent en wint de zon het ruim van het net.
+
+    /// <summary>Zonnige uren tussen 11:00 en 15:00 lokaal, 600 W/m2.</summary>
+    private static List<HourlyIrradiance> Zonnig() =>
+        Enumerable.Range(11, 4)
+            .Select(h => new HourlyIrradiance(MidnightUtc.AddHours(h - 1), 600))
+            .ToList();
+
+    [Fact]
+    public void Na_de_saldering_wint_eigen_zon_het_van_het_goedkoopste_nachtuur()
+    {
+        var input = Input(dynamic: true, charger: false) with { Forecast = Zonnig(), PvPeakKw = 4.0 };
+        var vandaag = new DateOnly(2027, 3, 10);
+
+        var prijs = AdviceEngine.EigenZonPrijs(input, vandaag);
+
+        // Terugleververgoeding 0,08 min terugleverkosten 0: dat is wat je opgeeft.
+        Assert.Equal(0.08m, prijs);
+
+        var zon = AdviceEngine.ZonAlternatief(input, vandaag, AdviceEngine.ApplianceKwh);
+        Assert.NotNull(zon);
+        Assert.Equal(0.08m, zon!.Value.PrijsPerKwh);
+    }
+
+    [Fact]
+    public void Zolang_er_gesaldeerd_wordt_valt_er_niets_te_kiezen()
+    {
+        // Met saldering krijg je voor teruglevering net zoveel als je zelf betaalt, dus is eigen
+        // gebruik exact de importprijs waard en wint het niet vanzelf van een goedkoop nachtuur.
+        var input = Input(dynamic: true) with { Forecast = Zonnig() };
+
+        Assert.Equal(0.30m, AdviceEngine.EigenZonPrijs(input, new DateOnly(2026, 6, 1)));
+    }
+
+    [Fact]
+    public void Zonder_weersverwachting_geen_zonadvies()
+    {
+        // Liever geen advies dan een advies dat op een aanname staat.
+        var input = Input(dynamic: true);
+
+        Assert.Null(AdviceEngine.ZonAlternatief(input, new DateOnly(2027, 3, 10), AdviceEngine.ApplianceKwh));
+    }
+
+    [Fact]
+    public void Te_weinig_zon_voor_wat_je_nodig_hebt_telt_niet_mee()
+    {
+        // Vier uur van 600 W/m2 op 4 kWp is ongeveer 9,6 kWh. Genoeg voor een wasmachine, te weinig
+        // voor een auto die er twintig wil.
+        var input = Input(dynamic: true) with { Forecast = Zonnig(), PvPeakKw = 4.0 };
+        var vandaag = new DateOnly(2027, 3, 10);
+
+        Assert.NotNull(AdviceEngine.ZonAlternatief(input, vandaag, 1.0));
+        Assert.Null(AdviceEngine.ZonAlternatief(input, vandaag, 20.0));
+    }
 }

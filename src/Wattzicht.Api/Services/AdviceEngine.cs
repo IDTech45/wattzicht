@@ -156,7 +156,7 @@ public static class AdviceEngine
         var tips = new List<AdviceTipDto>();
         if (input.IsDynamic && cheapest is not null && expensive is not null)
         {
-            AddDynamicTips(input, future, cheapest, expensive, tips);
+            AddDynamicTips(input, today, future, cheapest, expensive, tips);
         }
         else
         {
@@ -180,8 +180,30 @@ public static class AdviceEngine
             future.Count > 0 ? "EnergyZero (day-ahead)" : null);
     }
 
+    /// <summary>
+    /// Wat een kilowattuur eigen zon je kost als je hem zelf gebruikt.
+    ///
+    /// Niets, zou je zeggen, maar je geeft wel op wat je ervoor had gekregen: de terugleververgoeding
+    /// min de terugleverkosten van je leverancier. Zolang er gesaldeerd wordt is dat gelijk aan de
+    /// prijs die je zelf betaalt en valt er niets te kiezen; daarna is het meestal een paar cent, en
+    /// dan is je eigen zon bijna altijd goedkoper dan het net, ook in het goedkoopste nachtuur.
+    ///
+    /// Nooit onder nul: bij hoge terugleverkosten kost terugleveren je geld, maar dan is eigen
+    /// gebruik gratis en niet winstgevend.
+    /// </summary>
+    internal static decimal EigenZonPrijs(AdviceInput input, DateOnly vandaag)
+    {
+        if (SavingsCalculator.IsSalderingActive(vandaag))
+        {
+            return input.Rates.ImportPricePerKwh;
+        }
+
+        return Math.Max(0m, input.Rates.ExportPricePerKwh - input.Rates.FeedInCostPerKwh);
+    }
+
     private static void AddDynamicTips(
         AdviceInput input,
+        DateOnly vandaag,
         List<HourPrice> future,
         PriceWindowDto cheapest,
         PriceWindowDto expensive,
@@ -197,15 +219,26 @@ public static class AdviceEngine
             // Referentie: zonder sturen prikt men de auto 's avonds in (17–23 uur).
             var evening = future.Where(p => DutchTime.LocalHour(p.StartUtc) is >= 17 and <= 22).ToList();
             var reference = evening.Count > 0 ? evening.Average(p => AllIn(p, s)) : average;
-            var saving = Money((decimal)kwh * (reference - cheapest.AverageAllInEur));
+            // Zon tegen net. Voor een auto gaat het om genoeg kilowatturen, dus de zon telt hier
+            // alleen mee als de verwachting die hoeveelheid ook echt haalt.
+            var zon = ZonAlternatief(input, vandaag, kwh);
+            var opZon = zon is not null && zon.Value.PrijsPerKwh < cheapest.AverageAllInEur;
+
+            var prijs = opZon ? zon!.Value.PrijsPerKwh : cheapest.AverageAllInEur;
+            var van = opZon ? zon!.Value.Van : cheapest.From;
+            var tot = opZon ? zon!.Value.Tot : cheapest.To;
+
+            var saving = Money((decimal)kwh * (reference - prijs));
             if (saving >= MinimumSavingEur)
             {
                 tips.Add(new AdviceTipDto(
                     AdviceTipKind.Charger,
-                    $"Laad de auto {Span(input.NowUtc, cheapest.From, cheapest.To)}",
-                    $"Gemiddeld {Price(cheapest.AverageAllInEur)} per kWh, {kwh.ToString("0", Nl)} kWh",
-                    cheapest.From,
-                    cheapest.To,
+                    $"Laad de auto {Span(input.NowUtc, van, tot)}",
+                    opZon
+                        ? $"Dan laadt hij op je eigen zon, ongeveer {kwh.ToString("0", Nl)} kWh"
+                        : $"Gemiddeld {Price(prijs)} per kWh, {kwh.ToString("0", Nl)} kWh",
+                    van,
+                    tot,
                     saving));
             }
         }
@@ -233,18 +266,55 @@ public static class AdviceEngine
         var applianceWindow = FindWindow(future, 2, cheapest: true, s);
         if (applianceWindow is not null)
         {
-            var saving = Money((decimal)ApplianceKwh * (average - applianceWindow.AverageAllInEur));
+            // Het net is niet de enige bron. Heb je panelen, dan is je eigen zon meestal goedkoper
+            // dan zelfs het goedkoopste nachtuur, want daar betaal je alleen de gemiste
+            // terugleververgoeding voor. Die twee leggen we naast elkaar en we noemen de winnaar.
+            var zon = ZonAlternatief(input, vandaag, ApplianceKwh);
+
+            var gebruikZon = zon is not null && zon.Value.PrijsPerKwh < applianceWindow.AverageAllInEur;
+            var prijs = gebruikZon ? zon!.Value.PrijsPerKwh : applianceWindow.AverageAllInEur;
+            var van = gebruikZon ? zon!.Value.Van : applianceWindow.From;
+            var tot = gebruikZon ? zon!.Value.Tot : applianceWindow.To;
+
+            var saving = Money((decimal)ApplianceKwh * (average - prijs));
             if (saving >= MinimumSavingEur)
             {
                 tips.Add(new AdviceTipDto(
                     AdviceTipKind.Appliance,
-                    $"Wasmachine of vaatwasser om {Time(input.NowUtc, applianceWindow.From)}",
-                    "Dan is stroom het goedkoopst",
-                    applianceWindow.From,
-                    applianceWindow.To,
+                    $"Wasmachine of vaatwasser om {Time(input.NowUtc, van)}",
+                    gebruikZon
+                        ? "Dan draait hij op je eigen zon in plaats van op het net"
+                        : "Dan is stroom het goedkoopst",
+                    van,
+                    tot,
                     saving));
             }
         }
+    }
+
+    /// <summary>
+    /// Het zonnige alternatief voor een blok verbruik: wanneer, en wat die kilowatturen je kosten.
+    ///
+    /// Geeft niets terug als er geen panelen zijn, geen weersverwachting, of als de zon in dat venster
+    /// minder oplevert dan je nodig hebt. Dan is het geen alternatief maar een gok, en een advies dat
+    /// op een gok staat is erger dan geen advies.
+    /// </summary>
+    internal static (DateTimeOffset Van, DateTimeOffset Tot, decimal PrijsPerKwh)? ZonAlternatief(
+        AdviceInput input, DateOnly vandaag, double nodigKwh)
+    {
+        if (!input.HasPv || input.Forecast is null || input.Forecast.Count == 0)
+        {
+            return null;
+        }
+
+        var (van, tot) = ZonnigsteVenster(input, vandaag);
+        var verwacht = VerwachteKwh(input, van, tot);
+        if (verwacht < nodigKwh)
+        {
+            return null;
+        }
+
+        return (van, tot, EigenZonPrijs(input, vandaag));
     }
 
     /// <summary>Vast contract: verbruik naar de zonnige uren. Tot en met 2026 scheelt dat niets door de saldering.</summary>
