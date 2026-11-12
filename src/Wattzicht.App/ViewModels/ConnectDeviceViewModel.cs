@@ -43,6 +43,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     private readonly ApiClient _api;
     private readonly LokaleMeter _lokaal;
     private readonly AuthService _auth;
+    private readonly ApparaatZoeker _zoeker;
 
     // Alleen merken waar echt een koppeling voor is. De P1-meter is de bijzondere: die praat alleen
     // op het thuisnetwerk, dus die leest de app zelf uit en stuurt hij door. Daarom staat hij hier
@@ -184,11 +185,12 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     [ObservableProperty] private bool _isDone;
     [ObservableProperty] private string _doneText = string.Empty;
 
-    public ConnectDeviceViewModel(ApiClient api, AuthService auth, LokaleMeter lokaal)
+    public ConnectDeviceViewModel(ApiClient api, AuthService auth, LokaleMeter lokaal, ApparaatZoeker zoeker)
     {
         _api = api;
         _auth = auth;
         _lokaal = lokaal;
+        _zoeker = zoeker;
         Title = "Apparaat koppelen";
         Groepen = MaakGroepen();
     }
@@ -198,6 +200,46 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     partial void OnUsernameChanged(string value) { UsernameError = null; OnPropertyChanged(nameof(SummaryLine)); }
     partial void OnPasswordChanged(string value) => PasswordError = null;
     partial void OnDongleSnChanged(string value) { DongleSnError = null; OnPropertyChanged(nameof(SummaryLine)); }
+
+    // ---- Zelf zoeken op het netwerk ----
+    //
+    // Het IP-adres van een gateway of dongle staat nergens op het apparaat; daarvoor moet je in je
+    // router kijken, en daar haakt iemand af. De telefoon zit op hetzelfde netwerk en kan het
+    // gewoon opzoeken.
+    [ObservableProperty] private bool _isZoeken;
+    [ObservableProperty] private string? _zoekResultaat;
+
+    [RelayCommand]
+    private async Task ZoekApparaatAsync()
+    {
+        IsZoeken = true;
+        ZoekResultaat = "Bezig met zoeken op je wifi-netwerk…";
+
+        try
+        {
+            var gevonden = IsEnphase
+                ? await _zoeker.ZoekEnphaseAsync()
+                : IsHomeWizard
+                    ? await _zoeker.ZoekP1Async()
+                    : null;
+
+            if (gevonden is null)
+            {
+                ZoekResultaat = ApparaatZoeker.EigenSubnet() is null
+                    ? "Je telefoon zit niet op wifi. Verbind met je thuisnetwerk en probeer opnieuw."
+                    : "Niets gevonden op dit netwerk. Zit je telefoon op dezelfde wifi als het apparaat?";
+                return;
+            }
+
+            IpAddress = gevonden.Adres;
+            IpAddressError = null;
+            ZoekResultaat = $"Gevonden: {gevonden.Soort} op {gevonden.Adres}";
+        }
+        finally
+        {
+            IsZoeken = false;
+        }
+    }
 
     [RelayCommand]
     private void SelectBrand(BrandOption option)

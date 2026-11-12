@@ -168,6 +168,13 @@
                                     <Entry Text="{Binding IpAddress}" Placeholder="192.168.1.30" Keyboard="Url" />
                                 </Border>
                                 <Label Text="{Binding IpAddressError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasIpAddressError}" />
+                                <!-- Dat adres staat nergens op het kastje; de telefoon kan het zelf opzoeken. -->
+                                <Button Text="Zoek mijn gateway op wifi"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding ZoekApparaatCommand}"
+                                        IsEnabled="{Binding IsZoeken, Converter={StaticResource InvertedBool}}" />
+                                <Label Text="{Binding ZoekResultaat}" Style="{StaticResource StatCaption}"
+                                       IsVisible="{Binding ZoekResultaat, Converter={StaticResource IsNotNullOrEmpty}}" />
                             </VerticalStackLayout>
                             <VerticalStackLayout Spacing="4">
                                 <Label Text="Token van je gateway" Style="{StaticResource FieldLabel}" />
@@ -201,6 +208,14 @@
                                 <Label Text="{Binding PasswordError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasPasswordError}" />
                             </VerticalStackLayout>
                             <Label Text="Hangt je paal alleen aan een simkaart van je leverancier, dan heeft hij thuis geen adres en lukt dit niet."
+                                   Style="{StaticResource SubtitleLabel}" FontSize="13" />
+                            <!--
+                                Veel Alfens in Nederland staan onder een laadpas-backoffice: 50five,
+                                E-Flux, een leasemaatschappij. Dat hoeft niet in de weg te zitten,
+                                want wij praten met de paal zelf en niet met die backoffice. Maar
+                                mensen denken van wel en haken daarop af, dus staat het er gewoon.
+                            -->
+                            <Label Text="Staat je paal onder 50five, E-Flux of je leasemaatschappij? Dat mag. Wij lezen de paal zelf uit op je eigen netwerk en komen niet in hun portaal; je laadpas en je afrekening blijven gewoon lopen zoals ze liepen."
                                    Style="{StaticResource SubtitleLabel}" FontSize="13" />
                         </VerticalStackLayout>
                     </Border>

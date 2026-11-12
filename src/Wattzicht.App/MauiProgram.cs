@@ -48,6 +48,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<AuthService>();
         // Leest de P1-meter op het thuisnetwerk uit; heeft zijn eigen client met een korte tijdslimiet.
         builder.Services.AddSingleton<LokaleMeter>();
+        builder.Services.AddSingleton<ApparaatZoeker>();
         builder.Services.AddSingleton<PushService>();
 
         // ---- ViewModels ----
