@@ -221,6 +221,10 @@ public sealed class ApiClient
         return await SendAsync<TariefVoorstelDto>(req, ct);
     }
 
+    /// <summary>De maandcijfers die uit overzichten van de leverancier zijn ingelezen.</summary>
+    public Task<List<LeverancierMaandDto>> VerbruikVanLeverancierAsync(CancellationToken ct = default) =>
+        GetAsync<List<LeverancierMaandDto>>("/usage", ct);
+
     /// <summary>Leest de kilowatturen per maand uit een overzicht van de leverancier.</summary>
     public async Task<VerbruikImportDto> LeesVerbruikAsync(
         Stream bestand, string bestandsnaam, string contentType, CancellationToken ct = default)

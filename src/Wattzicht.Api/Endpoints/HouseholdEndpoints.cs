@@ -127,6 +127,10 @@ public static class HouseholdEndpoints
             .ProducesValidationProblem()
             .DisableAntiforgery();
 
+        household.MapGet("/usage", VerbruikVanLeverancierAsync)
+            .WithSummary("De maandcijfers die uit overzichten van de leverancier zijn ingelezen.")
+            .Produces<List<LeverancierMaandDto>>();
+
         household.MapPost("/usage/import", VerbruikLezenAsync)
             .WithSummary("Leest de kilowatturen per maand uit een overzicht van de leverancier.")
             .Produces<VerbruikImportDto>()
@@ -213,6 +217,49 @@ public static class HouseholdEndpoints
             Naar(voorstel.Terugleverkosten),
             Naar(voorstel.Energiebelasting),
             voorstel.PrijsIsAllIn));
+    }
+
+    /// <summary>
+    /// De ingelezen maandcijfers, met wat wij die maanden zelf maten ernaast.
+    ///
+    /// Wat je uploadt moet je daarna ook terug kunnen zien; anders is het een melding die
+    /// wegscrollt en weet niemand meer of het er nog in staat.
+    /// </summary>
+    private static async Task<IResult> VerbruikVanLeverancierAsync(
+        HttpContext http, AppDbContext db, CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+
+        var rijen = await db.SupplierUsages
+            .Where(x => x.HouseholdId == householdId)
+            .OrderBy(x => x.Month)
+            .Select(x => new { x.Month, x.ImportKwh, x.ExportKwh })
+            .ToListAsync(ct);
+
+        if (rijen.Count == 0)
+        {
+            return Results.Ok(new List<LeverancierMaandDto>());
+        }
+
+        var vanaf = rijen[0].Month;
+        var tot = rijen[^1].Month.AddMonths(1);
+
+        var eigen = await db.DailySummaries
+            .Where(x => x.HouseholdId == householdId && x.Date >= vanaf && x.Date < tot)
+            .Select(x => new { x.Date, x.ImportKwh })
+            .ToListAsync(ct);
+
+        var eigenPerMaand = eigen
+            .GroupBy(x => new DateOnly(x.Date.Year, x.Date.Month, 1))
+            .ToDictionary(g => g.Key, g => Math.Round(g.Sum(x => x.ImportKwh), 1));
+
+        return Results.Ok(rijen
+            .Select(r => new LeverancierMaandDto(
+                r.Month,
+                Math.Round(r.ImportKwh, 1),
+                r.ExportKwh is { } e ? Math.Round(e, 1) : null,
+                eigenPerMaand.TryGetValue(r.Month, out var onze) && onze > 0 ? onze : null))
+            .ToList());
     }
 
     /// <summary>

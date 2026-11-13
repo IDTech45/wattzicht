@@ -45,6 +45,35 @@ public sealed class SummaryRow
     };
 }
 
+/// <summary>
+/// Eén maand zoals de leverancier hem noemt, met onze eigen meting ernaast.
+///
+/// Die twee naast elkaar is het hele punt: lopen ze uit elkaar, dan wil je weten waarom. En wie
+/// geen P1-meter heeft ziet hier als enige plek wat er van het net kwam.
+/// </summary>
+public sealed class LeverancierRij
+{
+    private static readonly CultureInfo Nl = CultureInfo.GetCultureInfo("nl-NL");
+
+    public LeverancierRij(LeverancierMaandDto maand) => Maand = maand;
+
+    public LeverancierMaandDto Maand { get; }
+
+    public string MaandTekst =>
+        new DateTime(Maand.Maand.Year, Maand.Maand.Month, 1).ToString("MMMM yyyy", Nl);
+
+    public string AfnameTekst => Maand.AfnameKwh.ToString("N0", Nl) + " kWh";
+
+    public string TerugTekst => Maand.TerugleveringKwh is { } t
+        ? t.ToString("N0", Nl) + " kWh"
+        : "–";
+
+    /// <summary>Wat wij maten, of een streepje als we die maand nog niet meekeken.</summary>
+    public string OnzeTekst => Maand.OnzeAfnameKwh is { } o
+        ? o.ToString("N0", Nl) + " kWh"
+        : "–";
+}
+
 public partial class SavingsViewModel : BaseViewModel
 {
     private static readonly CultureInfo Nl = CultureInfo.GetCultureInfo("nl-NL");
@@ -83,6 +112,13 @@ public partial class SavingsViewModel : BaseViewModel
     [ObservableProperty] private string _totalExportText = "0 kWh";
     [ObservableProperty] private string _totalChargedText = "0 kWh";
     [ObservableProperty] private bool _isRefreshing;
+
+    /// <summary>De maanden die uit een overzicht van de leverancier zijn ingelezen.</summary>
+    public ObservableCollection<LeverancierRij> LeverancierMaanden { get; } = [];
+
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftLeverancierCijfers))] private int _aantalLeverancierMaanden;
+
+    public bool HeeftLeverancierCijfers => AantalLeverancierMaanden > 0;
 
     // Terugleveren: wat kost het, wat scheelt zelf gebruiken
     [ObservableProperty] private bool _hasFeedIn;
@@ -163,6 +199,25 @@ public partial class SavingsViewModel : BaseViewModel
             catch (ApiException ex) when (!ex.IsUnauthorized)
             {
                 HasFeedIn = false; // los blok: de rest van het scherm blijft werken
+            }
+
+            // De maanden uit het overzicht van je leverancier. Voor wie geen P1-meter heeft is dit
+            // de enige plek waar de netkant staat, en voor wie er wel een heeft is het de plek waar
+            // je ziet of de twee op elkaar lijken.
+            try
+            {
+                var maanden = await _api.VerbruikVanLeverancierAsync();
+                LeverancierMaanden.Clear();
+                foreach (var maand in maanden.TakeLast(12))
+                {
+                    LeverancierMaanden.Add(new LeverancierRij(maand));
+                }
+
+                AantalLeverancierMaanden = LeverancierMaanden.Count;
+            }
+            catch (ApiException ex) when (!ex.IsUnauthorized)
+            {
+                AantalLeverancierMaanden = 0;
             }
         }, _auth);
         IsRefreshing = false;

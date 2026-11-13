@@ -527,5 +527,12 @@ public static class TekstenNl
         ["verbruik.en-meer"] = "In totaal {0} maanden ingelezen.",
         ["contract.niets-gevonden"] = "Hier konden we geen tarieven en geen maandcijfers in vinden.",
 
+        ["verbruik.titel"] = "Volgens je leverancier",
+        ["verbruik.uitleg"] = "Uit de overzichten die je hebt ingelezen, met wat wij die maand zelf maten ernaast.",
+        ["verbruik.kop-maand"] = "Maand",
+        ["verbruik.kop-afname"] = "Afname",
+        ["verbruik.kop-terug"] = "Terug",
+        ["verbruik.kop-wij"] = "Wij maten",
+
     }.ToFrozenDictionary();
 }

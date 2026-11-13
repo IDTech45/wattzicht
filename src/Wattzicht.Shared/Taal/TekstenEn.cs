@@ -519,5 +519,12 @@ public static class TekstenEn
         ["verbruik.en-meer"] = "{0} months imported in total.",
         ["contract.niets-gevonden"] = "We could not find any rates or monthly figures in this one.",
 
+        ["verbruik.titel"] = "According to your supplier",
+        ["verbruik.uitleg"] = "From the overviews you imported, with what we measured that month next to it.",
+        ["verbruik.kop-maand"] = "Month",
+        ["verbruik.kop-afname"] = "From grid",
+        ["verbruik.kop-terug"] = "Fed back",
+        ["verbruik.kop-wij"] = "We measured",
+
     }.ToFrozenDictionary();
 }

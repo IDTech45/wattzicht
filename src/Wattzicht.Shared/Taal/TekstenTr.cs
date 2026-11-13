@@ -524,5 +524,12 @@ public static class TekstenTr
         ["verbruik.en-meer"] = "Toplam {0} ay içe aktarıldı.",
         ["contract.niets-gevonden"] = "Burada ne tarife ne de aylık veri bulabildik.",
 
+        ["verbruik.titel"] = "Tedarikçinize göre",
+        ["verbruik.uitleg"] = "İçe aktardığınız özetlerden, o ay bizim ölçtüğümüzle birlikte.",
+        ["verbruik.kop-maand"] = "Ay",
+        ["verbruik.kop-afname"] = "Çekilen",
+        ["verbruik.kop-terug"] = "Verilen",
+        ["verbruik.kop-wij"] = "Bizim ölçüm",
+
     }.ToFrozenDictionary();
 }

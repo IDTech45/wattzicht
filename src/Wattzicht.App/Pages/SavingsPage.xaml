@@ -146,6 +146,35 @@
                         </VerticalStackLayout>
                     </Border>
 
+                    <!-- Wat de leverancier per maand zegt, met onze eigen meting ernaast. Voor wie
+                         geen P1-meter heeft is dit de enige plek waar de netkant staat. -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding HeeftLeverancierCijfers}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{t:T verbruik.titel}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{t:T verbruik.uitleg}" Style="{StaticResource StatCaption}" />
+
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10" Margin="0,4,0,0">
+                                <Label Text="{t:T verbruik.kop-maand}" Style="{StaticResource StatCaption}" />
+                                <Label Grid.Column="1" Text="{t:T verbruik.kop-afname}" Style="{StaticResource StatCaption}" />
+                                <Label Grid.Column="2" Text="{t:T verbruik.kop-terug}" Style="{StaticResource StatCaption}" />
+                                <Label Grid.Column="3" Text="{t:T verbruik.kop-wij}" Style="{StaticResource StatCaption}" />
+                            </Grid>
+
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding LeverancierMaanden}" Spacing="4">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:LeverancierRij">
+                                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+                                            <Label Text="{Binding MaandTekst}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                                            <Label Grid.Column="1" Text="{Binding AfnameTekst}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                                            <Label Grid.Column="2" Text="{Binding TerugTekst}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                                            <Label Grid.Column="3" Text="{Binding OnzeTekst}" Style="{StaticResource StatCaption}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
                     <Label Text="{t:T besparen.per-dag}" Style="{StaticResource SectionTitle}" />
                 </VerticalStackLayout>
             </CollectionView.Header>
