@@ -258,6 +258,14 @@
                         <Switch Grid.Column="1" IsToggled="{Binding NotifySurplus}" VerticalOptions="Center"
                                 SemanticProperties.Description="Melding bij veel terugleveren" />
                     </Grid>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="{t:T meer.maandbericht}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{t:T meer.maandbericht-uitleg}" Style="{StaticResource SubtitleLabel}" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" IsToggled="{Binding NotifyMonthly}" VerticalOptions="Center"
+                                SemanticProperties.Description="Maandbericht" />
+                    </Grid>
                 </VerticalStackLayout>
             </Border>
 

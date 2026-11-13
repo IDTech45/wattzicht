@@ -394,6 +394,9 @@ public partial class SettingsViewModel : BaseViewModel
     // Pushmeldingen
     [ObservableProperty] private bool _notifyAlerts = true;
     [ObservableProperty] private bool _notifySurplus = true;
+
+    /// <summary>Eén bericht per maand met wat die maand heeft gedaan.</summary>
+    [ObservableProperty] private bool _notifyMonthly = true;
     private bool _syncingNotify;
 
     public SettingsViewModel(ApiClient api, AuthService auth, PushService push)
@@ -533,6 +536,7 @@ public partial class SettingsViewModel : BaseViewModel
                 _syncingNotify = true;
                 NotifyAlerts = notify.Alerts;
                 NotifySurplus = notify.Surplus;
+                NotifyMonthly = notify.Monthly;
             }
             catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
             finally { _syncingNotify = false; }
@@ -543,15 +547,16 @@ public partial class SettingsViewModel : BaseViewModel
 
     partial void OnNotifyAlertsChanged(bool value) => SaveNotifySettings();
     partial void OnNotifySurplusChanged(bool value) => SaveNotifySettings();
+    partial void OnNotifyMonthlyChanged(bool value) => SaveNotifySettings();
 
     private async void SaveNotifySettings()
     {
         if (_syncingNotify) return;
         try
         {
-            await _api.SetNotificationSettingsAsync(new NotificationSettingsDto(NotifyAlerts, NotifySurplus));
+            await _api.SetNotificationSettingsAsync(new NotificationSettingsDto(NotifyAlerts, NotifySurplus, NotifyMonthly));
             // Iemand die meldingen aanzet, wil ze ook ontvangen: toestel (opnieuw) aanmelden en toestemming vragen.
-            if (NotifyAlerts || NotifySurplus)
+            if (NotifyAlerts || NotifySurplus || NotifyMonthly)
                 await _push.RegisterAsync();
         }
         catch (ApiException ex)

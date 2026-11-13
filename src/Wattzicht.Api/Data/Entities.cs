@@ -133,6 +133,12 @@ public sealed class Household
     /// <summary>Wanneer we voor het laatst meldden dat de panelen te weinig leveren.</summary>
     public DateTimeOffset? LastPerformancePushAt { get; set; }
 
+    /// <summary>Eén bericht per maand met wat die maand heeft gedaan (standaard aan).</summary>
+    public bool NotifyMonthly { get; set; } = true;
+
+    /// <summary>Wanneer dat maandbericht voor het laatst uitging.</summary>
+    public DateTimeOffset? LastMonthlyPushAt { get; set; }
+
     /// <summary>Pushmelding bij een storing (standaard aan).</summary>
     public bool NotifyAlerts { get; set; } = true;
 

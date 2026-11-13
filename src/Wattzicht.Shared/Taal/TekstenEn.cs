@@ -540,5 +540,13 @@ public static class TekstenEn
         ["batterij.regel"] = "A battery of {0} kWh would have saved you around {1} a year.",
         ["batterij.toelichting"] = "Based on your own {1} measured days: on average {0} kWh a day that now goes back to the grid and comes back later. Amount with the rates as they apply from 2027.",
 
+
+        // ---- het maandbericht ----
+        ["maand.titel"] = "Your {0}",
+        ["maand.tekst"] = "Your panels made {0} kWh, of which you used {1} yourself. That saved you {2}.",
+        ["maand.leverancier"] = "Your supplier billed {0} kWh from the grid that month.",
+        ["meer.maandbericht"] = "Monthly summary",
+        ["meer.maandbericht-uitleg"] = "One message a month with what that month did",
+
     }.ToFrozenDictionary();
 }

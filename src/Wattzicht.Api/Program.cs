@@ -128,6 +128,8 @@ builder.Services.AddHostedService<WeatherWorker>();
 builder.Services.AddHostedService<SmartMomentWorker>();
 // Waarschuwt als de panelen minder leveren dan het weer toeliet; zie PrestatieWorker.
 builder.Services.AddHostedService<PrestatieWorker>();
+// Eén bericht per maand met wat die maand heeft gedaan; zie MaandberichtWorker.
+builder.Services.AddHostedService<MaandberichtWorker>();
 // De andere helft van datzelfde advies: na afloop vertellen wat de laadbeurt heeft gedaan.
 builder.Services.AddHostedService<LaadsessieWorker>();
 

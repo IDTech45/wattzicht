@@ -545,5 +545,13 @@ public static class TekstenTr
         ["batterij.regel"] = "{0} kWh bir batarya size yılda yaklaşık {1} kazandırırdı.",
         ["batterij.toelichting"] = "Kendi ölçülen {1} gününüze göre: günde ortalama {0} kWh şu anda şebekeye gidip sonra geri geliyor. Tutar 2027’den itibaren geçerli tarifelerle.",
 
+
+        // ---- het maandbericht ----
+        ["maand.titel"] = "{0} ayınız",
+        ["maand.tekst"] = "Panelleriniz {0} kWh üretti, bunun {1} kadarını kendiniz kullandınız. Bu size {2} kazandırdı.",
+        ["maand.leverancier"] = "Tedarikçiniz o ay şebekeden {0} kWh hesapladı.",
+        ["meer.maandbericht"] = "Aylık özet",
+        ["meer.maandbericht-uitleg"] = "O ayın ne yaptığını anlatan ayda bir mesaj",
+
     }.ToFrozenDictionary();
 }

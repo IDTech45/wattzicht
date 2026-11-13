@@ -646,7 +646,10 @@ public sealed record RegisterPushDeviceRequest(string Token, string? Platform = 
 /// <summary>Welke pushmeldingen de bewoner wil krijgen.</summary>
 /// <param name="Alerts">Bij een storing.</param>
 /// <param name="Surplus">Als het huis flink teruglevert (max. eens per 3 uur, tussen 9 en 20 uur).</param>
-public sealed record NotificationSettingsDto(bool Alerts, bool Surplus);
+/// <param name="Alerts">Melding bij een storing.</param>
+/// <param name="Surplus">Tip als je veel teruglevert.</param>
+/// <param name="Monthly">Eén bericht per maand met wat die maand heeft gedaan.</param>
+public sealed record NotificationSettingsDto(bool Alerts, bool Surplus, bool Monthly = true);
 
 // ---------------------------------------------------------------------------
 // Duurzaamheid, prestatiecheck en kansen
