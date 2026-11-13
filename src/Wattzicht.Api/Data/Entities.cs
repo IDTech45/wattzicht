@@ -198,6 +198,14 @@ public sealed class User
 /// <summary>Gekoppeld apparaat met versleutelde toegangsgegevens.</summary>
 public sealed class Device
 {
+    /// <summary>
+    /// Mag Wattzicht deze paal starten en pauzeren?
+    ///
+    /// Standaard niet, en dat blijft zo tot de bewoner het zelf aanzet. Uitlezen is kijken, sturen
+    /// verandert iets in zijn huis; die twee horen niet onder dezelfde toestemming te vallen.
+    /// </summary>
+    public bool SturenToegestaan { get; set; }
+
     public Guid Id { get; set; }
     public Guid HouseholdId { get; set; }
     public Household Household { get; set; } = null!;

@@ -32,6 +32,31 @@
                         </VerticalStackLayout>
                     </Border>
 
+                    <!-- Je laadpaal echt sturen. Alleen zichtbaar bij een merk dat het kan, en de
+                         knoppen pas als de bewoner het zelf heeft aangezet. -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding KanPaalSturen}">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="{t:T sturen.titel}" Style="{StaticResource CardTitle}" />
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                <Button Text="{t:T sturen.nu-laden}" Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding NuLadenCommand}" />
+                                <Button Grid.Column="1" Text="{t:T sturen.pauzeren}" Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding PauzerenCommand}" />
+                            </Grid>
+                            <Label Text="{Binding StuurResultaat}" Style="{StaticResource StatCaption}"
+                                   IsVisible="{Binding StuurResultaat, Converter={StaticResource IsNotNullOrEmpty}}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding VraagToestemming}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{t:T sturen.titel}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{t:T sturen.uitleg}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                            <Button Text="{t:T sturen.aanzetten}" Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding SturenAanzettenCommand}" />
+                        </VerticalStackLayout>
+                    </Border>
+
                     <Border Style="{StaticResource Card}" IsVisible="{Binding HasPrices}">
                         <VerticalStackLayout Spacing="6">
                             <Label Text="{Binding CheapestText}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />

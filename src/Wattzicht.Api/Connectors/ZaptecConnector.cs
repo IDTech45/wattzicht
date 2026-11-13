@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Wattzicht.Api.Data;
@@ -83,6 +84,50 @@ public sealed class ZaptecConnector(IHttpClientFactory httpClientFactory, ILogge
         {
             logger.LogWarning(ex, "Zaptec niet bereikbaar bij het koppelen");
             return ConnectResult.Fail("Zaptec is nu niet bereikbaar. Probeer het straks nog eens.");
+        }
+    }
+
+    /// <summary>Zaptec kan gestart en gepauzeerd worden met zijn eigen opdrachtnummers.</summary>
+    public bool KanSturen => true;
+
+    /// <summary>De opdrachtnummers van Zaptec: 506 pauzeren, 507 doorgaan.</summary>
+    private const int ZaptecPauze = 506;
+    private const int ZaptecStart = 507;
+
+    /// <summary>
+    /// Start of pauzeert het laden via de cloud van Zaptec.
+    ///
+    /// Zaptec nummert zijn opdrachten; 506 en 507 zijn pauzeren en doorgaan. Pauzeren laat de auto
+    /// aangesloten, zodat doorgaan één opdracht is en niemand opnieuw hoeft te autoriseren.
+    /// </summary>
+    public async Task StuurAsync(Device device, DeviceCredentials credentials, Laadopdracht opdracht, CancellationToken ct)
+    {
+        var gebruiker = credentials.Get("username");
+        var wachtwoord = credentials.Get("password");
+        if (string.IsNullOrWhiteSpace(gebruiker) || string.IsNullOrWhiteSpace(wachtwoord))
+        {
+            throw new ConnectorException("De Zaptec-inloggegevens ontbreken. Koppel de laadpaal opnieuw.");
+        }
+
+        var token = await TokenAsync(gebruiker, wachtwoord, ct);
+        var nummer = opdracht == Laadopdracht.Start ? ZaptecStart : ZaptecPauze;
+        var client = httpClientFactory.CreateClient(HttpClientName);
+
+        using var verzoek = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/chargers/{Uri.EscapeDataString(device.ExternalId)}/sendCommand/{nummer}");
+        verzoek.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        using var antwoord = await client.SendAsync(verzoek, ct);
+
+        if (antwoord.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            throw new ConnectorException("Zaptec wees de opdracht af. Koppel de laadpaal opnieuw.");
+        }
+
+        if (!antwoord.IsSuccessStatusCode)
+        {
+            throw new ConnectorException($"Zaptec nam de opdracht niet aan ({(int)antwoord.StatusCode}).");
         }
     }
 

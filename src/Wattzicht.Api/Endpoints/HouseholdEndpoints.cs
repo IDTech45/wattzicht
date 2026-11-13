@@ -82,6 +82,16 @@ public static class HouseholdEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .ProducesValidationProblem();
 
+        household.MapPut("/devices/{id:guid}/sturen", SturenToestaanAsync)
+            .WithSummary("Zet het starten en pauzeren van deze laadpaal aan of uit.")
+            .Produces<DeviceDto>()
+            .ProducesValidationProblem();
+
+        household.MapPost("/devices/{id:guid}/charge", LaadopdrachtAsync)
+            .WithSummary("Start of pauzeert het laden van deze paal.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesValidationProblem();
+
         household.MapPost("/devices/refresh", NuUitlezenAsync)
             .WithSummary("Leest de apparaten van deze woning nu uit (alleen de merken die de server kan bereiken).")
             .Produces<UitleesResultaatDto>();
@@ -680,6 +690,112 @@ public static class HouseholdEndpoints
     {
         var schoon = waarde?.Trim();
         return string.IsNullOrWhiteSpace(schoon) ? null : schoon;
+    }
+
+    /// <summary>
+    /// Het sturen van een laadpaal aan- of uitzetten.
+    ///
+    /// Apart van het koppelen, en standaard uit. Uitlezen is kijken; starten en pauzeren verandert
+    /// iets in het huis van iemand anders. Die twee horen niet onder dezelfde toestemming te vallen,
+    /// en wie het aanzet moet dat bewust doen.
+    /// </summary>
+    private static async Task<IResult> SturenToestaanAsync(
+        Guid id,
+        SturenRequest request,
+        HttpContext http,
+        AppDbContext db,
+        ConnectorRegistry registry,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var apparaat = await db.Devices.FirstOrDefaultAsync(d => d.Id == id && d.HouseholdId == householdId, ct);
+        if (apparaat is null) return Results.NotFound();
+
+        var connector = registry.Get(apparaat.Brand);
+        if (connector is null || !connector.KanSturen)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["sturen"] = [$"{apparaat.Brand} kan (nog) niet worden aangestuurd."],
+            });
+        }
+
+        apparaat.SturenToegestaan = request.Toestaan;
+        await db.SaveChangesAsync(ct);
+
+        return Results.Ok(HouseholdQueries.ToDto(apparaat, clock.GetUtcNow(), kanSturen: true));
+    }
+
+    /// <summary>
+    /// Starten of pauzeren.
+    ///
+    /// Alleen als de bewoner het sturen zelf heeft aangezet, en alleen voor merken waarvan we weten
+    /// hoe het moet. Pauzeren en niet stoppen: stoppen beëindigt de sessie en dan moet er bij
+    /// sommige instellingen opnieuw met een pas worden geautoriseerd.
+    /// </summary>
+    private static async Task<IResult> LaadopdrachtAsync(
+        Guid id,
+        LaadopdrachtRequest request,
+        HttpContext http,
+        AppDbContext db,
+        ConnectorRegistry registry,
+        CredentialProtector protector,
+        ILoggerFactory loggerFactory,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var apparaat = await db.Devices.FirstOrDefaultAsync(d => d.Id == id && d.HouseholdId == householdId, ct);
+        if (apparaat is null) return Results.NotFound();
+
+        if (!apparaat.SturenToegestaan)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["sturen"] = ["Zet eerst bij deze paal aan dat Wattzicht hem mag starten en pauzeren."],
+            });
+        }
+
+        var connector = registry.Get(apparaat.Brand);
+        if (connector is null || !connector.KanSturen)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["sturen"] = [$"{apparaat.Brand} kan (nog) niet worden aangestuurd."],
+            });
+        }
+
+        var credentials = new DeviceCredentials(protector.Unprotect(apparaat.EncryptedCredentials));
+
+        try
+        {
+            await connector.StuurAsync(
+                apparaat,
+                credentials,
+                request.Start ? Laadopdracht.Start : Laadopdracht.Pauze,
+                ct);
+        }
+        catch (ConnectorException ex)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]> { ["sturen"] = [ex.Message] });
+        }
+        catch (Exception ex)
+        {
+            loggerFactory.CreateLogger("Devices").LogWarning(ex, "Laadopdracht mislukt voor {Apparaat}", apparaat.Id);
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["sturen"] = ["De laadpaal nam de opdracht niet aan. Probeer het zo nog eens."],
+            });
+        }
+
+        // Een opdracht die de paal aannam verandert zijn toestand; die willen we meteen zien.
+        if (credentials.Changed)
+        {
+            apparaat.EncryptedCredentials = protector.Protect(credentials.ToDictionary());
+            await db.SaveChangesAsync(ct);
+        }
+
+        return Results.NoContent();
     }
 
     /// <summary>

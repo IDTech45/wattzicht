@@ -5,7 +5,7 @@ using Wattzicht.Shared;
 namespace Wattzicht.Api.Services;
 
 /// <summary>Leesquery's die door meerdere endpoints gebruikt worden (dashboard, installateursportal).</summary>
-public sealed class HouseholdQueries(AppDbContext db, TimeProvider clock)
+public sealed class HouseholdQueries(AppDbContext db, TimeProvider clock, Connectors.ConnectorRegistry? registry = null)
 {
     /// <summary>Laatste meting per apparaat van een huishouden.</summary>
     public async Task<List<Reading>> LatestReadingsAsync(Guid householdId, CancellationToken ct)
@@ -81,7 +81,7 @@ public sealed class HouseholdQueries(AppDbContext db, TimeProvider clock)
             .OrderBy(d => d.CreatedAt)
             .ToListAsync(ct);
 
-        return devices.Select(d => ToDto(d, now)).ToList();
+        return devices.Select(d => ToDto(d, now, registry?.Get(d.Brand)?.KanSturen ?? false)).ToList();
     }
 
     public async Task<DashboardDto> DashboardAsync(Guid householdId, CancellationToken ct)
@@ -133,7 +133,7 @@ public sealed class HouseholdQueries(AppDbContext db, TimeProvider clock)
         Math.Round(s.BatteryDischargedKwh, 2),
         Math.Round(s.SavedEur, 2));
 
-    public static DeviceDto ToDto(Device d, DateTimeOffset now) => new(
+    public static DeviceDto ToDto(Device d, DateTimeOffset now, bool kanSturen = false) => new(
         d.Id,
         d.Type,
         d.Brand,
@@ -141,7 +141,9 @@ public sealed class HouseholdQueries(AppDbContext db, TimeProvider clock)
         d.ExternalId,
         d.LastSeenAt,
         d.LastSeenAt is { } seen && now - seen <= AlertService.NoDataThreshold,
-        d.LastError);
+        d.LastError,
+        kanSturen,
+        d.SturenToegestaan);
 
     public static HouseholdDto ToDto(Household h) => new(
         h.Id,

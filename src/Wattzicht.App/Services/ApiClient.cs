@@ -243,6 +243,14 @@ public sealed class ApiClient
         return await SendAsync<VerbruikImportDto>(req, ct);
     }
 
+    /// <summary>Zet het starten en pauzeren van deze laadpaal aan of uit.</summary>
+    public Task<DeviceDto> SturenToestaanAsync(Guid apparaatId, bool toestaan, CancellationToken ct = default) =>
+        PutAsync<SturenRequest, DeviceDto>($"/devices/{apparaatId}/sturen", new SturenRequest(toestaan), ct);
+
+    /// <summary>Start of pauzeert het laden van deze paal.</summary>
+    public Task LaadopdrachtAsync(Guid apparaatId, bool start, CancellationToken ct = default) =>
+        PostAsync<LaadopdrachtRequest, object>($"/devices/{apparaatId}/charge", new LaadopdrachtRequest(start), authenticated: true, ct);
+
     /// <summary>Laat de server de apparaten van deze woning nu uitlezen.</summary>
     public Task<UitleesResultaatDto> NuUitlezenAsync(CancellationToken ct = default) =>
         PostAsync<object, UitleesResultaatDto>("/devices/refresh", new { }, authenticated: true, ct);

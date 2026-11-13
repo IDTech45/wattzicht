@@ -90,9 +90,9 @@ public static class TekstenEn
         ["koppel.api-token-van-de-laadpaal"] = "API token of the charger",
         ["koppel.uit-de-webinterface-van-de"] = "From the charger web interface",
         ["koppel.maak-je-later-een-nieuw"] = "If you create a new token later, this one stops working and you will have to connect again here.",
-        ["koppel.gebruik-het-e-mailadres-en"] = "Use the email address and password you log in with in the Zaptec app. We only read; we never send anything to the charger.",
+        ["koppel.gebruik-het-e-mailadres-en"] = "Use the email address and password you log in with in the Zaptec app. We read it. Starting and pausing is possible later too, but only if you turn that on yourself.",
         ["koppel.e-mailadres"] = "Email address",
-        ["koppel.gebruik-het-e-mailadres-en-2"] = "Use the email address and password you log in with in the Easee app. We only read; we never send anything to the charger.",
+        ["koppel.gebruik-het-e-mailadres-en-2"] = "Use the email address and password you log in with in the Easee app. We read it. Starting and pausing is possible later too, but only if you turn that on yourself.",
         ["koppel.staat-de-paal-op-het"] = "If the charger is on your installer's or your employer's account, we will not see it here.",
         ["koppel.zet-in-de-app-van"] = "Switch on the local API in the app of your dongle and fill in the IP address. With HomeWizard that is under Settings, Meters, P1 meter, Local API.",
         ["koppel.je-telefoon-moet-op-hetzelfde"] = "Your phone has to be on the same wifi network as the meter. We read it as soon as you open the app at home; away from home it will not work.",
@@ -547,6 +547,19 @@ public static class TekstenEn
         ["maand.leverancier"] = "Your supplier billed {0} kWh from the grid that month.",
         ["meer.maandbericht"] = "Monthly summary",
         ["meer.maandbericht-uitleg"] = "One message a month with what that month did",
+
+
+        // ---- je laadpaal starten en pauzeren ----
+        ["sturen.titel"] = "Your charger",
+        ["sturen.nu-laden"] = "Charge now",
+        ["sturen.pauzeren"] = "Pause",
+        ["sturen.gestart"] = "Command sent: your charger starts charging.",
+        ["sturen.gepauzeerd"] = "Command sent: your charger pauses. You can leave the plug in.",
+        ["sturen.aanzetten"] = "Let Wattzicht control this charger",
+        ["sturen.uitleg"] = "Turn this on and you can start and pause here. We never do it on our own; you press the button.",
+        ["sturen.toestemming-titel"] = "Allow control of this charger?",
+        ["sturen.toestemming-tekst"] = "Reading is looking; starting and pausing changes something in your home. We never act on our own: you press the button. You can turn this off again at any time.",
+        ["sturen.toestemming-ja"] = "Turn on",
 
     }.ToFrozenDictionary();
 }

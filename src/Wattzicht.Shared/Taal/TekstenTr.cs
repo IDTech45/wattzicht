@@ -95,9 +95,9 @@ public static class TekstenTr
         ["koppel.api-token-van-de-laadpaal"] = "Şarj istasyonunun API jetonu",
         ["koppel.uit-de-webinterface-van-de"] = "İstasyonun web arayüzünden",
         ["koppel.maak-je-later-een-nieuw"] = "Sonradan yeni bir jeton oluşturursanız bu jeton geçersiz olur ve burada yeniden bağlamanız gerekir.",
-        ["koppel.gebruik-het-e-mailadres-en"] = "Zaptec uygulamasında giriş yaptığınız e-posta adresi ve şifreyi kullanın. Yalnızca okuyoruz; istasyona hiçbir komut göndermiyoruz.",
+        ["koppel.gebruik-het-e-mailadres-en"] = "Zaptec uygulamasında giriş yaptığınız e-posta adresi ve şifreyi kullanın. Okuyoruz. Başlatma ve duraklatma da mümkün, ancak yalnızca siz açarsanız.",
         ["koppel.e-mailadres"] = "E-posta adresi",
-        ["koppel.gebruik-het-e-mailadres-en-2"] = "Easee uygulamasında giriş yaptığınız e-posta adresi ve şifreyi kullanın. Yalnızca okuyoruz; istasyona hiçbir komut göndermiyoruz.",
+        ["koppel.gebruik-het-e-mailadres-en-2"] = "Easee uygulamasında giriş yaptığınız e-posta adresi ve şifreyi kullanın. Okuyoruz. Başlatma ve duraklatma da mümkün, ancak yalnızca siz açarsanız.",
         ["koppel.staat-de-paal-op-het"] = "İstasyon montaj firmanızın veya işvereninizin hesabındaysa onu burada göremeyiz.",
         ["koppel.zet-in-de-app-van"] = "Donanımınızın uygulamasında yerel API'yi açın ve IP adresini girin. HomeWizard'da bu Ayarlar, Sayaçlar, P1 sayacı, Yerel API altındadır.",
         ["koppel.je-telefoon-moet-op-hetzelfde"] = "Telefonunuz sayaçla aynı wifi ağında olmalı. Uygulamayı evde açtığınız anda okuyoruz; ev dışında bu mümkün değil.",
@@ -552,6 +552,19 @@ public static class TekstenTr
         ["maand.leverancier"] = "Tedarikçiniz o ay şebekeden {0} kWh hesapladı.",
         ["meer.maandbericht"] = "Aylık özet",
         ["meer.maandbericht-uitleg"] = "O ayın ne yaptığını anlatan ayda bir mesaj",
+
+
+        // ---- je laadpaal starten en pauzeren ----
+        ["sturen.titel"] = "Şarj istasyonunuz",
+        ["sturen.nu-laden"] = "Şimdi şarj et",
+        ["sturen.pauzeren"] = "Duraklat",
+        ["sturen.gestart"] = "Komut gönderildi: istasyonunuz şarja başlıyor.",
+        ["sturen.gepauzeerd"] = "Komut gönderildi: istasyonunuz duraklıyor. Fişi takılı bırakabilirsiniz.",
+        ["sturen.aanzetten"] = "Wattzicht bu istasyonu yönetebilsin",
+        ["sturen.uitleg"] = "Bunu açarsanız buradan başlatıp duraklatabilirsiniz. Biz bunu kendiliğimizden asla yapmayız; düğmeye siz basarsınız.",
+        ["sturen.toestemming-titel"] = "Bu istasyon yönetilsin mi?",
+        ["sturen.toestemming-tekst"] = "Okumak bakmaktır; başlatmak ve duraklatmak evinizde bir şeyi değiştirir. Biz kendiliğimizden asla komut vermeyiz: düğmeye siz basarsınız. Bunu istediğiniz zaman kapatabilirsiniz.",
+        ["sturen.toestemming-ja"] = "Aç",
 
     }.ToFrozenDictionary();
 }

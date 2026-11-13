@@ -97,9 +97,9 @@ public static class TekstenNl
         ["koppel.api-token-van-de-laadpaal"] = "API-token van de laadpaal",
         ["koppel.uit-de-webinterface-van-de"] = "Uit de webinterface van de paal",
         ["koppel.maak-je-later-een-nieuw"] = "Maak je later een nieuw token aan, dan vervalt dit token en moet je hier opnieuw koppelen.",
-        ["koppel.gebruik-het-e-mailadres-en"] = "Gebruik het e-mailadres en wachtwoord waarmee je in de Zaptec-app inlogt. Wij lezen alleen uit; sturen doen we niet.",
+        ["koppel.gebruik-het-e-mailadres-en"] = "Gebruik het e-mailadres en wachtwoord waarmee je in de Zaptec-app inlogt. We lezen uit. Starten en pauzeren kan later ook, maar alleen als je dat zelf aanzet.",
         ["koppel.e-mailadres"] = "E-mailadres",
-        ["koppel.gebruik-het-e-mailadres-en-2"] = "Gebruik het e-mailadres en wachtwoord waarmee je in de Easee-app inlogt. Wij lezen alleen uit; sturen doen we niet.",
+        ["koppel.gebruik-het-e-mailadres-en-2"] = "Gebruik het e-mailadres en wachtwoord waarmee je in de Easee-app inlogt. We lezen uit. Starten en pauzeren kan later ook, maar alleen als je dat zelf aanzet.",
         ["koppel.staat-de-paal-op-het"] = "Staat de paal op het account van je installateur of je werkgever, dan zien wij hem hier niet.",
         ["koppel.zet-in-de-app-van"] = "Zet in de app van je dongle de lokale API aan en vul het IP-adres in. Bij HomeWizard staat dat onder Instellingen, Meters, P1-meter, Lokale API.",
         ["koppel.je-telefoon-moet-op-hetzelfde"] = "Je telefoon moet op hetzelfde wifi-netwerk zitten als de meter. Wij lezen hem uit zodra je de app thuis opent; buitenshuis kan het niet.",
@@ -555,6 +555,19 @@ public static class TekstenNl
         ["maand.leverancier"] = "Je leverancier rekende die maand {0} kWh afname.",
         ["meer.maandbericht"] = "Maandbericht",
         ["meer.maandbericht-uitleg"] = "Eén bericht per maand met wat die maand heeft gedaan",
+
+
+        // ---- je laadpaal starten en pauzeren ----
+        ["sturen.titel"] = "Je laadpaal",
+        ["sturen.nu-laden"] = "Nu laden",
+        ["sturen.pauzeren"] = "Pauzeren",
+        ["sturen.gestart"] = "Opdracht verstuurd: je paal gaat laden.",
+        ["sturen.gepauzeerd"] = "Opdracht verstuurd: je paal pauzeert. De stekker mag erin blijven.",
+        ["sturen.aanzetten"] = "Wattzicht mag deze paal sturen",
+        ["sturen.uitleg"] = "Zet je dit aan, dan kun je hier starten en pauzeren. Wij doen dat nooit uit onszelf; je drukt zelf.",
+        ["sturen.toestemming-titel"] = "Deze paal mogen sturen?",
+        ["sturen.toestemming-tekst"] = "Uitlezen is kijken; starten en pauzeren verandert iets in je huis. Wij sturen nooit uit onszelf: je drukt zelf op de knop. Je kunt dit altijd weer uitzetten.",
+        ["sturen.toestemming-ja"] = "Aanzetten",
 
     }.ToFrozenDictionary();
 }

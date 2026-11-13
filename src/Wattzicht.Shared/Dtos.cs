@@ -199,7 +199,11 @@ public sealed record DeviceDto(
     string ExternalId,
     DateTimeOffset? LastSeenAt,
     bool IsOnline,
-    string? LastError = null)
+    string? LastError = null,
+    /// <summary>Of dit merk gestart en gepauzeerd kan worden.</summary>
+    bool KanSturen = false,
+    /// <summary>Of de bewoner dat ook heeft aangezet. Standaard uit.</summary>
+    bool SturenToegestaan = false)
 {
     /// <summary>Alias van <see cref="LastSeenAt"/> (de app leest <c>lastSeen</c>).</summary>
     public DateTimeOffset? LastSeen => LastSeenAt;
@@ -337,6 +341,13 @@ public sealed record BatterijMaatDto(double Kwh, decimal PerJaarEur, decimal Per
 /// <param name="Dagen">Over hoeveel gemeten dagen dit gaat; eerlijk erbij, want daar hangt alles aan.</param>
 /// <param name="HeeftAlBatterij">Of er al een batterij gekoppeld is; dan is dit niet interessant.</param>
 public sealed record BatterijAdviesDto(IReadOnlyList<BatterijMaatDto> Maten, int Dagen, bool HeeftAlBatterij);
+
+/// <summary>Verzoek om een laadpaal te starten of te pauzeren.</summary>
+/// <param name="Start">True is laden, false is pauzeren.</param>
+public sealed record LaadopdrachtRequest(bool Start);
+
+/// <summary>Verzoek om het sturen van een paal aan of uit te zetten.</summary>
+public sealed record SturenRequest(bool Toestaan);
 
 /// <summary>Uitkomst van "nu uitlezen".</summary>
 /// <param name="Gelukt">Apparaten die een meting opleverden.</param>

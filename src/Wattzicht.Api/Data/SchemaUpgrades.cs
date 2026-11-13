@@ -25,6 +25,9 @@ public static class SchemaUpgrades
         """,
         """CREATE UNIQUE INDEX IF NOT EXISTS ix_supplier_usage_household_month ON supplier_usage ("HouseholdId", "Month")""",
 
+        // 2026-11: toestemming om een laadpaal te starten en te pauzeren (standaard uit).
+        """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "SturenToegestaan" boolean NOT NULL DEFAULT false""",
+
         // 2026-11: het maandbericht.
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "NotifyMonthly" boolean NOT NULL DEFAULT true""",
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "LastMonthlyPushAt" timestamp with time zone NULL""",

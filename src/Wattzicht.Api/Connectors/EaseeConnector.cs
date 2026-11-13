@@ -122,6 +122,41 @@ public sealed class EaseeConnector(IHttpClientFactory httpClientFactory, ILogger
             ChargerEnergyWh: meterKwh is { } m ? m * 1000 : null);
     }
 
+    /// <summary>Easee kan gestart en gepauzeerd worden met zijn eigen opdrachten.</summary>
+    public bool KanSturen => true;
+
+    /// <summary>
+    /// Start of pauzeert het laden via de cloud van Easee.
+    ///
+    /// Pauzeren en niet stoppen: stoppen beëindigt de sessie en bij sommige instellingen moet je dan
+    /// opnieuw autoriseren met een pas. Pauzeren laat de auto aangesloten en gaat met één opdracht
+    /// weer verder, en dat is wat iemand bedoelt als hij zegt "nu even niet".
+    /// </summary>
+    public async Task StuurAsync(Device device, DeviceCredentials credentials, Laadopdracht opdracht, CancellationToken ct)
+    {
+        var token = await TokenAsync(credentials, ct);
+        var client = httpClientFactory.CreateClient(HttpClientName);
+
+        var pad = $"/api/chargers/{Uri.EscapeDataString(device.ExternalId)}/commands/"
+                  + (opdracht == Laadopdracht.Start ? "resume_charging" : "pause_charging");
+
+        using var verzoek = new HttpRequestMessage(HttpMethod.Post, pad);
+        verzoek.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
+        verzoek.Content = new StringContent(string.Empty);
+
+        using var antwoord = await client.SendAsync(verzoek, ct);
+
+        if (antwoord.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            throw new ConnectorException("Easee wees de opdracht af. Koppel de laadpaal opnieuw.");
+        }
+
+        if (!antwoord.IsSuccessStatusCode)
+        {
+            throw new ConnectorException($"Easee nam de opdracht niet aan ({(int)antwoord.StatusCode}).");
+        }
+    }
+
     private sealed record Toegang(string Token, string? Refresh, DateTimeOffset Verloopt);
 
     /// <summary>

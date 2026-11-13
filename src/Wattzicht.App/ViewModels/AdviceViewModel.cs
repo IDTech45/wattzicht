@@ -159,6 +159,20 @@ public partial class AdviceViewModel : BaseViewModel
         Title = Taal.T("advies.slim-sturen");
     }
 
+    // ---- Echt sturen ----
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(KanPaalSturen))]
+    [NotifyPropertyChangedFor(nameof(VraagToestemming))]
+    private DeviceDto? _paal;
+
+    [ObservableProperty] private string? _stuurResultaat;
+
+    /// <summary>Er is een paal die wij kunnen aansturen én waarvoor de bewoner dat heeft aangezet.</summary>
+    public bool KanPaalSturen => Paal is { KanSturen: true, SturenToegestaan: true };
+
+    /// <summary>Er is zo'n paal, maar het staat nog uit. Dan vragen we het, in plaats van niets te tonen.</summary>
+    public bool VraagToestemming => Paal is { KanSturen: true, SturenToegestaan: false };
+
     [RelayCommand]
     public async Task LoadAsync()
     {
@@ -167,8 +181,62 @@ public partial class AdviceViewModel : BaseViewModel
             var advice = await _api.GetAdviceAsync();
             Apply(advice);
             HasLoaded = true;
+
+            // De eerste paal die aangestuurd kan worden. Eén is genoeg: wie er twee heeft, stuurt ze
+            // allebei met dezelfde knop zodra dat nodig blijkt.
+            var apparaten = await _api.GetDevicesAsync();
+            Paal = apparaten.FirstOrDefault(d => d.Type == DeviceType.Charger && d.KanSturen);
         }, _auth);
         IsRefreshing = false;
+    }
+
+    /// <summary>
+    /// Toestemming geven om deze paal te starten en te pauzeren.
+    ///
+    /// Apart van het koppelen en standaard uit: uitlezen is kijken, sturen verandert iets in je huis.
+    /// </summary>
+    [RelayCommand]
+    private async Task SturenAanzettenAsync()
+    {
+        if (Paal is not { } paal) return;
+
+        var akkoord = await ConfirmAsync(
+            Taal.T("sturen.toestemming-titel"),
+            Taal.T("sturen.toestemming-tekst"),
+            Taal.T("sturen.toestemming-ja"));
+
+        if (!akkoord) return;
+
+        await RunSafeAsync(async () => Paal = await _api.SturenToestaanAsync(paal.Id, true), _auth);
+    }
+
+    [RelayCommand]
+    private Task NuLadenAsync() => StuurAsync(start: true);
+
+    [RelayCommand]
+    private Task PauzerenAsync() => StuurAsync(start: false);
+
+    private async Task StuurAsync(bool start)
+    {
+        if (Paal is not { } paal) return;
+
+        StuurResultaat = null;
+
+        try
+        {
+            IsBusy = true;
+            await _api.LaadopdrachtAsync(paal.Id, start);
+            StuurResultaat = Taal.T(start ? "sturen.gestart" : "sturen.gepauzeerd");
+        }
+        catch (ApiException ex)
+        {
+            // De paal zegt zelf waarom het niet lukte; dat is bruikbaarder dan "mislukt".
+            StuurResultaat = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     [RelayCommand]

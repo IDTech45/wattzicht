@@ -121,6 +121,16 @@ public sealed class DeviceCredentials : IReadOnlyDictionary<string, string>
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
+/// <summary>Wat we een laadpaal kunnen vragen.</summary>
+public enum Laadopdracht
+{
+    /// <summary>Beginnen of doorgaan met laden.</summary>
+    Start = 0,
+
+    /// <summary>Pauzeren. De auto blijft aangesloten; dit is geen stekker eruit.</summary>
+    Pauze = 1,
+}
+
 /// <summary>Fout bij het uitlezen van een apparaat (verbinding, authenticatie, onverwacht antwoord).</summary>
 public sealed class ConnectorException(string message, Exception? inner = null) : Exception(message, inner);
 
@@ -165,6 +175,23 @@ public interface IDeviceConnector
     /// </summary>
     DeviceReading LeesLokaal(System.Text.Json.JsonElement rauw, DateTimeOffset gemeten) =>
         throw new ConnectorException($"{Brand} wordt niet vanuit de app uitgelezen.");
+
+    /// <summary>
+    /// Kan dit merk ook aangestuurd worden, of alleen uitgelezen?
+    ///
+    /// Standaard niet. Sturen is iets anders dan kijken: het verandert iets in het huis van iemand
+    /// anders, en dat doen we alleen bij merken waar we het hebben kunnen nakijken.
+    /// </summary>
+    bool KanSturen => false;
+
+    /// <summary>
+    /// Start of pauzeert het laden.
+    ///
+    /// Alleen aanroepen als de bewoner het heeft aangezet; die controle hoort bij de aanroeper,
+    /// niet hier. Gooit <see cref="ConnectorException"/> met een zin die de bewoner iets zegt.
+    /// </summary>
+    Task StuurAsync(Device device, DeviceCredentials credentials, Laadopdracht opdracht, CancellationToken ct) =>
+        throw new ConnectorException($"{Brand} kan niet worden aangestuurd.");
 
     /// <summary>Valideert de credentials en haalt de apparaten op.</summary>
     Task<ConnectResult> ConnectAsync(ConnectRequest request, CancellationToken ct);
