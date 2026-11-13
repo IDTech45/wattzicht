@@ -11,6 +11,20 @@ public static class SchemaUpgrades
 {
     private static readonly string[] Steps =
     [
+        // 2026-11: wat de leverancier per maand zegt dat er van en naar het net ging.
+        """
+        CREATE TABLE IF NOT EXISTS supplier_usage (
+            "Id" uuid NOT NULL PRIMARY KEY,
+            "HouseholdId" uuid NOT NULL REFERENCES households ("Id") ON DELETE CASCADE,
+            "Month" date NOT NULL,
+            "ImportKwh" double precision NOT NULL,
+            "ExportKwh" double precision NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            "UpdatedAt" timestamp with time zone NOT NULL
+        )
+        """,
+        """CREATE UNIQUE INDEX IF NOT EXISTS ix_supplier_usage_household_month ON supplier_usage ("HouseholdId", "Month")""",
+
         // 2026-11: piekvermogen van de panelen, voor de zonverwachting in kilowatturen.
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "PvPeakKw" double precision NULL""",
 

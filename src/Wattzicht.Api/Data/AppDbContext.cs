@@ -29,6 +29,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
     public DbSet<Reading> Readings => Set<Reading>();
     public DbSet<Tariff> Tariffs => Set<Tariff>();
     public DbSet<DailySummary> DailySummaries => Set<DailySummary>();
+    public DbSet<SupplierUsage> SupplierUsages => Set<SupplierUsage>();
     public DbSet<Alert> Alerts => Set<Alert>();
     public DbSet<Lead> Leads => Set<Lead>();
     public DbSet<InstallerAccessLog> InstallerAccessLogs => Set<InstallerAccessLog>();
@@ -185,6 +186,14 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
             e.HasQueryFilter(t => TenantBypass
                 || t.HouseholdId == TenantHouseholdId
                 || (t.Household.InstallerId == TenantInstallerId && t.Household.InstallerAccessGranted));
+        });
+
+        modelBuilder.Entity<SupplierUsage>(e =>
+        {
+            e.ToTable("supplier_usage");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.HouseholdId, x.Month }).IsUnique();
+            e.HasOne(x => x.Household).WithMany().HasForeignKey(x => x.HouseholdId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<DailySummary>(e =>

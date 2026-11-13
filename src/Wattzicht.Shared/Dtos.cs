@@ -304,6 +304,20 @@ public sealed record TariefVoorstelDto(
     TariefVondstDto? Energiebelasting,
     bool PrijsIsAllIn);
 
+/// <summary>Eén maand uit het overzicht van de leverancier, naast wat wij zelf maten.</summary>
+/// <param name="Maand">De eerste dag van die maand.</param>
+/// <param name="AfnameKwh">Wat de leverancier zegt dat je van het net haalde.</param>
+/// <param name="TerugleveringKwh">Wat je volgens hem teruglerverde; null als het er niet bij stond.</param>
+/// <param name="OnzeAfnameKwh">Wat wij in die maand zelf maten; null als we die maand niets hebben.</param>
+public sealed record LeverancierMaandDto(
+    DateOnly Maand,
+    double AfnameKwh,
+    double? TerugleveringKwh,
+    double? OnzeAfnameKwh);
+
+/// <summary>Uitkomst van het inlezen van een maandoverzicht van de leverancier.</summary>
+public sealed record VerbruikImportDto(IReadOnlyList<LeverancierMaandDto> Maanden);
+
 /// <summary>Uitkomst van "nu uitlezen".</summary>
 /// <param name="Gelukt">Apparaten die een meting opleverden.</param>
 /// <param name="Mislukt">Apparaten die niet te bereiken waren of een fout gaven.</param>

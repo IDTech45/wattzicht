@@ -510,8 +510,8 @@ public static class TekstenNl
 
 
         // ---- contract of jaarafrekening inlezen ----
-        ["contract.knop"] = "Contract of jaarafrekening inlezen",
-        ["contract.uitleg"] = "Stuur de pdf van je leverancier en we halen de bedragen er zelf uit. Je ziet wat we vonden voordat je het opslaat.",
+        ["contract.knop"] = "Pdf van je leverancier inlezen",
+        ["contract.uitleg"] = "Je contract, je jaarafrekening of je maandoverzicht. We halen de tarieven en de kilowatturen eruit en laten zien wat we vonden voordat je iets opslaat.",
         ["contract.kies-bestand"] = "Kies je contract of afrekening",
         ["contract.gevonden-levering"] = "Leveringstarief € {0}.",
         ["contract.gevonden-teruglevering"] = "Terugleververgoeding € {0}.",
@@ -519,6 +519,13 @@ public static class TekstenNl
         ["contract.losse-belasting"] = "Let op: de energiebelasting (€ {0}) staat er los bij, dus het leveringstarief is nog niet wat je per kilowattuur betaalt.",
         ["contract.controleer"] = "Controleer de velden hieronder en sla ze op.",
         ["contract.mislukt"] = "Het bestand kon niet worden gelezen.",
+
+
+        // ---- maandcijfers van de leverancier ----
+        ["verbruik.maand"] = "Volgens je leverancier {0}: {1} kWh van het net.",
+        ["verbruik.wij-maten"] = "Wij maten {0} kWh.",
+        ["verbruik.en-meer"] = "In totaal {0} maanden ingelezen.",
+        ["contract.niets-gevonden"] = "Hier konden we geen tarieven en geen maandcijfers in vinden.",
 
     }.ToFrozenDictionary();
 }

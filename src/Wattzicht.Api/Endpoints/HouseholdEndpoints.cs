@@ -127,6 +127,12 @@ public static class HouseholdEndpoints
             .ProducesValidationProblem()
             .DisableAntiforgery();
 
+        household.MapPost("/usage/import", VerbruikLezenAsync)
+            .WithSummary("Leest de kilowatturen per maand uit een overzicht van de leverancier.")
+            .Produces<VerbruikImportDto>()
+            .ProducesValidationProblem()
+            .DisableAntiforgery();
+
         household.MapPost("/history/import", HistorieImporterenAsync)
             .WithSummary("Leest een CSV-export uit het portaal van de fabrikant in als dagtotalen opwek.")
             .Produces<HistorieImportDto>()
@@ -207,6 +213,128 @@ public static class HouseholdEndpoints
             Naar(voorstel.Terugleverkosten),
             Naar(voorstel.Energiebelasting),
             voorstel.PrijsIsAllIn));
+    }
+
+    /// <summary>
+    /// Het maandoverzicht van de leverancier inlezen.
+    ///
+    /// Bijna iedereen krijgt die mail, en voor wie geen P1-meter heeft is dat het enige wat we over
+    /// de netkant kunnen weten. Het komt naast onze eigen metingen te staan en vervangt ze niet: een
+    /// maandtotaal uitsmeren over de dagen zou een precisie tonen die er niet is.
+    ///
+    /// Het antwoord zet er meteen bij wat wij die maand zelf maten. Lopen die twee uit elkaar, dan
+    /// is dat precies het moment waarop iemand wil weten waarom.
+    /// </summary>
+    private static async Task<IResult> VerbruikLezenAsync(
+        HttpContext http,
+        AppDbContext db,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+
+        if (!http.Request.HasFormContentType)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] = ["Stuur het bestand mee als formulierveld 'bestand'."],
+            });
+        }
+
+        var form = await http.Request.ReadFormAsync(ct);
+        var bestand = form.Files["bestand"] ?? form.Files.FirstOrDefault();
+
+        if (bestand is null || bestand.Length == 0)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]> { ["bestand"] = ["Er zat geen bestand bij."] });
+        }
+
+        if (bestand.Length > MaximumBestand)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] = [$"Dit bestand is groter dan {MaximumBestand / (1024 * 1024)} MB."],
+            });
+        }
+
+        string? tekst;
+        await using (var stroom = bestand.OpenReadStream())
+        {
+            var gelezen = DocumentTekst.Lees(stroom, bestand.FileName, bestand.ContentType);
+            if (gelezen.Tekst is null)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["bestand"] = [gelezen.Fout ?? "Dit bestand konden we niet lezen."],
+                });
+            }
+
+            tekst = gelezen.Tekst;
+        }
+
+        var vandaag = DutchTime.LocalDate(clock.GetUtcNow());
+        var uitkomst = VerbruikLezer.Lees(tekst, vandaag);
+
+        if (!uitkomst.Gelukt)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] = [uitkomst.Fout ?? "Hier konden we geen maandcijfers in vinden."],
+            });
+        }
+
+        var nu = clock.GetUtcNow();
+        var maanden = uitkomst.Maanden.Select(m => m.Maand_).ToList();
+
+        var bestaand = await db.SupplierUsages
+            .Where(x => x.HouseholdId == householdId && maanden.Contains(x.Month))
+            .ToDictionaryAsync(x => x.Month, ct);
+
+        foreach (var maand in uitkomst.Maanden)
+        {
+            if (bestaand.TryGetValue(maand.Maand_, out var rij))
+            {
+                rij.ImportKwh = maand.AfnameKwh;
+                rij.ExportKwh = maand.TerugleveringKwh ?? rij.ExportKwh;
+                rij.UpdatedAt = nu;
+                continue;
+            }
+
+            db.SupplierUsages.Add(new SupplierUsage
+            {
+                Id = Guid.NewGuid(),
+                HouseholdId = householdId,
+                Month = maand.Maand_,
+                ImportKwh = maand.AfnameKwh,
+                ExportKwh = maand.TerugleveringKwh,
+                CreatedAt = nu,
+                UpdatedAt = nu,
+            });
+        }
+
+        await db.SaveChangesAsync(ct);
+
+        // Wat wij die maanden zelf maten, zodat het verschil meteen zichtbaar is.
+        var vanaf = maanden.Min();
+        var tot = maanden.Max().AddMonths(1);
+        var eigen = await db.DailySummaries
+            .Where(x => x.HouseholdId == householdId && x.Date >= vanaf && x.Date < tot)
+            .Select(x => new { x.Date, x.ImportKwh })
+            .ToListAsync(ct);
+
+        var eigenPerMaand = eigen
+            .GroupBy(x => new DateOnly(x.Date.Year, x.Date.Month, 1))
+            .ToDictionary(g => g.Key, g => Math.Round(g.Sum(x => x.ImportKwh), 1));
+
+        var rijen = uitkomst.Maanden
+            .Select(m => new LeverancierMaandDto(
+                m.Maand_,
+                m.AfnameKwh,
+                m.TerugleveringKwh,
+                eigenPerMaand.TryGetValue(m.Maand_, out var onze) && onze > 0 ? onze : null))
+            .ToList();
+
+        return Results.Ok(new VerbruikImportDto(rijen));
     }
 
     /// <summary>

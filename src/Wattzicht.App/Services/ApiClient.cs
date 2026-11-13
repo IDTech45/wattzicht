@@ -221,6 +221,20 @@ public sealed class ApiClient
         return await SendAsync<TariefVoorstelDto>(req, ct);
     }
 
+    /// <summary>Leest de kilowatturen per maand uit een overzicht van de leverancier.</summary>
+    public async Task<VerbruikImportDto> LeesVerbruikAsync(
+        Stream bestand, string bestandsnaam, string contentType, CancellationToken ct = default)
+    {
+        using var inhoud = new MultipartFormDataContent();
+        using var deel = new StreamContent(bestand);
+        deel.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        inhoud.Add(deel, "bestand", bestandsnaam);
+
+        using var req = new HttpRequestMessage(HttpMethod.Post, Relative("/usage/import")) { Content = inhoud };
+        await AuthorizeAsync(req);
+        return await SendAsync<VerbruikImportDto>(req, ct);
+    }
+
     /// <summary>Laat de server de apparaten van deze woning nu uitlezen.</summary>
     public Task<UitleesResultaatDto> NuUitlezenAsync(CancellationToken ct = default) =>
         PostAsync<object, UitleesResultaatDto>("/devices/refresh", new { }, authenticated: true, ct);

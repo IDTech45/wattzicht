@@ -176,24 +176,66 @@ public partial class SettingsViewModel : BaseViewModel
             if (keuze is null) return;
 
             IsBusy = true;
-            await using var stroom = await keuze.OpenReadAsync();
-            var voorstel = await _api.LeesTarievenAsync(stroom, keuze.FileName, "application/pdf");
 
+            // Twee dingen kunnen in zo'n pdf staan: de tarieven uit een contract en de kilowatturen
+            // uit een maandoverzicht. Welke van de twee weet de bewoner vaak zelf niet, dus kijken we
+            // naar allebei en vertellen we wat we gevonden hebben.
             var regels = new List<string>();
+            TariefVoorstelDto? voorstel = null;
 
-            if (voorstel.Levering is { } levering)
+            try
+            {
+                await using var tariefStroom = await keuze.OpenReadAsync();
+                voorstel = await _api.LeesTarievenAsync(tariefStroom, keuze.FileName, "application/pdf");
+            }
+            catch (ApiException ex) when (!ex.IsUnauthorized)
+            {
+                // Geen tarieven erin; misschien wel maandcijfers. De melding bewaren we voor het
+                // geval er straks ook geen cijfers blijken te staan.
+                regels.Add(ex.Message);
+            }
+
+            try
+            {
+                await using var verbruikStroom = await keuze.OpenReadAsync();
+                var verbruik = await _api.LeesVerbruikAsync(verbruikStroom, keuze.FileName, "application/pdf");
+
+                foreach (var maand in verbruik.Maanden.TakeLast(3))
+                {
+                    var naam = new DateTime(maand.Maand.Year, maand.Maand.Month, 1).ToString("MMMM yyyy", Nl);
+                    regels.Add(string.Format(Taal.T("verbruik.maand"), naam, maand.AfnameKwh.ToString("0", Nl)));
+
+                    if (maand.OnzeAfnameKwh is { } onze)
+                    {
+                        regels.Add(string.Format(Taal.T("verbruik.wij-maten"), onze.ToString("0", Nl)));
+                    }
+                }
+
+                if (verbruik.Maanden.Count > 3)
+                {
+                    regels.Add(string.Format(Taal.T("verbruik.en-meer"), verbruik.Maanden.Count));
+                }
+            }
+            catch (ApiException ex) when (!ex.IsUnauthorized && voorstel is not null)
+            {
+                // Tarieven gevonden, geen maandcijfers: dat is een contract en geen overzicht. Niets
+                // aan de hand, en de melding hoeft de bewoner niet te zien.
+                _ = ex;
+            }
+
+            if (voorstel?.Levering is { } levering)
             {
                 ImportTariff = levering.EuroPerKwh.ToString("0.00", Nl);
                 regels.Add(string.Format(Taal.T("contract.gevonden-levering"), levering.EuroPerKwh.ToString("0.00", Nl)));
             }
 
-            if (voorstel.Teruglevering is { } terug)
+            if (voorstel?.Teruglevering is { } terug)
             {
                 ExportTariff = terug.EuroPerKwh.ToString("0.00", Nl);
                 regels.Add(string.Format(Taal.T("contract.gevonden-teruglevering"), terug.EuroPerKwh.ToString("0.00", Nl)));
             }
 
-            if (voorstel.Terugleverkosten is { } kosten)
+            if (voorstel?.Terugleverkosten is { } kosten)
             {
                 FeedInCost = kosten.EuroPerKwh.ToString("0.000", Nl);
                 regels.Add(string.Format(Taal.T("contract.gevonden-terugleverkosten"), kosten.EuroPerKwh.ToString("0.000", Nl)));
@@ -202,13 +244,17 @@ public partial class SettingsViewModel : BaseViewModel
             // Staat de energiebelasting los vermeld, dan is de leveringsprijs nog niet wat iemand
             // per kilowattuur betaalt. Dat zeggen we, en we tellen het niet stiekem op: welke
             // belasting al in welk bedrag zit verschilt per leverancier.
-            if (voorstel.Energiebelasting is { } belasting && !voorstel.PrijsIsAllIn)
+            if (voorstel is { PrijsIsAllIn: false, Energiebelasting: { } belasting })
             {
                 regels.Add(string.Format(Taal.T("contract.losse-belasting"), belasting.EuroPerKwh.ToString("0.00", Nl)));
             }
 
-            regels.Add(Taal.T("contract.controleer"));
-            ContractResultaat = string.Join(" ", regels);
+            if (voorstel is not null)
+            {
+                regels.Add(Taal.T("contract.controleer"));
+            }
+
+            ContractResultaat = regels.Count > 0 ? string.Join(" ", regels) : Taal.T("contract.niets-gevonden");
         }
         catch (ApiException ex)
         {

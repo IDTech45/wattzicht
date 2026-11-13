@@ -507,8 +507,8 @@ public static class TekstenTr
 
 
         // ---- contract of jaarafrekening inlezen ----
-        ["contract.knop"] = "Sözleşme veya yıllık hesabı oku",
-        ["contract.uitleg"] = "Tedarikçinizden gelen pdf dosyasını gönderin, tutarları biz çıkaralım. Kaydetmeden önce bulduklarımızı görürsünüz.",
+        ["contract.knop"] = "Tedarikçinizin pdf dosyasını okuyun",
+        ["contract.uitleg"] = "Sözleşmeniz, yıllık hesabınız veya aylık özetiniz. Tarifeleri ve kilovatsaatleri çıkarırız ve siz bir şey kaydetmeden önce bulduklarımızı gösteririz.",
         ["contract.kies-bestand"] = "Sözleşmenizi veya hesabınızı seçin",
         ["contract.gevonden-levering"] = "Tedarik tarifesi € {0}.",
         ["contract.gevonden-teruglevering"] = "Şebekeye verme ödemesi € {0}.",
@@ -516,6 +516,13 @@ public static class TekstenTr
         ["contract.losse-belasting"] = "Dikkat: enerji vergisi (€ {0}) ayrı belirtilmiş, bu yüzden tedarik tarifesi kilovatsaat başına ödediğiniz tutar değil.",
         ["contract.controleer"] = "Aşağıdaki alanları kontrol edip kaydedin.",
         ["contract.mislukt"] = "Dosya okunamadı.",
+
+
+        // ---- maandcijfers van de leverancier ----
+        ["verbruik.maand"] = "Tedarikçinize göre {0}: şebekeden {1} kWh.",
+        ["verbruik.wij-maten"] = "Biz {0} kWh ölçtük.",
+        ["verbruik.en-meer"] = "Toplam {0} ay içe aktarıldı.",
+        ["contract.niets-gevonden"] = "Burada ne tarife ne de aylık veri bulabildik.",
 
     }.ToFrozenDictionary();
 }

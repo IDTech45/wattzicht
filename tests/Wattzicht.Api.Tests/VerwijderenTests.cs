@@ -54,6 +54,11 @@ public sealed class VerwijderenTests
         db.Readings.Add(new Reading { DeviceId = apparaat, Timestamp = nu, PvPowerW = 1200 });
         db.Alerts.Add(new Alert { Id = Guid.NewGuid(), DeviceId = apparaat, Type = AlertType.NoData, Message = "stil", Since = nu });
         db.DailySummaries.Add(new DailySummary { Id = Guid.NewGuid(), HouseholdId = home, Date = new DateOnly(2026, 11, 1), UpdatedAt = nu });
+        db.SupplierUsages.Add(new SupplierUsage
+        {
+            Id = Guid.NewGuid(), HouseholdId = home, Month = new DateOnly(2026, 10, 1),
+            ImportKwh = 230, ExportKwh = 120, CreatedAt = nu, UpdatedAt = nu
+        });
         db.Tariffs.Add(new Tariff { Id = Guid.NewGuid(), HouseholdId = home, ValidFrom = new DateOnly(2026, 1, 1), ImportPricePerKwh = 0.30m, ExportPricePerKwh = 0.08m });
         db.PushDevices.Add(new PushDevice { Id = Guid.NewGuid(), HouseholdId = home, Token = "t", Platform = "android", CreatedAt = nu, LastSeenAt = nu });
         db.Subscriptions.Add(new Subscription
@@ -90,6 +95,7 @@ public sealed class VerwijderenTests
         Assert.Empty(na.Readings.IgnoreQueryFilters().Where(x => x.Device!.HouseholdId == Mijn));
         Assert.Empty(na.Alerts.IgnoreQueryFilters().Where(x => x.Device!.HouseholdId == Mijn));
         Assert.Empty(na.DailySummaries.IgnoreQueryFilters().Where(x => x.HouseholdId == Mijn));
+        Assert.Empty(na.SupplierUsages.IgnoreQueryFilters().Where(x => x.HouseholdId == Mijn));
         Assert.Empty(na.Tariffs.IgnoreQueryFilters().Where(x => x.HouseholdId == Mijn));
         Assert.Empty(na.PushDevices.IgnoreQueryFilters().Where(x => x.HouseholdId == Mijn));
         Assert.Empty(na.Subscriptions.IgnoreQueryFilters().Where(x => x.HouseholdId == Mijn));
@@ -111,6 +117,7 @@ public sealed class VerwijderenTests
         Assert.Single(na.Devices.IgnoreQueryFilters().Where(x => x.HouseholdId == Buurman));
         Assert.Single(na.Readings.IgnoreQueryFilters().Where(x => x.Device!.HouseholdId == Buurman));
         Assert.Single(na.DailySummaries.IgnoreQueryFilters().Where(x => x.HouseholdId == Buurman));
+        Assert.Single(na.SupplierUsages.IgnoreQueryFilters().Where(x => x.HouseholdId == Buurman));
         Assert.Single(na.Subscriptions.IgnoreQueryFilters().Where(x => x.HouseholdId == Buurman));
     }
 

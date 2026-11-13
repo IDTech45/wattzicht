@@ -268,6 +268,35 @@ public sealed class Tariff
 }
 
 /// <summary>Dagtotalen per huishouden; wordt elke pollronde bijgewerkt.</summary>
+/// <summary>
+/// Wat de leverancier zegt dat er in een maand van het net kwam en naar het net ging.
+///
+/// Dit staat los van onze eigen metingen en vervangt ze niet. Wie geen P1-meter heeft, heeft bij ons
+/// een gat aan de netkant; zijn maandoverzicht vult dat. En wie wél meet, kan zien waar de twee uit
+/// elkaar lopen, wat precies het moment is waarop je wilt weten of je meter klopt.
+///
+/// Een maand blijft een maand: we smeren het niet uit over de dagen. Dan zou een dagoverzicht een
+/// precisie tonen die er niet is.
+/// </summary>
+public sealed class SupplierUsage
+{
+    public Guid Id { get; set; }
+    public Guid HouseholdId { get; set; }
+    public Household Household { get; set; } = null!;
+
+    /// <summary>De eerste dag van de maand waar deze cijfers over gaan.</summary>
+    public DateOnly Month { get; set; }
+
+    /// <summary>Van het net gehaald in die maand.</summary>
+    public double ImportKwh { get; set; }
+
+    /// <summary>Aan het net geleverd; <c>null</c> als het overzicht dat niet noemde.</summary>
+    public double? ExportKwh { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+}
+
 public sealed class DailySummary
 {
     public Guid Id { get; set; }

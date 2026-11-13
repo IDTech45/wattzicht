@@ -502,8 +502,8 @@ public static class TekstenEn
 
 
         // ---- contract of jaarafrekening inlezen ----
-        ["contract.knop"] = "Read a contract or annual statement",
-        ["contract.uitleg"] = "Send the pdf from your supplier and we take the amounts out of it. You see what we found before you save it.",
+        ["contract.knop"] = "Read a pdf from your supplier",
+        ["contract.uitleg"] = "Your contract, your annual statement or your monthly overview. We take out the rates and the kilowatt-hours and show you what we found before you save anything.",
         ["contract.kies-bestand"] = "Choose your contract or statement",
         ["contract.gevonden-levering"] = "Supply rate € {0}.",
         ["contract.gevonden-teruglevering"] = "Feed-in payment € {0}.",
@@ -511,6 +511,13 @@ public static class TekstenEn
         ["contract.losse-belasting"] = "Note: the energy tax (€ {0}) is listed separately, so the supply rate is not yet what you pay per kilowatt-hour.",
         ["contract.controleer"] = "Check the fields below and save them.",
         ["contract.mislukt"] = "The file could not be read.",
+
+
+        // ---- maandcijfers van de leverancier ----
+        ["verbruik.maand"] = "According to your supplier {0}: {1} kWh from the grid.",
+        ["verbruik.wij-maten"] = "We measured {0} kWh.",
+        ["verbruik.en-meer"] = "{0} months imported in total.",
+        ["contract.niets-gevonden"] = "We could not find any rates or monthly figures in this one.",
 
     }.ToFrozenDictionary();
 }
