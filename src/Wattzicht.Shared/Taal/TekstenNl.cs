@@ -604,5 +604,20 @@ public static class TekstenNl
         ["afmaken.tarief"] = "Je energietarief ontbreekt nog, dus je besparing blijft op nul staan.",
         ["afmaken.knop"] = "Nu invullen",
 
+
+        // ---- energiestroom in woorden ----
+        ["stroom.vandaag"] = "vandaag {0} kWh",
+        ["stroom.opwek"] = "▲ Opwek",
+        ["stroom.geen-opwek"] = "Geen opwek",
+        ["stroom.verbruik"] = "▼ Verbruik",
+        ["stroom.ontladen"] = "▲ Ontladen",
+        ["stroom.laden"] = "▼ Laden",
+        ["stroom.rust"] = "Rust",
+        ["stroom.teruglevering"] = "▲ Teruglevering",
+        ["stroom.afname"] = "▼ Afname",
+        ["stroom.geen-uitwisseling"] = "Geen uitwisseling",
+        ["meer.aan"] = "Aan",
+        ["meer.uit"] = "Uit",
+
     }.ToFrozenDictionary();
 }

@@ -601,5 +601,20 @@ public static class TekstenTr
         ["afmaken.tarief"] = "Enerji tarifeniz hâlâ eksik, bu yüzden tasarrufunuz sıfır kalıyor.",
         ["afmaken.knop"] = "Şimdi doldur",
 
+
+        // ---- energiestroom in woorden ----
+        ["stroom.vandaag"] = "bugün {0} kWh",
+        ["stroom.opwek"] = "▲ Üretim",
+        ["stroom.geen-opwek"] = "Üretim yok",
+        ["stroom.verbruik"] = "▼ Tüketim",
+        ["stroom.ontladen"] = "▲ Boşalıyor",
+        ["stroom.laden"] = "▼ Doluyor",
+        ["stroom.rust"] = "Beklemede",
+        ["stroom.teruglevering"] = "▲ Şebekeye veriyor",
+        ["stroom.afname"] = "▼ Şebekeden alıyor",
+        ["stroom.geen-uitwisseling"] = "Alışveriş yok",
+        ["meer.aan"] = "Açık",
+        ["meer.uit"] = "Kapalı",
+
     }.ToFrozenDictionary();
 }

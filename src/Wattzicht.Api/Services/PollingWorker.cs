@@ -321,7 +321,7 @@ public sealed class PollingWorker(
         LiveSnapshotDto? snapshotForPush = null;
         if (latest.Count > 0)
         {
-            var snapshot = SnapshotBuilder.Build(latest);
+            var snapshot = SnapshotBuilder.Build(latest, devices.Select(d => d.Type));
             await summaries.ApplySnapshotAsync(householdId, snapshot, ct);
             snapshotForPush = snapshot;
         }

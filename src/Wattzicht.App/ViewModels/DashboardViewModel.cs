@@ -61,6 +61,15 @@ public partial class DashboardViewModel : BaseViewModel
     [ObservableProperty] private string _selfUsePercentText = "0%";
     [ObservableProperty] private string _pvTodayText = "0,0 kWh";
 
+    /// <summary>
+    /// Dezelfde twee getallen als kale waarde, voor de zontegel bovenaan.
+    ///
+    /// Die tegel toonde alleen het vermogen van dit moment. Om 18:13 in november is dat nul, en dan
+    /// staat het hele scherm op nul terwijl de panelen die dag gewoon gedraaid hebben.
+    /// </summary>
+    [ObservableProperty] private double _pvTodayKwh;
+    [ObservableProperty] private double _pvPeakKw;
+
     // Deze maand
     [ObservableProperty] private string _monthSavedText = "€ 0,00";
     [ObservableProperty] private string _monthPvText = "0 kWh";
@@ -154,6 +163,7 @@ public partial class DashboardViewModel : BaseViewModel
             {
                 var woning = await _api.GetHouseholdAsync();
                 PlaatsOntbreekt = !woning.HasLocation;
+                PvPeakKw = woning.PvPeakKw ?? 0;
 
                 var tarief = await _api.GetTariffAsync();
                 TariefOntbreekt = tarief.ImportTariffEur <= 0;
@@ -216,6 +226,7 @@ public partial class DashboardViewModel : BaseViewModel
 
         SavedTodayText = Eur(today?.SavedEur);
         PvTodayText = Kwh(today?.PvKwh, 1);
+        PvTodayKwh = today?.PvKwh is { } vandaag ? Convert.ToDouble(vandaag) : 0;
         SelfUsePercentText = SelfUsePercent(today);
 
         MonthSavedText = Eur(month?.SavedEur);

@@ -596,5 +596,20 @@ public static class TekstenEn
         ["afmaken.tarief"] = "Your energy rate is still missing, so your savings stay at zero.",
         ["afmaken.knop"] = "Fill it in now",
 
+
+        // ---- energiestroom in woorden ----
+        ["stroom.vandaag"] = "today {0} kWh",
+        ["stroom.opwek"] = "▲ Generating",
+        ["stroom.geen-opwek"] = "Not generating",
+        ["stroom.verbruik"] = "▼ Use",
+        ["stroom.ontladen"] = "▲ Discharging",
+        ["stroom.laden"] = "▼ Charging",
+        ["stroom.rust"] = "Idle",
+        ["stroom.teruglevering"] = "▲ Feeding in",
+        ["stroom.afname"] = "▼ Drawing",
+        ["stroom.geen-uitwisseling"] = "No exchange",
+        ["meer.aan"] = "On",
+        ["meer.uit"] = "Off",
+
     }.ToFrozenDictionary();
 }

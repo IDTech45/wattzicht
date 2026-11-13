@@ -252,6 +252,8 @@ public sealed record LocalReadingRequest(
 /// <param name="BatterySoc">Laadtoestand batterij in procent (0–100); <c>null</c> zonder batterij.</param>
 /// <param name="ChargerPowerW">Laadpaalvermogen in watt.</param>
 /// <param name="UpdatedAt">Tijdstip van de meest recente meting (UTC).</param>
+/// <param name="HasBattery">Of deze woning een thuisbatterij heeft.</param>
+/// <param name="HasCharger">Of deze woning een laadpaal heeft.</param>
 public sealed record LiveSnapshotDto(
     double PvPowerW,
     double LoadPowerW,
@@ -259,7 +261,9 @@ public sealed record LiveSnapshotDto(
     double BatteryPowerW,
     double? BatterySoc,
     double ChargerPowerW,
-    DateTimeOffset? UpdatedAt)
+    DateTimeOffset? UpdatedAt,
+    bool HasBattery = false,
+    bool HasCharger = false)
 {
     /// <summary>Alias van <see cref="UpdatedAt"/> voor het portal (leest <c>timestamp</c>).</summary>
     public DateTimeOffset? Timestamp => UpdatedAt;

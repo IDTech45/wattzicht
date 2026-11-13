@@ -21,6 +21,33 @@ public partial class EnergyFlowView : ContentView
         set => SetValue(SnapshotProperty, value);
     }
 
+    /// <summary>
+    /// Wat de panelen vandaag al gemaakt hebben.
+    ///
+    /// Zonder dit staat er 's avonds vijf keer 0,0 kW op het beginscherm en lijkt de app dood,
+    /// terwijl het de hele dag mooi weer was. Het vermogen van nu is maar het halve verhaal.
+    /// </summary>
+    public static readonly BindableProperty PvTodayKwhProperty = BindableProperty.Create(
+        nameof(PvTodayKwh), typeof(double), typeof(EnergyFlowView), 0d,
+        propertyChanged: (b, _, _) => ((EnergyFlowView)b).Recalculate());
+
+    public double PvTodayKwh
+    {
+        get => (double)GetValue(PvTodayKwhProperty);
+        set => SetValue(PvTodayKwhProperty, value);
+    }
+
+    /// <summary>Het piekvermogen van de panelen; staat bij het kopje Zon zodra het bekend is.</summary>
+    public static readonly BindableProperty PvPeakKwProperty = BindableProperty.Create(
+        nameof(PvPeakKw), typeof(double), typeof(EnergyFlowView), 0d,
+        propertyChanged: (b, _, _) => ((EnergyFlowView)b).Recalculate());
+
+    public double PvPeakKw
+    {
+        get => (double)GetValue(PvPeakKwProperty);
+        set => SetValue(PvPeakKwProperty, value);
+    }
+
     // Afgeleide, read-only bindable properties voor de XAML
     public static readonly BindableProperty PvKwTextProperty = BindableProperty.Create(nameof(PvKwText), typeof(string), typeof(EnergyFlowView), "0,0 kW");
     public static readonly BindableProperty PvHintProperty = BindableProperty.Create(nameof(PvHint), typeof(string), typeof(EnergyFlowView), "Geen opwek");
@@ -37,6 +64,10 @@ public partial class EnergyFlowView : ContentView
     public static readonly BindableProperty ChargerKwTextProperty = BindableProperty.Create(nameof(ChargerKwText), typeof(string), typeof(EnergyFlowView), "0,0 kW");
     public static readonly BindableProperty ChargerHintProperty = BindableProperty.Create(nameof(ChargerHint), typeof(string), typeof(EnergyFlowView), "Niet aan het laden");
     public static readonly BindableProperty HasChargerProperty = BindableProperty.Create(nameof(HasCharger), typeof(bool), typeof(EnergyFlowView), false);
+    public static readonly BindableProperty HasBatteryProperty = BindableProperty.Create(nameof(HasBattery), typeof(bool), typeof(EnergyFlowView), false);
+    public static readonly BindableProperty PvTitleProperty = BindableProperty.Create(nameof(PvTitle), typeof(string), typeof(EnergyFlowView), "Zon");
+    public static readonly BindableProperty NetColumnProperty = BindableProperty.Create(nameof(NetColumn), typeof(int), typeof(EnergyFlowView), 1);
+    public static readonly BindableProperty NetColumnSpanProperty = BindableProperty.Create(nameof(NetColumnSpan), typeof(int), typeof(EnergyFlowView), 1);
 
     public string PvKwText { get => (string)GetValue(PvKwTextProperty); private set => SetValue(PvKwTextProperty, value); }
     public string PvHint { get => (string)GetValue(PvHintProperty); private set => SetValue(PvHintProperty, value); }
@@ -53,6 +84,12 @@ public partial class EnergyFlowView : ContentView
     public string ChargerKwText { get => (string)GetValue(ChargerKwTextProperty); private set => SetValue(ChargerKwTextProperty, value); }
     public string ChargerHint { get => (string)GetValue(ChargerHintProperty); private set => SetValue(ChargerHintProperty, value); }
     public bool HasCharger { get => (bool)GetValue(HasChargerProperty); private set => SetValue(HasChargerProperty, value); }
+    public bool HasBattery { get => (bool)GetValue(HasBatteryProperty); private set => SetValue(HasBatteryProperty, value); }
+    public string PvTitle { get => (string)GetValue(PvTitleProperty); private set => SetValue(PvTitleProperty, value); }
+
+    /// <summary>Zonder batterij schuift het net naar links en vult het de hele rij; anders blijft er een gat staan.</summary>
+    public int NetColumn { get => (int)GetValue(NetColumnProperty); private set => SetValue(NetColumnProperty, value); }
+    public int NetColumnSpan { get => (int)GetValue(NetColumnSpanProperty); private set => SetValue(NetColumnSpanProperty, value); }
 
     public EnergyFlowView()
     {
@@ -71,21 +108,35 @@ public partial class EnergyFlowView : ContentView
         double? soc = s?.BatterySoc is null ? null : ToDouble(s.BatterySoc);
 
         PvKwText = Kw(pv);
-        PvHint = pv > 50 ? "▲ Opwek" : "Geen opwek";
+
+        // De tegel zegt nu drie dingen in plaats van een: hoeveel er op dit moment binnenkomt, of
+        // dat oploopt, en wat er vandaag al in zit. Dat laatste is het getal waar iemand 's avonds
+        // naar zoekt, en dat stond alleen onderaan de pagina.
+        PvHint = PvTodayKwh > 0
+            ? string.Format(Taal.T("stroom.vandaag"), Getal(PvTodayKwh))
+            : pv > 50 ? Taal.T("stroom.opwek") : Taal.T("stroom.geen-opwek");
+
+        PvTitle = PvPeakKw > 0
+            ? $"{Taal.T("stroom.zon")} · {Getal(PvPeakKw)} kWp"
+            : Taal.T("stroom.zon");
 
         LoadKwText = Kw(load);
-        LoadHint = "▼ Verbruik";
+        LoadHint = Taal.T("stroom.verbruik");
 
         BatteryKwText = Kw(battery);
         // Conventie (Wattzicht.Shared): positief = ontladen, negatief = laden.
-        BatteryHint = battery > 50 ? "▲ Ontladen" : battery < -50 ? "▼ Laden" : "Rust";
+        BatteryHint = battery > 50 ? Taal.T("stroom.ontladen")
+            : battery < -50 ? Taal.T("stroom.laden")
+            : Taal.T("stroom.rust");
         SocText = soc is null ? "–" : $"{soc:0}%";
         SocFraction = soc is null ? 0 : Math.Clamp(soc.Value / 100.0, 0, 1);
 
         GridKwText = Kw(grid);
         bool exporting = grid < -50;
         bool importing = grid > 50;
-        GridHint = exporting ? "▲ Teruglevering" : importing ? "▼ Afname" : "Geen uitwisseling";
+        GridHint = exporting ? Taal.T("stroom.teruglevering")
+            : importing ? Taal.T("stroom.afname")
+            : Taal.T("stroom.geen-uitwisseling");
         // Bij uitwisseling de netkleur; staat er niets op het net, dan de gewone tekstkleur. Die moet
         // wel met het thema meegaan: TextMuted is voor een lichte achtergrond en haalt op donker 2,2:1.
         GridAccent = exporting || importing
@@ -97,10 +148,20 @@ public partial class EnergyFlowView : ContentView
                 ? ThemeRes("EnergyChargerSoft", "EnergyChargerSoftDark")
                 : ThemeRes("Surface", "SurfaceDark");
 
-        HasCharger = s?.ChargerPowerW is not null;
+        // Wat de woning werkelijk heeft, niet wat er toevallig nul watt staat te doen. Een optelling
+        // van nul is geen bewijs van bezit, en zo stond er bij een woning met alleen panelen toch
+        // een batterij "in rust" en een laadpaal "niet aan het laden".
+        HasBattery = s?.HasBattery ?? false;
+        HasCharger = s?.HasCharger ?? false;
+
+        NetColumn = HasBattery ? 1 : 0;
+        NetColumnSpan = HasBattery ? 1 : 2;
+
         ChargerKwText = Kw(charger);
         ChargerHint = charger > 50 ? "▼ " + Taal.T("stroom.auto-laadt") : Taal.T("stroom.niet-aan-het-laden");
     }
+
+    private static string Getal(double waarde) => waarde.ToString("0.#").Replace('.', ',');
 
     private static string Kw(double watts) =>
         $"{Math.Abs(watts) / 1000.0:0.0} kW".Replace('.', ',');

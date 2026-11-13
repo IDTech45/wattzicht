@@ -11,7 +11,18 @@ public static class SnapshotBuilder
 {
     public static LiveSnapshotDto Empty { get; } = new(0, 0, 0, 0, null, 0, null);
 
-    public static LiveSnapshotDto Build(IReadOnlyCollection<Reading> latestPerDevice)
+    /// <summary>
+    /// De momentopname, met daarin welke soorten apparaat deze woning heeft.
+    ///
+    /// Dat laatste moet erbij, want een optelling van nul watt zegt niets over bezit. Zonder deze
+    /// lijst stond er bij iedereen een batterijtegel op "Rust" en een laadpaaltegel op "Niet aan het
+    /// laden", ook bij een woning met alleen zonnepanelen. Dat leest als twee apparaten die stil
+    /// staan in plaats van twee apparaten die er niet zijn.
+    /// </summary>
+    /// <param name="soorten">De apparaatsoorten van deze woning; weglaten mag, dan raden we aan de
+    /// metingen af en kan een batterij die niets doet gemist worden.</param>
+    public static LiveSnapshotDto Build(
+        IReadOnlyCollection<Reading> latestPerDevice, IEnumerable<DeviceType>? soorten = null)
     {
         if (latestPerDevice.Count == 0)
         {
@@ -43,6 +54,8 @@ public static class SnapshotBuilder
             }
         }
 
+        var lijst = soorten?.ToList();
+
         return new LiveSnapshotDto(
             PvPowerW: Math.Round(pv),
             LoadPowerW: Math.Round(load),
@@ -50,6 +63,8 @@ public static class SnapshotBuilder
             BatteryPowerW: Math.Round(battery),
             BatterySoc: socCount > 0 ? Math.Round(socSum / socCount, 1) : null,
             ChargerPowerW: Math.Round(charger),
-            UpdatedAt: updatedAt);
+            UpdatedAt: updatedAt,
+            HasBattery: lijst is not null ? lijst.Contains(DeviceType.Battery) : socCount > 0 || battery != 0,
+            HasCharger: lijst is not null ? lijst.Contains(DeviceType.Charger) : charger != 0);
     }
 }

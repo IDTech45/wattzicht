@@ -196,7 +196,7 @@ public static partial class InstallerEndpoints
         var alerts = await queries.RecentAlertsAsync(id, 30, ct);
         var openAlerts = alerts.Count(a => a.ResolvedAt is null);
         var latest = await queries.LatestReadingsAsync(id, ct);
-        var live = latest.Count == 0 ? null : SnapshotBuilder.Build(latest);
+        var live = latest.Count == 0 ? null : SnapshotBuilder.Build(latest, devices.Select(d => d.Type));
         var todaySummary = await queries.AggregateAsync(id, today, today, today, ct);
         var month = await queries.AggregateAsync(id, monthStart, today, monthStart, ct);
         var lastDays = await queries.SummariesAsync(id, today.AddDays(-13), today, ct);

@@ -31,8 +31,14 @@ public sealed class HouseholdQueries(AppDbContext db, TimeProvider clock, Connec
         return result;
     }
 
+    /// <summary>Welke soorten apparaat deze woning heeft; bepaalt welke tegels de app laat zien.</summary>
+    public Task<List<DeviceType>> DeviceTypesAsync(Guid householdId, CancellationToken ct) =>
+        db.Devices.Where(d => d.HouseholdId == householdId).Select(d => d.Type).Distinct().ToListAsync(ct);
+
     public async Task<LiveSnapshotDto> LiveAsync(Guid householdId, CancellationToken ct) =>
-        SnapshotBuilder.Build(await LatestReadingsAsync(householdId, ct));
+        SnapshotBuilder.Build(
+            await LatestReadingsAsync(householdId, ct),
+            await DeviceTypesAsync(householdId, ct));
 
     /// <summary>Dagsamenvattingen in een bereik (inclusief), oplopend op datum.</summary>
     public async Task<List<DailySummaryDto>> SummariesAsync(Guid householdId, DateOnly from, DateOnly to, CancellationToken ct)

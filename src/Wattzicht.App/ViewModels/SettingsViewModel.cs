@@ -40,6 +40,8 @@ public partial class SettingsViewModel : BaseViewModel
             if (ThemaVoorkeur.IsDonker == value) return;
             ThemaVoorkeur.IsDonker = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(ThemaStand));
+            OnPropertyChanged(nameof(ThemaKnopKleur));
         }
     }
 
@@ -168,6 +170,17 @@ public partial class SettingsViewModel : BaseViewModel
         HeeftLocatie = woning.HasLocation;
         GeschatPiek = woning.PvPeakKwGeschat;
     }
+
+    /// <summary>Aan of Uit in woorden; een kleurverschil alleen is te weinig om op af te gaan.</summary>
+    public string ThemaStand => Taal.T(IsDonkerThema ? "meer.aan" : "meer.uit");
+
+    /// <summary>
+    /// De knop van de schakelaar.
+    ///
+    /// Wit staat goed op de groene baan als hij aan staat, maar uit staat hij op een witte kaart en
+    /// dan zie je hem niet. Daarom uit: grijs met genoeg contrast.
+    /// </summary>
+    public Color ThemaKnopKleur => IsDonkerThema ? Colors.White : Color.FromArgb("#6B7280");
 
     // ---- Je gegevens meenemen ----
     /// <summary>

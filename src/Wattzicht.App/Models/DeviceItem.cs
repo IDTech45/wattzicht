@@ -8,7 +8,20 @@ public sealed class DeviceItem
 {
     public DeviceDto Device { get; }
 
-    public DeviceItem(DeviceDto device) => Device = device;
+    /// <summary>
+    /// Het piekvermogen van de installatie, als dat bekend is.
+    ///
+    /// Het hoort bij de woning en niet bij het apparaat, maar dit is wel de plek waar iemand het
+    /// zoekt: hij kijkt naar zijn omvormer en wil weten hoeveel paneel eraan hangt. Stond het
+    /// nergens, dan lijkt het alsof de app niets van je installatie weet.
+    /// </summary>
+    public double? PiekKw { get; }
+
+    public DeviceItem(DeviceDto device, double? piekKw = null)
+    {
+        Device = device;
+        PiekKw = device.Type == DeviceType.Inverter ? piekKw : null;
+    }
 
     public Guid Id => Device.Id;
     public string Name => string.IsNullOrWhiteSpace(Device.Name) ? BrandName : Device.Name;
@@ -32,7 +45,9 @@ public sealed class DeviceItem
         _ => Device.Type.ToString()
     };
 
-    public string Subtitle => $"{BrandName} · {TypeName}";
+    public string Subtitle => PiekKw is { } kwp and > 0
+        ? $"{BrandName} · {TypeName} · {kwp.ToString("0.#").Replace('.', ',')} kWp"
+        : $"{BrandName} · {TypeName}";
 
     /// <summary>
     /// Merken die alleen op het thuisnetwerk praten. Die leest de app zelf uit, en dus alleen als je

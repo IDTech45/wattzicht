@@ -20,12 +20,19 @@
             <!-- ===== Tarief ===== -->
             <Label Text="{t:T meer.weergave}" Style="{StaticResource SectionTitle}" />
             <Border Style="{StaticResource Card}">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
+                <!-- Het woord Aan of Uit staat er los bij. De schakelaar zelf heeft een witte knop,
+                     en die valt op een witte kaart nauwelijks op: Ibrahim zag hem niet staan en dacht
+                     dat de instelling er niet was. Een schakelaar die je moet zoeken is geen schakelaar. -->
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" MinimumHeightRequest="48">
                     <VerticalStackLayout Spacing="2" VerticalOptions="Center">
                         <Label Text="{t:T meer.donker-thema}" Style="{StaticResource CardTitle}" />
                         <Label Text="{t:T meer.uit-zet-de-app-op}" Style="{StaticResource SubtitleLabel}" />
                     </VerticalStackLayout>
-                    <Switch Grid.Column="1" IsToggled="{Binding IsDonkerThema}" VerticalOptions="Center" />
+                    <Label Grid.Column="1" Text="{Binding ThemaStand}" VerticalOptions="Center"
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource TextDark}}" />
+                    <Switch Grid.Column="2" IsToggled="{Binding IsDonkerThema}" VerticalOptions="Center"
+                            ThumbColor="{Binding ThemaKnopKleur}" />
                 </Grid>
             </Border>
 

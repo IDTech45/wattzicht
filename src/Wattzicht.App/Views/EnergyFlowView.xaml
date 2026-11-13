@@ -18,7 +18,7 @@
                 BackgroundColor="{AppThemeBinding Light={StaticResource EnergySolarSoft}, Dark={StaticResource EnergySolarSoftDark}}"
                 Stroke="{StaticResource EnergySolar}">
             <VerticalStackLayout Spacing="4">
-                <Label Text="{t:T stroom.zon}" Style="{StaticResource StatCaption}" />
+                <Label Text="{Binding PvTitle}" Style="{StaticResource StatCaption}" />
                 <Label Text="{Binding PvKwText}" Style="{StaticResource StatValue}"
                        TextColor="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource WarningTextDark}}" />
                 <Label Text="{Binding PvHint}" Style="{StaticResource StatCaption}" />
@@ -34,8 +34,9 @@
             </VerticalStackLayout>
         </Border>
 
-        <!-- Batterij -->
+        <!-- Batterij. Alleen als er een batterij is; anders schuift het net hieronder naar links. -->
         <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}"
+                IsVisible="{Binding HasBattery}"
                 BackgroundColor="{AppThemeBinding Light={StaticResource EnergyBatterySoft}, Dark={StaticResource EnergyBatterySoftDark}}"
                 Stroke="{StaticResource EnergyBattery}">
             <VerticalStackLayout Spacing="4">
@@ -54,7 +55,8 @@
         </Border>
 
         <!-- Net -->
-        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}"
+        <Border Grid.Row="1" Grid.Column="{Binding NetColumn}" Grid.ColumnSpan="{Binding NetColumnSpan}"
+                Style="{StaticResource Card}"
                 BackgroundColor="{Binding GridCardBackground}"
                 Stroke="{Binding GridAccent}">
             <VerticalStackLayout Spacing="4">
