@@ -640,5 +640,22 @@ public static class TekstenNl
         ["panelen.nog-niets"] = "Nog geen panelen gezien",
         ["panelen.nog-niets-uitleg"] = "Je omvormer vertelt dit alleen aan iemand op je eigen wifi. Open de app een keer thuis, dan staan ze hier.",
 
+
+        // ---- je eigen Enphase-sleutel ----
+        ["sleutel.titel"] = "Eigen Enphase-sleutel",
+        ["sleutel.waarom"] = "Enphase telt aanroepen per app en niet per woning. Met onze sleutel delen alle klanten samen duizend per maand, en daarom lezen we je panelen eens per vijf uur uit. Maak je zelf een gratis app aan, dan heb je je eigen duizend en kan het vaker en met cijfers per paneel.",
+        ["sleutel.stap1"] = "Ga naar developer-v4.enphase.com en maak een account aan.",
+        ["sleutel.stap2"] = "Maak daar een app aan op het gratis Watt-plan.",
+        ["sleutel.stap3"] = "Zet dit adres in je app als Redirect URI:",
+        ["sleutel.stap4"] = "Open daarna het koppelscherm op wattzicht.nl, klap \"Eigen Enphase-sleutel\" open en vul je Client ID, Secret en API key in.",
+        ["sleutel.kopieer"] = "Adres kopiëren",
+        ["sleutel.gekopieerd"] = "Gekopieerd",
+        ["sleutel.naar-enphase"] = "Naar Enphase",
+        ["sleutel.naar-koppelen"] = "Naar het koppelscherm",
+        ["sleutel.niet-verplicht"] = "Hoeft niet. Doe je het niet, dan werkt alles gewoon, alleen wat langzamer.",
+        ["panelen.meer-titel"] = "Meer uit je panelen halen",
+        ["panelen.meer-uitleg"] = "Met je eigen Enphase-sleutel kunnen we vaker uitlezen en straks per paneel laten zien wat het die dag opleverde.",
+        ["panelen.meer-knop"] = "Hoe werkt dat?",
+
     }.ToFrozenDictionary();
 }

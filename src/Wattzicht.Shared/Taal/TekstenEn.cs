@@ -632,5 +632,22 @@ public static class TekstenEn
         ["panelen.nog-niets"] = "No panels seen yet",
         ["panelen.nog-niets-uitleg"] = "Your inverter only tells this to someone on your own wifi. Open the app at home once and they will be here.",
 
+
+        // ---- je eigen Enphase-sleutel ----
+        ["sleutel.titel"] = "Your own Enphase key",
+        ["sleutel.waarom"] = "Enphase counts calls per app, not per home. With our key all customers share a thousand a month, which is why we read your panels once every five hours. Create your own free app and you get your own thousand, so it can be more often and with figures per panel.",
+        ["sleutel.stap1"] = "Go to developer-v4.enphase.com and create an account.",
+        ["sleutel.stap2"] = "Create an app there on the free Watt plan.",
+        ["sleutel.stap3"] = "Put this address in your app as the Redirect URI:",
+        ["sleutel.stap4"] = "Then open the connect page on wattzicht.nl, expand \"Your own Enphase key\" and fill in your Client ID, Secret and API key.",
+        ["sleutel.kopieer"] = "Copy address",
+        ["sleutel.gekopieerd"] = "Copied",
+        ["sleutel.naar-enphase"] = "Go to Enphase",
+        ["sleutel.naar-koppelen"] = "Go to the connect page",
+        ["sleutel.niet-verplicht"] = "Not required. If you skip it everything still works, just a bit slower.",
+        ["panelen.meer-titel"] = "Get more from your panels",
+        ["panelen.meer-uitleg"] = "With your own Enphase key we can read more often and later show what each panel produced that day.",
+        ["panelen.meer-knop"] = "How does that work?",
+
     }.ToFrozenDictionary();
 }

@@ -26,9 +26,10 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        var window = new Window(new AppShell());
-        window.Created += async (_, _) => await RouteToStartAsync();
-        return window;
+        // Het startscherm knippert en roept daarna dit aan. Zo valt het uitzoeken van waar je heen
+        // moet samen met de animatie in plaats van erna: het kost dus geen extra wachttijd.
+        Pages.StartPage.Daarna = RouteToStartAsync;
+        return new Window(new AppShell());
     }
 
     private async Task RouteToStartAsync()

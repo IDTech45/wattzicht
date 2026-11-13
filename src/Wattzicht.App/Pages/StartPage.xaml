@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Wattzicht.App.Pages.StartPage"
+             Shell.NavBarIsVisible="False"
+             Shell.TabBarIsVisible="False"
+             BackgroundColor="{StaticResource Navy900}">
+
+    <!-- Het oog van het logo knippert een keer en dan begint de app. Geen voortgangsbalk en geen
+         percentage: het duurt een seconde, en in die seconde doen we het werk dat er toch moet
+         gebeuren (token verversen, weten waar je heen moet). -->
+    <Grid>
+        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="18">
+            <Image x:Name="Logo"
+                   Source="logo.png"
+                   HeightRequest="112" WidthRequest="112"
+                   Opacity="0"
+                   SemanticProperties.Description="Wattzicht" />
+            <Label x:Name="Naam"
+                   Text="wattzicht"
+                   FontSize="26"
+                   FontAttributes="Bold"
+                   Opacity="0"
+                   TextColor="{StaticResource White}"
+                   HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

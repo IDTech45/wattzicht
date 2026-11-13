@@ -99,6 +99,10 @@ public partial class PanelsViewModel(ApiClient api, AuthService auth) : BaseView
             : string.Format(Taal.T("panelen.achterblijvers"), achter.Count);
     }
 
+    /// <summary>Naar de uitleg over je eigen Enphase-sleutel.</summary>
+    [RelayCommand]
+    private Task EigenSleutelAsync() => Shell.Current.GoToAsync(nameof(Pages.EnphaseSleutelPage));
+
     [RelayCommand]
     private async Task RefreshAsync()
     {

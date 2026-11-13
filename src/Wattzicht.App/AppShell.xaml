@@ -14,6 +14,13 @@
        Shell.TabBarTitleColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}"
        Shell.TabBarUnselectedColor="{AppThemeBinding Light={StaticResource Navy600}, Dark={StaticResource TextMutedDark}}">
 
+    <!-- Het eerste scherm: het oog knippert en dan begint de app. Staat vooraan, want Shell toont
+         de eerste ShellContent voordat er genavigeerd is. -->
+    <ShellContent Route="start"
+                  Shell.NavBarIsVisible="False"
+                  Shell.TabBarIsVisible="False"
+                  ContentTemplate="{DataTemplate pages:StartPage}" />
+
     <!-- Login staat buiten de tabs: geen TabBar zichtbaar -->
     <ShellContent Route="login"
                   Shell.NavBarIsVisible="False"

@@ -637,5 +637,22 @@ public static class TekstenTr
         ["panelen.nog-niets"] = "Henüz panel görülmedi",
         ["panelen.nog-niets-uitleg"] = "İnvertörünüz bunu yalnızca kendi wifinizdeki birine söyler. Uygulamayı evde bir kez açın, burada görünecekler.",
 
+
+        // ---- je eigen Enphase-sleutel ----
+        ["sleutel.titel"] = "Kendi Enphase anahtarınız",
+        ["sleutel.waarom"] = "Enphase çağrıları ev başına değil uygulama başına sayar. Bizim anahtarımızla tüm müşteriler ayda bin çağrıyı paylaşır, bu yüzden panellerinizi beş saatte bir okuyoruz. Kendi ücretsiz uygulamanızı oluşturursanız kendi bin çağrınız olur; daha sık ve panel başına veriyle.",
+        ["sleutel.stap1"] = "developer-v4.enphase.com adresine gidin ve bir hesap oluşturun.",
+        ["sleutel.stap2"] = "Orada ücretsiz Watt planında bir uygulama oluşturun.",
+        ["sleutel.stap3"] = "Bu adresi uygulamanızda Redirect URI olarak ayarlayın:",
+        ["sleutel.stap4"] = "Ardından wattzicht.nl üzerindeki bağlantı ekranını açın, \"Kendi Enphase anahtarınız\" bölümünü genişletin ve Client ID, Secret ve API anahtarınızı girin.",
+        ["sleutel.kopieer"] = "Adresi kopyala",
+        ["sleutel.gekopieerd"] = "Kopyalandı",
+        ["sleutel.naar-enphase"] = "Enphase'e git",
+        ["sleutel.naar-koppelen"] = "Bağlantı ekranına git",
+        ["sleutel.niet-verplicht"] = "Zorunlu değil. Yapmazsanız her şey çalışır, sadece biraz daha yavaş.",
+        ["panelen.meer-titel"] = "Panellerinizden daha fazlasını alın",
+        ["panelen.meer-uitleg"] = "Kendi Enphase anahtarınızla daha sık okuyabilir ve ileride her panelin o gün ne ürettiğini gösterebiliriz.",
+        ["panelen.meer-knop"] = "Bu nasıl çalışır?",
+
     }.ToFrozenDictionary();
 }

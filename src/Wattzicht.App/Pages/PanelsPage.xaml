@@ -62,6 +62,17 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
 
+                <!-- De omweg voor wie meer wil. Staat onderaan en niet bovenaan: het is een
+                     uitnodiging en geen stap die je moet zetten. -->
+                <Border Style="{StaticResource Card}" Padding="16">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="{t:T panelen.meer-titel}" Style="{StaticResource CardTitle}" />
+                        <Label Text="{t:T panelen.meer-uitleg}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                        <Button Text="{t:T panelen.meer-knop}" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding EigenSleutelCommand}" />
+                    </VerticalStackLayout>
+                </Border>
+
                 <!-- Nog niets gezien. Dat is geen storing: de gateway praat alleen op je eigen wifi. -->
                 <Border Style="{StaticResource Card}" IsVisible="{Binding ToonLeeg}" Padding="20">
                     <VerticalStackLayout Spacing="8">

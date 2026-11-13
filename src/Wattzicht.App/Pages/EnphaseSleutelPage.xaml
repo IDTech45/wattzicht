@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             x:Class="Wattzicht.App.Pages.EnphaseSleutelPage"
+             x:DataType="vm:EnphaseSleutelViewModel"
+             Title="{t:Ts sleutel.titel}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,8,16,32" Spacing="14">
+
+            <Label Text="{t:T sleutel.waarom}" Style="{StaticResource SubtitleLabel}" />
+
+            <!-- Vier stappen, elk een kaart. Een genummerde lijst in één blok tekst leest op een
+                 telefoon als een alinea, en dan haakt iemand halverwege af. -->
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                    <Label Text="1" Style="{StaticResource StatValue}" FontSize="18" VerticalOptions="Start" />
+                    <Label Grid.Column="1" Text="{t:T sleutel.stap1}" Style="{StaticResource SubtitleLabel}" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                    <Label Text="2" Style="{StaticResource StatValue}" FontSize="18" VerticalOptions="Start" />
+                    <Label Grid.Column="1" Text="{t:T sleutel.stap2}" Style="{StaticResource SubtitleLabel}" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="28,*" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                    <Label Text="3" Style="{StaticResource StatValue}" FontSize="18" VerticalOptions="Start" />
+                    <Label Grid.Column="1" Text="{t:T sleutel.stap3}" Style="{StaticResource SubtitleLabel}" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Terugkeeradres}"
+                           FontFamily="Monospace" FontSize="13" LineBreakMode="CharacterWrap" />
+                    <Button Grid.Row="2" Grid.Column="1" Text="{Binding KopieerTekst}"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding KopieerCommand}" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="28,*" ColumnSpacing="12">
+                    <Label Text="4" Style="{StaticResource StatValue}" FontSize="18" VerticalOptions="Start" />
+                    <Label Grid.Column="1" Text="{t:T sleutel.stap4}" Style="{StaticResource SubtitleLabel}" />
+                </Grid>
+            </Border>
+
+            <Button Text="{t:T sleutel.naar-enphase}" Style="{StaticResource PrimaryButton}"
+                    Command="{Binding NaarEnphaseCommand}" />
+            <Button Text="{t:T sleutel.naar-koppelen}" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding NaarKoppelenCommand}" />
+
+            <Label Text="{t:T sleutel.niet-verplicht}" Style="{StaticResource StatCaption}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
