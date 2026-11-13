@@ -48,6 +48,16 @@ public class EnphaseLokaalTests
     }
 
     [Fact]
+    public void Het_aantal_panelen_komt_van_het_thuisnetwerk()
+    {
+        // activeCount is het aantal micro-omvormers dat meedoet, en dus het aantal panelen. Het stond
+        // al in het antwoord dat we toch al ophaalden: daar hoeft geen cloud en geen invulveld aan te
+        // pas. Staat de telefoon op de wifi, dan weten we het.
+        Assert.Equal(14, Lees(MetMeters).PanelCount);
+        Assert.Equal(10, Lees(ZonderMeters).PanelCount);
+    }
+
+    [Fact]
     public void De_meter_wint_van_de_omvormers_als_hij_er_is()
     {
         // Beide regels geven opwek; de eim-regel meet en de inverters-regel telt op wat de

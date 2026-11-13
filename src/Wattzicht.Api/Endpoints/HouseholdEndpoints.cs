@@ -1380,6 +1380,18 @@ public static class HouseholdEndpoints
         var entity = meting.ToEntity(device.Id);
         db.Readings.Add(entity);
 
+        // Vertelt het kastje er iets over de installatie bij, dan nemen we dat over. Dit is de route
+        // waar het hoort te gebeuren: de telefoon staat op het thuisnetwerk, dus dit komt binnen
+        // zodra iemand de app openmaakt, en niet pas als de cloudronde aan de beurt is.
+        if (meting.PvPeakW is not null || meting.PanelCount is not null)
+        {
+            var woning = await db.Households.FirstOrDefaultAsync(h => h.Id == householdId, ct);
+            if (woning is not null)
+            {
+                InstallatieFeiten.Overnemen(woning, meting);
+            }
+        }
+
         device.LastSeenAt = entity.Timestamp;
         device.LastError = null;
         await alerts.SetOfflineAsync(device, null, ct);

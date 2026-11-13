@@ -128,6 +128,11 @@ public sealed class EnphaseConnector(
         var netto = Regel(rauw, "consumption", "net-consumption");
         var huis = Regel(rauw, "consumption", "total-consumption");
 
+        // In de regel van de micro-omvormers staat activeCount: het aantal dat op dit moment meedoet,
+        // en dat is het aantal panelen. Dat hoeft dus niet uit de cloud te komen en ook niet uit een
+        // invulveld: staat de telefoon op het thuisnetwerk, dan vertelt de gateway het zelf.
+        var micros = Regel(rauw, "production", "inverters");
+
         // De gateway rekent teruglevering negatief op de netkant, net als onze eigen afspraak, dus
         // het getal kan rechtstreeks mee. Laten we dat aan de app over, dan hangt de betekenis van
         // een min-teken af van de versie die op de telefoon staat.
@@ -138,7 +143,10 @@ public sealed class EnphaseConnector(
             GridPowerW: Getal(netto, "wNow") ?? 0,
             PvEnergyWh: Getal(zon, "whLifetime"),
             ImportEnergyWh: Getal(netto, "whLifetimeImport"),
-            ExportEnergyWh: Getal(netto, "whLifetimeExport"));
+            ExportEnergyWh: Getal(netto, "whLifetimeExport"),
+            PanelCount: Getal(micros, "activeCount") is { } aantal and > 0 and < 10_000
+                ? (int)aantal
+                : null);
     }
 
     /// <summary>Zoekt in production/consumption de regel met het gevraagde type of measurementType.</summary>
