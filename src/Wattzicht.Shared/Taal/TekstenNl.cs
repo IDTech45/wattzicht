@@ -266,7 +266,7 @@ public static class TekstenNl
         ["advies.zon-vandaag"] = "Zon vandaag: ongeveer {0} kWh{1}",
         ["advies.zon-bron"] = "Verwachting van {0}, op jouw plaats en je eigen piekvermogen. Dit telt mee in de tips hieronder.",
         ["advies.geen-zonverwachting"] = "Geen zonverwachting beschikbaar",
-        ["advies.geen-zonverwachting-uitleg"] = "De tips hieronder kijken nu alleen naar de prijs. Koppel je zonnepanelen en vul je postcode in, dan rekenen we het weer mee.",
+        ["advies.geen-zonverwachting-uitleg"] = "De tips hieronder kijken nu alleen naar de prijs. Vul je plaats in bij Meer, onder Je woning, dan rekenen we het weer mee.",
         ["advies.morgen"] = "morgen",
         ["advies.cent-per-kwh"] = "{0} ct/kWh",
         ["advies.goedkoper-dan-nu-beginnen"] = "{0} goedkoper dan nu beginnen",
@@ -484,6 +484,29 @@ public static class TekstenNl
         ["historie.mislukt"] = "Het bestand kon niet worden ingelezen.",
 
         ["historie.alleen-opwek"] = "Van die dagen kennen we alleen de opwek, dus de besparing ervan blijft leeg.",
+
+
+        // ---- je woning: plaats en piekvermogen ----
+        ["woning.titel"] = "Je woning",
+        ["woning.uitleg"] = "Je plaats gebruiken we voor de zonverwachting. We bewaren geen adres; alleen de plaats.",
+        ["woning.naam"] = "Naam van je huishouden",
+        ["woning.plaats"] = "Plaats of postcode",
+        ["woning.plaats-voorbeeld"] = "Bijvoorbeeld Enschede",
+        ["woning.piek"] = "Piekvermogen van je panelen",
+        ["woning.piek-uitleg"] = "Staat op je offerte of omvormer, bijvoorbeeld 4,2. Zonder opgave rekenen we met een gemiddeld dak.",
+        ["woning.opslaan"] = "Woning opslaan",
+        ["woning.zon-aan"] = "We kennen je plaats, dus de zonverwachting telt mee in je tips.",
+        ["woning.zon-uit"] = "Nog geen plaats bekend, dus er is geen zonverwachting.",
+        ["woning.bewaard"] = "Opgeslagen. De zonverwachting telt vanaf nu mee.",
+        ["woning.plaats-niet-gevonden"] = "Opgeslagen, maar deze plaats konden we niet vinden. Probeer alleen de plaatsnaam.",
+        ["woning.piek-fout"] = "Vul een piekvermogen in tussen 0,1 en 100 kWp.",
+
+        ["apparaten.thuis-gelezen"] = "Wordt thuis uitgelezen",
+        ["apparaten.niet-op-wifi"] = "Je bent niet op wifi",
+
+        ["apparaten.nu-uitlezen"] = "Nu uitlezen",
+        ["apparaten.uitlezen-mislukt"] = "Uitlezen lukte niet",
+        ["apparaten.oude-cijfers"] = "Oude cijfers inlezen",
 
     }.ToFrozenDictionary();
 }

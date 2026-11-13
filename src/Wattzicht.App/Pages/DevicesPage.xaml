@@ -68,11 +68,16 @@
                                         <Label Text="{Binding Subtitle}" Style="{StaticResource SubtitleLabel}" />
                                         <HorizontalStackLayout Spacing="6">
                                             <Ellipse WidthRequest="8" HeightRequest="8" VerticalOptions="Center"
-                                                     Fill="{Binding IsOnline, Converter={StaticResource OnlineToColor}}" />
+                                                     Fill="{Binding ToonAlsProbleem, Converter={StaticResource ProbleemNaarKleur}}" />
                                             <Label Text="{Binding StatusText}" Style="{StaticResource StatCaption}" />
                                             <Label Text="·" Style="{StaticResource StatCaption}" />
                                             <Label Text="{Binding LastSeenText}" Style="{StaticResource StatCaption}" />
                                         </HorizontalStackLayout>
+                                        <Label Text="{Binding Reden}"
+                                               Style="{StaticResource StatCaption}"
+                                               TextColor="{AppThemeBinding Light={StaticResource ErrorDot}, Dark={StaticResource ErrorTextDark}}"
+                                               IsVisible="{Binding HeeftReden}"
+                                               LineBreakMode="WordWrap" />
                                     </VerticalStackLayout>
 
                                     <!-- Verwijder-knop (naast swipe, voor wie swipen niet ontdekt) -->
@@ -91,7 +96,19 @@
                 </CollectionView.ItemTemplate>
 
                 <CollectionView.Footer>
-                    <BoxView HeightRequest="96" Color="Transparent" />
+                    <VerticalStackLayout Padding="16,12,16,0" Spacing="8">
+                        <!-- Twee dingen die mensen hier zoeken en nergens konden vinden: meteen
+                             uitlezen na het rechtzetten van een token, en de oude cijfers uit het
+                             portaal van de fabrikant. -->
+                        <Button Text="{t:T apparaten.nu-uitlezen}"
+                                Style="{StaticResource SecondaryButton}"
+                                Command="{Binding NuUitlezenCommand}"
+                                IsVisible="{Binding HasLoaded}" />
+                        <Button Text="{t:T apparaten.oude-cijfers}"
+                                Style="{StaticResource LinkButton}"
+                                Command="{Binding NaarInstellingenCommand}" />
+                        <BoxView HeightRequest="96" Color="Transparent" />
+                    </VerticalStackLayout>
                 </CollectionView.Footer>
             </CollectionView>
         </RefreshView>

@@ -34,7 +34,63 @@ public sealed class DeviceItem
 
     public string Subtitle => $"{BrandName} · {TypeName}";
 
-    public string StatusText => Taal.T(Device.IsOnline ? "soort.online" : "storing.offline");
+    /// <summary>
+    /// Merken die alleen op het thuisnetwerk praten. Die leest de app zelf uit, en dus alleen als je
+    /// thuis bent en de app openmaakt.
+    /// </summary>
+    public bool WordtThuisGelezen => Device.Brand
+        is DeviceBrand.Sessy or DeviceBrand.Alfen or DeviceBrand.Enphase
+        or DeviceBrand.Peblar or DeviceBrand.HomeWizard;
+
+    /// <summary>
+    /// Wat er onder het apparaat staat.
+    ///
+    /// Voor een apparaat in de meterkast is "offline" bijna altijd onwaar: het ding doet het prima,
+    /// alleen staat de telefoon ergens anders. Dat stond er wel, met een rode stip erbij, en dan ga
+    /// je zoeken naar een storing die er niet is. Nu zegt het precies wat er aan de hand is: geen
+    /// wifi, of wel wifi maar niet gezien, of gewoon gelezen.
+    /// </summary>
+    public string StatusText
+    {
+        get
+        {
+            if (Device.IsOnline) return Taal.T("soort.online");
+            if (!WordtThuisGelezen) return Taal.T("storing.offline");
+
+            return OpWifi
+                ? Taal.T("apparaten.thuis-gelezen")
+                : Taal.T("apparaten.niet-op-wifi");
+        }
+    }
+
+    /// <summary>Alleen een rode stip als er echt iets mis kan zijn; niet omdat jij onderweg bent.</summary>
+    public bool ToonAlsProbleem => !Device.IsOnline && (!WordtThuisGelezen || OpWifi);
+
+    /// <summary>
+    /// Zit deze telefoon op wifi? Lukt het niet om dat vast te stellen, dan gaan we ervan uit van
+    /// wel: liever een keer te weinig uitleg dan iemand vertellen dat hij niet op wifi zit terwijl
+    /// hij thuis op de bank zit.
+    /// </summary>
+    private static bool OpWifi
+    {
+        get
+        {
+            try
+            {
+                return Connectivity.Current.ConnectionProfiles.Contains(ConnectionProfile.WiFi)
+                       || Connectivity.Current.ConnectionProfiles.Contains(ConnectionProfile.Ethernet);
+            }
+            catch (Exception)
+            {
+                return true;
+            }
+        }
+    }
+
+    /// <summary>De reden die de server of de paal gaf, als die er is.</summary>
+    public string? Reden => string.IsNullOrWhiteSpace(Device.LastError) ? null : Device.LastError;
+
+    public bool HeeftReden => Reden is not null;
 
     public string LastSeenText
     {

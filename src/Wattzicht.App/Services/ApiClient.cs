@@ -204,6 +204,14 @@ public sealed class ApiClient
         return await SendAsync<HistorieImportDto>(req, ct);
     }
 
+    /// <summary>Laat de server de apparaten van deze woning nu uitlezen.</summary>
+    public Task<UitleesResultaatDto> NuUitlezenAsync(CancellationToken ct = default) =>
+        PostAsync<object, UitleesResultaatDto>("/devices/refresh", new { }, authenticated: true, ct);
+
+    /// <summary>Werkt naam, plaats en piekvermogen van de woning bij.</summary>
+    public Task<HouseholdDto> WoningBijwerkenAsync(UpdateHouseholdRequest verzoek, CancellationToken ct = default) =>
+        PutAsync<UpdateHouseholdRequest, HouseholdDto>("/household", verzoek, ct);
+
     /// <summary>Wat de app over LaadCash mag tonen voor deze woning.</summary>
     public Task<LaadcashPromoDto> LaadcashPromoAsync(CancellationToken ct = default) =>
         GetAsync<LaadcashPromoDto>("/laadcash/promo", ct);

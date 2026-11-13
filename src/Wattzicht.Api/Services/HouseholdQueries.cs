@@ -151,7 +151,10 @@ public sealed class HouseholdQueries(AppDbContext db, TimeProvider clock)
         h.InstallerId,
         h.Installer.Name,
         h.CreatedAt,
-        h.InstallerAccessGranted);
+        h.InstallerAccessGranted,
+        h.PvPeakKw,
+        // Niet de coördinaten zelf: de app hoeft alleen te weten of er een zonverwachting kan zijn.
+        h.Latitude is not null && h.Longitude is not null);
 
     public static InstallerBrandingDto ToDto(Installer i) => new(
         i.Id,

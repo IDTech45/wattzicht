@@ -44,6 +44,48 @@
                 </VerticalStackLayout>
             </Border>
 
+            <!-- Je woning. De plaats staat hier omdat er zonder plaats geen zonverwachting is, en
+                 het adviesscherm daar anders naar een veld verwijst dat nergens bestond. -->
+            <Label Text="{t:T woning.titel}" Style="{StaticResource SectionTitle}" />
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="{t:T woning.uitleg}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="{t:T woning.naam}" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource InputBorder}">
+                            <Entry Text="{Binding WoningNaam}" Placeholder="{t:Ts inlog.bijvoorbeeld-thuis}" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="{t:T woning.plaats}" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource InputBorder}">
+                            <Entry Text="{Binding Plaats}" Placeholder="{t:Ts woning.plaats-voorbeeld}" />
+                        </Border>
+                        <Label Text="{Binding ZonStatus}" Style="{StaticResource StatCaption}" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="{t:T woning.piek}" Style="{StaticResource FieldLabel}" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <Border Style="{StaticResource InputBorder}">
+                                <Entry Text="{Binding PiekVermogen}" Keyboard="Numeric" Placeholder="4,2" />
+                            </Border>
+                            <Label Grid.Column="1" Text="kWp" Style="{StaticResource SubtitleLabel}" VerticalOptions="Center" />
+                        </Grid>
+                        <Label Text="{t:T woning.piek-uitleg}" Style="{StaticResource StatCaption}" />
+                    </VerticalStackLayout>
+
+                    <Label Text="{Binding WoningFout}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HeeftWoningFout}" />
+                    <Label Text="{Binding WoningBewaard}" Style="{StaticResource SubtitleLabel}" FontSize="14"
+                           IsVisible="{Binding HeeftWoningBewaard}" />
+
+                    <Button Text="{t:T woning.opslaan}" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding WoningOpslaanCommand}" />
+                </VerticalStackLayout>
+            </Border>
+
             <!-- LaadCash. Alleen zichtbaar als de server zegt dat er iets te tonen is. -->
             <VerticalStackLayout Spacing="8" IsVisible="{Binding HeeftLaadcash}">
                 <Label Text="{t:T meer.laadcash}" Style="{StaticResource SectionTitle}" />

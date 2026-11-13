@@ -13,6 +13,14 @@ public sealed class AuthService
 
     public HouseholdDto? Household { get; private set; }
 
+    /// <summary>
+    /// Vervangt wat we van de woning weten na een wijziging door de bewoner.
+    ///
+    /// Zonder dit staat de oude naam nog in de app tot je opnieuw inlogt, en zou het instellingen-
+    /// scherm een plaats tonen die er niet meer is.
+    /// </summary>
+    public void ZetHuishouden(HouseholdDto woning) => Household = woning;
+
     public event EventHandler? LoggedOut;
 
     public AuthService(ApiClient api, TokenStore tokens, PushService push)

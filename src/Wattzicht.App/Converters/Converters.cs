@@ -76,6 +76,22 @@ public sealed class BrandToColorConverter : IValueConverter
         throw new NotSupportedException();
 }
 
+/// <summary>
+/// Rood als er echt iets mis kan zijn, grijs als het apparaat gewoon wacht tot je thuis bent.
+///
+/// De stip stond op rood zodra er een half uur geen meting was. Bij een kastje in de meterkast is
+/// dat de normale toestand zodra je de deur uit loopt, en een rode stip voor "je bent niet thuis"
+/// laat mensen zoeken naar een storing die er niet is.
+/// </summary>
+public sealed class ProbleemNaarKleurConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is true ? ThemeColors.Get("ErrorDot") : ThemeColors.Get("TextMuted");
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
+
 public sealed class OnlineToColorConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)

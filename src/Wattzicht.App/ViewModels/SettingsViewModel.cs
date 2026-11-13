@@ -66,6 +66,81 @@ public partial class SettingsViewModel : BaseViewModel
         }
     }
 
+    // ---- Je woning ----
+    [ObservableProperty] private string _woningNaam = string.Empty;
+    [ObservableProperty] private string _plaats = string.Empty;
+    [ObservableProperty] private string _piekVermogen = string.Empty;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftWoningFout))] private string? _woningFout;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftWoningBewaard))] private string? _woningBewaard;
+
+    /// <summary>
+    /// Of we de plaats hebben kunnen vinden. Zonder plaats geen zonverwachting, en dat is precies
+    /// wat hier moet staan in plaats van alleen "geen verwachting beschikbaar" op het adviesscherm.
+    /// </summary>
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(ZonStatus))] private bool _heeftLocatie;
+
+    public bool HeeftWoningFout => !string.IsNullOrEmpty(WoningFout);
+    public bool HeeftWoningBewaard => !string.IsNullOrEmpty(WoningBewaard);
+
+    public string ZonStatus => Taal.T(HeeftLocatie ? "woning.zon-aan" : "woning.zon-uit");
+
+    /// <summary>
+    /// Plaats en piekvermogen opslaan.
+    ///
+    /// De plaats is hier het belangrijkste veld: zonder plaats hebben we geen coordinaten, zonder
+    /// coordinaten geen zonverwachting, en dan staat er op het adviesscherm "vul je postcode in"
+    /// terwijl er nergens een postcodeveld was. Het piekvermogen maakt van die verwachting een getal
+    /// in kilowatturen voor dit dak in plaats van voor een gemiddeld dak.
+    /// </summary>
+    [RelayCommand]
+    private async Task WoningOpslaanAsync()
+    {
+        WoningFout = null;
+        WoningBewaard = null;
+
+        double? kwp = null;
+        var ingevuld = PiekVermogen.Trim().Replace('.', ',');
+        if (!string.IsNullOrWhiteSpace(ingevuld))
+        {
+            if (!double.TryParse(ingevuld, System.Globalization.NumberStyles.Float, Nl, out var waarde)
+                || waarde <= 0 || waarde > 100)
+            {
+                WoningFout = Taal.T("woning.piek-fout");
+                return;
+            }
+
+            kwp = waarde;
+        }
+
+        await RunSafeAsync(async () =>
+        {
+            var woning = await _api.WoningBijwerkenAsync(new UpdateHouseholdRequest(
+                Name: string.IsNullOrWhiteSpace(WoningNaam) ? null : WoningNaam.Trim(),
+                PostalCode: string.IsNullOrWhiteSpace(Plaats) ? null : Plaats.Trim(),
+                City: string.IsNullOrWhiteSpace(Plaats) ? null : Plaats.Trim(),
+                PvPeakKw: kwp));
+
+            HeeftLocatie = woning.HasLocation;
+            WoningBewaard = Taal.T(woning.HasLocation ? "woning.bewaard" : "woning.plaats-niet-gevonden");
+            _auth.ZetHuishouden(woning);
+            OnPropertyChanged(nameof(HouseholdName));
+        }, _auth);
+    }
+
+    /// <summary>De velden van de woning vullen met wat we al weten.</summary>
+    private void VulWoningVelden()
+    {
+        var woning = _auth.Household;
+        if (woning is null) return;
+
+        WoningNaam = woning.Name;
+        // Plaats of postcode: één veld voor de bewoner, want voor het opzoeken van coordinaten maakt
+        // het niet uit en twee velden voor hetzelfde doel is een vraag te veel.
+        Plaats = !string.IsNullOrWhiteSpace(woning.City) ? woning.City! : woning.PostalCode ?? string.Empty;
+        PiekVermogen = woning.PvPeakKw is { } kwp ? kwp.ToString("0.##", Nl) : string.Empty;
+        HeeftLocatie = woning.HasLocation;
+    }
+
     // ---- Historie uit het portaal van de fabrikant ----
     [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftImportResultaat))] private string? _importResultaat;
 
@@ -238,6 +313,7 @@ public partial class SettingsViewModel : BaseViewModel
     [RelayCommand]
     public async Task LoadAsync()
     {
+        VulWoningVelden();
         await LaadcashLadenAsync();
 
         await RunSafeAsync(async () =>

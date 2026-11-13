@@ -25,6 +25,11 @@ public static class HouseholdEndpoints
             .WithSummary("Het eigen huishouden.")
             .Produces<HouseholdDto>();
 
+        household.MapPut("/household", WoningBijwerkenAsync)
+            .WithSummary("Werkt naam, plaats en piekvermogen bij; zoekt bij een nieuwe plaats de coordinaten op.")
+            .Produces<HouseholdDto>()
+            .ProducesValidationProblem();
+
         household.MapGet("/household/installer-access", GetInstallerAccessAsync)
             .WithSummary("Mag de installateur meekijken? (toestemming van de bewoner)")
             .Produces<InstallerAccessDto>();
@@ -76,6 +81,10 @@ public static class HouseholdEndpoints
             .WithSummary("Een meting die de app zelf op het thuisnetwerk ophaalde (P1-meter).")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesValidationProblem();
+
+        household.MapPost("/devices/refresh", NuUitlezenAsync)
+            .WithSummary("Leest de apparaten van deze woning nu uit (alleen de merken die de server kan bereiken).")
+            .Produces<UitleesResultaatDto>();
 
         household.MapDelete("/devices/{id:guid}", DeleteDeviceAsync)
             .WithSummary("Ontkoppelt een apparaat; metingen en meldingen gaan mee weg.")
@@ -260,6 +269,138 @@ public static class HouseholdEndpoints
             .FirstOrDefaultAsync(h => h.Id == householdId, ct);
 
         return household is null ? Results.NotFound() : Results.Ok(HouseholdQueries.ToDto(household));
+    }
+
+    /// <summary>
+    /// Wat de bewoner zelf over zijn woning kan instellen.
+    ///
+    /// De plaats is het belangrijkste veld en het stond nergens: zonder plaats hebben we geen
+    /// coordinaten, zonder coordinaten geen zonverwachting, en dan zegt het adviesscherm "koppel je
+    /// zonnepanelen en vul je postcode in" aan iemand die zijn panelen allang gekoppeld heeft en
+    /// nergens een postcodeveld kan vinden.
+    ///
+    /// We zoeken de coordinaten meteen op en bewaren ze. Lukt dat niet (plaats onbekend, weerdienst
+    /// plat), dan slaan we de plaats wel op en probeert de nachtelijke weertaak het opnieuw; de
+    /// bewoner krijgt dan te zien dat we de plaats nog niet konden vinden in plaats van een stille
+    /// mislukking.
+    /// </summary>
+    private static async Task<IResult> WoningBijwerkenAsync(
+        UpdateHouseholdRequest request,
+        HttpContext http,
+        AppDbContext db,
+        IWeatherProvider weather,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var woning = await db.Households
+            .Include(h => h.Installer)
+            .FirstOrDefaultAsync(h => h.Id == householdId, ct);
+
+        if (woning is null)
+        {
+            return Results.NotFound();
+        }
+
+        var fouten = new Dictionary<string, string[]>();
+
+        if (request.Name is { } naam)
+        {
+            var schoon = naam.Trim();
+            if (schoon.Length is < 1 or > 60)
+            {
+                fouten["name"] = ["Geef je huishouden een naam van 1 tot 60 tekens."];
+            }
+            else
+            {
+                woning.Name = schoon;
+            }
+        }
+
+        if (request.PvPeakKw is { } kwp && (kwp <= 0 || kwp > 100))
+        {
+            fouten["pvPeakKw"] = ["Een piekvermogen ligt tussen 0,1 en 100 kWp."];
+        }
+
+        if (fouten.Count > 0)
+        {
+            return Results.ValidationProblem(fouten);
+        }
+
+        if (request.PvPeakKw is { } peak)
+        {
+            woning.PvPeakKw = Math.Round(peak, 2);
+        }
+
+        var nieuwePlaats = Schoon(request.PostalCode);
+        var nieuweStad = Schoon(request.City);
+        var plaatsVeranderd = (nieuwePlaats is not null && nieuwePlaats != woning.PostalCode)
+                              || (nieuweStad is not null && nieuweStad != woning.City);
+
+        if (nieuwePlaats is not null) woning.PostalCode = nieuwePlaats;
+        if (nieuweStad is not null) woning.City = nieuweStad;
+
+        if (plaatsVeranderd)
+        {
+            // Coordinaten horen bij de plaats; bij een nieuwe plaats zijn de oude niet meer waar.
+            woning.Latitude = null;
+            woning.Longitude = null;
+
+            var zoekterm = !string.IsNullOrWhiteSpace(woning.City) ? woning.City : woning.PostalCode;
+            if (!string.IsNullOrWhiteSpace(zoekterm))
+            {
+                try
+                {
+                    if (await weather.GeocodeAsync(zoekterm!, ct) is { } gevonden)
+                    {
+                        woning.Latitude = gevonden.Lat;
+                        woning.Longitude = gevonden.Lon;
+                    }
+                }
+                catch (Exception)
+                {
+                    // De weerdienst is niet van ons. De plaats is opgeslagen; de nachtelijke taak
+                    // probeert het opnieuw.
+                }
+            }
+        }
+
+        await db.SaveChangesAsync(ct);
+        return Results.Ok(HouseholdQueries.ToDto(woning));
+    }
+
+    /// <summary>Lege invoer is "niet meegestuurd"; een veld leegmaken doe je niet per ongeluk.</summary>
+    private static string? Schoon(string? waarde)
+    {
+        var schoon = waarde?.Trim();
+        return string.IsNullOrWhiteSpace(schoon) ? null : schoon;
+    }
+
+    /// <summary>
+    /// Nu uitlezen, op verzoek van de bewoner.
+    ///
+    /// Waarom dit er moest komen: de poller draait op zijn eigen ritme, en wie net een token heeft
+    /// rechtgezet wil niet een kwartier naar hetzelfde foutbericht kijken om te weten of het nu
+    /// goed is. Dit doet precies dezelfde ronde als de poller, alleen nu meteen.
+    ///
+    /// Kastjes die alleen op het thuisnetwerk praten zitten hier niet bij; die leest de app zelf en
+    /// die staat op de telefoon van de bewoner.
+    /// </summary>
+    private static async Task<IResult> NuUitlezenAsync(
+        HttpContext http,
+        PollingWorker poller,
+        AppDbContext db,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var (ok, mis) = await poller.PollHouseholdAsync(householdId, ct);
+
+        var laatsteFout = await db.Devices
+            .Where(d => d.HouseholdId == householdId && d.LastError != null)
+            .OrderByDescending(d => d.LastSeenAt)
+            .Select(d => d.LastError)
+            .FirstOrDefaultAsync(ct);
+
+        return Results.Ok(new UitleesResultaatDto(ok, mis, laatsteFout));
     }
 
     private static async Task<IResult> GetInstallerAccessAsync(HttpContext http, AppDbContext db, CancellationToken ct)
@@ -467,19 +608,14 @@ public static class HouseholdEndpoints
         var now = clock.GetUtcNow();
         var existing = await db.Devices
             .Where(d => d.HouseholdId == householdId && d.Brand == request.Brand)
-            .Select(d => new { d.ExternalId, d.Type })
             .ToListAsync(ct);
 
         var created = new List<Device>();
+        var hersteld = new List<Device>();
         var single = result.Devices.Count == 1;
 
         foreach (var found in result.Devices)
         {
-            if (existing.Any(e => e.ExternalId == found.ExternalId && e.Type == found.Type))
-            {
-                continue; // al gekoppeld
-            }
-
             var merged = new Dictionary<string, string>(credentials, StringComparer.OrdinalIgnoreCase);
             if (found.ExtraCredentials is not null)
             {
@@ -487,6 +623,23 @@ public static class HouseholdEndpoints
                 {
                     merged[pair.Key] = pair.Value;
                 }
+            }
+
+            // Staat dit apparaat er al, dan is dit geen tweede koppeling maar een reparatie: een
+            // token dat verlopen was, een wachtwoord dat veranderde, een kastje op een nieuw adres.
+            // Tot 13-11-2026 sloegen we zo'n poging over met "al gekoppeld", en dan was de enige
+            // uitweg het apparaat verwijderen — inclusief alle metingen die eraan hingen.
+            if (existing.FirstOrDefault(e => e.ExternalId == found.ExternalId && e.Type == found.Type) is { } bestaand)
+            {
+                bestaand.EncryptedCredentials = protector.Protect(merged);
+                bestaand.LastError = null;
+                if (single && !string.IsNullOrWhiteSpace(request.Name))
+                {
+                    bestaand.Name = request.Name.Trim();
+                }
+
+                hersteld.Add(bestaand);
+                continue;
             }
 
             var device = new Device
@@ -505,9 +658,9 @@ public static class HouseholdEndpoints
             created.Add(device);
         }
 
-        if (created.Count == 0)
+        if (created.Count == 0 && hersteld.Count == 0)
         {
-            return Results.Problem(title: "Deze apparaten zijn al gekoppeld.", statusCode: StatusCodes.Status400BadRequest);
+            return Results.Problem(title: "Er kwam geen apparaat uit deze koppeling.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         await db.SaveChangesAsync(ct);
@@ -517,7 +670,9 @@ public static class HouseholdEndpoints
         // Eén keer per woning; opnieuw koppelen geeft geen tweede proefperiode.
         await subscriptions.StartTrialIfFirstAsync(householdId, ct);
 
-        var dtos = created.Select(d => HouseholdQueries.ToDto(d, now)).ToList();
+        // Ook de herstelde koppelingen teruggeven: voor de app is "deze paal hangt er weer in"
+        // hetzelfde bericht als "deze paal is gekoppeld", en een lege lijst zou lezen als niets.
+        var dtos = created.Concat(hersteld).Select(d => HouseholdQueries.ToDto(d, now)).ToList();
         return Results.Created("/devices", dtos);
     }
 

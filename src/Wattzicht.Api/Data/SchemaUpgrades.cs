@@ -11,6 +11,9 @@ public static class SchemaUpgrades
 {
     private static readonly string[] Steps =
     [
+        // 2026-11: piekvermogen van de panelen, voor de zonverwachting in kilowatturen.
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "PvPeakKw" double precision NULL""",
+
         // 2026-11: dagen die uit een export van de fabrikant komen in plaats van uit onze metingen.
         """ALTER TABLE daily_summaries ADD COLUMN IF NOT EXISTS "ImportedAt" timestamp with time zone NULL""",
 

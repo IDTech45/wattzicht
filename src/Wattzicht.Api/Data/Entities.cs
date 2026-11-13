@@ -121,6 +121,15 @@ public sealed class Household
 
     public double? Longitude { get; set; }
 
+    /// <summary>
+    /// Het piekvermogen van de panelen in kWp, zoals de bewoner het opgeeft.
+    ///
+    /// Hiermee wordt de zonverwachting van een getal per vierkante meter een getal in kilowatturen
+    /// voor dít dak. Zonder opgave rekenen we met de instelling van de server (vier kWp); dat is een
+    /// gemiddeld Nederlands dak en dus voor niemand precies goed.
+    /// </summary>
+    public double? PvPeakKw { get; set; }
+
     /// <summary>Pushmelding bij een storing (standaard aan).</summary>
     public bool NotifyAlerts { get; set; } = true;
 

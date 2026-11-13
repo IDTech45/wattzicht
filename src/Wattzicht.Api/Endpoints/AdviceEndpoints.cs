@@ -110,12 +110,30 @@ public static class AdviceEndpoints
 
         // De zonverwachting van deze woning. Zonder plaats of zonder bereikbare weerdienst blijft hij
         // leeg; het advies valt dan terug op de middaguren.
-        var plaats = await db.Households
-            .Where(h => h.Id == householdId)
-            .Select(h => new { h.Latitude, h.Longitude })
-            .FirstOrDefaultAsync(ct);
+        var woning = await db.Households.FirstOrDefaultAsync(h => h.Id == householdId, ct);
 
-        var forecast = plaats is { Latitude: { } lat, Longitude: { } lon }
+        // Staat de plaats er wel maar de coordinaten nog niet, dan zoeken we ze hier op in plaats van
+        // te wachten op de nachtelijke weertaak. Anders vult iemand zijn postcode in en blijft er bij
+        // "wanneer laad ik mijn auto" een dag lang staan dat er geen zonverwachting is.
+        if (woning is { Latitude: null } && (woning.City is not null || woning.PostalCode is not null))
+        {
+            var zoekterm = !string.IsNullOrWhiteSpace(woning.City) ? woning.City : woning.PostalCode;
+            try
+            {
+                if (await weather.GeocodeAsync(zoekterm!, ct) is { } gevonden)
+                {
+                    woning.Latitude = gevonden.Lat;
+                    woning.Longitude = gevonden.Lon;
+                    await db.SaveChangesAsync(ct);
+                }
+            }
+            catch (Exception)
+            {
+                // De weerdienst is niet van ons; dan deze ronde zonder verwachting.
+            }
+        }
+
+        var forecast = woning is { Latitude: { } lat, Longitude: { } lon }
             ? await weather.HourlyForecastAsync(lat, lon, ct)
             : [];
 
@@ -132,7 +150,9 @@ public static class AdviceEndpoints
             TypicalBatteryKwh: history.Count > 0 ? history.Max(h => h.BatteryDischargedKwh) : 0,
             SurchargePerKwh: surcharge,
             Forecast: forecast,
-            PvPeakKw: configuration.GetValue("Advice:PvPeakKw", 4.0),
+            // Het piekvermogen van dit dak als de bewoner het heeft ingevuld; anders de instelling
+            // van de server, die een gemiddeld Nederlands dak aanhoudt.
+            PvPeakKw: woning?.PvPeakKw ?? configuration.GetValue("Advice:PvPeakKw", 4.0),
             Taal: taal);
 
         return (input, today, hourPrices);

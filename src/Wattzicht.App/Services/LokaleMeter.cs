@@ -50,11 +50,16 @@ public sealed class LokaleMeter(ApiClient api, ILogger<LokaleMeter> logger)
     /// zitten niet op het goede netwerk, het kastje is uit, de wifi is traag. Dat zijn allemaal
     /// normale situaties en geen reden om het startscherm te laten struikelen.
     /// </summary>
-    public async Task StuurDoorAsync(IEnumerable<DeviceDto> apparaten, CancellationToken ct = default)
+    /// <param name="forceer">
+    /// Negeer de tussenpoos. Dat doen we alleen als de bewoner er zelf om vraagt met "nu uitlezen";
+    /// dan is wachten op een tussenpoos precies het verkeerde antwoord.
+    /// </param>
+    public async Task StuurDoorAsync(IEnumerable<DeviceDto> apparaten, bool forceer = false, CancellationToken ct = default)
     {
         foreach (var apparaat in apparaten.Where(IsLokaal))
         {
-            if (_laatste.TryGetValue(apparaat.Id, out var vorige)
+            if (!forceer
+                && _laatste.TryGetValue(apparaat.Id, out var vorige)
                 && DateTimeOffset.UtcNow - vorige < Tussenpoos)
             {
                 continue;

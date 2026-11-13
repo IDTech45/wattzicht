@@ -263,7 +263,7 @@ public static class TekstenTr
         ["advies.zon-vandaag"] = "Bugün güneş: yaklaşık {0} kWh{1}",
         ["advies.zon-bron"] = "{0} tahmini, bulunduğunuz yere ve kendi tepe gücünüze göre. Aşağıdaki önerilerde hesaba katılıyor.",
         ["advies.geen-zonverwachting"] = "Güneş tahmini yok",
-        ["advies.geen-zonverwachting-uitleg"] = "Aşağıdaki öneriler şimdilik yalnızca fiyata bakıyor. Güneş panellerinizi bağlayıp posta kodunuzu girin, havayı da hesaba katarız.",
+        ["advies.geen-zonverwachting-uitleg"] = "Aşağıdaki öneriler şimdilik yalnızca fiyata bakıyor. Daha fazla bölümünde Eviniz altında yerinizi girin, havayı da hesaba katarız.",
         ["advies.morgen"] = "yarın",
         ["advies.cent-per-kwh"] = "{0} kuruş/kWh",
         ["advies.goedkoper-dan-nu-beginnen"] = "şimdi başlamaktan {0} daha ucuz",
@@ -481,6 +481,29 @@ public static class TekstenTr
         ["historie.mislukt"] = "Dosya okunamadı.",
 
         ["historie.alleen-opwek"] = "O günler için yalnızca üretimi biliyoruz, bu yüzden o günlerin tasarrufu boş kalır.",
+
+
+        // ---- je woning: plaats en piekvermogen ----
+        ["woning.titel"] = "Eviniz",
+        ["woning.uitleg"] = "Güneş tahmini için bulunduğunuz yeri kullanıyoruz. Adres saklamıyoruz, yalnızca yerleşim yerini.",
+        ["woning.naam"] = "Evinizin adı",
+        ["woning.plaats"] = "Yer veya posta kodu",
+        ["woning.plaats-voorbeeld"] = "Örneğin Enschede",
+        ["woning.piek"] = "Panellerinizin tepe gücü",
+        ["woning.piek-uitleg"] = "Teklifinizde veya inverterinizde yazar, örneğin 4,2. Girilmezse ortalama bir çatıyla hesaplarız.",
+        ["woning.opslaan"] = "Evi kaydet",
+        ["woning.zon-aan"] = "Yerinizi biliyoruz, bu yüzden güneş tahmini önerilerinize dahil.",
+        ["woning.zon-uit"] = "Henüz yer bilinmiyor, bu yüzden güneş tahmini yok.",
+        ["woning.bewaard"] = "Kaydedildi. Güneş tahmini bundan sonra hesaba katılır.",
+        ["woning.plaats-niet-gevonden"] = "Kaydedildi, ancak bu yeri bulamadık. Yalnızca yer adını deneyin.",
+        ["woning.piek-fout"] = "0,1 ile 100 kWp arasında bir tepe gücü girin.",
+
+        ["apparaten.thuis-gelezen"] = "Evde okunuyor",
+        ["apparaten.niet-op-wifi"] = "Wifi bağlantınız yok",
+
+        ["apparaten.nu-uitlezen"] = "Şimdi oku",
+        ["apparaten.uitlezen-mislukt"] = "Okuma başarısız",
+        ["apparaten.oude-cijfers"] = "Eski verileri içe aktar",
 
     }.ToFrozenDictionary();
 }

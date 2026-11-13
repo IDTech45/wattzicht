@@ -92,7 +92,25 @@ public sealed record HouseholdDto(
     Guid InstallerId,
     string InstallerName,
     DateTimeOffset CreatedAt,
-    bool InstallerAccessGranted = false);
+    bool InstallerAccessGranted = false,
+    /// <summary>Piekvermogen van de panelen in kWp, als de bewoner het heeft ingevuld.</summary>
+    double? PvPeakKw = null,
+    /// <summary>
+    /// Of we een plaats hebben kunnen vinden. Zonder plaats geen zonverwachting, en dat is precies
+    /// wat de app moet kunnen zeggen in plaats van alleen "geen verwachting beschikbaar".
+    /// </summary>
+    bool HasLocation = false);
+
+/// <summary>Wat de bewoner over zijn woning kan instellen.</summary>
+/// <param name="Name">Naam van het huishouden, bijvoorbeeld Thuis.</param>
+/// <param name="PostalCode">Postcode; alleen de vier cijfers en de letters worden gebruikt.</param>
+/// <param name="City">Plaats; mag leeg als de postcode er staat.</param>
+/// <param name="PvPeakKw">Piekvermogen van de panelen in kWp.</param>
+public sealed record UpdateHouseholdRequest(
+    string? Name = null,
+    string? PostalCode = null,
+    string? City = null,
+    double? PvPeakKw = null);
 
 /// <summary>White-label instellingen van een installateur, zoals de app ze toont.</summary>
 /// <param name="Id">Unieke id.</param>
@@ -262,6 +280,12 @@ public sealed record DailySummaryDto(
 /// <param name="Message">Korte uitleg in gewone taal.</param>
 /// <param name="Since">Sinds wanneer (UTC).</param>
 /// <param name="ResolvedAt">Wanneer opgelost (UTC); <c>null</c> zolang de melding open staat.</param>
+/// <summary>Uitkomst van "nu uitlezen".</summary>
+/// <param name="Gelukt">Apparaten die een meting opleverden.</param>
+/// <param name="Mislukt">Apparaten die niet te bereiken waren of een fout gaven.</param>
+/// <param name="Reden">De laatste foutmelding, als die er is; anders leeg.</param>
+public sealed record UitleesResultaatDto(int Gelukt, int Mislukt, string? Reden);
+
 /// <summary>Uitkomst van het inlezen van een export uit het portaal van een fabrikant.</summary>
 /// <param name="Dagen">Aantal dagen dat erbij is gekomen.</param>
 /// <param name="Overgeslagen">Dagen die we al zelf gemeten hadden; die laten we met rust.</param>

@@ -258,7 +258,7 @@ public static class TekstenEn
         ["advies.zon-vandaag"] = "Sun today: around {0} kWh{1}",
         ["advies.zon-bron"] = "Forecast from {0}, for your location and your own peak power. It is taken into account in the tips below.",
         ["advies.geen-zonverwachting"] = "No sun forecast available",
-        ["advies.geen-zonverwachting-uitleg"] = "The tips below only look at price for now. Connect your solar panels and fill in your postcode and we will include the weather.",
+        ["advies.geen-zonverwachting-uitleg"] = "The tips below only look at price for now. Fill in your town under More, Your home, and we will include the weather.",
         ["advies.morgen"] = "tomorrow",
         ["advies.cent-per-kwh"] = "{0} ct/kWh",
         ["advies.goedkoper-dan-nu-beginnen"] = "{0} cheaper than starting now",
@@ -476,6 +476,29 @@ public static class TekstenEn
         ["historie.mislukt"] = "The file could not be read.",
 
         ["historie.alleen-opwek"] = "For those days we only know the generation, so their savings stay empty.",
+
+
+        // ---- je woning: plaats en piekvermogen ----
+        ["woning.titel"] = "Your home",
+        ["woning.uitleg"] = "We use your town for the sun forecast. We do not store an address, only the town.",
+        ["woning.naam"] = "Name of your household",
+        ["woning.plaats"] = "Town or postcode",
+        ["woning.plaats-voorbeeld"] = "For example Enschede",
+        ["woning.piek"] = "Peak power of your panels",
+        ["woning.piek-uitleg"] = "On your quote or inverter, for example 4.2. Without it we use an average roof.",
+        ["woning.opslaan"] = "Save home",
+        ["woning.zon-aan"] = "We know your town, so the sun forecast is included in your tips.",
+        ["woning.zon-uit"] = "No town known yet, so there is no sun forecast.",
+        ["woning.bewaard"] = "Saved. The sun forecast counts from now on.",
+        ["woning.plaats-niet-gevonden"] = "Saved, but we could not find this town. Try just the town name.",
+        ["woning.piek-fout"] = "Enter a peak power between 0.1 and 100 kWp.",
+
+        ["apparaten.thuis-gelezen"] = "Read at home",
+        ["apparaten.niet-op-wifi"] = "You are not on wifi",
+
+        ["apparaten.nu-uitlezen"] = "Read now",
+        ["apparaten.uitlezen-mislukt"] = "Reading did not work",
+        ["apparaten.oude-cijfers"] = "Import older figures",
 
     }.ToFrozenDictionary();
 }
