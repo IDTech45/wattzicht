@@ -102,7 +102,16 @@ Opvallend veel "makkelijke" koppelingen zijn **lokaal** (Fronius, GoodWe, Deye, 
 
 ## Aanbevolen bouwvolgorde (top 10)
 
-Score = geschat marktaandeel NL (1–5) × gemak (makkelijk 3, middel 2, moeilijk 1). Growatt en Sessy zijn al gebouwd en staan buiten de ranglijst.
+Score = geschat marktaandeel NL (1–5) × gemak (makkelijk 3, middel 2, moeilijk 1).
+
+**Al gebouwd en dus buiten de ranglijst** (stand 13-11-2026): Growatt, SolaX (omvormer én laadpaal),
+Sessy, Alfen, Zaptec, Easee, Peblar, Enphase (via de gateway in huis) en HomeWizard P1. De regels
+hieronder voor Zaptec, Easee, Alfen, Enphase en HomeWizard zijn daarmee geschiedenis; ze blijven staan
+omdat de afweging erin nog klopt voor de merken die er wel op wachten.
+
+De eerstvolgende die er niet is: **Deye / Solarman**. Daar staat de lokale logger-route voor, en die
+vraagt een appId dat je bij Solarman-support moet aanvragen; zonder dat blijft het merk op "planned"
+staan in `brands.json`.
 
 | # | Merk | Categorie | NL-aandeel | Gemak | Waarom nu |
 |---|---|---|---|---|---|
