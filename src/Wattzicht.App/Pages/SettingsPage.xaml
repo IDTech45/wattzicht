@@ -30,7 +30,7 @@
                     </VerticalStackLayout>
                     <Label Grid.Column="1" Text="{Binding ThemaStand}" VerticalOptions="Center"
                            FontAttributes="Bold"
-                           TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource TextDark}}" />
+                           TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource TextBodyDark}}" />
                     <Switch Grid.Column="2" IsToggled="{Binding IsDonkerThema}" VerticalOptions="Center"
                             ThumbColor="{Binding ThemaKnopKleur}" />
                 </Grid>
