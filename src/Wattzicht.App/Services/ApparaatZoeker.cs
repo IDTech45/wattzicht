@@ -74,7 +74,7 @@ public sealed class ApparaatZoeker
         {
             if (await AntwoordtAsync(naam, "/info", IsEnvoy, ct))
             {
-                return new Gevonden(naam, "Enphase IQ Gateway");
+                return new Gevonden(await NaarIpAsync(naam, ct), "Enphase IQ Gateway");
             }
         }
 
@@ -89,10 +89,33 @@ public sealed class ApparaatZoeker
 
         if (await AntwoordtAsync("p1meter.local", "/api", IsP1, ct))
         {
-            return new Gevonden("p1meter.local", "P1-meter");
+            return new Gevonden(await NaarIpAsync("p1meter.local", ct), "P1-meter");
         }
 
         return await ZoekAsync("/api", IsP1, "P1-meter", ct);
+    }
+
+    /// <summary>
+    /// Zet een naam als envoy.local om naar het nummer erachter, en geeft anders de naam terug.
+    ///
+    /// We vinden het apparaat op zijn naam, maar we bewaren liever het nummer. Zo'n naam werkt alleen
+    /// zolang het toestel hem kan opzoeken, en dat gaat op een ander netwerk of na een herstart van de
+    /// router net zo makkelijk weer mis. Het nummer is bovendien wat mensen verwachten te zien staan
+    /// in een veld dat om een IP-adres vraagt.
+    /// </summary>
+    private static async Task<string> NaarIpAsync(string naam, CancellationToken ct)
+    {
+        try
+        {
+            var adressen = await Dns.GetHostAddressesAsync(naam, ct);
+            var vier = adressen.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
+            return vier?.ToString() ?? naam;
+        }
+        catch (Exception)
+        {
+            // De naam werkt wel (we kregen net antwoord), alleen het opzoeken niet. Dan maar de naam.
+            return naam;
+        }
     }
 
     private async Task<Gevonden?> ZoekAsync(string pad, Func<string, bool> herkent, string soort, CancellationToken ct)
