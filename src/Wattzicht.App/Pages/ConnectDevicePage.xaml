@@ -185,7 +185,23 @@
                                 </Border>
                                 <Label Text="{Binding ApiTokenError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasApiTokenError}" />
                             </VerticalStackLayout>
-                            <Label Text="Het token haal je op bij entrez.enphaseenergy.com: log in met je eigen Enphase-account en vul het serienummer van de gateway in. Met je eigen account is het een jaar geldig."
+                            <!--
+                                De uitleg stond hier in één zin: "haal het token bij entrez". Wie dat
+                                nog nooit gedaan heeft weet dan nog niets. Dit zijn de stappen zoals
+                                ze op dat scherm staan, met de knop ernaartoe erbij.
+                            -->
+                            <Label Text="Zo kom je aan dat token:" Style="{StaticResource FieldLabel}" />
+                            <Label Style="{StaticResource SubtitleLabel}" FontSize="13">
+                                <Label.Text>1. Open entrez.enphaseenergy.com en log in met je Enphase-account, hetzelfde als in de Enlighten-app.
+2. Bij Select System zoek je op je systeemnaam of je Site ID. Die staat ook in je maandelijkse energierapport van Enphase.
+3. Bij Select Gateway kies je je gateway. Staat er maar één, dan is dat hem.
+4. Druk op Create access token. Je krijgt een lange tekst die met eyJ begint.
+5. Kopieer die helemaal en plak hem hierboven.</Label.Text>
+                            </Label>
+                            <Button Text="Open entrez.enphaseenergy.com"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding OpenEntrezCommand}" />
+                            <Label Text="Met je eigen eigenaarsaccount is het token een jaar geldig. Staat je systeem op naam van je installateur, dan kan hij jou als eigenaar toevoegen; daarna kun je zelf een token maken."
                                    Style="{StaticResource SubtitleLabel}" FontSize="13" />
                         </VerticalStackLayout>
                     </Border>

@@ -242,6 +242,11 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         }
     }
 
+    /// <summary>De pagina van Enphase waar je zelf een token aanmaakt.</summary>
+    [RelayCommand]
+    private Task OpenEntrezAsync() =>
+        Launcher.Default.OpenAsync("https://entrez.enphaseenergy.com");
+
     [RelayCommand]
     private void SelectBrand(BrandOption option)
     {
