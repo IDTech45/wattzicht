@@ -140,6 +140,39 @@ public sealed class TariefLezerTests
     }
 
     [Fact]
+    public void Het_woord_periode_is_geen_energiebelasting()
+    {
+        // Dit ging echt mis op een nota: "ode" staat in "periode", en het eerste getal op die regel
+        // was de 1 van 1 augustus. Daar kwam een energiebelasting van een euro per kilowattuur uit.
+        var uit = TariefLezer.Lees("Je verbruik in de periode 1 augustus 2026 tot 1 september 2026");
+
+        Assert.Null(uit.Energiebelasting);
+        Assert.False(uit.HeeftIets);
+    }
+
+    [Fact]
+    public void Een_kaal_getal_zonder_komma_of_euroteken_is_geen_prijs()
+    {
+        Assert.Null(TariefLezer.Bedrag("Stroom verbruik daluren (in kWh) 145"));
+        Assert.Null(TariefLezer.Bedrag("Contract 01107222"));
+    }
+
+    [Fact]
+    public void Een_maandnota_zonder_tarievenlijst_geeft_toch_zijn_tarieven()
+    {
+        // Geen rijtje tarieven, maar per tariefvenster een netto hoeveelheid met het bedrag ernaast.
+        var uit = TariefLezer.Lees(NOTA);
+
+        Assert.Equal(0.2235m, uit.Levering!.EuroPerKwh);
+        Assert.Equal(0.06m, uit.Teruglevering!.EuroPerKwh);
+
+        // De piekregel staat op min: dat venster leverde terug, dus dat bedrag is een vergoeding en
+        // niet de prijs die deze woning betaalt.
+        Assert.Contains("-88", uit.Teruglevering.Regel);
+        Assert.True(uit.PrijsIsAllIn);
+    }
+
+    [Fact]
     public void Een_document_zonder_tarieven_levert_niets_op()
     {
         var uit = TariefLezer.Lees("Beste meneer Dogan, hierbij uw jaaroverzicht. Met vriendelijke groet.");
@@ -164,4 +197,17 @@ public sealed class TariefLezerTests
     {
         Assert.Equal((decimal)verwacht, TariefLezer.Bedrag(regel));
     }
+
+    private const string NOTA = """
+            Je verbruik in de periode 1 augustus 2026 tot 1 september 2026
+            Je verbruik Je tarief Je verbruikskosten*
+            Stroom (meter 000000000000000000)
+            Stroom verbruik daluren (in kWh) 145
+            Stroom teruglevering daluren (in kWh) 132
+            Stroom netto verbruik daluren 13 € 0,223499 € 2,91
+            Stroom verbruik piekuren (in kWh) 154
+            Stroom teruglevering piekuren (in kWh) 242
+            Stroom netto verbruik piekuren -88 € 0,060000 € -5,28
+            Alle bedragen zijn inclusief btw, opslag duurzame energie, energiebelasting en regiotoeslag.
+        """;
 }

@@ -44,6 +44,18 @@ public static class VerbruikLezer
         "teruggeleverd", "teruglevering", "terug geleverd", "ingevoed", "aan het net",
     ];
 
+    /// <summary>
+    /// Rijen die over een deel van de maand gaan en bij elkaar opgeteld horen te worden.
+    ///
+    /// Een maandnota splitst de maand in daluren en piekuren. Allebei zijn het de maand, dus de
+    /// tweede rij hoort niet de eerste te overschrijven. Alleen deze woorden, en niet kaal "dal" of
+    /// "piek": een regel met een totaal mag nooit per ongeluk bij een andere worden opgeteld.
+    /// </summary>
+    private static readonly string[] VensterWoorden =
+    [
+        "daluren", "piekuren", "normaaluren", "dalstroom", "piekstroom",
+    ];
+
     /// <summary>Hoger dan dit is geen maandverbruik van een huishouden maar een jaartotaal of een bedrag.</summary>
     private const double MaximumPerMaand = 5_000;
 
@@ -66,6 +78,11 @@ public static class VerbruikLezer
         // de tweede kolom betekenen. Zonder kop raden we niet.
         var kolomVolgordeBekend = false;
 
+        // De maand staat lang niet altijd op de rij zelf. Een maandnota zet hem er een keer boven
+        // ("Je verbruik in de periode 1 augustus 2026 tot 1 september 2026") en daaronder staan
+        // alleen nog rijen met getallen. Zonder dit geheugen leest zo'n nota als een leeg document.
+        DateOnly? lopendeMaand = null;
+
         foreach (var regel in regels)
         {
             if (IsKopregel(regel))
@@ -74,9 +91,16 @@ public static class VerbruikLezer
                 continue;
             }
 
-            if (Maandvan(regel, vandaag) is not { } maand) continue;
-
+            var eigenMaand = Maandvan(regel, vandaag);
             var kwh = Kilowatturen(regel);
+
+            if (eigenMaand is { } kop && kwh.Count == 0)
+            {
+                lopendeMaand = kop;
+                continue;
+            }
+
+            if ((eigenMaand ?? lopendeMaand) is not { } maand) continue;
             if (kwh.Count == 0) continue;
 
             var heeftAfname = AfnameWoorden.Any(w => regel.Contains(w, StringComparison.OrdinalIgnoreCase));
@@ -111,9 +135,10 @@ public static class VerbruikLezer
             }
 
             var bestaand = perMaand.GetValueOrDefault(maand);
-            perMaand[maand] = (
-                afname ?? bestaand.Afname,
-                terug ?? bestaand.Terug);
+            perMaand[maand] = VensterWoorden.Any(w => regel.Contains(w, StringComparison.OrdinalIgnoreCase))
+                ? (bestaand.Afname + (afname ?? 0),
+                    terug is null ? bestaand.Terug : (bestaand.Terug ?? 0) + terug.Value)
+                : (afname ?? bestaand.Afname, terug ?? bestaand.Terug);
         }
 
         var maanden = perMaand

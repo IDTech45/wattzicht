@@ -125,4 +125,30 @@ public sealed class VerbruikLezerTests
         Assert.False(VerbruikLezer.Lees("", Vandaag).Gelukt);
         Assert.False(VerbruikLezer.Lees("   \n ", Vandaag).Gelukt);
     }
+
+    [Fact]
+    public void Een_maandnota_zet_de_maand_boven_de_rijen()
+    {
+        // De rijen zelf noemen geen maand: die staat eenmalig in de kop erboven. En de maand is
+        // gesplitst in daluren en piekuren, dus de tweede rij hoort bij de eerste opgeteld te worden.
+        var uit = VerbruikLezer.Lees(NOTA, new DateOnly(2026, 11, 13));
+
+        var maand = Assert.Single(uit.Maanden);
+        Assert.Equal(new DateOnly(2026, 8, 1), maand.Maand_);
+        Assert.Equal(299, maand.AfnameKwh);
+        Assert.Equal(374, maand.TerugleveringKwh);
+    }
+
+    private const string NOTA = """
+            Je verbruik in de periode 1 augustus 2026 tot 1 september 2026
+            Je verbruik Je tarief Je verbruikskosten*
+            Stroom (meter 000000000000000000)
+            Stroom verbruik daluren (in kWh) 145
+            Stroom teruglevering daluren (in kWh) 132
+            Stroom netto verbruik daluren 13 € 0,223499 € 2,91
+            Stroom verbruik piekuren (in kWh) 154
+            Stroom teruglevering piekuren (in kWh) 242
+            Stroom netto verbruik piekuren -88 € 0,060000 € -5,28
+            Alle bedragen zijn inclusief btw, opslag duurzame energie, energiebelasting en regiotoeslag.
+        """;
 }
