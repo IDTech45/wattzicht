@@ -36,6 +36,8 @@ public static class MauiProgram
         // is komt de lege variant en blijven die knoppen gewoon weg.
 #if ANDROID
         builder.Services.AddSingleton<ISocialeLogin, Wattzicht.App.Platforms.Android.GoogleLoginAndroid>();
+#elif IOS
+        builder.Services.AddSingleton<ISocialeLogin, Wattzicht.App.Platforms.iOS.AppleLoginIos>();
 #else
         builder.Services.AddSingleton<ISocialeLogin, GeenSocialeLogin>();
 #endif

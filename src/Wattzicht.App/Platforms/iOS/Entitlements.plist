@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Inloggen met Apple. Zonder dit recht weigert iOS het aanmeldscherm bij het aantikken, en
+	     daar is in de app niets van te zien: de knop doet dan simpelweg niets.
+	     Het recht moet ook op het App-ID staan (developer.apple.com) en in het provisioningprofiel;
+	     bij nl.wattzicht.app staat het sinds 12-11-2026 aan. -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+
+	<!-- Pushmeldingen. De app registreert zich daar nog niet voor op iOS, maar het recht hoort bij
+	     hetzelfde profiel; zo hoeft dat profiel straks niet opnieuw gemaakt te worden. -->
+	<key>aps-environment</key>
+	<string>production</string>
+</dict>
+</plist>

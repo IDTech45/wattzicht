@@ -20,6 +20,10 @@
 
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
+
+    <!-- Rechten voor de iPhone: inloggen met Apple en pushmeldingen. Zonder dit bestand weigert iOS
+         het Apple-aanmeldscherm en gebeurt er bij het aantikken van de knop niets. -->
+    <CodesignEntitlements Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">Platforms\iOS\Entitlements.plist</CodesignEntitlements>
   </PropertyGroup>
 
   <ItemGroup>

@@ -50,19 +50,20 @@ raakt. Voor twee apps van hetzelfde bedrijf is dat een prima ruil.
 
 ## Jij: wat er dan nog overblijft
 
-**Google Play**
+**Google Play — klaar.** De app staat in Play Console op `nl.wattzicht.app`, het serviceaccount
+heeft rechten en de vijf Android-geheimen staan in deze repo. `release-android` zet sinds 12-11-2026
+een bundel in de internal testing-track; dat is met één klik te starten onder Actions.
 
-1. App aanmaken in Play Console met pakketnaam `nl.wattzicht.app`. Die naam ligt daarna vast.
-2. Het bestaande serviceaccount onder Gebruikers en rechten toegang geven tot deze nieuwe app, met
-   het recht releases beheren.
-3. De vijf Android-geheimen overnemen in deze repo.
+**Apple — hier ligt het werk.** Het App-ID `nl.wattzicht.app` bestaat al (team ZP9APJFDZS, met
+Sign in with Apple en pushmeldingen erop). Wat er nog moet:
 
-**Apple**
-
-1. App-id `nl.wattzicht.app` aanmaken op developer.apple.com, en daarna de app in App Store Connect.
-2. Voor dat app-id één App Store-provisioningprofiel maken en downloaden. Dit is het enige echt
-   nieuwe stuk, en het verloopt na een jaar; zet er een herinnering op.
-3. De zes Apple-geheimen overnemen, plus `IOS_PROVISIONING_PROFILE` van het nieuwe profiel.
+1. De app aanmaken in App Store Connect onder datzelfde bundel-id.
+2. Voor dat app-id één App Store-provisioningprofiel maken en downloaden. Let op: het moet het recht
+   **Sign in with Apple** bevatten, anders weigert iOS het aanmeldscherm. Het verloopt na een jaar;
+   zet er een herinnering op.
+3. De zes Apple-geheimen overnemen uit wat LaadCash gebruikt, plus `IOS_PROVISIONING_PROFILE` van
+   het nieuwe profiel. Zolang die geheimen leeg zijn stopt `release-ios` meteen met een melding; er
+   gaat dan niets stuk en er worden geen macOS-minuten verbrand.
 
 Anders dan bij LaadCash maakt MAUI het profiel niet zelf aan. Bij Capacitor regelt xcodebuild dat met
 `-allowProvisioningUpdates`; hier moet het profiel er echt zijn.
@@ -72,10 +73,10 @@ Anders dan bij LaadCash maakt MAUI het profiel niet zelf aan. Bij Capacitor rege
 Dit zijn geen nette-to-haves. Zonder deze punten word je afgewezen, en bij Google kost dat zo een
 week heen en weer.
 
-1. **Account verwijderen. Dit is de grootste.** Google eist voor elke app waarin iemand een account
-   maakt twee dingen: verwijderen vanuit de app zelf, én een openbare webpagina waar iemand het kan
-   aanvragen zonder de app te installeren. Wij hebben geen van beide: er is geen endpoint, geen knop
-   en geen pagina. Dit moet gebouwd worden.
+1. **Account verwijderen — gebouwd (13-11-2026).** Onderaan Meer staat "Account verwijderen" met
+   twee bevestigingen, en `wattzicht.nl/account-verwijderen` is de openbare pagina voor wie de app
+   al weg heeft. Achter de knop gaat alles per tabel echt weg; vier tests leggen vast dat elke tabel
+   leeg is, dat de buren eraf blijven en dat tweemaal verwijderen niet klapt.
 2. **Privacyverklaring op een vast adres.** `wattzicht.nl/privacy` bestaat, dus dit is alleen nog het
    adres invullen in beide winkels.
 3. **Data safety (Google) en App Privacy (Apple).** Een vragenlijst over wat je verzamelt. Voor ons:
@@ -88,13 +89,16 @@ week heen en weer.
    mailbox van, anders stuiteren de mails van de beoordelaar terug.
 6. **Pushmeldingen op iPhone bestaan nog niet.** Op Android gaan ze via Firebase, op iOS is er nog
    geen APNs-sleutel en geen registratie in de app. Dat is geen afwijsgrond, maar de app belooft in
-   de instellingen dus iets wat op een iPhone niet gebeurt.
+   de instellingen dus iets wat op een iPhone niet gebeurt. Het recht staat al in
+   `Platforms/iOS/Entitlements.plist`, dus het profiel hoeft er later niet opnieuw voor gemaakt te
+   worden.
 
 ## Volgorde die werkt
 
-1. Account verwijderen bouwen (punt 1), want daar struikel je anders op.
-2. De geheimen overnemen uit wat LaadCash al gebruikt, en het ene nieuwe provisioningprofiel maken.
-3. `release-android` naar internal, `release-ios` naar TestFlight. Zelf installeren en doorlopen.
+1. ~~Account verwijderen bouwen~~ — staat er sinds 13-11-2026.
+2. De Apple-geheimen overnemen uit wat LaadCash al gebruikt, en het ene nieuwe provisioningprofiel
+   maken (met Sign in with Apple erop).
+3. `release-ios` starten; `release-android` draait al naar internal. Zelf installeren en doorlopen.
 4. Winkelpagina's invullen, schermafbeeldingen maken, vragenlijsten beantwoorden.
 5. Indienen voor beoordeling.
 
@@ -133,7 +137,15 @@ onder team ZP9APJFDZS (DoganTech B.V.), met Sign in with Apple en pushmeldingen 
 bundel-id staat in `ExternalAuth:AppleClientIds`. Datzelfde App-ID is ook wat de iOS-build nodig
 heeft; zonder dat kan er niets naar TestFlight.
 
-Wat er nog mist is de knop in de app zelf: op iPhone moet de ingebouwde Apple-aanmelding
-aangesproken worden, en dat is platformcode die er nog niet is. De app toont alleen knoppen die de
-server aan heeft staan én waarvoor dit toestel een uitvoering heeft, dus tot die code er is blijft
-de Apple-knop vanzelf weg.
+**En de knop in de app staat er sinds 13-11-2026 ook.** `Platforms/iOS/AppleLoginIos.cs` vraagt
+via AuthenticationServices een ondertekend token op en stuurt dat naar onze server, die het bij
+Apple controleert. Het recht `com.apple.developer.applesignin` staat in
+`Platforms/iOS/Entitlements.plist` en moet ook op het provisioningprofiel staan; zonder dat doet de
+knop op het toestel niets en is daar in de app niets van te zien.
+
+Nog niet op een echte iPhone geprobeerd: dat kan pas als het profiel er is en er een TestFlight-build
+staat. De code compileert wel voor iOS, dus hij gaat niet stuk op de build.
+
+Let op het verborgen e-mailadres: wie "Verberg mijn e-mailadres" kiest krijgt een privaterelay-adres.
+Post komt daar alleen aan als onze afzender bij Apple geregistreerd staat. Bij LaadCash is dat punt
+al eens tegengekomen; voor Wattzicht staat het nog open.
