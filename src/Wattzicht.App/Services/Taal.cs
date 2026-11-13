@@ -10,10 +10,11 @@ namespace Wattzicht.App.Services;
 /// veranderen. Voor een app die je aan je installateur meegeeft is dat te smal; bij LaadCash bleek
 /// het Turkse pakket ook gewoon gebruikt te worden.
 ///
-/// Hoe de app eraan komt: XAML vraagt een tekst op met <c>{t:T sleutel}</c>. Dat is een binding op de
-/// indexer hieronder, met deze ene instantie als bron. Zodra iemand van taal wisselt melden we dat
-/// álle indexerwaarden veranderd zijn, en ververst elk label zichzelf. Zo hoeft er geen scherm
-/// opnieuw opgebouwd te worden en is er ook geen herstart nodig.
+/// Hoe de app eraan komt: XAML vraagt een tekst op met <c>{t:T sleutel}</c>. Dat is een binding op
+/// <see cref="Versie"/> hieronder, met de sleutel als ConverterParameter en deze ene instantie als
+/// bron. Zodra iemand van taal wisselt gaat Versie een stapje omhoog, vuurt elke binding opnieuw en
+/// ververst elk label zichzelf. Zo hoeft er geen scherm opnieuw opgebouwd te worden en is er ook
+/// geen herstart nodig.
 ///
 /// Ontbreekt een sleutel in de gekozen taal, dan volgt het Nederlands, en anders de sleutel zelf.
 /// Een lege tekst op het scherm is het ergste van de drie: dan zie je niet dát er iets mist.
@@ -45,7 +46,14 @@ public sealed class Taal : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public string this[string sleutel] => T(sleutel);
+    /// <summary>
+    /// Gaat een stapje omhoog bij elke taalwissel. Hier hangt elke tekst in de XAML aan.
+    ///
+    /// Het getal zelf zegt niets; het bestaat om de bindingen te laten vuren. Een gewone
+    /// propertynaam als pad is met opzet: een indexerpad met punten in de sleutel moet door de
+    /// padlezer ontleed worden, en als dat ergens misgaat is elk label in de app leeg.
+    /// </summary>
+    public int Versie { get; private set; }
 
     /// <summary>De tekst bij een sleutel, in de gekozen taal.</summary>
     public static string T(string sleutel)
@@ -78,8 +86,8 @@ public sealed class Taal : INotifyPropertyChanged
             // weigeren te wisselen.
         }
 
-        // "Item[]" is de afspraak waarmee elke indexer-binding zich opnieuw ophaalt.
-        Nu.PropertyChanged?.Invoke(Nu, new PropertyChangedEventArgs("Item[]"));
+        Nu.Versie++;
+        Nu.PropertyChanged?.Invoke(Nu, new PropertyChangedEventArgs(nameof(Versie)));
     }
 
     /// <summary>
