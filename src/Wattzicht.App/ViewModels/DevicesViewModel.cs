@@ -88,6 +88,31 @@ public partial class DevicesViewModel : BaseViewModel
     [RelayCommand]
     private Task NaarInstellingenAsync() => Shell.Current.GoToAsync("//settings");
 
+    /// <summary>
+    /// Een apparaat hernoemen.
+    ///
+    /// De fabrikant levert namen als "Demo omvormer 4,2 kWp". Wie twee strings heeft wil "voorkant"
+    /// en "achterkant", en dat kon nergens.
+    /// </summary>
+    [RelayCommand]
+    private async Task HernoemAsync(DeviceItem? item)
+    {
+        if (item is null) return;
+
+        var naam = await VraagAsync(
+            Taal.T("apparaten.hernoemen"),
+            Taal.T("apparaten.hernoemen-uitleg"),
+            item.Name);
+
+        if (string.IsNullOrWhiteSpace(naam) || naam.Trim() == item.Name) return;
+
+        await RunSafeAsync(async () =>
+        {
+            await _api.HernoemAsync(item.Id, naam.Trim());
+            await LoadAsync();
+        }, _auth);
+    }
+
     [RelayCommand]
     private async Task DeleteAsync(DeviceItem? item)
     {

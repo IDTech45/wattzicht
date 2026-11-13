@@ -39,6 +39,12 @@ public static class AuthEndpoints
             .WithSummary("Welke inlogknoppen de app mag tonen.")
             .Produces<IReadOnlyList<string>>();
 
+        group.MapPost("/password", WachtwoordWijzigenAsync)
+            .RequireAuthorization()
+            .WithSummary("Wijzigt het wachtwoord van de ingelogde gebruiker.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesValidationProblem();
+
         group.MapPost("/refresh", RefreshAsync)
             .RequireAuthorization()
             .WithSummary("Geeft een nieuw token op basis van een nog geldig token.")
@@ -408,6 +414,66 @@ public static class AuthEndpoints
         var (token, expires) = tokens.CreateToken(user);
         var household = user.Household is null ? null : HouseholdQueries.ToDto(user.Household);
         return new AuthResponse(token, expires, household, HouseholdQueries.ToDto(user.Installer), user.Role);
+    }
+
+    /// <summary>
+    /// Je eigen wachtwoord wijzigen.
+    ///
+    /// Dit kon helemaal niet: je kreeg bij het aanmelden een wachtwoord en daar zat je aan vast. Het
+    /// huidige wachtwoord moet mee, ook al ben je ingelogd: een telefoon die even onbeheerd op tafel
+    /// ligt hoort niet genoeg te zijn om iemand buiten te sluiten.
+    ///
+    /// Wie met Google of Apple is binnengekomen heeft geen wachtwoord. Die krijgt dat ook te horen,
+    /// in plaats van een foutmelding over een verkeerd wachtwoord dat nooit heeft bestaan.
+    /// </summary>
+    private static async Task<IResult> WachtwoordWijzigenAsync(
+        WachtwoordWijzigenRequest request,
+        HttpContext http,
+        AppDbContext db,
+        PasswordHasher hasher,
+        CancellationToken ct)
+    {
+        var userId = http.User.GetUserId();
+        var gebruiker = await db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId, ct);
+        if (gebruiker is null) return Results.NotFound();
+
+        if (string.IsNullOrEmpty(gebruiker.PasswordHash))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["huidig"] = ["Je bent binnengekomen met Google of Apple en hebt dus geen wachtwoord."],
+            });
+        }
+
+        if (!hasher.Verify(request.Huidig ?? string.Empty, gebruiker.PasswordHash))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["huidig"] = ["Dit is niet je huidige wachtwoord."],
+            });
+        }
+
+        var nieuw = request.Nieuw ?? string.Empty;
+        if (nieuw.Length < 8)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["nieuw"] = ["Kies een wachtwoord van minimaal 8 tekens."],
+            });
+        }
+
+        if (hasher.Verify(nieuw, gebruiker.PasswordHash))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["nieuw"] = ["Dat is je huidige wachtwoord."],
+            });
+        }
+
+        gebruiker.PasswordHash = hasher.Hash(nieuw);
+        await db.SaveChangesAsync(ct);
+
+        return Results.NoContent();
     }
 
     private static async Task<IResult> RefreshAsync(

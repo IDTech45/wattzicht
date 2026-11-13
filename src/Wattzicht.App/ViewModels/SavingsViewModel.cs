@@ -113,6 +113,63 @@ public partial class SavingsViewModel : BaseViewModel
     [ObservableProperty] private string _totalChargedText = "0 kWh";
     [ObservableProperty] private bool _isRefreshing;
 
+    // ---- Vergelijking met de vorige periode ----
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftVergelijking))] private string? _vergelijking;
+
+    public bool HeeftVergelijking => !string.IsNullOrEmpty(Vergelijking);
+
+    /// <summary>
+    /// Hoeveel je opwekte ten opzichte van dezelfde periode ervoor.
+    ///
+    /// "312 kWh" zegt niets; "312 kWh, een vijfde meer dan vorige maand" wel. Dit is het getal waar
+    /// mensen in een energie-app naar zoeken en dat er nergens stond.
+    /// </summary>
+    private async Task VergelijkAsync(DateOnly van, DateOnly tot, double huidigeOpwek)
+    {
+        Vergelijking = null;
+
+        var lengte = tot.DayNumber - van.DayNumber + 1;
+        if (lengte < 1 || huidigeOpwek <= 0) return;
+
+        var vorigeTot = van.AddDays(-1);
+        var vorigeVan = vorigeTot.AddDays(-(lengte - 1));
+
+        try
+        {
+            var vorige = await _api.GetDailySummariesAsync(vorigeVan, vorigeTot);
+            var vorigeOpwek = vorige.Sum(d => d.PvKwh);
+            if (vorigeOpwek <= 0) return;
+
+            var verschil = (huidigeOpwek - vorigeOpwek) / vorigeOpwek * 100;
+
+            // Onder de vijf procent is het weer, geen verandering. Dan liever niets zeggen dan een
+            // getal dat iemand gaat verklaren.
+            if (Math.Abs(verschil) < 5)
+            {
+                Vergelijking = string.Format(Taal.T("besparen.vergelijk-gelijk"), PeriodeWoord());
+                return;
+            }
+
+            Vergelijking = string.Format(
+                Taal.T(verschil > 0 ? "besparen.vergelijk-meer" : "besparen.vergelijk-minder"),
+                Math.Abs(verschil).ToString("0", Nl),
+                PeriodeWoord());
+        }
+        catch (ApiException)
+        {
+            Vergelijking = null;
+        }
+    }
+
+    /// <summary>Het woord dat bij de gekozen periode hoort: dag, week, maand of jaar.</summary>
+    private string PeriodeWoord() => Taal.T(Period switch
+    {
+        SavingsPeriod.Day => "besparen.vorige-dagen",
+        SavingsPeriod.Week => "besparen.vorige-week",
+        SavingsPeriod.Month => "besparen.vorige-maand",
+        _ => "besparen.vorig-jaar",
+    });
+
     // ---- Wat een batterij zou opleveren ----
     [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftBatterijAdvies))] private string? _batterijRegel;
     [ObservableProperty] private string _batterijToelichting = string.Empty;
@@ -180,6 +237,8 @@ public partial class SavingsViewModel : BaseViewModel
 
             Apply(summaries, from, to);
             HasLoaded = true;
+
+            await VergelijkAsync(from, to, summaries.Sum(d => d.PvKwh));
 
             if (!HasSustainability) try
             {

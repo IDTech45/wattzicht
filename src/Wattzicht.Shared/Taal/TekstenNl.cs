@@ -569,5 +569,40 @@ public static class TekstenNl
         ["sturen.toestemming-tekst"] = "Uitlezen is kijken; starten en pauzeren verandert iets in je huis. Wij sturen nooit uit onszelf: je drukt zelf op de knop. Je kunt dit altijd weer uitzetten.",
         ["sturen.toestemming-ja"] = "Aanzetten",
 
+        ["algemeen.opslaan"] = "Opslaan",
+        ["apparaten.hernoemen"] = "Naam wijzigen",
+        ["apparaten.hernoemen-uitleg"] = "Hoe wil je dit apparaat noemen?",
+
+
+        // ---- wachtwoord wijzigen ----
+        ["wachtwoord.knop"] = "Wachtwoord wijzigen",
+        ["wachtwoord.huidig"] = "Je huidige wachtwoord",
+        ["wachtwoord.nieuw"] = "Je nieuwe wachtwoord",
+        ["wachtwoord.gewijzigd"] = "Je wachtwoord is gewijzigd.",
+
+
+        // ---- vergelijking met de vorige periode ----
+        ["besparen.vergelijk-meer"] = "{0}% meer opgewekt dan {1}.",
+        ["besparen.vergelijk-minder"] = "{0}% minder opgewekt dan {1}.",
+        ["besparen.vergelijk-gelijk"] = "Ongeveer evenveel als {0}.",
+        ["besparen.vorige-dagen"] = "de dagen ervoor",
+        ["besparen.vorige-week"] = "vorige week",
+        ["besparen.vorige-maand"] = "vorige maand",
+        ["besparen.vorig-jaar"] = "vorig jaar",
+
+
+        // ---- je gegevens meenemen ----
+        ["gegevens.knop"] = "Mijn gegevens downloaden",
+        ["gegevens.uitleg"] = "Al je dagcijfers als CSV, te openen in een spreadsheet.",
+        ["gegevens.titel"] = "Mijn Wattzicht-gegevens",
+        ["gegevens.mislukt"] = "Het downloaden lukte niet.",
+
+
+        // ---- maak je app af ----
+        ["afmaken.titel"] = "Maak je app af",
+        ["afmaken.plaats"] = "Je plaats ontbreekt nog, dus we rekenen de zon niet mee.",
+        ["afmaken.tarief"] = "Je energietarief ontbreekt nog, dus je besparing blijft op nul staan.",
+        ["afmaken.knop"] = "Nu invullen",
+
     }.ToFrozenDictionary();
 }

@@ -169,6 +169,102 @@ public partial class SettingsViewModel : BaseViewModel
         GeschatPiek = woning.PvPeakKwGeschat;
     }
 
+    // ---- Je gegevens meenemen ----
+    /// <summary>
+    /// Alle dagcijfers als CSV, via het deelvenster van de telefoon.
+    ///
+    /// Het is jouw meting; je hoort hem mee te kunnen nemen, en dat staat ook zo in de privacywet.
+    /// Delen in plaats van downloaden: dan kies je zelf of het naar je mail, je schijf of een
+    /// spreadsheet gaat.
+    /// </summary>
+    [RelayCommand]
+    private async Task GegevensDelenAsync()
+    {
+        try
+        {
+            IsBusy = true;
+            var csv = await _api.ExportCsvAsync();
+
+            var pad = Path.Combine(FileSystem.CacheDirectory,
+                $"wattzicht-{DateTime.Now:yyyy-MM-dd}.csv");
+            await File.WriteAllTextAsync(pad, csv);
+
+            await Share.Default.RequestAsync(new ShareFileRequest
+            {
+                Title = Taal.T("gegevens.titel"),
+                File = new ShareFile(pad),
+            });
+        }
+        catch (ApiException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            ErrorMessage = Taal.T("gegevens.mislukt");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    // ---- Wachtwoord ----
+    [ObservableProperty] private string _huidigWachtwoord = string.Empty;
+    [ObservableProperty] private string _nieuwWachtwoord = string.Empty;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftWachtwoordBericht))] private string? _wachtwoordBericht;
+    [ObservableProperty] private bool _wachtwoordOpen;
+
+    public bool HeeftWachtwoordBericht => !string.IsNullOrEmpty(WachtwoordBericht);
+
+    /// <summary>Het blok open- en dichtklappen; dicht is de normale toestand.</summary>
+    [RelayCommand]
+    private void WachtwoordSchakelen()
+    {
+        WachtwoordOpen = !WachtwoordOpen;
+        WachtwoordBericht = null;
+    }
+
+    /// <summary>
+    /// Je wachtwoord wijzigen.
+    ///
+    /// Dit kon helemaal niet: je kreeg er bij het aanmelden een en daar zat je aan vast. Het huidige
+    /// wachtwoord moet mee, ook al ben je ingelogd: een telefoon die even op tafel ligt hoort niet
+    /// genoeg te zijn om iemand buiten te sluiten.
+    /// </summary>
+    [RelayCommand]
+    private async Task WachtwoordOpslaanAsync()
+    {
+        WachtwoordBericht = null;
+
+        if (NieuwWachtwoord.Length < 8)
+        {
+            WachtwoordBericht = Taal.T("inlog.wachtwoord-te-kort");
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            await _api.WachtwoordWijzigenAsync(HuidigWachtwoord, NieuwWachtwoord);
+
+            HuidigWachtwoord = string.Empty;
+            NieuwWachtwoord = string.Empty;
+            WachtwoordOpen = false;
+            WachtwoordBericht = Taal.T("wachtwoord.gewijzigd");
+        }
+        catch (ApiException ex)
+        {
+            // De server zegt precies wat er mis is: verkeerd huidig wachtwoord, te kort, of een
+            // account dat met Google of Apple is aangemaakt en dus geen wachtwoord heeft.
+            WachtwoordBericht = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     // ---- Contract inlezen ----
     [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftContractResultaat))] private string? _contractResultaat;
 

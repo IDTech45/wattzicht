@@ -146,6 +146,11 @@
                         </VerticalStackLayout>
                     </Border>
 
+                    <Label Text="{Binding Vergelijking}"
+                           Style="{StaticResource SubtitleLabel}"
+                           FontSize="14"
+                           IsVisible="{Binding HeeftVergelijking}" />
+
                     <!-- Wat een batterij zou doen, gerekend met de eigen dagen van deze woning.
                          Niet met een rekenvoorbeeld van een verkoper. -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding HeeftBatterijAdvies}">

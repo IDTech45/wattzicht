@@ -82,6 +82,11 @@ public static class HouseholdEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .ProducesValidationProblem();
 
+        household.MapPut("/devices/{id:guid}/naam", ApparaatHernoemenAsync)
+            .WithSummary("Geeft een apparaat een eigen naam.")
+            .Produces<DeviceDto>()
+            .ProducesValidationProblem();
+
         household.MapPut("/devices/{id:guid}/sturen", SturenToestaanAsync)
             .WithSummary("Zet het starten en pauzeren van deze laadpaal aan of uit.")
             .Produces<DeviceDto>()
@@ -136,6 +141,10 @@ public static class HouseholdEndpoints
             .Produces<TariefVoorstelDto>()
             .ProducesValidationProblem()
             .DisableAntiforgery();
+
+        household.MapGet("/export", ExportAsync)
+            .WithSummary("Alle dagcijfers van deze woning als CSV.")
+            .Produces<string>(StatusCodes.Status200OK, "text/csv");
 
         household.MapGet("/battery-advice", BatterijAdviesAsync)
             .WithSummary("Wat een thuisbatterij bij deze woning zou opleveren, gerekend met de eigen gemeten dagen.")
@@ -231,6 +240,59 @@ public static class HouseholdEndpoints
             Naar(voorstel.Terugleverkosten),
             Naar(voorstel.Energiebelasting),
             voorstel.PrijsIsAllIn));
+    }
+
+    /// <summary>
+    /// Alle dagcijfers als CSV.
+    ///
+    /// Twee redenen. Het is jouw meting, dus je hoort hem mee te kunnen nemen; dat staat ook zo in
+    /// de privacywet. En wie in een spreadsheet wil rekenen hoeft dan niet te vragen of wij iets
+    /// kunnen bouwen voor die ene som.
+    ///
+    /// Puntkomma als scheidingsteken en een komma als decimaalteken: zo opent het in een Nederlandse
+    /// Excel zonder dat alles in één kolom staat.
+    /// </summary>
+    private static async Task<IResult> ExportAsync(
+        HttpContext http, AppDbContext db, TimeProvider clock, CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var nl = System.Globalization.CultureInfo.GetCultureInfo("nl-NL");
+
+        var dagen = await db.DailySummaries
+            .Where(s => s.HouseholdId == householdId)
+            .OrderBy(s => s.Date)
+            .Select(s => new
+            {
+                s.Date, s.PvKwh, s.SelfUseKwh, s.ExportKwh, s.ImportKwh, s.ChargedKwh,
+                s.BatteryChargedKwh, s.BatteryDischargedKwh, s.SavedEur, s.IrradianceKwhM2, s.ImportedAt,
+            })
+            .ToListAsync(ct);
+
+        var bouwer = new System.Text.StringBuilder();
+        bouwer.AppendLine(
+            "datum;opwek kWh;zelf gebruikt kWh;teruggeleverd kWh;van het net kWh;geladen kWh;"
+            + "batterij in kWh;batterij uit kWh;bespaard EUR;instraling kWh/m2;bron");
+
+        foreach (var d in dagen)
+        {
+            bouwer.AppendLine(string.Join(';',
+                d.Date.ToString("yyyy-MM-dd"),
+                d.PvKwh.ToString("0.###", nl),
+                d.SelfUseKwh.ToString("0.###", nl),
+                d.ExportKwh.ToString("0.###", nl),
+                d.ImportKwh.ToString("0.###", nl),
+                d.ChargedKwh.ToString("0.###", nl),
+                d.BatteryChargedKwh.ToString("0.###", nl),
+                d.BatteryDischargedKwh.ToString("0.###", nl),
+                d.SavedEur.ToString("0.00", nl),
+                d.IrradianceKwhM2?.ToString("0.##", nl) ?? string.Empty,
+                // Zichtbaar houden welke dagen uit een export van de fabrikant komen en welke wij
+                // zelf gemeten hebben; dat verschil mag in een spreadsheet niet verdwijnen.
+                d.ImportedAt is null ? "gemeten" : "ingelezen"));
+        }
+
+        var naam = $"wattzicht-{DutchTime.LocalDate(clock.GetUtcNow()):yyyy-MM-dd}.csv";
+        return Results.File(System.Text.Encoding.UTF8.GetBytes(bouwer.ToString()), "text/csv", naam);
     }
 
     /// <summary>
@@ -690,6 +752,41 @@ public static class HouseholdEndpoints
     {
         var schoon = waarde?.Trim();
         return string.IsNullOrWhiteSpace(schoon) ? null : schoon;
+    }
+
+    /// <summary>
+    /// Een apparaat een eigen naam geven.
+    ///
+    /// De fabrikant levert namen als "Demo omvormer 4,2 kWp" of een serienummer. Wie twee strings op
+    /// zijn dak heeft, wil er "voorkant" en "achterkant" van maken, en dat kon nergens.
+    /// </summary>
+    private static async Task<IResult> ApparaatHernoemenAsync(
+        Guid id,
+        ApparaatHernoemenRequest request,
+        HttpContext http,
+        AppDbContext db,
+        ConnectorRegistry registry,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var apparaat = await db.Devices.FirstOrDefaultAsync(d => d.Id == id && d.HouseholdId == householdId, ct);
+        if (apparaat is null) return Results.NotFound();
+
+        var naam = (request.Naam ?? string.Empty).Trim();
+        if (naam.Length is < 1 or > 60)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["naam"] = ["Geef een naam van 1 tot 60 tekens."],
+            });
+        }
+
+        apparaat.Name = naam;
+        await db.SaveChangesAsync(ct);
+
+        return Results.Ok(HouseholdQueries.ToDto(
+            apparaat, clock.GetUtcNow(), registry.Get(apparaat.Brand)?.KanSturen ?? false));
     }
 
     /// <summary>

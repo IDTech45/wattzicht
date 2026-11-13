@@ -243,6 +243,26 @@ public sealed class ApiClient
         return await SendAsync<VerbruikImportDto>(req, ct);
     }
 
+    /// <summary>Alle dagcijfers van deze woning als CSV.</summary>
+    public async Task<string> ExportCsvAsync(CancellationToken ct = default)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Get, Relative("/export"));
+        await AuthorizeAsync(req);
+
+        using var antwoord = await SendRawAsync(req, ct);
+        await EnsureSuccessAsync(antwoord, ct);
+
+        return await antwoord.Content.ReadAsStringAsync(ct);
+    }
+
+    /// <summary>Geeft een apparaat een eigen naam.</summary>
+    public Task<DeviceDto> HernoemAsync(Guid apparaatId, string naam, CancellationToken ct = default) =>
+        PutAsync<ApparaatHernoemenRequest, DeviceDto>($"/devices/{apparaatId}/naam", new ApparaatHernoemenRequest(naam), ct);
+
+    /// <summary>Wijzigt het wachtwoord van de ingelogde gebruiker.</summary>
+    public Task WachtwoordWijzigenAsync(string huidig, string nieuw, CancellationToken ct = default) =>
+        PostAsync<WachtwoordWijzigenRequest, object>("/auth/password", new WachtwoordWijzigenRequest(huidig, nieuw), authenticated: true, ct);
+
     /// <summary>Zet het starten en pauzeren van deze laadpaal aan of uit.</summary>
     public Task<DeviceDto> SturenToestaanAsync(Guid apparaatId, bool toestaan, CancellationToken ct = default) =>
         PutAsync<SturenRequest, DeviceDto>($"/devices/{apparaatId}/sturen", new SturenRequest(toestaan), ct);

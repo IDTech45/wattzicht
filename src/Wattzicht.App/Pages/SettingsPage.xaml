@@ -295,6 +295,37 @@
                             BorderColor="{AppThemeBinding Light={StaticResource ErrorDot}, Dark={StaticResource ErrorTextDark}}"
                             Command="{Binding LogoutCommand}" />
 
+                    <!-- Je eigen meting meenemen. Hoort bij je account en niet bij de grafieken. -->
+                    <Button Text="{t:T gegevens.knop}"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding GegevensDelenCommand}" />
+                    <Label Text="{t:T gegevens.uitleg}" Style="{StaticResource StatCaption}" />
+
+                    <!-- Wachtwoord wijzigen. Dichtgeklapt, want het is iets wat je een keer doet. -->
+                    <Button Text="{t:T wachtwoord.knop}"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding WachtwoordSchakelenCommand}" />
+
+                    <VerticalStackLayout Spacing="10" IsVisible="{Binding WachtwoordOpen}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{t:T wachtwoord.huidig}" Style="{StaticResource FieldLabel}" />
+                            <Border Style="{StaticResource InputBorder}">
+                                <Entry Text="{Binding HuidigWachtwoord}" IsPassword="True" />
+                            </Border>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{t:T wachtwoord.nieuw}" Style="{StaticResource FieldLabel}" />
+                            <Border Style="{StaticResource InputBorder}">
+                                <Entry Text="{Binding NieuwWachtwoord}" IsPassword="True" />
+                            </Border>
+                        </VerticalStackLayout>
+                        <Button Text="{t:T algemeen.opslaan}" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding WachtwoordOpslaanCommand}" />
+                    </VerticalStackLayout>
+
+                    <Label Text="{Binding WachtwoordBericht}" Style="{StaticResource SubtitleLabel}" FontSize="14"
+                           IsVisible="{Binding HeeftWachtwoordBericht}" />
+
                     <!-- Verwijderen staat los van uitloggen, en bewust minder opvallend: het is het
                          enige in deze app dat je niet terug kunt draaien. -->
                     <Button Text="{t:T meer.account-verwijderen}"

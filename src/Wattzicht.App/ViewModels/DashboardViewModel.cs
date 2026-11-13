@@ -78,6 +78,18 @@ public partial class DashboardViewModel : BaseViewModel
     public bool HasAlerts => AlertCount > 0;
     public string AlertsSummary => AlertCount == 1 ? "1 storing" : $"{AlertCount} storingen";
 
+    // ---- Maak je app af ----
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(ToonAfmaken))] private bool _plaatsOntbreekt;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(ToonAfmaken))] private bool _tariefOntbreekt;
+
+    /// <summary>
+    /// Alleen tonen als er iets te doen is, en alleen als er al een apparaat hangt.
+    ///
+    /// Een lijstje met open stappen bovenaan een scherm dat verder leeg is, leest als een app die
+    /// nog niet werkt. Eerst koppelen, dan pas de rest vragen.
+    /// </summary>
+    public bool ToonAfmaken => HasDevices && (PlaatsOntbreekt || TariefOntbreekt);
+
     public bool ShowEmptyState => HasLoaded && !HasDevices && !HasError;
     public bool ShowContent => HasLoaded && HasDevices;
 
@@ -136,6 +148,22 @@ public partial class DashboardViewModel : BaseViewModel
                 DayTipBody = tip?.Body ?? string.Empty;
             }
 
+            // Twee dingen waar de app zonder niet goed werkt, en die je nergens vanzelf tegenkomt:
+            // zonder plaats geen zonverwachting, zonder tarief geen besparing in euro's.
+            try
+            {
+                var woning = await _api.GetHouseholdAsync();
+                PlaatsOntbreekt = !woning.HasLocation;
+
+                var tarief = await _api.GetTariffAsync();
+                TariefOntbreekt = tarief.ImportTariffEur <= 0;
+            }
+            catch (ApiException)
+            {
+                PlaatsOntbreekt = false;
+                TariefOntbreekt = false;
+            }
+
             if (InstallerName is null)
             {
                 try
@@ -170,6 +198,10 @@ public partial class DashboardViewModel : BaseViewModel
 
     [RelayCommand]
     private Task OpenAlertsAsync() => Shell.Current.GoToAsync(nameof(AlertsPage));
+
+    /// <summary>Naar het scherm waar die twee dingen staan.</summary>
+    [RelayCommand]
+    private Task AfmakenAsync() => Shell.Current.GoToAsync("//settings");
 
     private void Apply(DashboardDto dashboard)
     {

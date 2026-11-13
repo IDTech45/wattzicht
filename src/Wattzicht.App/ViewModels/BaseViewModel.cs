@@ -64,6 +64,16 @@ public abstract partial class BaseViewModel : ObservableObject
         Shell.Current?.CurrentPage?.DisplayAlert(title, message, cancel ?? Taal.T("algemeen.oke"))
         ?? Task.CompletedTask;
 
+    /// <summary>Een vraag met een invoerveld, bijvoorbeeld om iets te hernoemen.</summary>
+    protected static Task<string?> VraagAsync(string titel, string vraag, string huidig) =>
+        Shell.Current?.CurrentPage?.DisplayPromptAsync(
+            titel, vraag,
+            accept: Taal.T("algemeen.opslaan"),
+            cancel: Taal.T("algemeen.annuleren"),
+            initialValue: huidig,
+            maxLength: 60)
+        ?? Task.FromResult<string?>(null);
+
     protected static Task<bool> ConfirmAsync(string title, string message, string accept, string? cancel = null) =>
         Shell.Current?.CurrentPage?.DisplayAlert(title, message, accept, cancel ?? Taal.T("algemeen.annuleren"))
         ?? Task.FromResult(false);

@@ -561,5 +561,40 @@ public static class TekstenEn
         ["sturen.toestemming-tekst"] = "Reading is looking; starting and pausing changes something in your home. We never act on our own: you press the button. You can turn this off again at any time.",
         ["sturen.toestemming-ja"] = "Turn on",
 
+        ["algemeen.opslaan"] = "Save",
+        ["apparaten.hernoemen"] = "Rename",
+        ["apparaten.hernoemen-uitleg"] = "What do you want to call this device?",
+
+
+        // ---- wachtwoord wijzigen ----
+        ["wachtwoord.knop"] = "Change password",
+        ["wachtwoord.huidig"] = "Your current password",
+        ["wachtwoord.nieuw"] = "Your new password",
+        ["wachtwoord.gewijzigd"] = "Your password has been changed.",
+
+
+        // ---- vergelijking met de vorige periode ----
+        ["besparen.vergelijk-meer"] = "{0}% more generated than {1}.",
+        ["besparen.vergelijk-minder"] = "{0}% less generated than {1}.",
+        ["besparen.vergelijk-gelijk"] = "About the same as {0}.",
+        ["besparen.vorige-dagen"] = "the days before",
+        ["besparen.vorige-week"] = "last week",
+        ["besparen.vorige-maand"] = "last month",
+        ["besparen.vorig-jaar"] = "last year",
+
+
+        // ---- je gegevens meenemen ----
+        ["gegevens.knop"] = "Download my data",
+        ["gegevens.uitleg"] = "All your daily figures as CSV, to open in a spreadsheet.",
+        ["gegevens.titel"] = "My Wattzicht data",
+        ["gegevens.mislukt"] = "The download did not work.",
+
+
+        // ---- maak je app af ----
+        ["afmaken.titel"] = "Finish setting up",
+        ["afmaken.plaats"] = "Your town is still missing, so we are not including the sun.",
+        ["afmaken.tarief"] = "Your energy rate is still missing, so your savings stay at zero.",
+        ["afmaken.knop"] = "Fill it in now",
+
     }.ToFrozenDictionary();
 }

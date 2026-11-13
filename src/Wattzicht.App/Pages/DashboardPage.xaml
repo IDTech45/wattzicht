@@ -81,6 +81,20 @@
                         </Border>
 
                         <!-- Overschot: nu zelf gebruiken in plaats van terugleveren -->
+                        <!-- Twee dingen waar de app zonder niet goed werkt en die je nergens
+                             vanzelf tegenkomt. Verdwijnt zodra ze er staan. -->
+                        <Border Style="{StaticResource Card}" IsVisible="{Binding ToonAfmaken}">
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="{t:T afmaken.titel}" Style="{StaticResource CardTitle}" />
+                                <Label Text="{t:T afmaken.plaats}" Style="{StaticResource SubtitleLabel}"
+                                       FontSize="14" IsVisible="{Binding PlaatsOntbreekt}" />
+                                <Label Text="{t:T afmaken.tarief}" Style="{StaticResource SubtitleLabel}"
+                                       FontSize="14" IsVisible="{Binding TariefOntbreekt}" />
+                                <Button Text="{t:T afmaken.knop}" Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding AfmakenCommand}" />
+                            </VerticalStackLayout>
+                        </Border>
+
                         <Border Style="{StaticResource Card}" IsVisible="{Binding HasSurplus}" Stroke="{StaticResource EnergySolar}" StrokeThickness="2">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding OpenAdviceCommand}" />

@@ -39,6 +39,10 @@
                         <SwipeView Margin="16,4">
                             <SwipeView.RightItems>
                                 <SwipeItems Mode="Reveal">
+                                    <SwipeItem Text="{t:T apparaten.hernoemen}"
+                                               BackgroundColor="{StaticResource Navy600}"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DevicesViewModel}}, Path=HernoemCommand}"
+                                               CommandParameter="{Binding .}" />
                                     <SwipeItem Text="{t:T apparaten.verwijderen}"
                                                BackgroundColor="{StaticResource ErrorDot}"
                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DevicesViewModel}}, Path=DeleteCommand}"
@@ -47,6 +51,11 @@
                             </SwipeView.RightItems>
 
                             <Border Style="{StaticResource Card}" Padding="12,12">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DevicesViewModel}}, Path=HernoemCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
                                 <Grid ColumnDefinitions="48,*,Auto" ColumnSpacing="12" MinimumHeightRequest="56">
 
                                     <!-- Merk-initiaal -->

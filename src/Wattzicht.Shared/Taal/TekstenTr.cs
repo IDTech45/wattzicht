@@ -566,5 +566,40 @@ public static class TekstenTr
         ["sturen.toestemming-tekst"] = "Okumak bakmaktır; başlatmak ve duraklatmak evinizde bir şeyi değiştirir. Biz kendiliğimizden asla komut vermeyiz: düğmeye siz basarsınız. Bunu istediğiniz zaman kapatabilirsiniz.",
         ["sturen.toestemming-ja"] = "Aç",
 
+        ["algemeen.opslaan"] = "Kaydet",
+        ["apparaten.hernoemen"] = "Adı değiştir",
+        ["apparaten.hernoemen-uitleg"] = "Bu cihaza ne ad vermek istersiniz?",
+
+
+        // ---- wachtwoord wijzigen ----
+        ["wachtwoord.knop"] = "Şifre değiştir",
+        ["wachtwoord.huidig"] = "Mevcut şifreniz",
+        ["wachtwoord.nieuw"] = "Yeni şifreniz",
+        ["wachtwoord.gewijzigd"] = "Şifreniz değiştirildi.",
+
+
+        // ---- vergelijking met de vorige periode ----
+        ["besparen.vergelijk-meer"] = "{1} göre %{0} daha fazla üretildi.",
+        ["besparen.vergelijk-minder"] = "{1} göre %{0} daha az üretildi.",
+        ["besparen.vergelijk-gelijk"] = "{0} ile hemen hemen aynı.",
+        ["besparen.vorige-dagen"] = "önceki günlere",
+        ["besparen.vorige-week"] = "geçen haftaya",
+        ["besparen.vorige-maand"] = "geçen aya",
+        ["besparen.vorig-jaar"] = "geçen yıla",
+
+
+        // ---- je gegevens meenemen ----
+        ["gegevens.knop"] = "Verilerimi indir",
+        ["gegevens.uitleg"] = "Tüm günlük verileriniz CSV olarak, bir hesap tablosunda açılabilir.",
+        ["gegevens.titel"] = "Wattzicht verilerim",
+        ["gegevens.mislukt"] = "İndirme başarısız oldu.",
+
+
+        // ---- maak je app af ----
+        ["afmaken.titel"] = "Uygulamanızı tamamlayın",
+        ["afmaken.plaats"] = "Yeriniz hâlâ eksik, bu yüzden güneşi hesaba katmıyoruz.",
+        ["afmaken.tarief"] = "Enerji tarifeniz hâlâ eksik, bu yüzden tasarrufunuz sıfır kalıyor.",
+        ["afmaken.knop"] = "Şimdi doldur",
+
     }.ToFrozenDictionary();
 }

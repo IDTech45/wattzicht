@@ -40,6 +40,11 @@ public sealed record RegisterRequest(
     bool AllowInstallerAccess = false,
     string? Plan = null);
 
+/// <summary>Je eigen wachtwoord wijzigen.</summary>
+/// <param name="Huidig">Het wachtwoord van nu; zonder dat verandert er niets.</param>
+/// <param name="Nieuw">Het nieuwe wachtwoord.</param>
+public sealed record WachtwoordWijzigenRequest(string Huidig, string Nieuw);
+
 /// <summary>Inloggen of aanmelden met een token van Google of Apple.</summary>
 /// <param name="Provider">"google" of "apple".</param>
 /// <param name="IdToken">Het ondertekende token dat het toestel van die partij kreeg.</param>
@@ -341,6 +346,10 @@ public sealed record BatterijMaatDto(double Kwh, decimal PerJaarEur, decimal Per
 /// <param name="Dagen">Over hoeveel gemeten dagen dit gaat; eerlijk erbij, want daar hangt alles aan.</param>
 /// <param name="HeeftAlBatterij">Of er al een batterij gekoppeld is; dan is dit niet interessant.</param>
 public sealed record BatterijAdviesDto(IReadOnlyList<BatterijMaatDto> Maten, int Dagen, bool HeeftAlBatterij);
+
+/// <summary>Een apparaat een eigen naam geven.</summary>
+/// <param name="Naam">De naam zoals de bewoner hem wil zien, bijvoorbeeld "Dak voorkant".</param>
+public sealed record ApparaatHernoemenRequest(string Naam);
 
 /// <summary>Verzoek om een laadpaal te starten of te pauzeren.</summary>
 /// <param name="Start">True is laden, false is pauzeren.</param>
