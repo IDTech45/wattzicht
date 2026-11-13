@@ -35,9 +35,11 @@
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="{t:T meer.taal}" Style="{StaticResource CardTitle}" />
-                    <Picker ItemsSource="{Binding Talen}"
-                            ItemDisplayBinding="{Binding Naam}"
-                            SelectedItem="{Binding GekozenTaal}" />
+                    <Border Style="{StaticResource InputBorder}">
+                        <Picker ItemsSource="{Binding Talen}"
+                                ItemDisplayBinding="{Binding Naam}"
+                                SelectedItem="{Binding GekozenTaal}" />
+                    </Border>
                     <Label Text="{t:T meer.taal-uitleg}" Style="{StaticResource StatCaption}" />
                 </VerticalStackLayout>
             </Border>

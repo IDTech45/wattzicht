@@ -286,6 +286,18 @@
         <Setter Property="MinimumHeightRequest" Value="48" />
     </Style>
 
+    <!-- Een Picker zonder stijl pakt de kleuren van het platform, en in het donkere thema is dat
+         donkere tekst op een donkere kaart: dan zie je je eigen keuze niet staan. Zelfde regels als
+         bij Entry hierboven. -->
+    <Style TargetType="Picker">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextBody}, Dark={StaticResource TextBodyDark}}" />
+        <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource Placeholder}, Dark={StaticResource PlaceholderDark}}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="FontFamily" Value="Text" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+
     <Style TargetType="Switch">
         <Setter Property="OnColor" Value="{StaticResource Accent500}" />
         <Setter Property="ThumbColor" Value="{StaticResource White}" />
