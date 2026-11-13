@@ -5,7 +5,7 @@
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              x:Class="Wattzicht.App.Pages.AdvicePage"
              x:DataType="vm:AdviceViewModel"
-             Title="{t:T advies.slim-sturen}">
+             Title="{t:Ts advies.slim-sturen}">
 
     <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
         <CollectionView ItemsSource="{Binding Tips}" SelectionMode="None">

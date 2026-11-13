@@ -5,7 +5,7 @@
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              x:Class="Wattzicht.App.Pages.ConnectDevicePage"
              x:DataType="vm:ConnectDeviceViewModel"
-             Title="{t:T koppel.apparaat-koppelen}">
+             Title="{t:Ts koppel.apparaat-koppelen}">
 
     <Grid RowDefinitions="*,Auto">
 

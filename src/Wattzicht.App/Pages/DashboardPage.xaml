@@ -6,7 +6,7 @@
              xmlns:views="clr-namespace:Wattzicht.App.Views"
              x:Class="Wattzicht.App.Pages.DashboardPage"
              x:DataType="vm:DashboardViewModel"
-             Title="{t:T home.home}">
+             Title="{t:Ts home.home}">
 
     <Grid>
         <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">

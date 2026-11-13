@@ -185,7 +185,7 @@ public static class TekstenEn
         ["meer.account-verwijderen"] = "Delete account",
         ["meer.hiermee-verdwijnen-je-huishouden-je"] = "This removes your household, your connected devices and all your measurements. It cannot be undone.",
         ["meer.taal"] = "Language",
-        ["meer.taal-uitleg"] = "Applies to this phone only. Texts that come from our servers may still be in Dutch.",
+        ["meer.taal-uitleg"] = "Applies to this phone only. The names in the bottom bar follow once you reopen the app.",
 
         // ---- stroom ----
         ["stroom.zon"] = "Sun",

@@ -190,7 +190,7 @@ public static class TekstenTr
         ["meer.account-verwijderen"] = "Hesabı sil",
         ["meer.hiermee-verdwijnen-je-huishouden-je"] = "Bu işlem evinizi, bağlı cihazlarınızı ve tüm ölçümlerinizi siler. Geri alınamaz.",
         ["meer.taal"] = "Dil",
-        ["meer.taal-uitleg"] = "Yalnızca bu telefon için geçerli. Sunucularımızdan gelen metinler bir süre daha Hollandaca olabilir.",
+        ["meer.taal-uitleg"] = "Yalnızca bu telefon için geçerli. Alttaki çubuktaki adlar uygulamayı yeniden açtığınızda değişir.",
 
         // ---- stroom ----
         ["stroom.zon"] = "Güneş",

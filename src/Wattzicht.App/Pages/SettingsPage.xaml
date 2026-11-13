@@ -5,7 +5,7 @@
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              x:Class="Wattzicht.App.Pages.SettingsPage"
              x:DataType="vm:SettingsViewModel"
-             Title="{t:T meer.instellingen}">
+             Title="{t:Ts meer.instellingen}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16,8,16,32" Spacing="12">

@@ -192,7 +192,7 @@ public static class TekstenNl
         ["meer.account-verwijderen"] = "Account verwijderen",
         ["meer.hiermee-verdwijnen-je-huishouden-je"] = "Hiermee verdwijnen je huishouden, je gekoppelde apparaten en al je meetgegevens. Dit kan niet ongedaan gemaakt worden.",
         ["meer.taal"] = "Taal",
-        ["meer.taal-uitleg"] = "Geldt alleen op deze telefoon. Teksten die van onze servers komen kunnen nog Nederlands zijn.",
+        ["meer.taal-uitleg"] = "Geldt alleen op deze telefoon. De namen onderin de balk veranderen mee zodra je de app opnieuw opent.",
 
         // ---- stroom ----
         ["stroom.zon"] = "Zon",

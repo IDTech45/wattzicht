@@ -5,7 +5,7 @@
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              x:Class="Wattzicht.App.Pages.SavingsPage"
              x:DataType="vm:SavingsViewModel"
-             Title="{t:T besparen.besparing}">
+             Title="{t:Ts besparen.besparing}">
 
     <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
         <CollectionView ItemsSource="{Binding Rows}" SelectionMode="None">

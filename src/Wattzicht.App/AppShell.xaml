@@ -30,19 +30,23 @@
         woord of acht toe.
     -->
     <TabBar Route="main">
-        <Tab Title="{t:T shell.home}" Icon="home.png" Route="home">
+        <!-- Vaste tekst en geen binding: de tabbalk van Android wordt één keer opgebouwd en
+             ververst zich niet bij een taalwissel. Een binding levert hier dus niets op, en een
+             binding die niet oplost zou vijf lege tabs geven. De namen volgen de taal na een
+             herstart van de app; alles binnen de pagina's verandert meteen mee. -->
+        <Tab Title="{t:Ts shell.home}" Icon="home.png" Route="home">
             <ShellContent Shell.NavBarIsVisible="False" ContentTemplate="{DataTemplate pages:DashboardPage}" />
         </Tab>
-        <Tab Title="{t:T shell.sturen}" Icon="sturen.png" Route="advice">
+        <Tab Title="{t:Ts shell.sturen}" Icon="sturen.png" Route="advice">
             <ShellContent Shell.NavBarIsVisible="False" ContentTemplate="{DataTemplate pages:AdvicePage}" />
         </Tab>
-        <Tab Title="{t:T shell.apparaten}" Icon="devices.png" Route="devices">
+        <Tab Title="{t:Ts shell.apparaten}" Icon="devices.png" Route="devices">
             <ShellContent Shell.NavBarIsVisible="False" ContentTemplate="{DataTemplate pages:DevicesPage}" />
         </Tab>
-        <Tab Title="{t:T shell.besparen}" Icon="savings.png" Route="savings">
+        <Tab Title="{t:Ts shell.besparen}" Icon="savings.png" Route="savings">
             <ShellContent Shell.NavBarIsVisible="False" ContentTemplate="{DataTemplate pages:SavingsPage}" />
         </Tab>
-        <Tab Title="{t:T shell.meer}" Icon="settings.png" Route="settings">
+        <Tab Title="{t:Ts shell.meer}" Icon="settings.png" Route="settings">
             <ShellContent Shell.NavBarIsVisible="False" ContentTemplate="{DataTemplate pages:SettingsPage}" />
         </Tab>
     </TabBar>

@@ -5,7 +5,7 @@
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              x:Class="Wattzicht.App.Pages.AlertsPage"
              x:DataType="vm:AlertsViewModel"
-             Title="{t:T meldingen.storingen}">
+             Title="{t:Ts meldingen.storingen}">
 
     <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
         <CollectionView ItemsSource="{Binding Alerts}" SelectionMode="None">

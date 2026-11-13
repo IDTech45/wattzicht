@@ -5,7 +5,7 @@
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              x:Class="Wattzicht.App.Pages.LoginPage"
              x:DataType="vm:LoginViewModel"
-             Title="{t:T inlog.inloggen}"
+             Title="{t:Ts inlog.inloggen}"
              Shell.NavBarIsVisible="False"
              BackgroundColor="{AppThemeBinding Light={StaticResource BgApp}, Dark={StaticResource BgAppDark}}">
 

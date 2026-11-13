@@ -6,7 +6,7 @@
              xmlns:models="clr-namespace:Wattzicht.App.Models"
              x:Class="Wattzicht.App.Pages.DevicesPage"
              x:DataType="vm:DevicesViewModel"
-             Title="{t:T apparaten.apparaten}">
+             Title="{t:Ts apparaten.apparaten}">
 
     <Grid>
         <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
