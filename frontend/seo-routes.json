@@ -129,6 +129,12 @@
       "path": "/privacy",
       "title": "Privacy — Wattzicht",
       "description": "Wat Wattzicht met je gegevens doet, wie er kan meekijken en hoe je dat zelf aan- en uitzet."
+    },
+    {
+      "name": "account-verwijderen",
+      "path": "/account-verwijderen",
+      "title": "Account verwijderen — Wattzicht",
+      "description": "Hoe je je Wattzicht-account weghaalt: in twee tikken in de app, of per mail als je de app al verwijderd hebt. Met wat er precies verdwijnt."
     }
   ]
 }

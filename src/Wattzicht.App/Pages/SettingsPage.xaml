@@ -192,6 +192,16 @@
                             TextColor="{AppThemeBinding Light={StaticResource ErrorDot}, Dark={StaticResource ErrorTextDark}}"
                             BorderColor="{AppThemeBinding Light={StaticResource ErrorDot}, Dark={StaticResource ErrorTextDark}}"
                             Command="{Binding LogoutCommand}" />
+
+                    <!-- Verwijderen staat los van uitloggen, en bewust minder opvallend: het is het
+                         enige in deze app dat je niet terug kunt draaien. -->
+                    <Button Text="Account verwijderen"
+                            Style="{StaticResource LinkButton}"
+                            TextColor="{AppThemeBinding Light={StaticResource ErrorDot}, Dark={StaticResource ErrorTextDark}}"
+                            Command="{Binding AccountVerwijderenCommand}" />
+                    <Label Text="Hiermee verdwijnen je huishouden, je gekoppelde apparaten en al je meetgegevens. Dit kan niet ongedaan gemaakt worden."
+                           Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" />
+
                     <Label Text="{Binding VersionText}" Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" />
                     <Label Text="{Binding ApiText}" Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" Opacity="0.7" />
                 </VerticalStackLayout>

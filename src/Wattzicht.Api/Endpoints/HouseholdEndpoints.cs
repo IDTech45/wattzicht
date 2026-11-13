@@ -33,6 +33,10 @@ public static class HouseholdEndpoints
             .WithSummary("Zet meekijken door de installateur aan of uit. Uit = direct onzichtbaar in het portal.")
             .Produces<InstallerAccessDto>();
 
+        household.MapDelete("/household", VerwijderAsync)
+            .WithSummary("Verwijdert dit huishouden en alles wat eraan hangt. Onomkeerbaar.")
+            .Produces(StatusCodes.Status204NoContent);
+
         household.MapGet("/household/access-log", AccessLogAsync)
             .WithSummary("Wanneer de installateur je gegevens bekeek (laatste 50).")
             .Produces<List<AccessLogEntryDto>>();
@@ -378,6 +382,48 @@ public static class HouseholdEndpoints
 
         var dtos = created.Select(d => HouseholdQueries.ToDto(d, now)).ToList();
         return Results.Created("/devices", dtos);
+    }
+
+    /// <summary>
+    /// Het eigen huishouden verwijderen, met alles wat eraan hangt.
+    ///
+    /// Google eist dit van elke app waarin je een account kunt maken: weghalen moet kunnen vanuit de
+    /// app zelf, en het moet echt weg zijn. Dat laatste is hier letterlijk genomen. Geen vlaggetje
+    /// "verwijderd" waarmee de rijen blijven staan, maar de rijen zelf eruit.
+    ///
+    /// Alles staat expliciet opgesomd en niet overgelaten aan cascade-regels in de database. Twee
+    /// redenen: je kunt het hier lezen en nazoeken, en het werkt bij elke database. Komt er later een
+    /// tabel bij die aan een woning hangt, dan hoort die hier ook bij, en de test hieronder valt om
+    /// als dat vergeten wordt.
+    ///
+    /// Wat niet meegaat: de installateur, die is van iemand anders en heeft andere klanten. En een
+    /// lead van de website hangt niet aan een woning maar aan een installateur die zich aanmeldde;
+    /// die staat hier dus bewust niet tussen.
+    /// </summary>
+    private static async Task<IResult> VerwijderAsync(
+        HttpContext http,
+        AppDbContext db,
+        ILoggerFactory logs,
+        CancellationToken ct)
+    {
+        var homeId = http.User.GetHouseholdId();
+        if (homeId is not { } id)
+        {
+            return Results.Forbid();
+        }
+
+        var woning = await db.Households.IgnoreQueryFilters().FirstOrDefaultAsync(h => h.Id == id, ct);
+        if (woning is null)
+        {
+            // Al weg. Dat is precies wat de aanvrager wilde, dus geen fout.
+            return Results.NoContent();
+        }
+
+        await HuishoudenVerwijderen.UitvoerenAsync(db, id, ct);
+
+        // Geen mailadres en geen naam in het logboek: dat zou het verwijderen zinloos maken.
+        logs.CreateLogger("Verwijderen").LogInformation("Huishouden {Home} is op eigen verzoek verwijderd.", id);
+        return Results.NoContent();
     }
 
     /// <summary>

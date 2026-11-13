@@ -172,6 +172,18 @@ public sealed class ApiClient
     public Task<InstallerBrandingDto> GetInstallerAsync(CancellationToken ct = default) =>
         GetAsync<InstallerBrandingDto>("/installer", ct);
 
+    /// <summary>Verwijdert het eigen huishouden met alles wat eraan hangt. Onomkeerbaar.</summary>
+    public async Task VerwijderHuishoudenAsync(CancellationToken ct = default)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Delete, Relative("/household"));
+        await AuthorizeAsync(req);
+        using var antwoord = await _http.SendAsync(req, ct);
+        if (!antwoord.IsSuccessStatusCode)
+        {
+            throw new ApiException("Verwijderen is niet gelukt.", antwoord.StatusCode);
+        }
+    }
+
     /// <summary>Wat de app over LaadCash mag tonen voor deze woning.</summary>
     public Task<LaadcashPromoDto> LaadcashPromoAsync(CancellationToken ct = default) =>
         GetAsync<LaadcashPromoDto>("/laadcash/promo", ct);

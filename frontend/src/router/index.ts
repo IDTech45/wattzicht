@@ -49,6 +49,14 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Privacy – Wattzicht' },
   },
   {
+    // Google eist een pagina die buiten de app bereikbaar is, voor wie de app al
+    // verwijderd heeft en zijn gegevens toch kwijt wil.
+    path: '/account-verwijderen',
+    name: 'account-verwijderen',
+    component: () => import('@/views/AccountVerwijderenView.vue'),
+    meta: { title: 'Account verwijderen – Wattzicht' },
+  },
+  {
     path: '/portal/login',
     name: 'portal-login',
     component: () => import('@/views/portal/LoginView.vue'),

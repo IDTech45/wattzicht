@@ -33,6 +33,7 @@ const year = new Date().getFullYear()
       <div class="foot__col">
         <h4>Juridisch</h4>
         <RouterLink to="/privacy">Privacy</RouterLink>
+        <RouterLink to="/account-verwijderen">Account verwijderen</RouterLink>
       </div>
     </div>
     <div class="wz-wrap foot__bottom">

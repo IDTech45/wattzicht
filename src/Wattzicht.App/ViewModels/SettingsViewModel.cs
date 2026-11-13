@@ -82,6 +82,35 @@ public partial class SettingsViewModel : BaseViewModel
     partial void OnExportTariffChanged(string value) { ExportTariffError = null; TariffSavedText = null; }
     partial void OnIsDynamicChanged(bool value) => TariffSavedText = null;
 
+    // ---- Account verwijderen ----
+    //
+    // Weghalen moet kunnen vanuit de app zelf, en het moet echt weg zijn. Daarom twee keer vragen:
+    // één keer wat het betekent, en daarna nog een keer of je het zeker weet. Niet om te pesten,
+    // maar omdat dit het enige is in de app dat je niet terug kunt draaien.
+    [RelayCommand]
+    private async Task AccountVerwijderenAsync()
+    {
+        var zeker = await Shell.Current.DisplayAlert(
+            "Account verwijderen",
+            "Je huishouden, je gekoppelde apparaten en al je meetgegevens worden verwijderd. "
+            + "Dit kan niet ongedaan gemaakt worden.",
+            "Verder", "Annuleren");
+        if (!zeker) return;
+
+        var echt = await Shell.Current.DisplayAlert(
+            "Zeker weten?",
+            "Hierna is alles weg en kun je niet meer inloggen met dit account.",
+            "Ja, verwijder alles", "Nee, laat staan");
+        if (!echt) return;
+
+        await RunSafeAsync(async () =>
+        {
+            await _api.VerwijderHuishoudenAsync();
+            await _auth.LogoutAsync();
+            await Shell.Current.GoToAsync("//login");
+        });
+    }
+
     // ---- LaadCash ----
     //
     // Wattzicht en LaadCash zijn allebei van DoganTech, en wie thuis laadt laat geld liggen zolang
