@@ -515,14 +515,23 @@ public static class HouseholdEndpoints
     /// <summary>Een export van meer dan dit is bijna altijd het verkeerde bestand.</summary>
     private const long MaximumBestand = 8 * 1024 * 1024;
 
-    private static async Task<IResult> HouseholdAsync(HttpContext http, AppDbContext db, CancellationToken ct)
+    private static async Task<IResult> HouseholdAsync(
+        HttpContext http, AppDbContext db, InsightsService insights, TimeProvider clock, CancellationToken ct)
     {
         var householdId = http.User.GetHouseholdId()!.Value;
         var household = await db.Households
             .Include(h => h.Installer)
             .FirstOrDefaultAsync(h => h.Id == householdId, ct);
 
-        return household is null ? Results.NotFound() : Results.Ok(HouseholdQueries.ToDto(household));
+        if (household is null) return Results.NotFound();
+
+        // De schatting alleen uitrekenen als de bewoner zelf niets heeft ingevuld; anders is het
+        // werk voor een getal dat toch niet gebruikt wordt.
+        var geschat = household.PvPeakKw is null
+            ? await insights.GeschatPiekvermogenAsync(householdId, DutchTime.LocalDate(clock.GetUtcNow()), ct)
+            : null;
+
+        return Results.Ok(HouseholdQueries.ToDto(household) with { PvPeakKwGeschat = geschat });
     }
 
     /// <summary>
@@ -621,6 +630,8 @@ public static class HouseholdEndpoints
         await db.SaveChangesAsync(ct);
         return Results.Ok(HouseholdQueries.ToDto(woning));
     }
+
+
 
     /// <summary>Lege invoer is "niet meegestuurd"; een veld leegmaken doe je niet per ongeluk.</summary>
     private static string? Schoon(string? waarde)

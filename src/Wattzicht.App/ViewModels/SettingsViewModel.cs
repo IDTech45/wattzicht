@@ -84,6 +84,33 @@ public partial class SettingsViewModel : BaseViewModel
 
     public string ZonStatus => Taal.T(HeeftLocatie ? "woning.zon-aan" : "woning.zon-uit");
 
+    /// <summary>Wat wij uit de eigen metingen schatten; leeg als er te weinig zonnige dagen zijn.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HeeftSchatting))]
+    [NotifyPropertyChangedFor(nameof(SchattingTekst))]
+    private double? _geschatPiek;
+
+    public bool HeeftSchatting => GeschatPiek is not null;
+
+    public string SchattingTekst => GeschatPiek is { } kwp
+        ? string.Format(Taal.T("woning.schatting"), kwp.ToString("0.#", Nl))
+        : string.Empty;
+
+    /// <summary>
+    /// De schatting overnemen in het veld.
+    ///
+    /// Niet stilletjes invullen: het blijft een schatting uit onze eigen metingen, en wie zijn
+    /// offerte erbij pakt hoort een ander getal te kunnen neerzetten zonder dat wij het overschrijven.
+    /// </summary>
+    [RelayCommand]
+    private void SchattingOvernemen()
+    {
+        if (GeschatPiek is { } kwp)
+        {
+            PiekVermogen = kwp.ToString("0.#", Nl);
+        }
+    }
+
     /// <summary>
     /// Plaats en piekvermogen opslaan.
     ///
@@ -139,6 +166,7 @@ public partial class SettingsViewModel : BaseViewModel
         Plaats = !string.IsNullOrWhiteSpace(woning.City) ? woning.City! : woning.PostalCode ?? string.Empty;
         PiekVermogen = woning.PvPeakKw is { } kwp ? kwp.ToString("0.##", Nl) : string.Empty;
         HeeftLocatie = woning.HasLocation;
+        GeschatPiek = woning.PvPeakKwGeschat;
     }
 
     // ---- Contract inlezen ----
@@ -443,6 +471,20 @@ public partial class SettingsViewModel : BaseViewModel
     public async Task LoadAsync()
     {
         VulWoningVelden();
+
+        // Verse woninggegevens: de schatting van het piekvermogen rekent de server uit en die zit
+        // niet in wat er bij het inloggen is bewaard.
+        try
+        {
+            var woning = await _api.GetHouseholdAsync();
+            _auth.ZetHuishouden(woning);
+            VulWoningVelden();
+        }
+        catch (ApiException)
+        {
+            // Dan maar met wat we al hadden; de rest van het scherm werkt gewoon.
+        }
+
         await LaadcashLadenAsync();
 
         await RunSafeAsync(async () =>

@@ -58,12 +58,13 @@ public static class AdviceEndpoints
         IPriceProvider prices,
         IWeatherProvider weather,
         IConfiguration configuration,
+        InsightsService insights,
         TimeProvider clock,
         CancellationToken ct)
     {
         var householdId = http.User.GetHouseholdId()!.Value;
         var (input, today, _) = await BouwInvoerAsync(
-            householdId, http.Request.Taal(), db, summaries, prices, weather, configuration, clock, ct);
+            householdId, http.Request.Taal(), db, summaries, prices, weather, configuration, insights, clock, ct);
 
         var tip = DagTip.Bouw(input, today, AdviceEngine.Build(input));
         return tip is null ? Results.NoContent() : Results.Ok(tip);
@@ -81,6 +82,7 @@ public static class AdviceEndpoints
         IPriceProvider prices,
         IWeatherProvider weather,
         IConfiguration configuration,
+        InsightsService insights,
         TimeProvider clock,
         CancellationToken ct)
     {
@@ -150,9 +152,11 @@ public static class AdviceEndpoints
             TypicalBatteryKwh: history.Count > 0 ? history.Max(h => h.BatteryDischargedKwh) : 0,
             SurchargePerKwh: surcharge,
             Forecast: forecast,
-            // Het piekvermogen van dit dak als de bewoner het heeft ingevuld; anders de instelling
-            // van de server, die een gemiddeld Nederlands dak aanhoudt.
-            PvPeakKw: woning?.PvPeakKw ?? configuration.GetValue("Advice:PvPeakKw", 4.0),
+            // Het piekvermogen van dit dak: wat de bewoner invulde, anders wat wij uit zijn eigen
+            // metingen schatten, en pas als laatste de instelling van de server (een gemiddeld dak).
+            PvPeakKw: woning?.PvPeakKw
+                      ?? await insights.GeschatPiekvermogenAsync(householdId, today, ct)
+                      ?? configuration.GetValue("Advice:PvPeakKw", 4.0),
             Taal: taal);
 
         return (input, today, hourPrices);
@@ -166,12 +170,13 @@ public static class AdviceEndpoints
         IPriceProvider prices,
         IWeatherProvider weather,
         IConfiguration configuration,
+        InsightsService insights,
         TimeProvider clock,
         CancellationToken ct)
     {
         var householdId = http.User.GetHouseholdId()!.Value;
         var (input, _, hourPrices) = await BouwInvoerAsync(
-            householdId, http.Request.Taal(), db, summaries, prices, weather, configuration, clock, ct);
+            householdId, http.Request.Taal(), db, summaries, prices, weather, configuration, insights, clock, ct);
 
         var advice = AdviceEngine.Build(input);
 

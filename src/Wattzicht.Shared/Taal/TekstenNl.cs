@@ -534,5 +534,8 @@ public static class TekstenNl
         ["verbruik.kop-terug"] = "Terug",
         ["verbruik.kop-wij"] = "Wij maten",
 
+        ["woning.schatting"] = "Uit je eigen metingen schatten wij {0} kWp.",
+        ["woning.schatting-overnemen"] = "Deze schatting overnemen",
+
     }.ToFrozenDictionary();
 }

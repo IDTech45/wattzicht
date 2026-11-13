@@ -19,6 +19,23 @@ public sealed class InsightsService(AppDbContext db, SummaryService summaries, I
         return PerformanceAnalyzer.Analyze(days, today, rates.ImportPricePerKwh);
     }
 
+    /// <summary>
+    /// Het geschatte piekvermogen uit de eigen metingen van deze woning.
+    ///
+    /// Zestig dagen terug: genoeg om een paar goede dagen te vinden, en kort genoeg om een
+    /// uitbreiding van de installatie binnen twee maanden terug te zien.
+    /// </summary>
+    public async Task<double?> GeschatPiekvermogenAsync(Guid householdId, DateOnly today, CancellationToken ct)
+    {
+        var from = today.AddDays(-60);
+        var days = await db.DailySummaries
+            .Where(s => s.HouseholdId == householdId && s.Date >= from && s.Date < today)
+            .Select(s => new PerformanceDay(s.Date, s.PvKwh, s.IrradianceKwhM2))
+            .ToListAsync(ct);
+
+        return PiekSchatter.Schat(days);
+    }
+
     public async Task<SustainabilityDto> SustainabilityAsync(Guid householdId, DateOnly today, CancellationToken ct)
     {
         var yearStart = new DateOnly(today.Year, 1, 1);

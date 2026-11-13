@@ -75,6 +75,16 @@
                             <Label Grid.Column="1" Text="kWp" Style="{StaticResource SubtitleLabel}" VerticalOptions="Center" />
                         </Grid>
                         <Label Text="{t:T woning.piek-uitleg}" Style="{StaticResource StatCaption}" />
+
+                        <!-- Wij kunnen het zelf uitrekenen uit de opwek en de zon die erop viel, dus
+                             sturen we niemand naar een offerte van jaren geleden. -->
+                        <VerticalStackLayout Spacing="2" IsVisible="{Binding HeeftSchatting}">
+                            <Label Text="{Binding SchattingTekst}" Style="{StaticResource StatCaption}" />
+                            <Button Text="{t:T woning.schatting-overnemen}"
+                                    Style="{StaticResource LinkButton}"
+                                    HorizontalOptions="Start"
+                                    Command="{Binding SchattingOvernemenCommand}" />
+                        </VerticalStackLayout>
                     </VerticalStackLayout>
 
                     <Label Text="{Binding WoningFout}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HeeftWoningFout}" />

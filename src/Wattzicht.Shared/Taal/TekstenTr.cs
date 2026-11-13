@@ -531,5 +531,8 @@ public static class TekstenTr
         ["verbruik.kop-terug"] = "Verilen",
         ["verbruik.kop-wij"] = "Bizim ölçüm",
 
+        ["woning.schatting"] = "Kendi ölçümlerinizden {0} kWp tahmin ediyoruz.",
+        ["woning.schatting-overnemen"] = "Bu tahmini kullan",
+
     }.ToFrozenDictionary();
 }

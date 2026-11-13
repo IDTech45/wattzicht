@@ -526,5 +526,8 @@ public static class TekstenEn
         ["verbruik.kop-terug"] = "Fed back",
         ["verbruik.kop-wij"] = "We measured",
 
+        ["woning.schatting"] = "From your own measurements we estimate {0} kWp.",
+        ["woning.schatting-overnemen"] = "Use this estimate",
+
     }.ToFrozenDictionary();
 }

@@ -99,7 +99,12 @@ public sealed record HouseholdDto(
     /// Of we een plaats hebben kunnen vinden. Zonder plaats geen zonverwachting, en dat is precies
     /// wat de app moet kunnen zeggen in plaats van alleen "geen verwachting beschikbaar".
     /// </summary>
-    bool HasLocation = false);
+    bool HasLocation = false,
+    /// <summary>
+    /// Wat wij uit de eigen metingen als piekvermogen schatten; null bij te weinig zonnige dagen.
+    /// De app biedt dit aan in plaats van de bewoner naar zijn offerte van jaren geleden te sturen.
+    /// </summary>
+    double? PvPeakKwGeschat = null);
 
 /// <summary>Wat de bewoner over zijn woning kan instellen.</summary>
 /// <param name="Name">Naam van het huishouden, bijvoorbeeld Thuis.</param>
