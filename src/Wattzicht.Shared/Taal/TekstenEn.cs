@@ -500,5 +500,17 @@ public static class TekstenEn
         ["apparaten.uitlezen-mislukt"] = "Reading did not work",
         ["apparaten.oude-cijfers"] = "Import older figures",
 
+
+        // ---- contract of jaarafrekening inlezen ----
+        ["contract.knop"] = "Read a contract or annual statement",
+        ["contract.uitleg"] = "Send the pdf from your supplier and we take the amounts out of it. You see what we found before you save it.",
+        ["contract.kies-bestand"] = "Choose your contract or statement",
+        ["contract.gevonden-levering"] = "Supply rate € {0}.",
+        ["contract.gevonden-teruglevering"] = "Feed-in payment € {0}.",
+        ["contract.gevonden-terugleverkosten"] = "Feed-in charge € {0}.",
+        ["contract.losse-belasting"] = "Note: the energy tax (€ {0}) is listed separately, so the supply rate is not yet what you pay per kilowatt-hour.",
+        ["contract.controleer"] = "Check the fields below and save them.",
+        ["contract.mislukt"] = "The file could not be read.",
+
     }.ToFrozenDictionary();
 }

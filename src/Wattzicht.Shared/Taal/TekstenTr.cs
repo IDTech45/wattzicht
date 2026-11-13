@@ -505,5 +505,17 @@ public static class TekstenTr
         ["apparaten.uitlezen-mislukt"] = "Okuma başarısız",
         ["apparaten.oude-cijfers"] = "Eski verileri içe aktar",
 
+
+        // ---- contract of jaarafrekening inlezen ----
+        ["contract.knop"] = "Sözleşme veya yıllık hesabı oku",
+        ["contract.uitleg"] = "Tedarikçinizden gelen pdf dosyasını gönderin, tutarları biz çıkaralım. Kaydetmeden önce bulduklarımızı görürsünüz.",
+        ["contract.kies-bestand"] = "Sözleşmenizi veya hesabınızı seçin",
+        ["contract.gevonden-levering"] = "Tedarik tarifesi € {0}.",
+        ["contract.gevonden-teruglevering"] = "Şebekeye verme ödemesi € {0}.",
+        ["contract.gevonden-terugleverkosten"] = "Şebekeye verme maliyeti € {0}.",
+        ["contract.losse-belasting"] = "Dikkat: enerji vergisi (€ {0}) ayrı belirtilmiş, bu yüzden tedarik tarifesi kilovatsaat başına ödediğiniz tutar değil.",
+        ["contract.controleer"] = "Aşağıdaki alanları kontrol edip kaydedin.",
+        ["contract.mislukt"] = "Dosya okunamadı.",
+
     }.ToFrozenDictionary();
 }

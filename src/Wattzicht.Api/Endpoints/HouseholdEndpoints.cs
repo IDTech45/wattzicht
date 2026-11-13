@@ -121,6 +121,12 @@ public static class HouseholdEndpoints
             .Produces<TariffDto>()
             .ProducesValidationProblem();
 
+        household.MapPost("/tariff/import", TariefLezenAsync)
+            .WithSummary("Leest de tarieven uit een energiecontract of jaarafrekening; slaat niets op.")
+            .Produces<TariefVoorstelDto>()
+            .ProducesValidationProblem()
+            .DisableAntiforgery();
+
         household.MapPost("/history/import", HistorieImporterenAsync)
             .WithSummary("Leest een CSV-export uit het portaal van de fabrikant in als dagtotalen opwek.")
             .Produces<HistorieImportDto>()
@@ -128,6 +134,79 @@ public static class HouseholdEndpoints
             .DisableAntiforgery();
 
         return app;
+    }
+
+    /// <summary>
+    /// De tarieven uit een energiecontract of jaarafrekening halen.
+    ///
+    /// Om te laten zien wat iemand bespaart moeten we weten wat hij per kilowattuur betaalt en
+    /// krijgt. Dat stond in vier invulvelden, over te tikken uit een pdf van zijn leverancier, en
+    /// precies daar haakt iemand af. Zijn contract heeft die getallen al.
+    ///
+    /// Dit slaat niets op. Het antwoord is een voorstel met per bedrag de regel waar het vandaan
+    /// komt; de bewoner ziet wat wij gelezen hebben en neemt het zelf over. Elke leverancier
+    /// schrijft zijn afrekening anders, en een bedrag dat er ongemerkt naast zit maakt elke
+    /// besparing op elk scherm verkeerd.
+    /// </summary>
+    private static async Task<IResult> TariefLezenAsync(HttpContext http, CancellationToken ct)
+    {
+        if (!http.Request.HasFormContentType)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] = ["Stuur het bestand mee als formulierveld 'bestand'."],
+            });
+        }
+
+        var form = await http.Request.ReadFormAsync(ct);
+        var bestand = form.Files["bestand"] ?? form.Files.FirstOrDefault();
+
+        if (bestand is null || bestand.Length == 0)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]> { ["bestand"] = ["Er zat geen bestand bij."] });
+        }
+
+        if (bestand.Length > MaximumBestand)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] = [$"Dit bestand is groter dan {MaximumBestand / (1024 * 1024)} MB."],
+            });
+        }
+
+        await using var stroom = bestand.OpenReadStream();
+        var gelezen = DocumentTekst.Lees(stroom, bestand.FileName, bestand.ContentType);
+
+        if (gelezen.Tekst is null)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] = [gelezen.Fout ?? "Dit bestand konden we niet lezen."],
+            });
+        }
+
+        var voorstel = TariefLezer.Lees(gelezen.Tekst);
+        if (!voorstel.HeeftIets)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] =
+                [
+                    "In dit document staan geen tarieven per kilowattuur die wij herkennen. "
+                    + "Een contract of jaarafrekening van je leverancier werkt meestal wel.",
+                ],
+            });
+        }
+
+        static TariefVondstDto? Naar(TariefLezer.Vondst? v) =>
+            v is null ? null : new TariefVondstDto(v.EuroPerKwh, v.Regel);
+
+        return Results.Ok(new TariefVoorstelDto(
+            Naar(voorstel.Levering),
+            Naar(voorstel.Teruglevering),
+            Naar(voorstel.Terugleverkosten),
+            Naar(voorstel.Energiebelasting),
+            voorstel.PrijsIsAllIn));
     }
 
     /// <summary>

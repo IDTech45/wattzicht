@@ -141,6 +141,89 @@ public partial class SettingsViewModel : BaseViewModel
         HeeftLocatie = woning.HasLocation;
     }
 
+    // ---- Contract inlezen ----
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftContractResultaat))] private string? _contractResultaat;
+
+    public bool HeeftContractResultaat => !string.IsNullOrEmpty(ContractResultaat);
+
+    /// <summary>
+    /// De tarieven uit een energiecontract of jaarafrekening halen.
+    ///
+    /// Vier bedragen overtikken uit een pdf is precies het soort werk waar iemand op afhaakt, en
+    /// zonder die bedragen klopt elke besparing in de app niet. De pdf heeft ze al.
+    ///
+    /// We vullen de velden, maar slaan niets op: de bewoner ziet eerst staan wat wij gelezen hebben
+    /// en waar het vandaan komt, en drukt daarna zelf op opslaan.
+    /// </summary>
+    [RelayCommand]
+    private async Task ContractLezenAsync()
+    {
+        ContractResultaat = null;
+
+        try
+        {
+            var keuze = await FilePicker.Default.PickAsync(new PickOptions
+            {
+                PickerTitle = Taal.T("contract.kies-bestand"),
+                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+                {
+                    [DevicePlatform.Android] = ["application/pdf", "text/plain", "application/octet-stream"],
+                    [DevicePlatform.iOS] = ["com.adobe.pdf", "public.plain-text"],
+                    [DevicePlatform.WinUI] = [".pdf", ".txt"],
+                }),
+            });
+
+            if (keuze is null) return;
+
+            IsBusy = true;
+            await using var stroom = await keuze.OpenReadAsync();
+            var voorstel = await _api.LeesTarievenAsync(stroom, keuze.FileName, "application/pdf");
+
+            var regels = new List<string>();
+
+            if (voorstel.Levering is { } levering)
+            {
+                ImportTariff = levering.EuroPerKwh.ToString("0.00", Nl);
+                regels.Add(string.Format(Taal.T("contract.gevonden-levering"), levering.EuroPerKwh.ToString("0.00", Nl)));
+            }
+
+            if (voorstel.Teruglevering is { } terug)
+            {
+                ExportTariff = terug.EuroPerKwh.ToString("0.00", Nl);
+                regels.Add(string.Format(Taal.T("contract.gevonden-teruglevering"), terug.EuroPerKwh.ToString("0.00", Nl)));
+            }
+
+            if (voorstel.Terugleverkosten is { } kosten)
+            {
+                FeedInCost = kosten.EuroPerKwh.ToString("0.000", Nl);
+                regels.Add(string.Format(Taal.T("contract.gevonden-terugleverkosten"), kosten.EuroPerKwh.ToString("0.000", Nl)));
+            }
+
+            // Staat de energiebelasting los vermeld, dan is de leveringsprijs nog niet wat iemand
+            // per kilowattuur betaalt. Dat zeggen we, en we tellen het niet stiekem op: welke
+            // belasting al in welk bedrag zit verschilt per leverancier.
+            if (voorstel.Energiebelasting is { } belasting && !voorstel.PrijsIsAllIn)
+            {
+                regels.Add(string.Format(Taal.T("contract.losse-belasting"), belasting.EuroPerKwh.ToString("0.00", Nl)));
+            }
+
+            regels.Add(Taal.T("contract.controleer"));
+            ContractResultaat = string.Join(" ", regels);
+        }
+        catch (ApiException ex)
+        {
+            ContractResultaat = ex.Message;
+        }
+        catch (Exception)
+        {
+            ContractResultaat = Taal.T("contract.mislukt");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     // ---- Historie uit het portaal van de fabrikant ----
     [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftImportResultaat))] private string? _importResultaat;
 

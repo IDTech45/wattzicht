@@ -111,6 +111,15 @@
             <Label Text="{t:T meer.je-energietarief}" Style="{StaticResource SectionTitle}" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="14">
+                    <!-- Vier bedragen overtikken uit een pdf is precies waar iemand op afhaakt. -->
+                    <Button Text="{t:T contract.knop}"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding ContractLezenCommand}" />
+                    <Label Text="{t:T contract.uitleg}" Style="{StaticResource StatCaption}" />
+                    <Label Text="{Binding ContractResultaat}"
+                           Style="{StaticResource SubtitleLabel}" FontSize="14"
+                           IsVisible="{Binding HeeftContractResultaat}" />
+
                     <Label Text="{t:T meer.hiermee-rekenen-we-uit-wat}"
                            Style="{StaticResource SubtitleLabel}" FontSize="14" />
 

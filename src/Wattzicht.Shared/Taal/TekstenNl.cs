@@ -508,5 +508,17 @@ public static class TekstenNl
         ["apparaten.uitlezen-mislukt"] = "Uitlezen lukte niet",
         ["apparaten.oude-cijfers"] = "Oude cijfers inlezen",
 
+
+        // ---- contract of jaarafrekening inlezen ----
+        ["contract.knop"] = "Contract of jaarafrekening inlezen",
+        ["contract.uitleg"] = "Stuur de pdf van je leverancier en we halen de bedragen er zelf uit. Je ziet wat we vonden voordat je het opslaat.",
+        ["contract.kies-bestand"] = "Kies je contract of afrekening",
+        ["contract.gevonden-levering"] = "Leveringstarief € {0}.",
+        ["contract.gevonden-teruglevering"] = "Terugleververgoeding € {0}.",
+        ["contract.gevonden-terugleverkosten"] = "Terugleverkosten € {0}.",
+        ["contract.losse-belasting"] = "Let op: de energiebelasting (€ {0}) staat er los bij, dus het leveringstarief is nog niet wat je per kilowattuur betaalt.",
+        ["contract.controleer"] = "Controleer de velden hieronder en sla ze op.",
+        ["contract.mislukt"] = "Het bestand kon niet worden gelezen.",
+
     }.ToFrozenDictionary();
 }

@@ -204,6 +204,23 @@ public sealed class ApiClient
         return await SendAsync<HistorieImportDto>(req, ct);
     }
 
+    /// <summary>
+    /// Stuurt een energiecontract of jaarafrekening naar de server en krijgt de gevonden tarieven
+    /// terug. Er wordt niets opgeslagen: de bewoner ziet eerst wat wij gelezen hebben.
+    /// </summary>
+    public async Task<TariefVoorstelDto> LeesTarievenAsync(
+        Stream bestand, string bestandsnaam, string contentType, CancellationToken ct = default)
+    {
+        using var inhoud = new MultipartFormDataContent();
+        using var deel = new StreamContent(bestand);
+        deel.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        inhoud.Add(deel, "bestand", bestandsnaam);
+
+        using var req = new HttpRequestMessage(HttpMethod.Post, Relative("/tariff/import")) { Content = inhoud };
+        await AuthorizeAsync(req);
+        return await SendAsync<TariefVoorstelDto>(req, ct);
+    }
+
     /// <summary>Laat de server de apparaten van deze woning nu uitlezen.</summary>
     public Task<UitleesResultaatDto> NuUitlezenAsync(CancellationToken ct = default) =>
         PostAsync<object, UitleesResultaatDto>("/devices/refresh", new { }, authenticated: true, ct);

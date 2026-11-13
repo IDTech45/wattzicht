@@ -280,6 +280,30 @@ public sealed record DailySummaryDto(
 /// <param name="Message">Korte uitleg in gewone taal.</param>
 /// <param name="Since">Sinds wanneer (UTC).</param>
 /// <param name="ResolvedAt">Wanneer opgelost (UTC); <c>null</c> zolang de melding open staat.</param>
+/// <summary>Eén bedrag dat we in een contract of afrekening vonden, met de regel waar het uit komt.</summary>
+/// <param name="EuroPerKwh">Het bedrag per kilowattuur.</param>
+/// <param name="Regel">De regel uit het document; zo kan de bewoner zien wat wij gelezen hebben.</param>
+public sealed record TariefVondstDto(decimal EuroPerKwh, string Regel);
+
+/// <summary>
+/// Wat we uit een energiecontract of jaarafrekening konden halen.
+///
+/// Dit is een voorstel en geen instelling: niets wordt opgeslagen tot de bewoner het overneemt. Elke
+/// leverancier schrijft zijn afrekening anders, en een bedrag dat er ongemerkt naast zit maakt elke
+/// besparing op elk scherm verkeerd.
+/// </summary>
+/// <param name="Levering">Wat je per kilowattuur betaalt.</param>
+/// <param name="Teruglevering">Wat je per teruggeleverde kilowattuur krijgt.</param>
+/// <param name="Terugleverkosten">Wat teruglevering per kilowattuur kost.</param>
+/// <param name="Energiebelasting">Apart vermelde energiebelasting; dan is de leveringsprijs nog niet compleet.</param>
+/// <param name="PrijsIsAllIn">Of de leveringsprijs volgens het document al inclusief belastingen is.</param>
+public sealed record TariefVoorstelDto(
+    TariefVondstDto? Levering,
+    TariefVondstDto? Teruglevering,
+    TariefVondstDto? Terugleverkosten,
+    TariefVondstDto? Energiebelasting,
+    bool PrijsIsAllIn);
+
 /// <summary>Uitkomst van "nu uitlezen".</summary>
 /// <param name="Gelukt">Apparaten die een meting opleverden.</param>
 /// <param name="Mislukt">Apparaten die niet te bereiken waren of een fout gaven.</param>
