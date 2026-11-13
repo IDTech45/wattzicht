@@ -130,6 +130,9 @@ public sealed class Household
     /// </summary>
     public double? PvPeakKw { get; set; }
 
+    /// <summary>Wanneer we voor het laatst meldden dat de panelen te weinig leveren.</summary>
+    public DateTimeOffset? LastPerformancePushAt { get; set; }
+
     /// <summary>Pushmelding bij een storing (standaard aan).</summary>
     public bool NotifyAlerts { get; set; } = true;
 

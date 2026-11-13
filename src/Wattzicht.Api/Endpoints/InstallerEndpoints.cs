@@ -27,6 +27,10 @@ public static partial class InstallerEndpoints
             .WithSummary("Zelfde lijst plus tellers en eigen white-label instellingen.")
             .Produces<InstallerOverviewDto>();
 
+        group.MapGet("/attention", AandachtAsync)
+            .WithSummary("De installaties die aandacht nodig hebben: stil of leveren te weinig.")
+            .Produces<List<AandachtDto>>();
+
         group.MapGet("/households/{id:guid}", DetailAsync)
             .WithSummary("Detail van één huishouden: apparaten, meldingen, live, vandaag/maand en laatste 14 dagen.")
             .Produces<InstallerHouseholdDetailDto>()
@@ -126,6 +130,19 @@ public static partial class InstallerEndpoints
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// De lijst waar een installateur zijn dag mee begint.
+    ///
+    /// Een lijst met klanten die het goed doen heeft hij niets aan. Dit zijn de twee gevallen waar
+    /// hij iets mee kan: er komt niets meer binnen, of er komt minder binnen dan het weer toeliet.
+    /// </summary>
+    private static async Task<IResult> AandachtAsync(
+        HttpContext http, AandachtService aandacht, CancellationToken ct)
+    {
+        var installerId = http.User.GetInstallerId();
+        return Results.Ok(await aandacht.VoorInstallateurAsync(installerId, ct));
     }
 
     private static async Task<IResult> DetailAsync(

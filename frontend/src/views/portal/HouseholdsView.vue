@@ -9,7 +9,13 @@ import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import StatusDot from '@/components/StatusDot.vue'
 import StatTile from '@/components/StatTile.vue'
-import { getInstallerHouseholds, type HouseholdSummary, type HouseholdStatus } from '@/api/client'
+import {
+  getAandacht,
+  getInstallerHouseholds,
+  type AandachtRij,
+  type HouseholdSummary,
+  type HouseholdStatus,
+} from '@/api/client'
 import { euro, kwh, relativeTime } from '@/utils/format'
 
 const router = useRouter()
@@ -26,6 +32,10 @@ const statusOptions = [
   { label: 'Geen data', value: 'nodata' },
 ]
 
+// De lijst waar je je dag mee begint. Een overzicht van klanten die het goed doen heeft niemand
+// iets aan; dit zijn de twee gevallen waar je iets mee kunt.
+const aandacht = ref<AandachtRij[]>([])
+
 async function load() {
   loading.value = true
   error.value = null
@@ -35,6 +45,13 @@ async function load() {
     error.value = e instanceof Error ? e.message : 'Laden is niet gelukt.'
   } finally {
     loading.value = false
+  }
+
+  // Apart ophalen: deze lijst mag de rest van het scherm niet ophouden en ook niet breken.
+  try {
+    aandacht.value = await getAandacht()
+  } catch {
+    aandacht.value = []
   }
 }
 onMounted(load)
@@ -102,6 +119,24 @@ function open(row: HouseholdSummary) {
         tone="battery"
       />
     </div>
+
+    <section v-if="aandacht.length" class="aandacht">
+      <h2>Aandacht nodig</h2>
+      <ul>
+        <li v-for="rij in aandacht" :key="rij.householdId">
+          <RouterLink :to="{ name: 'portal-household', params: { id: rij.householdId } }">
+            <b>{{ rij.naam }}</b>
+            <span v-if="rij.plaats" class="aandacht__plaats">{{ rij.plaats }}</span>
+          </RouterLink>
+          <span class="chip" :class="rij.soort === 'stil' ? 'chip--low' : 'chip--opp'">
+            {{ rij.soort === 'stil' ? 'stil' : `levert ${rij.percentVanVerwacht}%` }}
+          </span>
+          <span class="aandacht__sinds">
+            {{ rij.laatstGezien ? `laatst gezien ${relativeTime(rij.laatstGezien)}` : 'nog nooit data ontvangen' }}
+          </span>
+        </li>
+      </ul>
+    </section>
 
     <Message v-if="error" severity="error" :closable="false">
       {{ error }} <a href="#" @click.prevent="load">Opnieuw proberen</a>
@@ -196,6 +231,20 @@ function open(row: HouseholdSummary) {
 </template>
 
 <style scoped>
+.aandacht {
+  margin: 0 0 20px;
+  padding: 16px 18px;
+  border: 1px solid var(--wz-border, #d7dde8);
+  border-left: 4px solid #e0a63a;
+  border-radius: 12px;
+  background: var(--wz-surface, #fff);
+}
+.aandacht h2 { margin: 0 0 10px; font-size: 16px; }
+.aandacht ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.aandacht li { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.aandacht__plaats { margin-left: 6px; opacity: 0.7; }
+.aandacht__sinds { font-size: 13px; opacity: 0.7; }
+
 .page {
   display: grid;
   gap: 22px;

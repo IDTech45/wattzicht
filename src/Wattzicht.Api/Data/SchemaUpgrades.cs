@@ -25,6 +25,9 @@ public static class SchemaUpgrades
         """,
         """CREATE UNIQUE INDEX IF NOT EXISTS ix_supplier_usage_household_month ON supplier_usage ("HouseholdId", "Month")""",
 
+        // 2026-11: wanneer we voor het laatst meldden dat de panelen te weinig leveren.
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "LastPerformancePushAt" timestamp with time zone NULL""",
+
         // 2026-11: piekvermogen van de panelen, voor de zonverwachting in kilowatturen.
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "PvPeakKw" double precision NULL""",
 

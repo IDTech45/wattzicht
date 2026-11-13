@@ -430,6 +430,21 @@ export function getInstallerHouseholds(): Promise<HouseholdSummary[]> {
   return request<HouseholdSummary[]>('/installer/households')
 }
 
+/** Eén installatie die aandacht nodig heeft: stil, of levert minder dan het weer toeliet. */
+export interface AandachtRij {
+  householdId: string
+  naam: string
+  plaats: string | null
+  soort: 'stil' | 'leverT'
+  laatstGezien: string | null
+  percentVanVerwacht: number | null
+  toelichting: string | null
+}
+
+export function getAandacht(): Promise<AandachtRij[]> {
+  return request<AandachtRij[]>('/installer/attention')
+}
+
 export function getHousehold(id: string): Promise<HouseholdDetail> {
   return request<HouseholdDetail>(`/installer/households/${encodeURIComponent(id)}`)
 }

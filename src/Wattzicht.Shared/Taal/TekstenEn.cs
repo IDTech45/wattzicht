@@ -529,5 +529,10 @@ public static class TekstenEn
         ["woning.schatting"] = "From your own measurements we estimate {0} kWp.",
         ["woning.schatting-overnemen"] = "Use this estimate",
 
+
+        // ---- melding dat de panelen te weinig leveren ----
+        ["prestatie.titel"] = "Your panels are delivering less than expected",
+        ["prestatie.tekst"] = "On the last sunny days you got {0}% of what the weather allowed. This week that cost about {1} kWh. Usually it is dirt, shade from a grown branch, or an inverter that has stopped.",
+
     }.ToFrozenDictionary();
 }

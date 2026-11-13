@@ -410,6 +410,35 @@ public sealed record InstallerHouseholdDto(
     PerformanceStatus Performance = PerformanceStatus.Unknown,
     IReadOnlyList<OpportunityDto>? Opportunities = null);
 
+/// <summary>Waarom een installatie aandacht nodig heeft.</summary>
+public enum AandachtSoort
+{
+    /// <summary>Geen enkel apparaat heeft recent nog iets gestuurd.</summary>
+    Stil = 0,
+
+    /// <summary>De panelen leveren minder dan het weer van die dagen toeliet.</summary>
+    LeverT = 1,
+}
+
+/// <summary>
+/// Eén installatie die aandacht nodig heeft, voor het installateursportaal.
+/// </summary>
+/// <param name="HouseholdId">De woning.</param>
+/// <param name="Naam">Naam van het huishouden.</param>
+/// <param name="Plaats">Plaats, als die bekend is.</param>
+/// <param name="Soort">Stil of levert te weinig.</param>
+/// <param name="LaatstGezien">Wanneer er voor het laatst iets binnenkwam.</param>
+/// <param name="PercentVanVerwacht">Bij "levert te weinig": hoeveel procent van wat het weer toeliet.</param>
+/// <param name="Toelichting">Eén zin die zegt wat er aan de hand is.</param>
+public sealed record AandachtDto(
+    Guid HouseholdId,
+    string Naam,
+    string? Plaats,
+    AandachtSoort Soort,
+    DateTimeOffset? LaatstGezien,
+    int? PercentVanVerwacht,
+    string? Toelichting);
+
 /// <summary>Overzicht met tellers voor het installateursportal (GET /installer/overview).</summary>
 /// <param name="Installer">Eigen white-label instellingen.</param>
 /// <param name="Households">Alle huishoudens van deze installateur met status.</param>

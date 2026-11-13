@@ -126,6 +126,8 @@ builder.Services.AddSingleton<IWeatherProvider, OpenMeteoWeatherProvider>();
 builder.Services.AddHostedService<WeatherWorker>();
 // Brengt het laadadvies naar de bewoner in plaats van andersom; zie SmartMomentWorker.
 builder.Services.AddHostedService<SmartMomentWorker>();
+// Waarschuwt als de panelen minder leveren dan het weer toeliet; zie PrestatieWorker.
+builder.Services.AddHostedService<PrestatieWorker>();
 // De andere helft van datzelfde advies: na afloop vertellen wat de laadbeurt heeft gedaan.
 builder.Services.AddHostedService<LaadsessieWorker>();
 
@@ -135,6 +137,7 @@ builder.Services.AddHostedService<SubscriptionWorker>();
 // Herinneringen van de LaadCash-campagne (push en mail). Staat niet achter Plus.
 builder.Services.AddHostedService<LaadcashPromoWorker>();
 builder.Services.AddScoped<InsightsService>();
+builder.Services.AddScoped<AandachtService>();
 
 // CORS voor de Vue-frontend en lokale ontwikkeling
 var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()

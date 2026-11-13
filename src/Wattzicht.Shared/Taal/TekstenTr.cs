@@ -534,5 +534,10 @@ public static class TekstenTr
         ["woning.schatting"] = "Kendi ölçümlerinizden {0} kWp tahmin ediyoruz.",
         ["woning.schatting-overnemen"] = "Bu tahmini kullan",
 
+
+        // ---- melding dat de panelen te weinig leveren ----
+        ["prestatie.titel"] = "Panelleriniz beklenenden az üretiyor",
+        ["prestatie.tekst"] = "Son güneşli günlerde havanın izin verdiğinin %{0} kadarını aldınız. Bu hafta bu yaklaşık {1} kWh kaybettirdi. Genellikle kir, büyümüş bir dalın gölgesi veya duran bir inverter olur.",
+
     }.ToFrozenDictionary();
 }

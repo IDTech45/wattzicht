@@ -537,5 +537,10 @@ public static class TekstenNl
         ["woning.schatting"] = "Uit je eigen metingen schatten wij {0} kWp.",
         ["woning.schatting-overnemen"] = "Deze schatting overnemen",
 
+
+        // ---- melding dat de panelen te weinig leveren ----
+        ["prestatie.titel"] = "Je panelen leveren minder dan verwacht",
+        ["prestatie.tekst"] = "De laatste zonnige dagen kwam er {0}% uit van wat het weer toeliet. Deze week scheelde dat ongeveer {1} kWh. Vaak is het vuil, schaduw van een gegroeide tak, of een omvormer die eruit ligt.",
+
     }.ToFrozenDictionary();
 }
