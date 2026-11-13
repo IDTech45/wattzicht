@@ -17,9 +17,10 @@
       <h2>Zonder de app</h2>
       <p>
         Lukt dat niet, bijvoorbeeld omdat je de app al hebt verwijderd, stuur dan een bericht naar
-        <a href="mailto:privacy@wattzicht.nl?subject=Account%20verwijderen">privacy@wattzicht.nl</a> vanaf het
-        e-mailadres waarmee je je hebt aangemeld. Dan doen wij het voor je. We vragen niets anders dan dat adres, want
-        daarmee weten we al welk account het is.
+        <a href="mailto:info@laadcash.nl?subject=Wattzicht%3A%20account%20verwijderen">info@laadcash.nl</a> vanaf
+        het e-mailadres waarmee je je hebt aangemeld. Dan doen wij het voor je. We vragen niets anders dan dat adres,
+        want daarmee weten we al welk account het is. Dat is de mailbox van DoganTech, het bedrijf achter Wattzicht;
+        een eigen Wattzicht-adres volgt.
       </p>
       <p>We handelen zo'n verzoek binnen dertig dagen af, en in de praktijk een stuk sneller.</p>
 

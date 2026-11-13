@@ -26,7 +26,7 @@ const year = new Date().getFullYear()
       -->
       <div class="foot__col">
         <h4>Contact</h4>
-        <a href="mailto:hallo@wattzicht.nl">hallo@wattzicht.nl</a>
+        <a href="mailto:info@laadcash.nl">info@laadcash.nl</a>
         <span>Enschede</span>
       </div>
 

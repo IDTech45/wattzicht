@@ -181,7 +181,7 @@ const features = [
         <BrandBadge v-for="b in brands" :key="b.name" v-bind="b" />
       </div>
       <p class="brands__foot">
-        Mis je een merk? <a href="mailto:hallo@wattzicht.nl?subject=Merk%20toevoegen">Laat het ons weten</a>, dan zetten we het
+        Mis je een merk? <a href="mailto:info@laadcash.nl?subject=Wattzicht%3A%20merk%20toevoegen">Laat het ons weten</a>, dan zetten we het
         op de lijst.
       </p>
     </div>

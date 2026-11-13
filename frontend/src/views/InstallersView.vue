@@ -211,7 +211,7 @@ const vragen = [
           bellen je binnen één werkdag.
         </p>
         <p class="demo__alt">
-          Liever direct contact? <a href="mailto:hallo@wattzicht.nl">hallo@wattzicht.nl</a>.
+          Liever direct contact? <a href="mailto:info@laadcash.nl">info@laadcash.nl</a>.
         </p>
       </div>
 

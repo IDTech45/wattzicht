@@ -31,7 +31,7 @@ export const useLeadsStore = defineStore('leads', () => {
       }
       state.value = 'failed'
       message.value =
-        'Versturen lukt nu niet. Mail je gegevens naar hallo@wattzicht.nl, dan plannen we direct een demo.'
+        'Versturen lukt nu niet. Mail je gegevens naar info@laadcash.nl, dan plannen we direct een demo.'
       return false
     }
   }

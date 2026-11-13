@@ -42,7 +42,7 @@
       <h2>Je rechten</h2>
       <p>
         Je kunt je gegevens altijd inzien, laten aanpassen, meenemen of laten verwijderen. Stuur een bericht naar
-        <a href="mailto:privacy@wattzicht.nl">privacy@wattzicht.nl</a>. Ben je het niet eens met hoe we met je gegevens omgaan, dan kun je een klacht indienen bij de Autoriteit Persoonsgegevens.
+        <a href="mailto:info@laadcash.nl?subject=Wattzicht%20privacy">info@laadcash.nl</a>. Ben je het niet eens met hoe we met je gegevens omgaan, dan kun je een klacht indienen bij de Autoriteit Persoonsgegevens.
       </p>
 
       <p class="small">Laatst bijgewerkt: oktober 2026.</p>
