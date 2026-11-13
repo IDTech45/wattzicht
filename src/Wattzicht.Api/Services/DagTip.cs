@@ -86,10 +86,16 @@ public static class DagTip
             ? T(input, "dagtip.staart-saldering")
             : T(input, "dagtip.staart-bedrag", Bedrag(input, waarde));
 
+        // Staat het zonnigste blok pas morgen, dan hoort dat er te staan. Anders leest "tussen 12:00
+        // en 15:00" als vanmiddag terwijl het over morgen gaat.
+        var vanaf = DutchTime.LocalDate(from) == vandaag
+            ? Tijd(from)
+            : Teksten.T(input.Taal, "advies.morgen") + " " + Tijd(from);
+
         return new DayTipDto(
             Headline: kop,
             Body: T(input, "dagtip.zon-tekst", verwacht.ToString("0.#", Teksten.Cultuur(input.Taal)),
-                Tijd(from), Tijd(to), wat, staart),
+                vanaf, Tijd(to), wat, staart),
             ExpectedSolarKwh: Math.Round(verwacht, 1),
             Kind: "zon",
             From: from,

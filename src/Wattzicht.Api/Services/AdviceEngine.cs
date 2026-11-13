@@ -76,10 +76,17 @@ public static class AdviceEngine
     internal static (DateTimeOffset From, DateTimeOffset To) ZonnigsteVenster(AdviceInput input, DateOnly today)
     {
         var vanaf = input.NowUtc;
-        var uren = (input.Forecast ?? [])
+        var alle = (input.Forecast ?? [])
             .Where(u => u.StartUtc >= vanaf && u.WattPerM2 > 0)
             .OrderBy(u => u.StartUtc)
             .ToList();
+
+        // Eerst kijken of vandaag nog genoeg uren heeft. Deed hij dat niet, dan wees de dagtip op een
+        // ochtend die morgen pas komt terwijl de kop "vandaag wordt het zonnig" zei: op een grijze
+        // dag is het zonnigste blok van de komende twee dagen nu eenmaal vaak morgen. Pas als
+        // vandaag echt op is (het is avond), kijken we vooruit.
+        var vandaagUren = alle.Where(u => DutchTime.LocalDate(u.StartUtc) == today).ToList();
+        var uren = vandaagUren.Count >= WindowHours ? vandaagUren : alle;
 
         if (uren.Count >= WindowHours)
         {
