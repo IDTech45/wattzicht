@@ -542,5 +542,11 @@ public static class TekstenNl
         ["prestatie.titel"] = "Je panelen leveren minder dan verwacht",
         ["prestatie.tekst"] = "De laatste zonnige dagen kwam er {0}% uit van wat het weer toeliet. Deze week scheelde dat ongeveer {1} kWh. Vaak is het vuil, schaduw van een gegroeide tak, of een omvormer die eruit ligt.",
 
+
+        // ---- wat een batterij zou opleveren ----
+        ["batterij.titel"] = "Wat zou een thuisbatterij doen?",
+        ["batterij.regel"] = "Een batterij van {0} kWh had je ongeveer {1} per jaar gescheeld.",
+        ["batterij.toelichting"] = "Gerekend met je eigen {1} gemeten dagen: gemiddeld {0} kWh per dag die nu terug het net op gaat en later weer binnenkomt. Bedrag met de tarieven zoals ze vanaf 2027 gelden.",
+
     }.ToFrozenDictionary();
 }

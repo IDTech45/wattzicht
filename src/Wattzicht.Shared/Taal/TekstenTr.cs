@@ -539,5 +539,11 @@ public static class TekstenTr
         ["prestatie.titel"] = "Panelleriniz beklenenden az üretiyor",
         ["prestatie.tekst"] = "Son güneşli günlerde havanın izin verdiğinin %{0} kadarını aldınız. Bu hafta bu yaklaşık {1} kWh kaybettirdi. Genellikle kir, büyümüş bir dalın gölgesi veya duran bir inverter olur.",
 
+
+        // ---- wat een batterij zou opleveren ----
+        ["batterij.titel"] = "Ev bataryası ne yapardı?",
+        ["batterij.regel"] = "{0} kWh bir batarya size yılda yaklaşık {1} kazandırırdı.",
+        ["batterij.toelichting"] = "Kendi ölçülen {1} gününüze göre: günde ortalama {0} kWh şu anda şebekeye gidip sonra geri geliyor. Tutar 2027’den itibaren geçerli tarifelerle.",
+
     }.ToFrozenDictionary();
 }

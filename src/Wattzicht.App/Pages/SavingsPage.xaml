@@ -146,6 +146,16 @@
                         </VerticalStackLayout>
                     </Border>
 
+                    <!-- Wat een batterij zou doen, gerekend met de eigen dagen van deze woning.
+                         Niet met een rekenvoorbeeld van een verkoper. -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding HeeftBatterijAdvies}">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{t:T batterij.titel}" Style="{StaticResource SubtitleLabel}" />
+                            <Label Text="{Binding BatterijRegel}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{Binding BatterijToelichting}" Style="{StaticResource StatCaption}" />
+                        </VerticalStackLayout>
+                    </Border>
+
                     <!-- Wat de leverancier per maand zegt, met onze eigen meting ernaast. Voor wie
                          geen P1-meter heeft is dit de enige plek waar de netkant staat. -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding HeeftLeverancierCijfers}">

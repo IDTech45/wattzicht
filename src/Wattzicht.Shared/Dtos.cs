@@ -323,6 +323,21 @@ public sealed record LeverancierMaandDto(
 /// <summary>Uitkomst van het inlezen van een maandoverzicht van de leverancier.</summary>
 public sealed record VerbruikImportDto(IReadOnlyList<LeverancierMaandDto> Maanden);
 
+/// <summary>Wat één batterijmaat bij deze woning zou opleveren.</summary>
+/// <param name="Kwh">De maat van de batterij.</param>
+/// <param name="PerJaarEur">Per jaar, met het tarief dat nu geldt.</param>
+/// <param name="PerJaarNaSalderingEur">Per jaar, met de tarieven zoals ze vanaf 2027 gelden.</param>
+/// <param name="VerplaatstPerDagKwh">Hoeveel er gemiddeld per dag door de batterij zou gaan.</param>
+public sealed record BatterijMaatDto(double Kwh, decimal PerJaarEur, decimal PerJaarNaSalderingEur, double VerplaatstPerDagKwh);
+
+/// <summary>
+/// Het batterijadvies, gerekend met de eigen gemeten dagen van deze woning.
+/// </summary>
+/// <param name="Maten">Per maat wat het zou schelen; leeg als er te weinig dagen zijn.</param>
+/// <param name="Dagen">Over hoeveel gemeten dagen dit gaat; eerlijk erbij, want daar hangt alles aan.</param>
+/// <param name="HeeftAlBatterij">Of er al een batterij gekoppeld is; dan is dit niet interessant.</param>
+public sealed record BatterijAdviesDto(IReadOnlyList<BatterijMaatDto> Maten, int Dagen, bool HeeftAlBatterij);
+
 /// <summary>Uitkomst van "nu uitlezen".</summary>
 /// <param name="Gelukt">Apparaten die een meting opleverden.</param>
 /// <param name="Mislukt">Apparaten die niet te bereiken waren of een fout gaven.</param>

@@ -113,6 +113,12 @@ public partial class SavingsViewModel : BaseViewModel
     [ObservableProperty] private string _totalChargedText = "0 kWh";
     [ObservableProperty] private bool _isRefreshing;
 
+    // ---- Wat een batterij zou opleveren ----
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftBatterijAdvies))] private string? _batterijRegel;
+    [ObservableProperty] private string _batterijToelichting = string.Empty;
+
+    public bool HeeftBatterijAdvies => !string.IsNullOrEmpty(BatterijRegel);
+
     /// <summary>De maanden die uit een overzicht van de leverancier zijn ingelezen.</summary>
     public ObservableCollection<LeverancierRij> LeverancierMaanden { get; } = [];
 
@@ -199,6 +205,37 @@ public partial class SavingsViewModel : BaseViewModel
             catch (ApiException ex) when (!ex.IsUnauthorized)
             {
                 HasFeedIn = false; // los blok: de rest van het scherm blijft werken
+            }
+
+            // Wat een batterij zou doen, gerekend met de eigen dagen van deze woning. Alleen voor
+            // wie er nog geen heeft, en alleen als er genoeg gemeten dagen zijn.
+            try
+            {
+                var advies = await _api.BatterijAdviesAsync();
+                if (!advies.HeeftAlBatterij && advies.Maten.Count > 0)
+                {
+                    var beste = advies.Maten
+                        .OrderByDescending(m => m.PerJaarNaSalderingEur)
+                        .First();
+
+                    BatterijRegel = string.Format(
+                        Taal.T("batterij.regel"),
+                        beste.Kwh.ToString("0.#", Nl),
+                        beste.PerJaarNaSalderingEur.ToString("C0", Nl));
+
+                    BatterijToelichting = string.Format(
+                        Taal.T("batterij.toelichting"),
+                        beste.VerplaatstPerDagKwh.ToString("0.#", Nl),
+                        advies.Dagen);
+                }
+                else
+                {
+                    BatterijRegel = null;
+                }
+            }
+            catch (ApiException ex) when (!ex.IsUnauthorized)
+            {
+                BatterijRegel = null;
             }
 
             // De maanden uit het overzicht van je leverancier. Voor wie geen P1-meter heeft is dit

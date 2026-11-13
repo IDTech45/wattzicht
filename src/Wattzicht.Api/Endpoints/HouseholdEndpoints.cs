@@ -127,6 +127,10 @@ public static class HouseholdEndpoints
             .ProducesValidationProblem()
             .DisableAntiforgery();
 
+        household.MapGet("/battery-advice", BatterijAdviesAsync)
+            .WithSummary("Wat een thuisbatterij bij deze woning zou opleveren, gerekend met de eigen gemeten dagen.")
+            .Produces<BatterijAdviesDto>();
+
         household.MapGet("/usage", VerbruikVanLeverancierAsync)
             .WithSummary("De maandcijfers die uit overzichten van de leverancier zijn ingelezen.")
             .Produces<List<LeverancierMaandDto>>();
@@ -217,6 +221,44 @@ public static class HouseholdEndpoints
             Naar(voorstel.Terugleverkosten),
             Naar(voorstel.Energiebelasting),
             voorstel.PrijsIsAllIn));
+    }
+
+    /// <summary>
+    /// Wat een thuisbatterij bij deze woning zou opleveren.
+    ///
+    /// Met de eigen gemeten dagen en niet met een rekenvoorbeeld. Elke verkoper rekent met een
+    /// gemiddeld huishouden en dat bestaat niet; deze woning heeft zelf al laten zien hoeveel er
+    /// overdag teruggaat en hoeveel er 's avonds weer bij moet.
+    /// </summary>
+    private static async Task<IResult> BatterijAdviesAsync(
+        HttpContext http,
+        AppDbContext db,
+        SummaryService summaries,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var vandaag = DutchTime.LocalDate(clock.GetUtcNow());
+
+        var heeftBatterij = await db.Devices
+            .AnyAsync(d => d.HouseholdId == householdId && d.Type == DeviceType.Battery, ct);
+
+        // Negentig dagen: lang genoeg om een seizoen te pakken, kort genoeg om over deze woning te
+        // gaan zoals hij nu is.
+        var vanaf = vandaag.AddDays(-90);
+        var dagen = await db.DailySummaries
+            .Where(s => s.HouseholdId == householdId && s.Date >= vanaf && s.Date < vandaag)
+            .Select(s => new { s.ExportKwh, s.ImportKwh })
+            .ToListAsync(ct);
+
+        var invoer = dagen.Select(d => new BatterijAdvies.Dag(d.ExportKwh, d.ImportKwh)).ToList();
+        var rates = await summaries.GetRatesAsync(householdId, vandaag, ct);
+        var maten = BatterijAdvies.Bereken(invoer, rates, vandaag);
+
+        return Results.Ok(new BatterijAdviesDto(
+            maten.Select(m => new BatterijMaatDto(m.Kwh, m.PerJaarEur, m.PerJaarNaSalderingEur, m.VerplaatstPerDagKwh)).ToList(),
+            invoer.Count(d => d.ExportKwh > 0 || d.ImportKwh > 0),
+            heeftBatterij));
     }
 
     /// <summary>

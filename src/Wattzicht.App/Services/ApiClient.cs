@@ -221,6 +221,10 @@ public sealed class ApiClient
         return await SendAsync<TariefVoorstelDto>(req, ct);
     }
 
+    /// <summary>Wat een thuisbatterij bij deze woning zou opleveren, uit de eigen gemeten dagen.</summary>
+    public Task<BatterijAdviesDto> BatterijAdviesAsync(CancellationToken ct = default) =>
+        GetAsync<BatterijAdviesDto>("/battery-advice", ct);
+
     /// <summary>De maandcijfers die uit overzichten van de leverancier zijn ingelezen.</summary>
     public Task<List<LeverancierMaandDto>> VerbruikVanLeverancierAsync(CancellationToken ct = default) =>
         GetAsync<List<LeverancierMaandDto>>("/usage", ct);

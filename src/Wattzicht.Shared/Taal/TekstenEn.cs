@@ -534,5 +534,11 @@ public static class TekstenEn
         ["prestatie.titel"] = "Your panels are delivering less than expected",
         ["prestatie.tekst"] = "On the last sunny days you got {0}% of what the weather allowed. This week that cost about {1} kWh. Usually it is dirt, shade from a grown branch, or an inverter that has stopped.",
 
+
+        // ---- wat een batterij zou opleveren ----
+        ["batterij.titel"] = "What would a home battery do?",
+        ["batterij.regel"] = "A battery of {0} kWh would have saved you around {1} a year.",
+        ["batterij.toelichting"] = "Based on your own {1} measured days: on average {0} kWh a day that now goes back to the grid and comes back later. Amount with the rates as they apply from 2027.",
+
     }.ToFrozenDictionary();
 }
