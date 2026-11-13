@@ -1,4 +1,5 @@
 using Wattzicht.Shared;
+using Wattzicht.Shared.Taal;
 
 namespace Wattzicht.Api.Services;
 
@@ -49,10 +50,9 @@ public static class DagTip
             if (verschil >= MinimumPrijsverschil)
             {
                 return new DayTipDto(
-                    Headline: "Vandaag scheelt het uur waarop je stroom gebruikt",
-                    Body: $"Tussen {Tijd(goedkoop.From)} en {Tijd(goedkoop.To)} is stroom "
-                          + $"{Bedrag(verschil)} per kWh goedkoper dan rond {Tijd(duur.From)}. "
-                          + "Zet de was of de auto dan aan.",
+                    Headline: T(input, "dagtip.prijs-kop"),
+                    Body: T(input, "dagtip.prijs-tekst",
+                        Tijd(goedkoop.From), Tijd(goedkoop.To), Bedrag(input, verschil), Tijd(duur.From)),
                     ExpectedSolarKwh: 0,
                     Kind: "prijs",
                     From: goedkoop.From,
@@ -74,22 +74,21 @@ public static class DagTip
         var waarde = Math.Round((decimal)inVenster * winstPerKwh, 2, MidpointRounding.AwayFromZero);
 
         var zonnig = verwacht >= ZonnigVanafKwh;
-        var kop = zonnig ? "Vandaag wordt het zonnig" : "Vandaag is er wat zon";
+        var kop = T(input, zonnig ? "dagtip.zon-kop-zonnig" : "dagtip.zon-kop-wat-zon");
 
-        var wat = input.HasCharger
-            ? "Zet de auto aan de laadpaal en draai dan de was"
+        var wat = T(input, input.HasCharger
+            ? "dagtip.wat-laadpaal"
             : input.HasBattery
-                ? "Laat je batterij dan vollopen en draai de was"
-                : "Draai dan de was of de vaatwasser";
+                ? "dagtip.wat-batterij"
+                : "dagtip.wat-was");
 
         var staart = SavingsCalculator.IsSalderingActive(vandaag)
-            ? "Zolang er gesaldeerd wordt scheelt dat nog weinig, vanaf 2027 het meest."
-            : $"Dat scheelt ongeveer {Bedrag(waarde)}.";
+            ? T(input, "dagtip.staart-saldering")
+            : T(input, "dagtip.staart-bedrag", Bedrag(input, waarde));
 
         return new DayTipDto(
             Headline: kop,
-            Body: $"Je panelen maken naar verwachting {verwacht:0.#} kWh, het meest tussen "
-                  + $"{Tijd(from)} en {Tijd(to)}. {wat}. {staart}",
+            Body: T(input, "dagtip.zon-tekst", verwacht.ToString("0.#"), Tijd(from), Tijd(to), wat, staart),
             ExpectedSolarKwh: Math.Round(verwacht, 1),
             Kind: "zon",
             From: from,
@@ -99,6 +98,15 @@ public static class DagTip
 
     private static string Tijd(DateTimeOffset moment) => DutchTime.ToLocal(moment).ToString("HH:mm");
 
-    private static string Bedrag(decimal euro) =>
-        euro >= 1m ? $"€ {euro:0.00}".Replace('.', ',') : $"{euro * 100:0} cent";
+    /// <summary>Een tekst uit het taalpakket, in de taal van de aanvrager.</summary>
+    private static string T(AdviceInput input, string sleutel, params object[] waarden)
+    {
+        var tekst = Teksten.T(input.Taal, sleutel);
+        return waarden.Length == 0 ? tekst : string.Format(tekst, waarden);
+    }
+
+    private static string Bedrag(AdviceInput input, decimal euro) =>
+        euro >= 1m
+            ? $"€ {euro:0.00}".Replace('.', ',')
+            : string.Format(Teksten.T(input.Taal, "dagtip.cent"), (euro * 100).ToString("0"));
 }

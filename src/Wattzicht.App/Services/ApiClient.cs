@@ -268,6 +268,14 @@ public sealed class ApiClient
 
     private async Task<HttpResponseMessage> SendRawAsync(HttpRequestMessage req, CancellationToken ct)
     {
+        // De gekozen taal gaat mee bij elk verzoek. Een deel van de tekst die de gebruiker ziet
+        // wordt op de server opgebouwd met gemeten waarden (de tips, de dagtip, het laadplan); zonder
+        // deze kop staat daar Nederlands onder een Turks scherm.
+        if (!req.Headers.Contains("Accept-Language"))
+        {
+            req.Headers.Add("Accept-Language", Taal.Code);
+        }
+
         try
         {
             return await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);

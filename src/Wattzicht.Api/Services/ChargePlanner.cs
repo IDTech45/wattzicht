@@ -1,4 +1,5 @@
 using Wattzicht.Shared;
+using Wattzicht.Shared.Taal;
 
 namespace Wattzicht.Api.Services;
 
@@ -23,7 +24,9 @@ public sealed record ChargePlanInput(
     double PvPeakKw,
     bool IsDynamic,
     TariffRates Rates,
-    decimal SurchargePerKwh = AdviceEngine.DefaultSurchargePerKwh);
+    decimal SurchargePerKwh = AdviceEngine.DefaultSurchargePerKwh,
+    /// <summary>De taal van de aanvrager (nl, en, tr). Leeg is Nederlands.</summary>
+    string? Taal = null);
 
 /// <summary>
 /// Wanneer laad je je auto het voordeligst?
@@ -90,7 +93,7 @@ public static class ChargePlanner
         if (nodig <= 0 || uren.Count == 0)
         {
             return new Plan([], 0, 0, 0, 0, 0, nodig <= 0,
-                nodig <= 0 ? "Er hoeft niets geladen te worden." : "Er is geen tijd meer voor de deadline.");
+                Teksten.T(input.Taal, nodig <= 0 ? "plan.niets-te-laden" : "plan.geen-tijd-meer"));
         }
 
         // Goedkoopste uren eerst, en bij gelijke prijs het uur dat eerder valt: dan staat de auto
@@ -125,7 +128,7 @@ public static class ChargePlanner
             Geld(nuKosten - kosten),
             Afronden(zonTotaal),
             haalbaar,
-            Uitleg(gekozen, haalbaar, nuKosten - kosten, zonTotaal));
+            Uitleg(input, gekozen, haalbaar, nuKosten - kosten, zonTotaal));
     }
 
     /// <summary>Elk heel uur tussen nu en de deadline, met de prijs en de verwachte zon erbij.</summary>
@@ -199,29 +202,36 @@ public static class ChargePlanner
         return totaal;
     }
 
-    private static string Uitleg(IReadOnlyList<Slot> slots, bool haalbaar, decimal besparing, double zon)
+    private static string Uitleg(
+        ChargePlanInput input, IReadOnlyList<Slot> slots, bool haalbaar, decimal besparing, double zon)
     {
+        string T(string sleutel, params object[] waarden)
+        {
+            var tekst = Teksten.T(input.Taal, sleutel);
+            return waarden.Length == 0 ? tekst : string.Format(tekst, waarden);
+        }
+
         if (slots.Count == 0)
         {
-            return "Er is geen tijd meer voor de deadline.";
+            return T("plan.geen-tijd-meer");
         }
 
         var eerste = slots.Min(s => s.StartUtc);
         var tijd = DutchTime.LocalHour(eerste).ToString("00") + ":00";
-        var delen = new List<string> { $"Begin om {tijd}" };
+        var delen = new List<string> { T("plan.begin-om", tijd) };
 
         if (zon >= 0.5)
         {
-            delen.Add($"dan gaat er ongeveer {zon:0.#} kWh rechtstreeks van je eigen dak in de auto");
+            delen.Add(T("plan.rechtstreeks-van-je-dak", zon.ToString("0.#")));
         }
 
         if (besparing >= 0.05m)
         {
-            delen.Add($"dat scheelt € {besparing:0.00} ten opzichte van nu beginnen");
+            delen.Add(T("plan.dat-scheelt", besparing.ToString("0.00")));
         }
 
         var zin = string.Join(", ", delen) + ".";
-        return haalbaar ? zin : zin + " Let op: binnen deze tijd past hij niet helemaal vol.";
+        return haalbaar ? zin : zin + " " + T("plan.past-niet-helemaal-vol");
     }
 
     private static double Afronden(double v) => Math.Round(v, 2, MidpointRounding.AwayFromZero);

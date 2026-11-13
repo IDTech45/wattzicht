@@ -1,5 +1,6 @@
 using System.Globalization;
 using Wattzicht.Shared;
+using Wattzicht.Shared.Taal;
 
 namespace Wattzicht.Api.Services;
 
@@ -33,7 +34,9 @@ public sealed record AdviceInput(
     double TypicalBatteryKwh,
     decimal SurchargePerKwh = AdviceEngine.DefaultSurchargePerKwh,
     IReadOnlyList<HourlyIrradiance>? Forecast = null,
-    double PvPeakKw = 4.0);
+    double PvPeakKw = 4.0,
+    /// <summary>De taal van de aanvrager (nl, en, tr). Leeg is Nederlands.</summary>
+    string? Taal = null);
 
 /// <summary>
 /// Slim sturen v1: rekent uit wanneer je het beste laadt en verbruikt, en wat dat oplevert. Stuurt zelf nog niets aan.
@@ -243,10 +246,10 @@ public static class AdviceEngine
             {
                 tips.Add(new AdviceTipDto(
                     AdviceTipKind.Charger,
-                    $"Laad de auto {Span(input.NowUtc, van, tot)}",
+                    T(input, "tip.laad-de-auto", Span(input, van, tot)),
                     opZon
-                        ? $"Dan laadt hij op je eigen zon, ongeveer {kwh.ToString("0", Nl)} kWh"
-                        : $"Gemiddeld {Price(prijs)} per kWh, {kwh.ToString("0", Nl)} kWh",
+                        ? T(input, "tip.op-je-eigen-zon-ongeveer", kwh.ToString("0", Nl))
+                        : T(input, "tip.gemiddeld-per-kwh", Price(prijs), kwh.ToString("0", Nl)),
                     van,
                     tot,
                     saving));
@@ -265,8 +268,8 @@ public static class AdviceEngine
             {
                 tips.Add(new AdviceTipDto(
                     AdviceTipKind.Battery,
-                    $"Batterij laden {Span(input.NowUtc, charge.From, charge.To)}",
-                    $"En leeg gebruiken {Span(input.NowUtc, discharge.From, discharge.To)}, als stroom duur is",
+                    T(input, "tip.batterij-laden", Span(input, charge.From, charge.To)),
+                    T(input, "tip.batterij-leeg-gebruiken", Span(input, discharge.From, discharge.To)),
                     charge.From,
                     discharge.To,
                     saving));
@@ -291,10 +294,10 @@ public static class AdviceEngine
             {
                 tips.Add(new AdviceTipDto(
                     AdviceTipKind.Appliance,
-                    $"Wasmachine of vaatwasser om {Time(input.NowUtc, van)}",
+                    T(input, "tip.wasmachine-om", Time(input, van)),
                     gebruikZon
-                        ? "Dan draait hij op je eigen zon in plaats van op het net"
-                        : "Dan is stroom het goedkoopst",
+                        ? T(input, "tip.draait-op-je-eigen-zon")
+                        : T(input, "tip.stroom-het-goedkoopst"),
                     van,
                     tot,
                     saving));
@@ -357,12 +360,12 @@ public static class AdviceEngine
                 var value = Money((decimal)kwh * gainPerKwh);
                 tips.Add(new AdviceTipDto(
                     AdviceTipKind.Charger,
-                    $"Laad de auto {Span(input.NowUtc, from, to)}",
-                    "Op je eigen zonnestroom in plaats van terugleveren",
+                    T(input, "tip.laad-de-auto", Span(input, from, to)),
+                    T(input, "tip.eigen-zonnestroom-niet-terugleveren"),
                     from,
                     to,
                     saldering ? 0m : value,
-                    saldering ? $"Vanaf 2027 {Euro(value)} per dag" : null));
+                    saldering ? T(input, "tip.vanaf-2027-per-dag", Euro(value)) : null));
             }
         }
 
@@ -371,12 +374,12 @@ public static class AdviceEngine
         {
             tips.Add(new AdviceTipDto(
                 AdviceTipKind.Appliance,
-                $"Wasmachine of vaatwasser om {Time(input.NowUtc, from)}",
-                "Draait dan op je eigen dak",
+                T(input, "tip.wasmachine-om", Time(input, from)),
+                T(input, "tip.draait-op-je-eigen-dak"),
                 from,
                 to,
                 saldering ? 0m : applianceValue,
-                saldering ? $"Vanaf 2027 {Euro(applianceValue)} per beurt" : null));
+                saldering ? T(input, "tip.vanaf-2027-per-beurt", Euro(applianceValue)) : null));
         }
     }
 
@@ -408,12 +411,12 @@ public static class AdviceEngine
 
         tips.Add(new AdviceTipDto(
             AdviceTipKind.Export,
-            $"Niet terugleveren {Span(input.NowUtc, from, to)}",
-            "De prijs is dan negatief: verbruik of laad zelf zoveel mogelijk",
+            T(input, "tip.niet-terugleveren", Span(input, from, to)),
+            T(input, "tip.prijs-is-negatief"),
             from,
             to,
             0m,
-            input.IsDynamic ? "Met een dynamisch contract kost terugleveren dan geld" : null));
+            input.IsDynamic ? T(input, "tip.dynamisch-terugleveren-kost-geld") : null));
     }
 
     /// <summary>Goedkoopste of duurste aaneengesloten blok van <paramref name="hours"/> uur.</summary>
@@ -456,13 +459,27 @@ public static class AdviceEngine
 
     private static string Price(decimal value) => ((int)Math.Round(value * 100)).ToString(Nl) + " ct";
 
-    private static string Time(DateTimeOffset nowUtc, DateTimeOffset utc)
+    /// <summary>
+    /// Een tekst uit het taalpakket, in de taal van de aanvrager.
+    ///
+    /// De tips komen van de server en niet uit de app, omdat ze met gemeten waarden worden
+    /// opgebouwd. Dan hoort de taal ook hier bekend te zijn: anders staat er onder een Turks scherm
+    /// een Nederlandse tip, en dat is precies wat een half vertaalde app verraadt.
+    /// </summary>
+    private static string T(AdviceInput input, string sleutel, params object[] waarden)
     {
-        var local = DutchTime.ToLocal(utc);
-        var prefix = DutchTime.LocalDate(utc) == DutchTime.LocalDate(nowUtc) ? string.Empty : "morgen ";
-        return prefix + local.ToString("HH:mm", Nl);
+        var tekst = Teksten.T(input.Taal, sleutel);
+        return waarden.Length == 0 ? tekst : string.Format(tekst, waarden);
     }
 
-    private static string Span(DateTimeOffset nowUtc, DateTimeOffset from, DateTimeOffset to) =>
-        $"{Time(nowUtc, from)}–{DutchTime.ToLocal(to):HH:mm}";
+    private static string Time(AdviceInput input, DateTimeOffset utc)
+    {
+        var local = DutchTime.ToLocal(utc);
+        var morgen = DutchTime.LocalDate(utc) != DutchTime.LocalDate(input.NowUtc);
+        var tijd = local.ToString("HH:mm", Nl);
+        return morgen ? Teksten.T(input.Taal, "advies.morgen") + " " + tijd : tijd;
+    }
+
+    private static string Span(AdviceInput input, DateTimeOffset from, DateTimeOffset to) =>
+        $"{Time(input, from)}–{DutchTime.ToLocal(to):HH:mm}";
 }

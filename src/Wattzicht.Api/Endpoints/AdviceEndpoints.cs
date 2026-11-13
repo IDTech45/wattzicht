@@ -63,7 +63,7 @@ public static class AdviceEndpoints
     {
         var householdId = http.User.GetHouseholdId()!.Value;
         var (input, today, _) = await BouwInvoerAsync(
-            householdId, db, summaries, prices, weather, configuration, clock, ct);
+            householdId, http.Request.Taal(), db, summaries, prices, weather, configuration, clock, ct);
 
         var tip = DagTip.Bouw(input, today, AdviceEngine.Build(input));
         return tip is null ? Results.NoContent() : Results.Ok(tip);
@@ -75,6 +75,7 @@ public static class AdviceEndpoints
     /// </summary>
     private static async Task<(AdviceInput Input, DateOnly Today, IReadOnlyList<HourPrice> Prices)> BouwInvoerAsync(
         Guid householdId,
+        string taal,
         AppDbContext db,
         SummaryService summaries,
         IPriceProvider prices,
@@ -131,7 +132,8 @@ public static class AdviceEndpoints
             TypicalBatteryKwh: history.Count > 0 ? history.Max(h => h.BatteryDischargedKwh) : 0,
             SurchargePerKwh: surcharge,
             Forecast: forecast,
-            PvPeakKw: configuration.GetValue("Advice:PvPeakKw", 4.0));
+            PvPeakKw: configuration.GetValue("Advice:PvPeakKw", 4.0),
+            Taal: taal);
 
         return (input, today, hourPrices);
     }
@@ -149,7 +151,7 @@ public static class AdviceEndpoints
     {
         var householdId = http.User.GetHouseholdId()!.Value;
         var (input, _, hourPrices) = await BouwInvoerAsync(
-            householdId, db, summaries, prices, weather, configuration, clock, ct);
+            householdId, http.Request.Taal(), db, summaries, prices, weather, configuration, clock, ct);
 
         var advice = AdviceEngine.Build(input);
 
@@ -232,7 +234,8 @@ public static class AdviceEndpoints
             now, deadline, kwh, laadVermogen, hourPrices, forecast, pvPiek,
             IsDynamic: tariff?.IsDynamic ?? false,
             rates,
-            configuration.GetValue("Advice:SurchargePerKwh", AdviceEngine.DefaultSurchargePerKwh)));
+            configuration.GetValue("Advice:SurchargePerKwh", AdviceEngine.DefaultSurchargePerKwh),
+            Taal: http.Request.Taal()));
 
         return Results.Ok(new ChargePlanDto(
             plan.Slots.Select(s => new ChargeSlotDto(s.StartUtc, s.Kwh, s.SolarKwh, s.CostEur)).ToList(),

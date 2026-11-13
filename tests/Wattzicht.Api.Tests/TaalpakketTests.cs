@@ -86,26 +86,30 @@ public sealed class TaalpakketTests
     public void Elke_tekst_in_het_pakket_wordt_ook_ergens_gebruikt()
     {
         // Andersom: een sleutel die nergens meer voorkomt is dode tekst die bij elke vertaling weer
-        // meegenomen wordt. Uitzondering zijn de sleutels die de code zelf opvraagt.
-        var uitCode = new[] { "meer.taal", "meer.taal-uitleg" };
-
-        var map = AppMap();
+        // meegenomen wordt. Dit kijkt naar de hele src-map: een deel van de teksten wordt door de
+        // server opgebouwd (de tips, de dagtip, het laadplan) en komt dus niet in de app voor. De
+        // pakketten zelf slaan we over, anders bewijst elke sleutel zijn eigen bestaan.
+        var map = SrcMap();
         var inhoud = string.Join('\n', Directory
             .GetFiles(map, "*.*", SearchOption.AllDirectories)
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}Taal{Path.DirectorySeparatorChar}"))
             .Where(f => f.EndsWith(".xaml") || f.EndsWith(".cs"))
             .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")
                         && !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"))
             .Select(File.ReadAllText));
 
         var ongebruikt = TekstenNl.Alles.Keys
-            .Where(s => !uitCode.Contains(s) && !inhoud.Contains(s, StringComparison.Ordinal))
+            .Where(s => !inhoud.Contains(s, StringComparison.Ordinal))
             .ToList();
 
         Assert.Empty(ongebruikt);
     }
 
     /// <summary>De map van de app, gevonden vanaf de testmap omhoog tot de solution.</summary>
-    private static string AppMap()
+    private static string AppMap() => Path.Combine(SrcMap(), "Wattzicht.App");
+
+    /// <summary>De src-map: de app en de server, want in beide staan sleutels.</summary>
+    private static string SrcMap()
     {
         var map = new DirectoryInfo(AppContext.BaseDirectory);
         while (map is not null && !File.Exists(Path.Combine(map.FullName, "Wattzicht.sln")))
@@ -114,8 +118,8 @@ public sealed class TaalpakketTests
         }
 
         Assert.NotNull(map);
-        var app = Path.Combine(map!.FullName, "src", "Wattzicht.App");
-        Assert.True(Directory.Exists(app), $"De map van de app is niet gevonden onder {map.FullName}.");
-        return app;
+        var src = Path.Combine(map!.FullName, "src");
+        Assert.True(Directory.Exists(src), $"De src-map is niet gevonden onder {map.FullName}.");
+        return src;
     }
 }
