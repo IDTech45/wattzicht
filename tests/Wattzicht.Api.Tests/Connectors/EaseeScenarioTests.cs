@@ -199,8 +199,9 @@ public sealed class EaseeScenarioTests
         Assert.Equal(7360, meting.ChargerPowerW, 1);
         Assert.Equal(1_234_500, meting.ChargerEnergyWh!.Value, 1);
 
-        // Wat door de paal gaat, gaat ook door het huis; anders mist de verbruikskant een laadbeurt.
-        Assert.Equal(meting.ChargerPowerW, meting.LoadPowerW);
+        // En niet het huisverbruik: dat komt van een omvormer, gateway of P1-meter en bevat de auto
+        // al. Twee apparaten die hetzelfde vermogen melden tellen in de momentopname dubbel.
+        Assert.Equal(0, meting.LoadPowerW);
     }
 
     [Fact]

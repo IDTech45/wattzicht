@@ -131,9 +131,14 @@ public sealed class ZaptecConnector(IHttpClientFactory httpClientFactory, ILogge
         // terugloopt levert bij het verschil nemen negatieve kilowatturen op.
         var meterKwh = Getal(waarden, SignedMeterValueKwh);
 
+        // Alleen de laadpaalkant, en met opzet niet het huisverbruik. Een omvormer of een gateway
+        // meldt het huisverbruik inclusief de auto, en de momentopname telt alle apparaten bij
+        // elkaar op; zou een paal het huisverbruik ook vullen, dan staat bij iemand met panelen én
+        // een paal het laadvermogen er twee keer in. Heeft iemand niets anders dan een paal, dan
+        // blijft "huis" nul: wat er verder in dat huis gebeurt weten we dan niet, en nul is
+        // eerlijker dan het laadvermogen voor huisverbruik laten doorgaan.
         return new DeviceReading(
             Timestamp: nu,
-            LoadPowerW: watt,
             ChargerPowerW: watt,
             ChargerEnergyWh: meterKwh is null ? null : meterKwh.Value * 1000);
     }

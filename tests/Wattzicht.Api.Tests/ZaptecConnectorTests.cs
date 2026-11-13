@@ -29,8 +29,12 @@ public sealed class ZaptecConnectorTests
         """), Nu);
 
         Assert.Equal(7360, meting.ChargerPowerW);
-        Assert.Equal(7360, meting.LoadPowerW);
         Assert.Equal(1_834_560, meting.ChargerEnergyWh);
+
+        // En uitdrukkelijk niet het huisverbruik. Dat cijfer komt van een omvormer, een gateway of
+        // een P1-meter en bevat de auto al; zou een paal het ook vullen, dan telt de momentopname
+        // het laadvermogen dubbel bij iedereen die panelen én een paal heeft.
+        Assert.Equal(0, meting.LoadPowerW);
     }
 
     [Fact]

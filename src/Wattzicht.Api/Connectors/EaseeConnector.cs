@@ -114,10 +114,11 @@ public sealed class EaseeConnector(IHttpClientFactory httpClientFactory, ILogger
         // lifetimeEnergy is de meterstand van de paal in kWh en loopt door over laadbeurten heen.
         var meterKwh = root.GetDoubleOrNull("lifetimeEnergy", "LifetimeEnergy");
 
+        // Alleen de laadpaalkant; zie de toelichting in ZaptecConnector. Het huisverbruik komt van
+        // een omvormer, een gateway of een P1-meter, en dat cijfer bevat de auto al.
         return new DeviceReading(
             Timestamp: nu,
             ChargerPowerW: watt,
-            LoadPowerW: watt,
             ChargerEnergyWh: meterKwh is { } m ? m * 1000 : null);
     }
 
