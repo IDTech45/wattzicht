@@ -26,12 +26,14 @@ import {
   getAdminHouseholds,
   getAdminAccessLog,
   getAdminLeads,
+  getAdminOnleesbaar,
   setInstallerApproval,
   type AdminInstaller,
   type AdminOverview,
   type AdminHousehold,
   type AdminAccessLogRow,
   type AdminLead,
+  type AdminOnleesbaar,
 } from '@/api/client'
 import { euro, relativeTime } from '@/utils/format'
 
@@ -39,6 +41,10 @@ const overview = ref<AdminOverview | null>(null)
 const households = ref<AdminHousehold[]>([])
 const log = ref<AdminAccessLogRow[]>([])
 const leads = ref<AdminLead[]>([])
+const onleesbaar = ref<AdminOnleesbaar[]>([])
+
+/** Welke regel openstaat; de tekst van een nota is te lang om standaard te tonen. */
+const openTekst = ref<string | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 const search = ref('')
@@ -117,16 +123,18 @@ async function load() {
   loading.value = true
   error.value = null
   try {
-    const [o, h, l, d] = await Promise.all([
+    const [o, h, l, d, n] = await Promise.all([
       getAdminOverview(),
       getAdminHouseholds(),
       getAdminAccessLog(),
       getAdminLeads(),
+      getAdminOnleesbaar(),
     ])
     overview.value = o
     households.value = h
     log.value = l
     leads.value = d
+    onleesbaar.value = n
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Laden is niet gelukt.'
   } finally {
@@ -436,6 +444,30 @@ onMounted(load)
       </Column>
     </DataTable>
 
+    <!-- Nota's die we niet konden lezen -->
+    <h2>Niet gelezen documenten ({{ onleesbaar.length }})</h2>
+    <p class="admin__hint">
+      Bewoners die een nota uploadden waar wij niets uit haalden. Elke leverancier schrijft zijn
+      overzicht anders, dus hier staat het werk: open de tekst, kijk hoe die leverancier het
+      opschrijft en voeg het formaat toe. Een lege tekst betekent een scan of een foto zonder
+      tekstlaag. Deze regels verdwijnen dertig dagen na de upload vanzelf.
+    </p>
+    <DataTable :value="onleesbaar" :loading="loading" class="admin__table" :rows="10" paginator>
+      <Column header="Wanneer">
+        <template #body="{ data }">{{ relativeTime(data.createdAt) }}</template>
+      </Column>
+      <Column field="fileName" header="Bestand" />
+      <Column header="Tekst">
+        <template #body="{ data }">
+          <span v-if="!data.text">geen tekstlaag (scan of foto)</span>
+          <button v-else class="admin__link" type="button" @click="openTekst = openTekst === data.id ? null : data.id">
+            {{ openTekst === data.id ? 'verbergen' : `tonen (${data.text.length} tekens)` }}
+          </button>
+          <pre v-if="openTekst === data.id" class="admin__tekst">{{ data.text }}</pre>
+        </template>
+      </Column>
+    </DataTable>
+
     <!-- Logboek -->
     <h2>Wie keek er bij wie</h2>
     <p class="admin__hint">
@@ -454,6 +486,24 @@ onMounted(load)
 </template>
 
 <style scoped>
+.admin__link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--p-primary-color, #0a7);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.admin__tekst {
+  margin: 0.5rem 0 0;
+  max-height: 20rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-size: 0.8rem;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 0.6rem;
+  border-radius: 6px;
+}
 .admin__head h1 {
   margin: 0;
 }

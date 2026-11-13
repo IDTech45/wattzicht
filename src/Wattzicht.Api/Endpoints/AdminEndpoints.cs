@@ -50,6 +50,10 @@ public static class AdminEndpoints
             .WithSummary("Demo-aanvragen van de website, nieuwste eerst.")
             .Produces<List<AdminLeadDto>>();
 
+        group.MapGet("/failed-imports", OnleesbaarAsync)
+            .WithSummary("Documenten waar het inlezen niets uit haalde, nieuwste eerst.")
+            .Produces<List<AdminOnleesbaarDto>>();
+
         group.MapGet("/access-log", AccessLogAsync)
             .WithSummary("Wie keek er bij wie mee: de laatste handelingen van installateurs bij klanten.")
             .Produces<List<AdminAccessLogDto>>();
@@ -187,6 +191,24 @@ public static class AdminEndpoints
             .Select(r => new AdminLeadDto(
                 r.Id, r.Name, r.Company, r.Email, r.Phone, r.CustomerCount, r.Source, r.CreatedAt, r.IsCustomer))
             .ToList());
+    }
+
+    /// <summary>
+    /// Documenten waar het inlezen niets uit haalde.
+    ///
+    /// Hier staat geen naam en geen adres bij, en dat is met opzet: om een formaat toe te voegen
+    /// hoef je niet te weten van wie de nota is. De tekst zelf kan er wel een bevatten, dus deze
+    /// lijst gaat dertig dagen mee en daarna is hij weg.
+    /// </summary>
+    private static async Task<IResult> OnleesbaarAsync(AppDbContext db, CancellationToken ct)
+    {
+        var rijen = await db.FailedImports.IgnoreQueryFilters()
+            .OrderByDescending(x => x.CreatedAt)
+            .Take(100)
+            .Select(x => new AdminOnleesbaarDto(x.Id, x.FileName, x.Text, x.CreatedAt, x.ExpiresAt))
+            .ToListAsync(ct);
+
+        return Results.Ok(rijen);
     }
 
     private static async Task<IResult> InstallersAsync(AppDbContext db, IConfiguration config, TimeProvider clock, CancellationToken ct) =>

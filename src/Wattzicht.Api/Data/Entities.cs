@@ -314,6 +314,34 @@ public sealed class SupplierUsage
     public DateTimeOffset UpdatedAt { get; set; }
 }
 
+/// <summary>
+/// Een document dat een bewoner uploadde en waar wij niets uit konden halen.
+///
+/// Waarom dit bestaat: het inlezen van een nota is zoeken op woorden en patronen, en elke
+/// leverancier schrijft zijn nota anders. Zonder te zien wat er misging kunnen we het alleen
+/// repareren als iemand toevallig belt. Met de uitgelezen tekst erbij is het meestal een regel werk.
+///
+/// We bewaren de tekst, niet het bestand. En niet langer dan dertig dagen: daarna is het geen
+/// materiaal meer om iets mee te repareren, maar gewoon post van iemand anders die bij ons ligt.
+/// </summary>
+public sealed class FailedImport
+{
+    public Guid Id { get; set; }
+    public Guid HouseholdId { get; set; }
+    public Household Household { get; set; } = null!;
+
+    /// <summary>De naam van het bestand, als aanwijzing welke leverancier het is.</summary>
+    public string FileName { get; set; } = string.Empty;
+
+    /// <summary>De tekst die wij eruit haalden, afgekapt.</summary>
+    public string Text { get; set; } = string.Empty;
+
+    public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>Wanneer deze regel wordt opgeruimd.</summary>
+    public DateTimeOffset ExpiresAt { get; set; }
+}
+
 public sealed class DailySummary
 {
     public Guid Id { get; set; }

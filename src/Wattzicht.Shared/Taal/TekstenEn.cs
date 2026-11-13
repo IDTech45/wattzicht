@@ -517,7 +517,7 @@ public static class TekstenEn
         ["verbruik.maand"] = "According to your supplier {0}: {1} kWh from the grid.",
         ["verbruik.wij-maten"] = "We measured {0} kWh.",
         ["verbruik.en-meer"] = "{0} months imported in total.",
-        ["contract.niets-gevonden"] = "We could not find any rates or monthly figures in this one.",
+        ["contract.niets-gevonden"] = "We could not find any rates or monthly figures in this one. We keep the text of this document for thirty days so we can add this kind of statement.",
 
         ["verbruik.titel"] = "According to your supplier",
         ["verbruik.uitleg"] = "From the overviews you imported, with what we measured that month next to it.",

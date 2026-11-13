@@ -525,7 +525,7 @@ public static class TekstenNl
         ["verbruik.maand"] = "Volgens je leverancier {0}: {1} kWh van het net.",
         ["verbruik.wij-maten"] = "Wij maten {0} kWh.",
         ["verbruik.en-meer"] = "In totaal {0} maanden ingelezen.",
-        ["contract.niets-gevonden"] = "Hier konden we geen tarieven en geen maandcijfers in vinden.",
+        ["contract.niets-gevonden"] = "Hier konden we geen tarieven en geen maandcijfers in vinden. We bewaren de tekst van dit document dertig dagen, zodat we dit soort overzicht kunnen toevoegen.",
 
         ["verbruik.titel"] = "Volgens je leverancier",
         ["verbruik.uitleg"] = "Uit de overzichten die je hebt ingelezen, met wat wij die maand zelf maten ernaast.",

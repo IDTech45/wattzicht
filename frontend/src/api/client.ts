@@ -128,6 +128,16 @@ export interface AdminOverview {
   planYearly: number
 }
 
+/** Een document waar het inlezen van een nota niets uit haalde. */
+export interface AdminOnleesbaar {
+  id: string
+  fileName: string
+  /** Leeg betekent: geen tekstlaag, dus een scan of een foto. */
+  text: string
+  createdAt: string
+  expiresAt: string
+}
+
 export interface AdminAccessLogRow {
   at: string
   installerName: string
@@ -420,6 +430,10 @@ export function setInstallerApproval(id: string, approved: boolean): Promise<Adm
 
 export function getAdminLeads(): Promise<AdminLead[]> {
   return request<AdminLead[]>('/admin/leads')
+}
+
+export function getAdminOnleesbaar(): Promise<AdminOnleesbaar[]> {
+  return request<AdminOnleesbaar[]>('/admin/failed-imports')
 }
 
 export function getAdminAccessLog(): Promise<AdminAccessLogRow[]> {

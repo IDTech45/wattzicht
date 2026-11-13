@@ -21,6 +21,11 @@
         <li>Meetwaarden van je apparaten, elke vijf minuten: opwek, verbruik, netstroom, batterijstand en laadvermogen.</li>
         <li>Je energietarief, als je dat invult, om je besparing te berekenen.</li>
         <li>Bij een demo-aanvraag: je naam, bedrijf, e-mailadres en telefoonnummer.</li>
+        <li>
+          Lees je een pdf van je leverancier in en halen we er niets uit, dan bewaren we de tekst van dat document
+          dertig dagen. Alleen daarmee kunnen we het overzicht van jouw leverancier alsnog leren lezen. Lukt het inlezen
+          wel, dan bewaren we het document niet.
+        </li>
       </ul>
 
       <h2>Waarvoor</h2>
@@ -33,7 +38,8 @@
       <h2>Hoe lang</h2>
       <p>
         Meetwaarden bewaren we zolang je een account hebt, zodat je je besparing per jaar terug kunt zien. Verwijder je
-        je account, dan wissen we alles binnen dertig dagen. Demo-aanvragen bewaren we maximaal een jaar.
+        je account, dan wissen we alles binnen dertig dagen. Demo-aanvragen bewaren we maximaal een jaar. Een document
+        dat we niet konden lezen verdwijnt dertig dagen na het inlezen vanzelf.
       </p>
 
       <h2>Waar</h2>

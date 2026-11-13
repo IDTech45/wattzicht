@@ -306,6 +306,7 @@ public partial class SettingsViewModel : BaseViewModel
             // naar allebei en vertellen we wat we gevonden hebben.
             var regels = new List<string>();
             TariefVoorstelDto? voorstel = null;
+            var ietsGevonden = false;
 
             try
             {
@@ -334,6 +335,8 @@ public partial class SettingsViewModel : BaseViewModel
                         regels.Add(string.Format(Taal.T("verbruik.wij-maten"), onze.ToString("0", Nl)));
                     }
                 }
+
+                ietsGevonden |= verbruik.Maanden.Count > 0;
 
                 if (verbruik.Maanden.Count > 3)
                 {
@@ -375,10 +378,31 @@ public partial class SettingsViewModel : BaseViewModel
 
             if (voorstel is not null)
             {
+                ietsGevonden = true;
                 regels.Add(Taal.T("contract.controleer"));
             }
 
-            ContractResultaat = regels.Count > 0 ? string.Join(" ", regels) : Taal.T("contract.niets-gevonden");
+            if (ietsGevonden)
+            {
+                ContractResultaat = string.Join(" ", regels);
+                return;
+            }
+
+            // Niets gevonden. Dit is het enige punt waarop vaststaat dat wij dit formaat niet
+            // kennen, dus hier melden we het, met de uitgelezen tekst erbij. Anders komen we er
+            // alleen achter als deze bewoner toevallig belt.
+            ContractResultaat = Taal.T("contract.niets-gevonden");
+
+            try
+            {
+                await using var meldStroom = await keuze.OpenReadAsync();
+                await _api.MeldOnleesbaarAsync(meldStroom, keuze.FileName, "application/pdf");
+            }
+            catch (Exception)
+            {
+                // De melding is voor ons, niet voor de bewoner. Mislukt die, dan merkt hij er niets
+                // van: hij heeft al gelezen dat er niets in stond.
+            }
         }
         catch (ApiException ex)
         {

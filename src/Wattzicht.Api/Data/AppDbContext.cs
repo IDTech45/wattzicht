@@ -30,6 +30,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
     public DbSet<Tariff> Tariffs => Set<Tariff>();
     public DbSet<DailySummary> DailySummaries => Set<DailySummary>();
     public DbSet<SupplierUsage> SupplierUsages => Set<SupplierUsage>();
+    public DbSet<FailedImport> FailedImports => Set<FailedImport>();
     public DbSet<Alert> Alerts => Set<Alert>();
     public DbSet<Lead> Leads => Set<Lead>();
     public DbSet<InstallerAccessLog> InstallerAccessLogs => Set<InstallerAccessLog>();
@@ -194,6 +195,19 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
             e.HasKey(x => x.Id);
             e.HasIndex(x => new { x.HouseholdId, x.Month }).IsUnique();
             e.HasOne(x => x.Household).WithMany().HasForeignKey(x => x.HouseholdId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<FailedImport>(e =>
+        {
+            e.ToTable("failed_imports");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.FileName).HasMaxLength(200);
+            e.HasIndex(x => x.CreatedAt);
+            e.HasOne(x => x.Household).WithMany().HasForeignKey(x => x.HouseholdId).OnDelete(DeleteBehavior.Cascade);
+
+            // Geen huurdersfilter: dit is beheerwerk. Een bewoner komt er nergens bij, en de
+            // beheerder moet juist over woningen heen kunnen kijken om een formaat te herkennen.
+            e.HasQueryFilter(x => true);
         });
 
         modelBuilder.Entity<DailySummary>(e =>

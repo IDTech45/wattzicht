@@ -160,6 +160,12 @@ public static class HouseholdEndpoints
             .ProducesValidationProblem()
             .DisableAntiforgery();
 
+        household.MapPost("/import/unreadable", OnleesbaarMeldenAsync)
+            .WithSummary("Meldt dat er uit dit document niets te halen viel, zodat wij het formaat kunnen toevoegen.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesValidationProblem()
+            .DisableAntiforgery();
+
         household.MapPost("/history/import", HistorieImporterenAsync)
             .WithSummary("Leest een CSV-export uit het portaal van de fabrikant in als dagtotalen opwek.")
             .Produces<HistorieImportDto>()
@@ -386,6 +392,83 @@ public static class HouseholdEndpoints
     /// Het antwoord zet er meteen bij wat wij die maand zelf maten. Lopen die twee uit elkaar, dan
     /// is dat precies het moment waarop iemand wil weten waarom.
     /// </summary>
+    /// <summary>
+    /// Een document waar niets uit kwam.
+    ///
+    /// De app weet dit als enige: zij probeert dezelfde pdf langs de tarieven en langs de
+    /// maandcijfers, en pas als allebei niets opleveren staat er "hier konden we niets in vinden".
+    /// Dat moment melden we hier, met de uitgelezen tekst erbij. Elke leverancier schrijft zijn nota
+    /// anders, en zonder te zien wat er stond kunnen we het formaat alleen toevoegen als iemand
+    /// toevallig belt.
+    ///
+    /// Wat we bewaren is de tekst en niet het bestand, afgekapt, en dertig dagen lang. Daarna is het
+    /// geen materiaal meer om iets mee te repareren maar post van iemand anders die bij ons ligt.
+    /// </summary>
+    private static async Task<IResult> OnleesbaarMeldenAsync(
+        HttpContext http,
+        AppDbContext db,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+
+        if (!http.Request.HasFormContentType)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] = ["Stuur het bestand mee als formulierveld 'bestand'."],
+            });
+        }
+
+        var form = await http.Request.ReadFormAsync(ct);
+        var bestand = form.Files["bestand"] ?? form.Files.FirstOrDefault();
+
+        if (bestand is null || bestand.Length == 0 || bestand.Length > MaximumBestand)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]> { ["bestand"] = ["Er zat geen bruikbaar bestand bij."] });
+        }
+
+        string tekst;
+        await using (var stroom = bestand.OpenReadStream())
+        {
+            var gelezen = DocumentTekst.Lees(stroom, bestand.FileName, bestand.ContentType);
+
+            // Zat er geen tekstlaag in, dan is dat zelf het nieuws: een scan of een foto. Dan slaan
+            // we de melding op zonder tekst, zodat we tellen hoe vaak dat gebeurt.
+            tekst = gelezen.Tekst ?? string.Empty;
+        }
+
+        var nu = clock.GetUtcNow();
+
+        // Twee keer dezelfde pdf proberen hoort één regel te blijven. De naam en de maat samen zijn
+        // genoeg om dat te zien; een hash over de tekst zou op een scan zonder tekstlaag alles op
+        // één hoop gooien.
+        var bestaand = await db.FailedImports.FirstOrDefaultAsync(
+            x => x.HouseholdId == householdId && x.FileName == bestand.FileName, ct);
+
+        if (bestaand is not null)
+        {
+            bestaand.Text = ImportDagboek.Afkappen(tekst);
+            bestaand.CreatedAt = nu;
+            bestaand.ExpiresAt = nu + ImportDagboek.Bewaartermijn;
+        }
+        else
+        {
+            db.FailedImports.Add(new FailedImport
+            {
+                Id = Guid.NewGuid(),
+                HouseholdId = householdId,
+                FileName = ImportDagboek.KorteNaam(bestand.FileName),
+                Text = ImportDagboek.Afkappen(tekst),
+                CreatedAt = nu,
+                ExpiresAt = nu + ImportDagboek.Bewaartermijn,
+            });
+        }
+
+        await db.SaveChangesAsync(ct);
+        return Results.NoContent();
+    }
+
     private static async Task<IResult> VerbruikLezenAsync(
         HttpContext http,
         AppDbContext db,

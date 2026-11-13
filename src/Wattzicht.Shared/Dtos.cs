@@ -939,6 +939,19 @@ public sealed record AdminLeadDto(
     DateTimeOffset CreatedAt,
     bool IsCustomer);
 
+/// <summary>Een document waar het inlezen niets uit haalde (GET /admin/failed-imports).</summary>
+/// <param name="Id">Regelnummer.</param>
+/// <param name="FileName">De bestandsnaam, als aanwijzing welke leverancier het is.</param>
+/// <param name="Text">De uitgelezen tekst, afgekapt. Leeg betekent: geen tekstlaag, dus een scan of een foto.</param>
+/// <param name="CreatedAt">Wanneer het geprobeerd werd.</param>
+/// <param name="ExpiresAt">Wanneer deze regel vanzelf wordt opgeruimd.</param>
+public sealed record AdminOnleesbaarDto(
+    Guid Id,
+    string FileName,
+    string Text,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset ExpiresAt);
+
 /// <summary>Wie keek er bij wie mee (GET /admin/access-log).</summary>
 /// <param name="At">Wanneer.</param>
 /// <param name="InstallerName">Welke installateur.</param>

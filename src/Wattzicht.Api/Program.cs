@@ -138,6 +138,9 @@ builder.Services.AddHostedService<SubscriptionWorker>();
 
 // Herinneringen van de LaadCash-campagne (push en mail). Staat niet achter Plus.
 builder.Services.AddHostedService<LaadcashPromoWorker>();
+
+// Dagelijks: wat een bewaartermijn heeft en eroverheen is, gaat weg.
+builder.Services.AddHostedService<OpruimWorker>();
 builder.Services.AddScoped<InsightsService>();
 builder.Services.AddScoped<AandachtService>();
 

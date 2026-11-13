@@ -243,6 +243,27 @@ public sealed class ApiClient
         return await SendAsync<VerbruikImportDto>(req, ct);
     }
 
+    /// <summary>
+    /// Meldt dat er uit dit document niets te halen viel.
+    ///
+    /// Alleen de app weet dit: zij probeert hetzelfde bestand langs de tarieven en langs de
+    /// maandcijfers. Pas als allebei niets opleveren is het een formaat dat wij nog niet kennen.
+    /// </summary>
+    public async Task MeldOnleesbaarAsync(
+        Stream bestand, string bestandsnaam, string contentType, CancellationToken ct = default)
+    {
+        using var inhoud = new MultipartFormDataContent();
+        using var deel = new StreamContent(bestand);
+        deel.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        inhoud.Add(deel, "bestand", bestandsnaam);
+
+        using var req = new HttpRequestMessage(HttpMethod.Post, Relative("/import/unreadable")) { Content = inhoud };
+        await AuthorizeAsync(req);
+
+        using var antwoord = await SendRawAsync(req, ct);
+        await EnsureSuccessAsync(antwoord, ct);
+    }
+
     /// <summary>Alle dagcijfers van deze woning als CSV.</summary>
     public async Task<string> ExportCsvAsync(CancellationToken ct = default)
     {

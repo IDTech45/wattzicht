@@ -24,6 +24,8 @@ public static class HuishoudenVerwijderen
         db.Readings.RemoveRange(db.Readings.IgnoreQueryFilters().Where(x => x.Device!.HouseholdId == homeId));
         db.Alerts.RemoveRange(db.Alerts.IgnoreQueryFilters().Where(x => x.Device!.HouseholdId == homeId));
 
+        db.FailedImports.RemoveRange(
+            db.FailedImports.IgnoreQueryFilters().Where(x => x.HouseholdId == homeId));
         db.SupplierUsages.RemoveRange(
             db.SupplierUsages.IgnoreQueryFilters().Where(x => x.HouseholdId == homeId));
         db.DailySummaries.RemoveRange(db.DailySummaries.IgnoreQueryFilters().Where(x => x.HouseholdId == homeId));

@@ -522,7 +522,7 @@ public static class TekstenTr
         ["verbruik.maand"] = "Tedarikçinize göre {0}: şebekeden {1} kWh.",
         ["verbruik.wij-maten"] = "Biz {0} kWh ölçtük.",
         ["verbruik.en-meer"] = "Toplam {0} ay içe aktarıldı.",
-        ["contract.niets-gevonden"] = "Burada ne tarife ne de aylık veri bulabildik.",
+        ["contract.niets-gevonden"] = "Burada ne tarife ne de aylık veri bulabildik. Bu tür bir dökümü ekleyebilmek için belgenin metnini otuz gün saklıyoruz.",
 
         ["verbruik.titel"] = "Tedarikçinize göre",
         ["verbruik.uitleg"] = "İçe aktardığınız özetlerden, o ay bizim ölçtüğümüzle birlikte.",

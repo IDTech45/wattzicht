@@ -11,6 +11,19 @@ public static class SchemaUpgrades
 {
     private static readonly string[] Steps =
     [
+        // 2026-11: documenten waar het inlezen niets uit haalde, dertig dagen bewaard.
+        """
+        CREATE TABLE IF NOT EXISTS failed_imports (
+            "Id" uuid NOT NULL PRIMARY KEY,
+            "HouseholdId" uuid NOT NULL REFERENCES households ("Id") ON DELETE CASCADE,
+            "FileName" character varying(200) NOT NULL,
+            "Text" text NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            "ExpiresAt" timestamp with time zone NOT NULL
+        )
+        """,
+        """CREATE INDEX IF NOT EXISTS ix_failed_imports_created ON failed_imports ("CreatedAt")""",
+
         // 2026-11: wat de leverancier per maand zegt dat er van en naar het net ging.
         """
         CREATE TABLE IF NOT EXISTS supplier_usage (
