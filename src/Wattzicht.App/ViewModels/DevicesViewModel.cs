@@ -45,9 +45,12 @@ public partial class DevicesViewModel : BaseViewModel
             // Het piekvermogen hangt aan de woning. Een aparte vraag dus, en eentje die mag mislukken:
             // de lijst met apparaten hoort niet leeg te blijven omdat dat ene getal niet opkwam.
             double? piek = null;
+            int? panelen = null;
             try
             {
-                piek = (await _api.GetHouseholdAsync()).PvPeakKw;
+                var woning = await _api.GetHouseholdAsync();
+                piek = woning.PvPeakKw;
+                panelen = woning.PvPanelCount;
             }
             catch (ApiException)
             {
@@ -56,7 +59,7 @@ public partial class DevicesViewModel : BaseViewModel
 
             Devices.Clear();
             foreach (var d in devices.OrderBy(d => d.Type).ThenBy(d => d.Name))
-                Devices.Add(new DeviceItem(d, piek));
+                Devices.Add(new DeviceItem(d, piek, panelen));
             HasLoaded = true;
         }, _auth);
         IsRefreshing = false;

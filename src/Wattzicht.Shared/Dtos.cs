@@ -98,8 +98,10 @@ public sealed record HouseholdDto(
     string InstallerName,
     DateTimeOffset CreatedAt,
     bool InstallerAccessGranted = false,
-    /// <summary>Piekvermogen van de panelen in kWp, als de bewoner het heeft ingevuld.</summary>
+    /// <summary>Piekvermogen van de panelen in kWp: van de omvormer, of zoals de bewoner het invulde.</summary>
     double? PvPeakKw = null,
+    /// <summary>Het aantal panelen zoals de omvormer het meldt; null als het merk dat niet vertelt.</summary>
+    int? PvPanelCount = null,
     /// <summary>
     /// Of we een plaats hebben kunnen vinden. Zonder plaats geen zonverwachting, en dat is precies
     /// wat de app moet kunnen zeggen in plaats van alleen "geen verwachting beschikbaar".

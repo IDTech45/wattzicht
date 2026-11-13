@@ -304,10 +304,19 @@ public sealed class EnphaseConnector(
             ? DateTimeOffset.FromUnixTimeSeconds((long)unix)
             : DateTimeOffset.UtcNow;
 
+        // Enphase vertelt in dezelfde samenvatting hoe groot de installatie is en hoeveel panelen
+        // eraan hangen. Dat hoort de bewoner niet uit een offerte van jaren geleden over te tikken,
+        // en het kost ons geen extra aanroep: het staat in het antwoord dat we toch al ophalen. Dat
+        // laatste telt, want het developer-plan heeft een maandquotum.
+        var piekW = root.GetDoubleOrNull("size_w", "sizeW");
+        var panelen = root.GetDoubleOrNull("modules", "module_count", "moduleCount");
+
         return new DeviceReading(
             Timestamp: gemeldOp,
             PvPowerW: Math.Round(vermogenW),
-            PvEnergyWh: opwekTotaalWh);
+            PvEnergyWh: opwekTotaalWh,
+            PvPeakW: piekW is > 0 ? piekW : null,
+            PanelCount: panelen is > 0 and < 10_000 ? (int)panelen.Value : null);
     }
 
     // -----------------------------------------------------------------------

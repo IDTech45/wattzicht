@@ -616,5 +616,12 @@ public static class TekstenTr
         ["meer.aan"] = "Açık",
         ["meer.uit"] = "Kapalı",
 
+
+        // ---- wat de omvormer over de installatie meldt ----
+        ["apparaten.panelen"] = "{0} panel",
+        ["apparaten.paneel"] = "{0} panel",
+        ["woning.panelen-gevonden"] = "Invertörünüz {0} panel bildiriyor; aşağıdaki tepe gücü oradan geliyor.",
+        ["woning.paneel-gevonden"] = "Invertörünüz {0} panel bildiriyor; aşağıdaki tepe gücü oradan geliyor.",
+
     }.ToFrozenDictionary();
 }

@@ -161,6 +161,7 @@ public sealed class HouseholdQueries(AppDbContext db, TimeProvider clock, Connec
         h.CreatedAt,
         h.InstallerAccessGranted,
         h.PvPeakKw,
+        h.PvPanelCount,
         // Niet de coördinaten zelf: de app hoeft alleen te weten of er een zonverwachting kan zijn.
         h.Latitude is not null && h.Longitude is not null);
 

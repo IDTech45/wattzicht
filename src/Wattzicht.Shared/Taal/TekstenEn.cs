@@ -611,5 +611,12 @@ public static class TekstenEn
         ["meer.aan"] = "On",
         ["meer.uit"] = "Off",
 
+
+        // ---- wat de omvormer over de installatie meldt ----
+        ["apparaten.panelen"] = "{0} panels",
+        ["apparaten.paneel"] = "{0} panel",
+        ["woning.panelen-gevonden"] = "Your inverter reports {0} panels; the peak power below comes from there.",
+        ["woning.paneel-gevonden"] = "Your inverter reports {0} panel; the peak power below comes from there.",
+
     }.ToFrozenDictionary();
 }

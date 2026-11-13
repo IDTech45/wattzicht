@@ -11,6 +11,9 @@ public static class SchemaUpgrades
 {
     private static readonly string[] Steps =
     [
+        // 2026-11: het aantal panelen zoals de omvormer het meldt.
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "PvPanelCount" integer NULL""",
+
         // 2026-11: documenten waar het inlezen niets uit haalde, dertig dagen bewaard.
         """
         CREATE TABLE IF NOT EXISTS failed_imports (

@@ -130,6 +130,15 @@ public sealed class Household
     /// </summary>
     public double? PvPeakKw { get; set; }
 
+    /// <summary>
+    /// Het aantal panelen, zoals de omvormer het meldt.
+    ///
+    /// Dit vragen we niet: wie een omvormer koppelt heeft ons al verteld wat er op zijn dak ligt, hij
+    /// weet het alleen zelf niet uit zijn hoofd. Enphase geeft het aantal micro-omvormers mee in de
+    /// samenvatting die we toch al ophalen.
+    /// </summary>
+    public int? PvPanelCount { get; set; }
+
     /// <summary>Wanneer we voor het laatst meldden dat de panelen te weinig leveren.</summary>
     public DateTimeOffset? LastPerformancePushAt { get; set; }
 

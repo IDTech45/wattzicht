@@ -619,5 +619,12 @@ public static class TekstenNl
         ["meer.aan"] = "Aan",
         ["meer.uit"] = "Uit",
 
+
+        // ---- wat de omvormer over de installatie meldt ----
+        ["apparaten.panelen"] = "{0} panelen",
+        ["apparaten.paneel"] = "{0} paneel",
+        ["woning.panelen-gevonden"] = "Je omvormer meldt {0} panelen; het piekvermogen hieronder komt daarvandaan.",
+        ["woning.paneel-gevonden"] = "Je omvormer meldt {0} paneel; het piekvermogen hieronder komt daarvandaan.",
+
     }.ToFrozenDictionary();
 }

@@ -17,10 +17,14 @@ public sealed class DeviceItem
     /// </summary>
     public double? PiekKw { get; }
 
-    public DeviceItem(DeviceDto device, double? piekKw = null)
+    /// <summary>Het aantal panelen, als het merk dat meldt.</summary>
+    public int? Panelen { get; }
+
+    public DeviceItem(DeviceDto device, double? piekKw = null, int? panelen = null)
     {
         Device = device;
         PiekKw = device.Type == DeviceType.Inverter ? piekKw : null;
+        Panelen = device.Type == DeviceType.Inverter ? panelen : null;
     }
 
     public Guid Id => Device.Id;
@@ -45,9 +49,31 @@ public sealed class DeviceItem
         _ => Device.Type.ToString()
     };
 
-    public string Subtitle => PiekKw is { } kwp and > 0
-        ? $"{BrandName} · {TypeName} · {kwp.ToString("0.#").Replace('.', ',')} kWp"
-        : $"{BrandName} · {TypeName}";
+    /// <summary>
+    /// Merk, soort, en wat er op het dak ligt.
+    ///
+    /// Het piekvermogen en het aantal panelen komen van de omvormer zelf. Dat hoort hier te staan en
+    /// niet in een invulveld: wie zijn omvormer koppelt heeft ons al verteld wat er op zijn dak ligt.
+    /// </summary>
+    public string Subtitle
+    {
+        get
+        {
+            var delen = new List<string> { BrandName, TypeName };
+
+            if (Panelen is { } aantal and > 0)
+            {
+                delen.Add(string.Format(Taal.T(aantal == 1 ? "apparaten.paneel" : "apparaten.panelen"), aantal));
+            }
+
+            if (PiekKw is { } kwp and > 0)
+            {
+                delen.Add($"{kwp.ToString("0.#").Replace('.', ',')} kWp");
+            }
+
+            return string.Join(" · ", delen);
+        }
+    }
 
     /// <summary>
     /// Merken die alleen op het thuisnetwerk praten. Die leest de app zelf uit, en dus alleen als je

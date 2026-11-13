@@ -81,6 +81,9 @@
                             </Border>
                             <Label Grid.Column="1" Text="kWp" Style="{StaticResource SubtitleLabel}" VerticalOptions="Center" />
                         </Grid>
+                        <Label Text="{Binding PanelenTekst}" Style="{StaticResource StatCaption}"
+                               IsVisible="{Binding HeeftPanelen}"
+                               TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
                         <Label Text="{t:T woning.piek-uitleg}" Style="{StaticResource StatCaption}" />
 
                         <!-- Wij kunnen het zelf uitrekenen uit de opwek en de zon die erop viel, dus

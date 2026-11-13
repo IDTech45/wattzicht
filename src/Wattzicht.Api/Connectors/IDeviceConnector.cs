@@ -51,7 +51,9 @@ public sealed record DeviceReading(
     double? ExportEnergyWh = null,
     double? ChargerEnergyWh = null,
     double? BatteryChargeEnergyWh = null,
-    double? BatteryDischargeEnergyWh = null)
+    double? BatteryDischargeEnergyWh = null,
+    double? PvPeakW = null,
+    int? PanelCount = null)
 {
     /// <summary>Zet om naar een database-entiteit voor het opgegeven apparaat.</summary>
     public Reading ToEntity(Guid deviceId) => new()

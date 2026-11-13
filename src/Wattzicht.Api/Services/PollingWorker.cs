@@ -237,6 +237,9 @@ public sealed class PollingWorker(
         var ok = 0;
         var fail = 0;
 
+        // Pas ophalen als een merk echt iets over de installatie meldt; de meeste doen dat niet.
+        Household? woning = null;
+
         foreach (var device in devices)
         {
             var connector = registry.Get(device.Brand);
@@ -294,6 +297,17 @@ public sealed class PollingWorker(
 
                 db.Readings.Add(entity);
                 latest.Add(entity);
+
+                // Vertelt het merk hoe groot de installatie is, dan nemen we dat over. Dat scheelt
+                // de bewoner een invulveld waarvan hij het antwoord in een oude offerte moet zoeken.
+                if (reading.PvPeakW is not null || reading.PanelCount is not null)
+                {
+                    woning ??= await db.Households.FirstOrDefaultAsync(h => h.Id == householdId, ct);
+                    if (woning is not null)
+                    {
+                        InstallatieFeiten.Overnemen(woning, reading);
+                    }
+                }
 
                 device.LastSeenAt = entity.Timestamp;
                 device.LastError = null;

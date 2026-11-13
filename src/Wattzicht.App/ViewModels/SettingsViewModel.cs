@@ -94,6 +94,23 @@ public partial class SettingsViewModel : BaseViewModel
 
     public bool HeeftSchatting => GeschatPiek is not null;
 
+    /// <summary>
+    /// Wat de omvormer zelf over de installatie meldt.
+    ///
+    /// Staat er een aantal panelen, dan hoeft hier niets meer ingevuld te worden en zegt de app dat
+    /// ook. Het veld blijft staan voor merken die er niets over vertellen.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HeeftPanelen))]
+    [NotifyPropertyChangedFor(nameof(PanelenTekst))]
+    private int? _panelen;
+
+    public bool HeeftPanelen => Panelen is > 0;
+
+    public string PanelenTekst => Panelen is { } aantal and > 0
+        ? string.Format(Taal.T(aantal == 1 ? "woning.paneel-gevonden" : "woning.panelen-gevonden"), aantal)
+        : string.Empty;
+
     public string SchattingTekst => GeschatPiek is { } kwp
         ? string.Format(Taal.T("woning.schatting"), kwp.ToString("0.#", Nl))
         : string.Empty;
@@ -169,6 +186,7 @@ public partial class SettingsViewModel : BaseViewModel
         PiekVermogen = woning.PvPeakKw is { } kwp ? kwp.ToString("0.##", Nl) : string.Empty;
         HeeftLocatie = woning.HasLocation;
         GeschatPiek = woning.PvPeakKwGeschat;
+        Panelen = woning.PvPanelCount;
     }
 
     /// <summary>Aan of Uit in woorden; een kleurverschil alleen is te weinig om op af te gaan.</summary>
