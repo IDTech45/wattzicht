@@ -152,6 +152,43 @@ public static class HistorieImport
         return new Uitkomst(dagen, null, koppen);
     }
 
+    /// <summary>
+    /// Welke dagen uit de export we overnemen.
+    ///
+    /// Twee regels, en ze hebben allebei een reden die je achteraf niet meer ziet:
+    ///
+    /// Een dag die wij zelf al gemeten hebben blijft staan. Onze eigen meting loopt elke vijf
+    /// minuten en kent ook de verbruikskant en de netkant; een dagtotaal uit een ander systeem is
+    /// alleen opwek. Dat eroverheen zetten maakt de besparing die al was uitgerekend stiller én
+    /// onjuist, en niemand zou kunnen zien waar dat vandaan kwam.
+    ///
+    /// Vandaag slaan we altijd over, ook als we er nog niets van hebben. Die dag is niet klaar: de
+    /// export heeft hem tot het moment van downloaden en wij meten vanavond door. Twee halve dagen
+    /// bij elkaar optellen geeft een piek die er nooit was.
+    /// </summary>
+    /// <param name="uitBestand">Wat er in de export stond.</param>
+    /// <param name="eigenMetingen">Dagen waarvan wij zelf al een meting hebben.</param>
+    /// <param name="vandaag">Vandaag in Nederlandse tijd.</param>
+    public static (IReadOnlyList<Dag> Overnemen, int Overgeslagen) Kiezen(
+        IReadOnlyList<Dag> uitBestand, IReadOnlySet<DateOnly> eigenMetingen, DateOnly vandaag)
+    {
+        var overnemen = new List<Dag>();
+        var overgeslagen = 0;
+
+        foreach (var dag in uitBestand)
+        {
+            if (dag.Datum >= vandaag || eigenMetingen.Contains(dag.Datum))
+            {
+                overgeslagen++;
+                continue;
+            }
+
+            overnemen.Add(dag);
+        }
+
+        return (overnemen, overgeslagen);
+    }
+
     /// <summary>Komma, puntkomma of tab: wat het vaakst voorkomt in de regel.</summary>
     private static char Scheidingsteken(string regel)
     {

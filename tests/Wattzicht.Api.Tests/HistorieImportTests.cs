@@ -204,6 +204,56 @@ public sealed class HistorieImportTests
     }
 
     [Fact]
+    public void Dagen_die_we_zelf_hebben_gemeten_blijven_staan()
+    {
+        // Onze eigen meting loopt elke vijf minuten en kent ook de verbruikskant. Die overschrijven
+        // met een dagtotaal uit een ander systeem maakt de besparing die al was uitgerekend onjuist,
+        // en achteraf is niet meer te zien waar dat vandaan kwam.
+        var uitBestand = new List<HistorieImport.Dag>
+        {
+            new(new DateOnly(2026, 11, 10), 10),
+            new(new DateOnly(2026, 11, 11), 11),
+            new(new DateOnly(2026, 11, 12), 12),
+        };
+
+        var (overnemen, overgeslagen) = HistorieImport.Kiezen(
+            uitBestand, new HashSet<DateOnly> { new(2026, 11, 11) }, Vandaag);
+
+        Assert.Equal(2, overnemen.Count);
+        Assert.Equal(1, overgeslagen);
+        Assert.DoesNotContain(new DateOnly(2026, 11, 11), overnemen.Select(d => d.Datum));
+    }
+
+    [Fact]
+    public void Vandaag_gaat_er_altijd_af()
+    {
+        // De export loopt tot het moment van downloaden en wij meten vanavond door. Allebei
+        // meetellen geeft een piek die er nooit was.
+        var uitBestand = new List<HistorieImport.Dag>
+        {
+            new(Vandaag.AddDays(-1), 9),
+            new(Vandaag, 4),
+        };
+
+        var (overnemen, overgeslagen) = HistorieImport.Kiezen(uitBestand, new HashSet<DateOnly>(), Vandaag);
+
+        Assert.Equal(Vandaag.AddDays(-1), Assert.Single(overnemen).Datum);
+        Assert.Equal(1, overgeslagen);
+    }
+
+    [Fact]
+    public void Een_bestand_met_alleen_bekende_dagen_levert_niets_op()
+    {
+        var uitBestand = new List<HistorieImport.Dag> { new(new DateOnly(2026, 11, 10), 10) };
+
+        var (overnemen, overgeslagen) = HistorieImport.Kiezen(
+            uitBestand, new HashSet<DateOnly> { new(2026, 11, 10) }, Vandaag);
+
+        Assert.Empty(overnemen);
+        Assert.Equal(1, overgeslagen);
+    }
+
+    [Fact]
     public void Een_tab_gescheiden_bestand_kan_ook()
     {
         var csv = "Date\tEnergy Produced (Wh)\n2026-05-01\t13500";

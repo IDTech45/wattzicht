@@ -190,41 +190,41 @@ public static class HouseholdEndpoints
             return Results.ValidationProblem(new Dictionary<string, string[]> { ["bestand"] = [uitleg] });
         }
 
-        var dagen = uitkomst.Dagen.Where(d => d.Datum < vandaag).ToList();
-        if (dagen.Count == 0)
-        {
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["bestand"] = ["In dit bestand staat alleen vandaag, en die dag is nog niet klaar."],
-            });
-        }
+        var van = uitkomst.Dagen[0].Datum;
+        var tot = uitkomst.Dagen[^1].Datum;
 
-        var van = dagen[0].Datum;
-        var tot = dagen[^1].Datum;
-
+        // Rijen die er al staan. Een rij met een eigen meting erin laten we met rust; een lege rij
+        // (aangemaakt maar nooit gevuld) mag wel gevuld worden.
         var bestaand = await db.DailySummaries
             .Where(x => x.HouseholdId == householdId && x.Date >= van && x.Date <= tot)
             .ToDictionaryAsync(x => x.Date, ct);
 
-        var nu = clock.GetUtcNow();
-        var toegevoegd = 0;
-        var overgeslagen = 0;
+        var eigenMetingen = bestaand
+            .Where(p => p.Value.PvKwh > 0 || p.Value.LastSampleAt is not null)
+            .Select(p => p.Key)
+            .ToHashSet();
 
-        foreach (var dag in dagen)
+        var (overnemen, overgeslagen) = HistorieImport.Kiezen(uitkomst.Dagen, eigenMetingen, vandaag);
+
+        if (overnemen.Count == 0)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] = [overgeslagen > 0
+                    ? "Deze dagen hebben we zelf al gemeten; er is niets bijgekomen."
+                    : "In dit bestand staat alleen vandaag, en die dag is nog niet klaar."],
+            });
+        }
+
+        var nu = clock.GetUtcNow();
+
+        foreach (var dag in overnemen)
         {
             if (bestaand.TryGetValue(dag.Datum, out var rij))
             {
-                // Al een eigen meting van die dag: met rust laten.
-                if (rij.PvKwh > 0 || rij.LastSampleAt is not null)
-                {
-                    overgeslagen++;
-                    continue;
-                }
-
                 rij.PvKwh = dag.Kwh;
                 rij.ImportedAt = nu;
                 rij.UpdatedAt = nu;
-                toegevoegd++;
                 continue;
             }
 
@@ -237,7 +237,6 @@ public static class HouseholdEndpoints
                 ImportedAt = nu,
                 UpdatedAt = nu,
             });
-            toegevoegd++;
         }
 
         await db.SaveChangesAsync(ct);
@@ -246,8 +245,8 @@ public static class HouseholdEndpoints
         await summaries.RecalculateSavingsAsync(householdId, van, ct);
         await db.SaveChangesAsync(ct);
 
-        return Results.Ok(new HistorieImportDto(toegevoegd, overgeslagen, van, tot,
-            Math.Round(dagen.Sum(d => d.Kwh), 1)));
+        return Results.Ok(new HistorieImportDto(overnemen.Count, overgeslagen, van, tot,
+            Math.Round(overnemen.Sum(d => d.Kwh), 1)));
     }
 
     /// <summary>Een export van meer dan dit is bijna altijd het verkeerde bestand.</summary>
