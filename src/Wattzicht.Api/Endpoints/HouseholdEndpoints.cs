@@ -211,7 +211,7 @@ public static class HouseholdEndpoints
             return Results.ValidationProblem(new Dictionary<string, string[]>
             {
                 ["bestand"] = [overgeslagen > 0
-                    ? "Deze dagen hebben we zelf al gemeten; er is niets bijgekomen."
+                    ? "Deze dagen staan er al in; er is niets bijgekomen."
                     : "In dit bestand staat alleen vandaag, en die dag is nog niet klaar."],
             });
         }

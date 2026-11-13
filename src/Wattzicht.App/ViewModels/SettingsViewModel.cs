@@ -115,6 +115,11 @@ public partial class SettingsViewModel : BaseViewModel
             {
                 ImportResultaat += " " + string.Format(Taal.T("historie.overgeslagen"), uit.Overgeslagen);
             }
+
+            // Eerlijk erbij: een ingelezen dag heeft alleen opwek. Wat iemand die dag zelf gebruikte
+            // of terugleverde weten we niet, dus blijft de besparing van die dagen leeg. Dat is
+            // beter dan een aanname als bedrag neerzetten, maar je moet het wel weten.
+            ImportResultaat += " " + Taal.T("historie.alleen-opwek");
         }
         catch (ApiException ex)
         {

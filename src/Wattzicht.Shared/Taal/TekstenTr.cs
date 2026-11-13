@@ -480,5 +480,7 @@ public static class TekstenTr
         ["historie.overgeslagen"] = "{0} günü biz zaten ölçmüştük; onlara dokunulmadı.",
         ["historie.mislukt"] = "Dosya okunamadı.",
 
+        ["historie.alleen-opwek"] = "O günler için yalnızca üretimi biliyoruz, bu yüzden o günlerin tasarrufu boş kalır.",
+
     }.ToFrozenDictionary();
 }

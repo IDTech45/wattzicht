@@ -483,5 +483,7 @@ public static class TekstenNl
         ["historie.overgeslagen"] = "{0} dagen hadden we zelf al gemeten; die zijn niet aangeraakt.",
         ["historie.mislukt"] = "Het bestand kon niet worden ingelezen.",
 
+        ["historie.alleen-opwek"] = "Van die dagen kennen we alleen de opwek, dus de besparing ervan blijft leeg.",
+
     }.ToFrozenDictionary();
 }

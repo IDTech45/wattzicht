@@ -475,5 +475,7 @@ public static class TekstenEn
         ["historie.overgeslagen"] = "We had already measured {0} days ourselves; those were left untouched.",
         ["historie.mislukt"] = "The file could not be read.",
 
+        ["historie.alleen-opwek"] = "For those days we only know the generation, so their savings stay empty.",
+
     }.ToFrozenDictionary();
 }
