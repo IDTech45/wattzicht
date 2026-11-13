@@ -19,20 +19,22 @@ public sealed class ApiException : Exception
     }
 
     public static ApiException Network(Exception inner) =>
-        new("Geen verbinding met Wattzicht. Controleer je internet en probeer het opnieuw.", null, inner);
+        new(Taal.T("fout.geen-verbinding"), null, inner);
 
     public static ApiException FromStatus(HttpStatusCode status, string? serverMessage = null)
     {
         var message = status switch
         {
-            HttpStatusCode.Unauthorized => "Je sessie is verlopen. Log opnieuw in.",
-            HttpStatusCode.Forbidden => "Je hebt hier geen toegang toe.",
-            HttpStatusCode.NotFound => "Niet gevonden.",
-            HttpStatusCode.BadRequest => string.IsNullOrWhiteSpace(serverMessage) ? "De ingevoerde gegevens kloppen niet." : serverMessage,
-            HttpStatusCode.Conflict => string.IsNullOrWhiteSpace(serverMessage) ? "Dit bestaat al." : serverMessage,
-            HttpStatusCode.TooManyRequests => "Te veel verzoeken. Wacht even en probeer het opnieuw.",
-            _ when (int)status >= 500 => "Er ging iets mis bij Wattzicht. Probeer het later opnieuw.",
-            _ => string.IsNullOrWhiteSpace(serverMessage) ? $"Onbekende fout ({(int)status})." : serverMessage
+            HttpStatusCode.Unauthorized => Taal.T("fout.sessie-verlopen"),
+            HttpStatusCode.Forbidden => Taal.T("fout.geen-toegang"),
+            HttpStatusCode.NotFound => Taal.T("fout.niet-gevonden"),
+            HttpStatusCode.BadRequest => string.IsNullOrWhiteSpace(serverMessage) ? Taal.T("fout.gegevens-kloppen-niet") : serverMessage,
+            HttpStatusCode.Conflict => string.IsNullOrWhiteSpace(serverMessage) ? Taal.T("fout.bestaat-al") : serverMessage,
+            HttpStatusCode.TooManyRequests => Taal.T("fout.te-veel-verzoeken"),
+            _ when (int)status >= 500 => Taal.T("fout.serverfout"),
+            _ => string.IsNullOrWhiteSpace(serverMessage)
+                ? string.Format(Taal.T("fout.onbekend"), (int)status)
+                : serverMessage
         };
         return new ApiException(message, status);
     }

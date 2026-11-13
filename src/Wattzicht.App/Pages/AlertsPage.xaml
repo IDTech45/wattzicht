@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              x:Class="Wattzicht.App.Pages.AlertsPage"
              x:DataType="vm:AlertsViewModel"
-             Title="Storingen">
+             Title="{t:T meldingen.storingen}">
 
     <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
         <CollectionView ItemsSource="{Binding Alerts}" SelectionMode="None">
 
             <CollectionView.Header>
                 <VerticalStackLayout Padding="16,8,16,8" Spacing="8">
-                    <Label Text="Storingen" Style="{StaticResource PageTitle}" />
-                    <Label Text="Apparaten die geen data leveren of niets opwekken." Style="{StaticResource SubtitleLabel}" />
+                    <Label Text="{t:T meldingen.storingen}" Style="{StaticResource PageTitle}" />
+                    <Label Text="{t:T meldingen.apparaten-die-geen-data-leveren}" Style="{StaticResource SubtitleLabel}" />
                     <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
                         <Label Text="{Binding ErrorMessage}" />
                     </Border>
@@ -24,8 +25,8 @@
                     <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
                     <VerticalStackLayout Spacing="8" IsVisible="{Binding HasLoaded}">
                         <Label Text="✓" FontSize="40" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" HorizontalTextAlignment="Center" />
-                        <Label Text="Alles werkt" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" Margin="0" />
-                        <Label Text="Er zijn op dit moment geen storingen." Style="{StaticResource SubtitleLabel}" HorizontalTextAlignment="Center" />
+                        <Label Text="{t:T meldingen.alles-werkt}" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" Margin="0" />
+                        <Label Text="{t:T meldingen.er-zijn-op-dit-moment}" Style="{StaticResource SubtitleLabel}" HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>
                 </VerticalStackLayout>
             </CollectionView.EmptyView>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
        xmlns:pages="clr-namespace:Wattzicht.App.Pages"
        x:Class="Wattzicht.App.AppShell"
        Shell.FlyoutBehavior="Disabled"
@@ -29,19 +30,19 @@
         woord of acht toe.
     -->
     <TabBar Route="main">
-        <Tab Title="Home" Icon="home.png" Route="home">
+        <Tab Title="{t:T shell.home}" Icon="home.png" Route="home">
             <ShellContent Shell.NavBarIsVisible="False" ContentTemplate="{DataTemplate pages:DashboardPage}" />
         </Tab>
-        <Tab Title="Sturen" Icon="sturen.png" Route="advice">
+        <Tab Title="{t:T shell.sturen}" Icon="sturen.png" Route="advice">
             <ShellContent Shell.NavBarIsVisible="False" ContentTemplate="{DataTemplate pages:AdvicePage}" />
         </Tab>
-        <Tab Title="Apparaten" Icon="devices.png" Route="devices">
+        <Tab Title="{t:T shell.apparaten}" Icon="devices.png" Route="devices">
             <ShellContent Shell.NavBarIsVisible="False" ContentTemplate="{DataTemplate pages:DevicesPage}" />
         </Tab>
-        <Tab Title="Besparen" Icon="savings.png" Route="savings">
+        <Tab Title="{t:T shell.besparen}" Icon="savings.png" Route="savings">
             <ShellContent Shell.NavBarIsVisible="False" ContentTemplate="{DataTemplate pages:SavingsPage}" />
         </Tab>
-        <Tab Title="Meer" Icon="settings.png" Route="settings">
+        <Tab Title="{t:T shell.meer}" Icon="settings.png" Route="settings">
             <ShellContent Shell.NavBarIsVisible="False" ContentTemplate="{DataTemplate pages:SettingsPage}" />
         </Tab>
     </TabBar>

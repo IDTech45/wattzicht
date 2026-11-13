@@ -21,7 +21,7 @@ public partial class DevicesViewModel : BaseViewModel
     {
         _api = api;
         _auth = auth;
-        Title = "Apparaten";
+        Title = Taal.T("apparaten.apparaten");
     }
 
     [RelayCommand]
@@ -54,9 +54,9 @@ public partial class DevicesViewModel : BaseViewModel
         if (item is null) return;
 
         var confirmed = await ConfirmAsync(
-            "Apparaat verwijderen?",
-            $"Je verwijdert '{item.Name}'. De metingen blijven bewaard, maar er komen geen nieuwe meer binnen.",
-            "Verwijderen");
+            Taal.T("apparaten.verwijderen-vraag"),
+            string.Format(Taal.T("apparaten.verwijderen-uitleg"), item.Name),
+            Taal.T("apparaten.verwijderen"));
         if (!confirmed) return;
 
         await RunSafeAsync(async () =>
@@ -66,6 +66,6 @@ public partial class DevicesViewModel : BaseViewModel
         }, _auth);
 
         if (HasError)
-            await ShowAlertAsync("Verwijderen mislukt", ErrorMessage!);
+            await ShowAlertAsync(Taal.T("apparaten.verwijderen-mislukt"), ErrorMessage!);
     }
 }

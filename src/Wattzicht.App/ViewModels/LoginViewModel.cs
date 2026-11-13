@@ -54,11 +54,11 @@ public partial class LoginViewModel : BaseViewModel
 
     public bool HasHouseholdNameError => !string.IsNullOrEmpty(HouseholdNameError);
 
-    public string Titel => IsRegistreren ? "Account aanmaken" : "Inloggen";
-    public string KnopTekst => IsRegistreren ? "Account aanmaken" : "Inloggen";
+    public string Titel => Taal.T(IsRegistreren ? "inlog.account-aanmaken" : "inlog.inloggen");
+    public string KnopTekst => Taal.T(IsRegistreren ? "inlog.account-aanmaken" : "inlog.inloggen");
     public string WisselTekst => IsRegistreren
-        ? "Heb je al een account? Inloggen"
-        : "Nog geen account? Maak er een aan";
+        ? Taal.T("inlog.al-een-account")
+        : Taal.T("inlog.nog-geen-account");
 
     public bool HasEmailError => !string.IsNullOrEmpty(EmailError);
     public bool HasPasswordError => !string.IsNullOrEmpty(PasswordError);
@@ -68,7 +68,7 @@ public partial class LoginViewModel : BaseViewModel
         _auth = auth;
         _api = api;
         _sociaal = sociaal;
-        Title = "Inloggen";
+        Title = Taal.T("inlog.inloggen");
     }
 
     /// <summary>
@@ -121,7 +121,7 @@ public partial class LoginViewModel : BaseViewModel
             }
             catch (ApiException ex) when (ex.IsUnauthorized)
             {
-                ErrorMessage = "Dat account is niet geaccepteerd. Probeer het opnieuw, of meld je aan met je e-mailadres.";
+                ErrorMessage = Taal.T("inlog.account-niet-geaccepteerd");
             }
         });
     }
@@ -148,7 +148,7 @@ public partial class LoginViewModel : BaseViewModel
             }
             catch (ApiException ex) when (ex.IsUnauthorized || ex.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
-                PasswordError = "E-mail of wachtwoord klopt niet.";
+                PasswordError = Taal.T("inlog.wachtwoord-klopt-niet");
             }
         });
     }
@@ -180,7 +180,7 @@ public partial class LoginViewModel : BaseViewModel
             {
                 // Op dit adres bestaat al een account. Dat is geen fout van de server maar van het
                 // scherm waar je op staat, dus zetten we hem meteen op inloggen.
-                EmailError = "Op dit adres bestaat al een account. Log in met je wachtwoord.";
+                EmailError = Taal.T("inlog.adres-bestaat-al");
                 IsRegistreren = false;
                 Title = Titel;
             }
@@ -190,7 +190,7 @@ public partial class LoginViewModel : BaseViewModel
                 // De server keurt bijvoorbeeld een code zonder bestaande installateur af. Zijn
                 // melding is bruikbaarder dan een eigen verzinsel.
                 ErrorMessage = string.IsNullOrWhiteSpace(ex.Message)
-                    ? "Aanmelden lukte niet. Controleer je gegevens."
+                    ? Taal.T("inlog.aanmelden-lukte-niet")
                     : ex.Message;
             }
         });
@@ -206,19 +206,19 @@ public partial class LoginViewModel : BaseViewModel
         if (IsRegistreren)
         {
             if (string.IsNullOrWhiteSpace(HouseholdName))
-                HouseholdNameError = "Geef je huishouden een naam, bijvoorbeeld Thuis.";
+                HouseholdNameError = Taal.T("inlog.geef-huishouden-naam");
             // Acht tekens is wat de server eist; dat hier ook zeggen scheelt een mislukte poging.
             if (!string.IsNullOrEmpty(Password) && Password.Length < 8)
-                PasswordError = "Kies een wachtwoord van minimaal 8 tekens.";
+                PasswordError = Taal.T("inlog.wachtwoord-te-kort");
         }
 
         if (string.IsNullOrWhiteSpace(Email))
-            EmailError = "Vul je e-mailadres in.";
+            EmailError = Taal.T("inlog.vul-e-mailadres-in");
         else if (!EmailRegex.IsMatch(Email.Trim()))
-            EmailError = "Dit is geen geldig e-mailadres.";
+            EmailError = Taal.T("inlog.geen-geldig-e-mailadres");
 
         if (string.IsNullOrEmpty(Password))
-            PasswordError = "Vul je wachtwoord in.";
+            PasswordError = Taal.T("inlog.vul-wachtwoord-in");
 
         return !HasEmailError && !HasPasswordError && !HasHouseholdNameError;
     }

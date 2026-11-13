@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              x:Class="Wattzicht.App.Pages.LoginPage"
              x:DataType="vm:LoginViewModel"
-             Title="Inloggen"
+             Title="{t:T inlog.inloggen}"
              Shell.NavBarIsVisible="False"
              BackgroundColor="{AppThemeBinding Light={StaticResource BgApp}, Dark={StaticResource BgAppDark}}">
 
@@ -31,7 +32,7 @@
                         </FormattedString>
                     </Label.FormattedText>
                 </Label>
-                <Label Text="Zie wat je bespaart"
+                <Label Text="{t:T inlog.zie-wat-je-bespaart}"
                        FontSize="15"
                        TextColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}"
                        HorizontalTextAlignment="Center" />
@@ -45,10 +46,10 @@
                          een installateur. Die code is nadrukkelijk niet verplicht; iedereen kan zich
                          aanmelden en zijn apparaten koppelen. -->
                     <VerticalStackLayout Spacing="4" IsVisible="{Binding IsRegistreren}">
-                        <Label Text="Naam van je huishouden" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{t:T inlog.naam-van-je-huishouden}" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputBorder}">
                             <Entry Text="{Binding HouseholdName}"
-                                   Placeholder="Bijvoorbeeld Thuis"
+                                   Placeholder="{t:T inlog.bijvoorbeeld-thuis}"
                                    ReturnType="Next"
                                    AutomationId="HouseholdNameEntry" />
                         </Border>
@@ -58,7 +59,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label Text="E-mailadres" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{t:T inlog.e-mailadres}" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputBorder}">
                             <Entry Text="{Binding Email}"
                                    Placeholder="naam@voorbeeld.nl"
@@ -74,19 +75,19 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label Text="Wachtwoord" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{t:T inlog.wachtwoord}" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputBorder}">
                             <Grid ColumnDefinitions="*,Auto">
                                 <Entry Grid.Column="0"
                                        Text="{Binding Password}"
-                                       Placeholder="Je wachtwoord"
+                                       Placeholder="{t:T inlog.je-wachtwoord}"
                                        IsPassword="{Binding IsPasswordHidden}"
                                        ReturnType="Go"
                                        ReturnCommand="{Binding LoginCommand}"
                                        AutomationId="PasswordEntry" />
                                 <Button Grid.Column="1"
                                         Style="{StaticResource LinkButton}"
-                                        Text="Toon"
+                                        Text="{t:T inlog.toon}"
                                         MinimumWidthRequest="72"
                                         Padding="8,0"
                                         Command="{Binding TogglePasswordVisibilityCommand}"
@@ -103,21 +104,21 @@
                            IsVisible="{Binding HasError}" />
 
                     <VerticalStackLayout Spacing="4" IsVisible="{Binding IsRegistreren}">
-                        <Label Text="Code van je installateur (niet verplicht)" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{t:T inlog.code-van-je-installateur-niet}" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputBorder}">
                             <Entry Text="{Binding InstallerCode}"
-                                   Placeholder="Alleen als je via een installateur komt"
+                                   Placeholder="{t:T inlog.alleen-als-je-via-een}"
                                    IsSpellCheckEnabled="False"
                                    IsTextPredictionEnabled="False"
                                    AutomationId="InstallerCodeEntry" />
                         </Border>
-                        <Label Text="Vul je een code in, dan mag die installateur je gegevens zien en je helpen."
+                        <Label Text="{t:T inlog.vul-je-een-code-in}"
                                Style="{StaticResource SubtitleLabel}"
                                FontSize="13" />
                     </VerticalStackLayout>
 
                     <Grid IsVisible="{Binding IsRegistreren, Converter={StaticResource InvertedBool}}">
-                        <Button Text="Inloggen"
+                        <Button Text="{t:T inlog.inloggen}"
                                 Style="{StaticResource PrimaryButton}"
                                 Command="{Binding LoginCommand}"
                                 IsEnabled="{Binding IsNotBusy}" />
@@ -129,7 +130,7 @@
                     </Grid>
 
                     <Grid IsVisible="{Binding IsRegistreren}">
-                        <Button Text="Account aanmaken"
+                        <Button Text="{t:T inlog.account-aanmaken}"
                                 Style="{StaticResource PrimaryButton}"
                                 Command="{Binding RegisterCommand}"
                                 IsEnabled="{Binding IsNotBusy}" />
@@ -143,19 +144,19 @@
                     <!-- Inloggen met een account dat je al hebt. Staat onder de gewone knop: wie een
                          wachtwoord bij ons heeft hoort niet eerst langs Google te moeten. -->
                     <VerticalStackLayout Spacing="12" IsVisible="{Binding ToonSociaal}">
-                        <Label Text="of"
+                        <Label Text="{t:T inlog.of}"
                                Style="{StaticResource SubtitleLabel}"
                                FontSize="13"
                                HorizontalOptions="Center" />
 
-                        <Button Text="Doorgaan met Google"
+                        <Button Text="{t:T inlog.doorgaan-met-google}"
                                 Style="{StaticResource SecondaryButton}"
                                 IsVisible="{Binding ToonGoogle}"
                                 IsEnabled="{Binding IsNotBusy}"
                                 Command="{Binding SociaalCommand}"
                                 CommandParameter="google" />
 
-                        <Button Text="Doorgaan met Apple"
+                        <Button Text="{t:T inlog.doorgaan-met-apple}"
                                 Style="{StaticResource SecondaryButton}"
                                 IsVisible="{Binding ToonApple}"
                                 IsEnabled="{Binding IsNotBusy}"

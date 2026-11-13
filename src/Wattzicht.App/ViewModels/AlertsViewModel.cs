@@ -19,10 +19,10 @@ public sealed class AlertItem
 
     public string TypeText => $"{Alert.Type}" switch
     {
-        "NoData" => "Geen data",
-        "ZeroProduction" => "Geen opwek",
-        "Offline" => "Offline",
-        "" => "Storing",
+        "NoData" => Taal.T("storing.geen-data"),
+        "ZeroProduction" => Taal.T("storing.geen-opwek"),
+        "Offline" => Taal.T("storing.offline"),
+        "" => Taal.T("storing.storing"),
         var t => t
     };
 
@@ -30,10 +30,10 @@ public sealed class AlertItem
 
     public string Advice => $"{Alert.Type}" switch
     {
-        "NoData" => "Controleer of het apparaat stroom en wifi heeft.",
-        "ZeroProduction" => "Overdag geen opwek? Kijk of de omvormer een foutcode toont en bel anders je installateur.",
-        "Offline" => "Het apparaat is niet bereikbaar. Herstart de dongle of router.",
-        _ => "Neem contact op met je installateur als dit aanhoudt."
+        "NoData" => Taal.T("storing.advies-geen-data"),
+        "ZeroProduction" => Taal.T("storing.advies-geen-opwek"),
+        "Offline" => Taal.T("storing.advies-offline"),
+        _ => Taal.T("storing.advies-overig")
     };
 }
 
@@ -51,7 +51,7 @@ public partial class AlertsViewModel : BaseViewModel
     {
         _api = api;
         _auth = auth;
-        Title = "Storingen";
+        Title = Taal.T("meldingen.storingen");
     }
 
     [RelayCommand]

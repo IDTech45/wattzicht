@@ -23,8 +23,8 @@ public sealed class SummaryRow
         get
         {
             var date = ToDate(Summary.Date);
-            if (date == DateOnly.FromDateTime(DateTime.Today)) return "Vandaag";
-            if (date == DateOnly.FromDateTime(DateTime.Today.AddDays(-1))) return "Gisteren";
+            if (date == DateOnly.FromDateTime(DateTime.Today)) return Taal.T("home.vandaag");
+            if (date == DateOnly.FromDateTime(DateTime.Today.AddDays(-1))) return Taal.T("besparen.gisteren");
             return date.ToString("ddd d MMM", Nl);
         }
     }
@@ -71,10 +71,10 @@ public partial class SavingsViewModel : BaseViewModel
 
     public string PeriodTitle => Period switch
     {
-        SavingsPeriod.Day => "Vandaag bespaard",
-        SavingsPeriod.Week => "Deze week bespaard",
-        SavingsPeriod.Month => "Deze maand bespaard",
-        _ => "Dit jaar bespaard"
+        SavingsPeriod.Day => Taal.T("besparen.vandaag-bespaard"),
+        SavingsPeriod.Week => Taal.T("besparen.deze-week-bespaard"),
+        SavingsPeriod.Month => Taal.T("besparen.deze-maand-bespaard"),
+        _ => Taal.T("home.dit-jaar-bespaard")
     };
 
     [ObservableProperty] private string _totalSavedText = "€ 0,00";
@@ -107,7 +107,7 @@ public partial class SavingsViewModel : BaseViewModel
     {
         _api = api;
         _auth = auth;
-        Title = "Besparing";
+        Title = Taal.T("besparen.besparing");
     }
 
     [RelayCommand]
@@ -145,8 +145,8 @@ public partial class SavingsViewModel : BaseViewModel
                 HasSustainability = s.PvKwh > 0;
                 YearPvText = s.PvKwh.ToString("N0", Nl) + " kWh";
                 Co2Text = s.Co2AvoidedKg >= 1000
-                    ? (s.Co2AvoidedKg / 1000).ToString("N1", Nl) + " ton"
-                    : s.Co2AvoidedKg.ToString("N0", Nl) + " kg";
+                    ? (s.Co2AvoidedKg / 1000).ToString("N1", Nl) + " " + Taal.T("besparen.ton")
+                    : s.Co2AvoidedKg.ToString("N0", Nl) + " " + Taal.T("besparen.kg");
                 SelfSufficiencyText = s.SelfSufficiencyPercent + "%";
                 PerformanceLow = s.Performance.Status == PerformanceStatus.Low;
                 PerformanceText = s.Performance.Message;
@@ -215,13 +215,16 @@ public partial class SavingsViewModel : BaseViewModel
         HasFeedIn = f.YearExportKwh > 0 || f.MonthExportKwh > 0;
         FeedInCostMissing = f.FeedInCostPerKwh <= 0;
         FeedInMonthText = FeedInCostMissing
-            ? $"Deze maand {f.MonthExportKwh.ToString("N0", Nl)} kWh teruggeleverd"
-            : $"Terugleverkosten deze maand: {f.MonthCostEur.ToString("C2", Nl)}";
+            ? string.Format(Taal.T("besparen.deze-maand-teruggeleverd"), f.MonthExportKwh.ToString("N0", Nl))
+            : string.Format(Taal.T("besparen.terugleverkosten-deze-maand"), f.MonthCostEur.ToString("C2", Nl));
         FeedInYearText = FeedInCostMissing
-            ? "Vul je terugleverkosten in bij Instellingen om te zien wat terugleveren je kost."
-            : $"Per jaar ± {f.YearCostEur.ToString("C0", Nl)} over {f.YearExportKwh.ToString("N0", Nl)} kWh{(f.YearIsEstimate ? " (schatting)" : string.Empty)}";
+            ? Taal.T("besparen.vul-terugleverkosten-in")
+            : string.Format(Taal.T("besparen.per-jaar-over-kwh"), f.YearCostEur.ToString("C0", Nl),
+                f.YearExportKwh.ToString("N0", Nl),
+                f.YearIsEstimate ? " " + Taal.T("besparen.schatting") : string.Empty);
         FeedIn2027Text = f.SelfUseWorth2027PerKwh > 0
-            ? $"Vanaf 2027 scheelt elke kWh die je zelf gebruikt {(f.SelfUseWorth2027PerKwh * 100).ToString("0", Nl)} cent. Bij je huidige teruglevering is dat ± {f.YearValue2027Eur.ToString("C0", Nl)} per jaar."
+            ? string.Format(Taal.T("besparen.vanaf-2027"), (f.SelfUseWorth2027PerKwh * 100).ToString("0", Nl),
+                f.YearValue2027Eur.ToString("C0", Nl))
             : string.Empty;
     }
 

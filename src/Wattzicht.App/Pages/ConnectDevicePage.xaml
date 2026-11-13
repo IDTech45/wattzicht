@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              x:Class="Wattzicht.App.Pages.ConnectDevicePage"
              x:DataType="vm:ConnectDeviceViewModel"
-             Title="Apparaat koppelen">
+             Title="{t:T koppel.apparaat-koppelen}">
 
     <Grid RowDefinitions="*,Auto">
 
@@ -39,8 +40,8 @@
 
                 <!-- ================= STAP 1: merk ================= -->
                 <VerticalStackLayout Spacing="12" IsVisible="{Binding IsStep1}">
-                    <Label Text="Wat wil je koppelen?" Style="{StaticResource PageTitle}" />
-                    <Label Text="Kies eerst het soort apparaat, daarna het merk." Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                    <Label Text="{t:T koppel.wat-wil-je-koppelen}" Style="{StaticResource PageTitle}" />
+                    <Label Text="{t:T koppel.kies-eerst-het-soort-apparaat}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
 
                     <VerticalStackLayout Spacing="20" BindableLayout.ItemsSource="{Binding Groepen}">
                       <BindableLayout.ItemTemplate>
@@ -94,12 +95,12 @@
                     <!-- Growatt -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsGrowatt}">
                         <VerticalStackLayout Spacing="12">
-                            <Label Text="Je vindt je API-token in de ShinePhone-app: ga naar Ik → API Token en kopieer de code."
+                            <Label Text="{t:T koppel.je-vindt-je-api-token}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" />
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="API-token" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.api-token}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
-                                    <Entry Text="{Binding ApiToken}" Placeholder="Plak hier je token" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" />
+                                    <Entry Text="{Binding ApiToken}" Placeholder="{t:T koppel.plak-hier-je-token}" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" />
                                 </Border>
                                 <Label Text="{Binding ApiTokenError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasApiTokenError}" />
                             </VerticalStackLayout>
@@ -112,9 +113,9 @@
                             <Label Text="{Binding SolaxHelp}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" />
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="TokenID" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.tokenid}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
-                                    <Entry Text="{Binding ApiToken}" Placeholder="Plak hier je TokenID" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" />
+                                    <Entry Text="{Binding ApiToken}" Placeholder="{t:T koppel.plak-hier-je-tokenid}" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" />
                                 </Border>
                                 <Label Text="{Binding ApiTokenError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasApiTokenError}" />
                             </VerticalStackLayout>
@@ -131,26 +132,26 @@
                     <!-- Sessy -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsSessy}">
                         <VerticalStackLayout Spacing="12">
-                            <Label Text="Gebruikersnaam en wachtwoord staan op de sticker van je Sessy-dongle. Het IP-adres vind je in je router of de Sessy-app."
+                            <Label Text="{t:T koppel.gebruikersnaam-en-wachtwoord-staan-op}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" />
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="IP-adres van de dongle" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.ip-adres-van-de-dongle}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
                                     <Entry Text="{Binding IpAddress}" Placeholder="192.168.1.50" Keyboard="Url" />
                                 </Border>
                                 <Label Text="{Binding IpAddressError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasIpAddressError}" />
                             </VerticalStackLayout>
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="Gebruikersnaam" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.gebruikersnaam}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
-                                    <Entry Text="{Binding Username}" Placeholder="Zie sticker" IsSpellCheckEnabled="False" />
+                                    <Entry Text="{Binding Username}" Placeholder="{t:T koppel.zie-sticker}" IsSpellCheckEnabled="False" />
                                 </Border>
                                 <Label Text="{Binding UsernameError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasUsernameError}" />
                             </VerticalStackLayout>
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="Wachtwoord" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.wachtwoord}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
-                                    <Entry Text="{Binding Password}" Placeholder="Zie sticker" IsPassword="True" />
+                                    <Entry Text="{Binding Password}" Placeholder="{t:T koppel.zie-sticker}" IsPassword="True" />
                                 </Border>
                                 <Label Text="{Binding PasswordError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasPasswordError}" />
                             </VerticalStackLayout>
@@ -160,16 +161,16 @@
                     <!-- Enphase: de gateway in de meterkast, niet de cloud van Enphase -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsEnphase}">
                         <VerticalStackLayout Spacing="12">
-                            <Label Text="Je telefoon praat rechtstreeks met de IQ Gateway in je meterkast, dus dit werkt alleen thuis op je eigen wifi. Zo kunnen we ook zien wat je van het net haalt en teruglevert; via de cloud van Enphase kan dat niet."
+                            <Label Text="{t:T koppel.je-telefoon-praat-rechtstreeks-met}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" />
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="IP-adres van de gateway" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.ip-adres-van-de-gateway}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
                                     <Entry Text="{Binding IpAddress}" Placeholder="192.168.1.30" Keyboard="Url" />
                                 </Border>
                                 <Label Text="{Binding IpAddressError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasIpAddressError}" />
                                 <!-- Dat adres staat nergens op het kastje; de telefoon kan het zelf opzoeken. -->
-                                <Button Text="Zoek mijn gateway op wifi"
+                                <Button Text="{t:T koppel.zoek-mijn-gateway-op-wifi}"
                                         Style="{StaticResource SecondaryButton}"
                                         Command="{Binding ZoekApparaatCommand}"
                                         IsEnabled="{Binding IsZoeken, Converter={StaticResource InvertedBool}}" />
@@ -179,7 +180,7 @@
                                        IsVisible="{Binding ZoekResultaat, Converter={StaticResource IsNotNullOrEmpty}}" />
                             </VerticalStackLayout>
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="Token van je gateway" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.token-van-je-gateway}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
                                     <Entry Text="{Binding ApiToken}" Placeholder="eyJ..." IsSpellCheckEnabled="False" />
                                 </Border>
@@ -190,7 +191,7 @@
                                 nog nooit gedaan heeft weet dan nog niets. Dit zijn de stappen zoals
                                 ze op dat scherm staan, met de knop ernaartoe erbij.
                             -->
-                            <Label Text="Zo kom je aan dat token:" Style="{StaticResource FieldLabel}" />
+                            <Label Text="{t:T koppel.zo-kom-je-aan-dat}" Style="{StaticResource FieldLabel}" />
                             <Label Style="{StaticResource SubtitleLabel}" FontSize="13">
                                 <Label.Text>1. Open entrez.enphaseenergy.com en log in met je Enphase-account, hetzelfde als in de Enlighten-app.
 2. Bij Select System zoek je op je systeemnaam of je Site ID. Die staat ook in je maandelijkse energierapport van Enphase.
@@ -198,10 +199,10 @@
 4. Druk op Create access token. Je krijgt een lange tekst die met eyJ begint.
 5. Kopieer die helemaal en plak hem hierboven.</Label.Text>
                             </Label>
-                            <Button Text="Open entrez.enphaseenergy.com"
+                            <Button Text="{t:T koppel.open-entrez-enphaseenergy-com}"
                                     Style="{StaticResource SecondaryButton}"
                                     Command="{Binding OpenEntrezCommand}" />
-                            <Label Text="Met je eigen eigenaarsaccount is het token een jaar geldig. Staat je systeem op naam van je installateur, dan kan hij jou als eigenaar toevoegen; daarna kun je zelf een token maken."
+                            <Label Text="{t:T koppel.met-je-eigen-eigenaarsaccount-is}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="13" />
                         </VerticalStackLayout>
                     </Border>
@@ -209,23 +210,23 @@
                     <!-- Alfen: de paal zelf op het thuisnetwerk, niet via een portaal -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsAlfen}">
                         <VerticalStackLayout Spacing="12">
-                            <Label Text="Je telefoon praat rechtstreeks met de laadpaal, dus dit werkt alleen thuis op je eigen wifi. Het IP-adres vind je in je router; het wachtwoord heb je van je installateur gekregen."
+                            <Label Text="{t:T koppel.je-telefoon-praat-rechtstreeks-met-2}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" />
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="IP-adres van de laadpaal" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.ip-adres-van-de-laadpaal}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
                                     <Entry Text="{Binding IpAddress}" Placeholder="192.168.1.42" Keyboard="Url" />
                                 </Border>
                                 <Label Text="{Binding IpAddressError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasIpAddressError}" />
                             </VerticalStackLayout>
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="Wachtwoord van de laadpaal" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.wachtwoord-van-de-laadpaal}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
-                                    <Entry Text="{Binding Password}" Placeholder="Van je installateur" IsPassword="True" />
+                                    <Entry Text="{Binding Password}" Placeholder="{t:T koppel.van-je-installateur}" IsPassword="True" />
                                 </Border>
                                 <Label Text="{Binding PasswordError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasPasswordError}" />
                             </VerticalStackLayout>
-                            <Label Text="Hangt je paal alleen aan een simkaart van je leverancier, dan heeft hij thuis geen adres en lukt dit niet."
+                            <Label Text="{t:T koppel.hangt-je-paal-alleen-aan}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="13" />
                             <!--
                                 Veel Alfens in Nederland staan onder een laadpas-backoffice: 50five,
@@ -233,7 +234,7 @@
                                 want wij praten met de paal zelf en niet met die backoffice. Maar
                                 mensen denken van wel en haken daarop af, dus staat het er gewoon.
                             -->
-                            <Label Text="Staat je paal onder 50five, E-Flux of je leasemaatschappij? Dat mag. Wij lezen de paal zelf uit op je eigen netwerk en komen niet in hun portaal; je laadpas en je afrekening blijven gewoon lopen zoals ze liepen."
+                            <Label Text="{t:T koppel.staat-je-paal-onder-50five}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="13" />
                         </VerticalStackLayout>
                     </Border>
@@ -241,23 +242,23 @@
                     <!-- Peblar: de paal zelf op het thuisnetwerk, met een token uit de paal -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsPeblar}">
                         <VerticalStackLayout Spacing="12">
-                            <Label Text="Je telefoon praat rechtstreeks met de laadpaal, dus dit werkt alleen thuis op je eigen wifi. Zet eerst in de webinterface van de paal de lokale API aan en maak daar een token aan."
+                            <Label Text="{t:T koppel.je-telefoon-praat-rechtstreeks-met-3}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" />
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="IP-adres van de laadpaal" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.ip-adres-van-de-laadpaal}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
                                     <Entry Text="{Binding IpAddress}" Placeholder="192.168.1.42" Keyboard="Url" />
                                 </Border>
                                 <Label Text="{Binding IpAddressError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasIpAddressError}" />
                             </VerticalStackLayout>
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="API-token van de laadpaal" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.api-token-van-de-laadpaal}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
-                                    <Entry Text="{Binding ApiToken}" Placeholder="Uit de webinterface van de paal" />
+                                    <Entry Text="{Binding ApiToken}" Placeholder="{t:T koppel.uit-de-webinterface-van-de}" />
                                 </Border>
                                 <Label Text="{Binding ApiTokenError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasApiTokenError}" />
                             </VerticalStackLayout>
-                            <Label Text="Maak je later een nieuw token aan, dan vervalt dit token en moet je hier opnieuw koppelen."
+                            <Label Text="{t:T koppel.maak-je-later-een-nieuw}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="13" />
                         </VerticalStackLayout>
                     </Border>
@@ -265,17 +266,17 @@
                     <!-- Zaptec: hetzelfde account als in de Zaptec-app zelf -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsZaptec}">
                         <VerticalStackLayout Spacing="12">
-                            <Label Text="Gebruik het e-mailadres en wachtwoord waarmee je in de Zaptec-app inlogt. Wij lezen alleen uit; sturen doen we niet."
+                            <Label Text="{t:T koppel.gebruik-het-e-mailadres-en}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" />
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="E-mailadres" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.e-mailadres}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
                                     <Entry Text="{Binding Username}" Placeholder="jij@voorbeeld.nl" Keyboard="Email" IsSpellCheckEnabled="False" />
                                 </Border>
                                 <Label Text="{Binding UsernameError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasUsernameError}" />
                             </VerticalStackLayout>
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="Wachtwoord" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.wachtwoord}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
                                     <Entry Text="{Binding Password}" IsPassword="True" />
                                 </Border>
@@ -287,23 +288,23 @@
                     <!-- Easee: hetzelfde account als in de Easee-app zelf -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsEasee}">
                         <VerticalStackLayout Spacing="12">
-                            <Label Text="Gebruik het e-mailadres en wachtwoord waarmee je in de Easee-app inlogt. Wij lezen alleen uit; sturen doen we niet."
+                            <Label Text="{t:T koppel.gebruik-het-e-mailadres-en-2}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" />
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="E-mailadres" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.e-mailadres}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
                                     <Entry Text="{Binding Username}" Placeholder="jij@voorbeeld.nl" Keyboard="Email" IsSpellCheckEnabled="False" />
                                 </Border>
                                 <Label Text="{Binding UsernameError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasUsernameError}" />
                             </VerticalStackLayout>
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="Wachtwoord" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.wachtwoord}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
                                     <Entry Text="{Binding Password}" IsPassword="True" />
                                 </Border>
                                 <Label Text="{Binding PasswordError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasPasswordError}" />
                             </VerticalStackLayout>
-                            <Label Text="Staat de paal op het account van je installateur of je werkgever, dan zien wij hem hier niet."
+                            <Label Text="{t:T koppel.staat-de-paal-op-het}"
                                    Style="{StaticResource StatCaption}" />
                         </VerticalStackLayout>
                     </Border>
@@ -311,12 +312,12 @@
                     <!-- P1-meter: een dongle op de slimme meter, welk merk dan ook -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsHomeWizard}">
                         <VerticalStackLayout Spacing="12">
-                            <Label Text="Zet in de app van je dongle de lokale API aan en vul het IP-adres in. Bij HomeWizard staat dat onder Instellingen, Meters, P1-meter, Lokale API."
+                            <Label Text="{t:T koppel.zet-in-de-app-van}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" />
-                            <Label Text="Je telefoon moet op hetzelfde wifi-netwerk zitten als de meter. Wij lezen hem uit zodra je de app thuis opent; buitenshuis kan het niet."
+                            <Label Text="{t:T koppel.je-telefoon-moet-op-hetzelfde}"
                                    Style="{StaticResource StatCaption}" />
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="IP-adres van de P1-meter" Style="{StaticResource FieldLabel}" />
+                                <Label Text="{t:T koppel.ip-adres-van-de-p1}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
                                     <Entry Text="{Binding IpAddress}" Placeholder="192.168.1.60" Keyboard="Url" />
                                 </Border>
@@ -327,27 +328,27 @@
 
                     <!-- Demo -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsDemo}">
-                        <Label Text="Je hoeft niets in te vullen. We voegen een voorbeeldomvormer, -batterij en -laadpaal toe met realistische data."
+                        <Label Text="{t:T koppel.je-hoeft-niets-in-te}"
                                Style="{StaticResource SubtitleLabel}" FontSize="14" />
                     </Border>
                 </VerticalStackLayout>
 
                 <!-- ================= STAP 3: bevestigen ================= -->
                 <VerticalStackLayout Spacing="12" IsVisible="{Binding IsStep3}">
-                    <Label Text="Klopt dit?" Style="{StaticResource PageTitle}" IsVisible="{Binding IsDone, Converter={StaticResource InvertedBool}}" />
-                    <Label Text="Gekoppeld" Style="{StaticResource PageTitle}" IsVisible="{Binding IsDone}" />
+                    <Label Text="{t:T koppel.klopt-dit}" Style="{StaticResource PageTitle}" IsVisible="{Binding IsDone, Converter={StaticResource InvertedBool}}" />
+                    <Label Text="{t:T koppel.gekoppeld}" Style="{StaticResource PageTitle}" IsVisible="{Binding IsDone}" />
 
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsDone, Converter={StaticResource InvertedBool}}">
                         <VerticalStackLayout Spacing="8">
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                                <Label Text="Merk" Style="{StaticResource FieldLabel}" WidthRequest="90" />
+                                <Label Text="{t:T koppel.merk}" Style="{StaticResource FieldLabel}" WidthRequest="90" />
                                 <Label Grid.Column="1" Text="{Binding BrandName}" FontAttributes="Bold" />
                             </Grid>
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                                <Label Text="Gegevens" Style="{StaticResource FieldLabel}" WidthRequest="90" />
+                                <Label Text="{t:T koppel.gegevens}" Style="{StaticResource FieldLabel}" WidthRequest="90" />
                                 <Label Grid.Column="1" Text="{Binding SummaryLine}" />
                             </Grid>
-                            <Label Text="We controleren de gegevens en halen je apparaten op. Dit duurt een paar seconden."
+                            <Label Text="{t:T koppel.we-controleren-de-gegevens-en}"
                                    Style="{StaticResource SubtitleLabel}" Margin="0,8,0,0" />
                         </VerticalStackLayout>
                     </Border>
@@ -358,7 +359,7 @@
                         <VerticalStackLayout Spacing="8">
                             <Label Text="✓" FontSize="36" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
                             <Label Text="{Binding DoneText}" FontSize="16" />
-                            <Label Text="Binnen een paar minuten zie je de eerste metingen op Home." Style="{StaticResource SubtitleLabel}" />
+                            <Label Text="{t:T koppel.binnen-een-paar-minuten-zie}" Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>
                     </Border>
                 </VerticalStackLayout>
@@ -368,7 +369,7 @@
         <!-- Knoppenbalk -->
         <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="12" Padding="16,8,16,16"
               BackgroundColor="{AppThemeBinding Light={StaticResource BgApp}, Dark={StaticResource BgAppDark}}">
-            <Button Grid.Column="0" Text="Terug" Style="{StaticResource SecondaryButton}" WidthRequest="110"
+            <Button Grid.Column="0" Text="{t:T koppel.terug}" Style="{StaticResource SecondaryButton}" WidthRequest="110"
                     Command="{Binding BackCommand}" IsEnabled="{Binding IsNotBusy}"
                     IsVisible="{Binding IsDone, Converter={StaticResource InvertedBool}}" />
             <Grid Grid.Column="1" IsVisible="{Binding IsDone, Converter={StaticResource InvertedBool}}">
@@ -377,7 +378,7 @@
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
                                    Color="{StaticResource Navy900}" HorizontalOptions="End" Margin="0,0,16,0" />
             </Grid>
-            <Button Grid.ColumnSpan="2" Text="Klaar" Style="{StaticResource PrimaryButton}"
+            <Button Grid.ColumnSpan="2" Text="{t:T koppel.klaar}" Style="{StaticResource PrimaryButton}"
                     Command="{Binding FinishCommand}" IsVisible="{Binding IsDone}" />
         </Grid>
     </Grid>

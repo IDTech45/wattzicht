@@ -50,27 +50,27 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     // zonder merknaam: elke dongle leest dezelfde poort uit.
     public IReadOnlyList<BrandOption> Brands { get; } =
     [
-        new(DeviceBrand.Growatt, "Growatt", "Omvormer of batterij via ShinePhone-account", "Accent500", DeviceType.Inverter),
-        new(DeviceBrand.Solax, "SolaX", "Omvormer of hybride met batterij via SolaXCloud", "Accent500", DeviceType.Inverter),
-        new(DeviceBrand.Solax, "SolaX laadpaal", "Smart EV Charger met MID-meter via SolaXCloud", "EnergyCharger", DeviceType.Charger),
-        new(DeviceBrand.Sessy, "Sessy", "Thuisbatterij met Sessy-dongle", "EnergyBattery", DeviceType.Battery),
-        new(DeviceBrand.Zaptec, "Zaptec", "Laadpaal via je eigen Zaptec-account", "EnergyCharger", DeviceType.Charger),
-        new(DeviceBrand.Easee, "Easee", "Laadpaal via je eigen Easee-account", "EnergyCharger", DeviceType.Charger),
+        new(DeviceBrand.Growatt, "Growatt", Taal.T("merk.growatt"), "Accent500", DeviceType.Inverter),
+        new(DeviceBrand.Solax, "SolaX", Taal.T("merk.solax"), "Accent500", DeviceType.Inverter),
+        new(DeviceBrand.Solax, "SolaX laadpaal", Taal.T("merk.solax-laadpaal"), "EnergyCharger", DeviceType.Charger),
+        new(DeviceBrand.Sessy, "Sessy", Taal.T("merk.sessy"), "EnergyBattery", DeviceType.Battery),
+        new(DeviceBrand.Zaptec, "Zaptec", Taal.T("merk.zaptec"), "EnergyCharger", DeviceType.Charger),
+        new(DeviceBrand.Easee, "Easee", Taal.T("merk.easee"), "EnergyCharger", DeviceType.Charger),
         // Een Alfen heeft geen cloud waar wij bij mogen: wie hem via 50five, E-Flux of de lease heeft,
         // ziet zijn data alleen in hún portaal. De paal zelf heeft wel een lokale interface, dezelfde
         // die de monteur gebruikt. Daarom staat hij hier en niet op de website: dit kan alleen vanuit
         // het huis, net als de Sessy en de P1-meter.
-        new(DeviceBrand.Alfen, "Alfen", "Laadpaal op je eigen wifi of netwerkkabel", "EnergyCharger", DeviceType.Charger),
+        new(DeviceBrand.Alfen, "Alfen", Taal.T("merk.alfen"), "EnergyCharger", DeviceType.Charger),
         // Via de gateway in huis en niet via de cloud van Enphase. Die cloudroute loopt op een
         // developer-app van ons met duizend aanroepen per maand voor alle huizen samen, en geeft de
         // netkant niet. De gateway geeft opwek, huisverbruik en netkant in één antwoord.
         // Peblar heeft wel een cloud, maar alleen voor hun eigen app. De paal zelf heeft een
         // gedocumenteerde lokale API die de eigenaar aanzet in de webinterface. Dat kan alleen vanuit
         // het huis, dus net als de Alfen staat hij hier en niet op de website.
-        new(DeviceBrand.Peblar, "Peblar", "Laadpaal op je eigen netwerk, met een token uit de paal", "EnergyCharger", DeviceType.Charger),
-        new(DeviceBrand.Enphase, "Enphase", "Zonnepanelen via de IQ Gateway in je meterkast", "Accent500", DeviceType.Inverter),
-        new(DeviceBrand.HomeWizard, "P1-meter", "Dongle op je slimme meter, leest je netafname", "EnergyGrid", DeviceType.P1Meter),
-        new(DeviceBrand.Demo, "Demo", "Voorbeelddata om de app te proberen", "TextMuted", DeviceType.Inverter),
+        new(DeviceBrand.Peblar, "Peblar", Taal.T("merk.peblar"), "EnergyCharger", DeviceType.Charger),
+        new(DeviceBrand.Enphase, "Enphase", Taal.T("merk.enphase"), "Accent500", DeviceType.Inverter),
+        new(DeviceBrand.HomeWizard, Taal.T("merk.p1-naam"), Taal.T("merk.p1"), "EnergyGrid", DeviceType.P1Meter),
+        new(DeviceBrand.Demo, "Demo", Taal.T("merk.demo"), "TextMuted", DeviceType.Inverter),
     ];
 
     /// <summary>
@@ -81,15 +81,15 @@ public partial class ConnectDeviceViewModel : BaseViewModel
 
     private IReadOnlyList<BrandGroep> MaakGroepen() =>
     [
-        new("Zonnepanelen", "Je omvormer, of de gateway in je meterkast",
+        new(Taal.T("groep.zonnepanelen"), Taal.T("groep.zonnepanelen-uitleg"),
             Brands.Where(b => b.DefaultType == DeviceType.Inverter && b.Brand != DeviceBrand.Demo).ToList()),
-        new("Thuisbatterij", "Je batterij of de dongle die erbij hoort",
+        new(Taal.T("groep.thuisbatterij"), Taal.T("groep.thuisbatterij-uitleg"),
             Brands.Where(b => b.DefaultType == DeviceType.Battery).ToList()),
-        new("Laadpaal", "De paal waar je je auto mee laadt",
+        new(Taal.T("groep.laadpaal"), Taal.T("groep.laadpaal-uitleg"),
             Brands.Where(b => b.DefaultType == DeviceType.Charger).ToList()),
-        new("Slimme meter", "Een dongle op je P1-poort; leest wat je van het net haalt",
+        new(Taal.T("groep.slimme-meter"), Taal.T("groep.slimme-meter-uitleg"),
             Brands.Where(b => b.DefaultType == DeviceType.P1Meter).ToList()),
-        new("Even proberen", "Zonder apparaat kijken hoe de app werkt",
+        new(Taal.T("groep.even-proberen"), Taal.T("groep.even-proberen-uitleg"),
             Brands.Where(b => b.Brand == DeviceBrand.Demo).ToList()),
     ];
 
@@ -105,8 +105,8 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     public bool IsStep1 => Step == 1;
     public bool IsStep2 => Step == 2;
     public bool IsStep3 => Step == 3;
-    public string StepText => $"Stap {Step} van 3";
-    public string PrimaryButtonText => Step == 3 ? "Koppelen" : "Volgende";
+    public string StepText => string.Format(Taal.T("koppel.stap-van-3"), Step);
+    public string PrimaryButtonText => Taal.T(Step == 3 ? "koppel.koppelen" : "koppel.volgende");
 
     // ---- Merk ----
     [ObservableProperty]
@@ -135,11 +135,11 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     public bool IsSolax => SelectedBrand?.Brand == DeviceBrand.Solax;
     public bool IsSolaxCharger => IsSolax && SelectedBrand?.DefaultType == DeviceType.Charger;
     public bool IsSolaxInverter => IsSolax && !IsSolaxCharger;
-    public string SolaxSnLabel => IsSolaxCharger ? "Serienummer laadpaal" : "Registratienummer dongle";
-    public string SolaxSnPlaceholder => IsSolaxCharger ? "Staat op de zijkant van de laadpaal" : "Bijv. SXXXXXXXXX";
+    public string SolaxSnLabel => Taal.T(IsSolaxCharger ? "koppel.serienummer-laadpaal" : "koppel.registratienummer-dongle");
+    public string SolaxSnPlaceholder => IsSolaxCharger ? Taal.T("koppel.staat-op-de-zijkant") : "Bijv. SXXXXXXXXX";
     public string SolaxHelp => IsSolaxCharger
-        ? "Log in op solaxcloud.com, ga naar Service → API en kopieer je TokenID. Het serienummer van de laadpaal staat op de zijkant en in SolaXCloud bij het apparaat."
-        : "Log in op solaxcloud.com, ga naar Service → API en kopieer je TokenID. Het registratienummer (10 tekens) staat op de wifi-stick aan je omvormer.";
+        ? Taal.T("koppel.solax-hulp-laadpaal")
+        : Taal.T("koppel.solax-hulp-omvormer");
     public bool IsSessy => SelectedBrand?.Brand == DeviceBrand.Sessy;
     public bool IsHomeWizard => SelectedBrand?.Brand == DeviceBrand.HomeWizard;
     public bool IsZaptec => SelectedBrand?.Brand == DeviceBrand.Zaptec;
@@ -174,15 +174,16 @@ public partial class ConnectDeviceViewModel : BaseViewModel
 
     public string SummaryLine => SelectedBrand?.Brand switch
     {
-        DeviceBrand.Growatt => "API-token: " + Mask(ApiToken),
-        DeviceBrand.Solax => $"TokenID {Mask(ApiToken)}, {(IsSolaxCharger ? "laadpaal" : "dongle")} {DongleSn.Trim().ToUpperInvariant()}",
-        DeviceBrand.Sessy => $"Dongle op {IpAddress} als {Username}",
-        DeviceBrand.HomeWizard => $"P1-meter op {IpAddress}",
-        DeviceBrand.Alfen => $"Laadpaal op {IpAddress}",
-        DeviceBrand.Peblar => $"Laadpaal op {IpAddress}, token {Mask(ApiToken)}",
-        DeviceBrand.Enphase => $"Gateway op {IpAddress}, token {Mask(ApiToken)}",
-        DeviceBrand.Easee => $"Easee-account {Username}",
-        DeviceBrand.Demo => "Voorbeeldapparaten worden toegevoegd",
+        DeviceBrand.Growatt => Taal.T("koppel.api-token") + ": " + Mask(ApiToken),
+        DeviceBrand.Solax => string.Format(Taal.T("koppel.samenvatting-solax"), Mask(ApiToken),
+            Taal.T(IsSolaxCharger ? "koppel.woord-laadpaal" : "koppel.woord-dongle"), DongleSn.Trim().ToUpperInvariant()),
+        DeviceBrand.Sessy => string.Format(Taal.T("koppel.samenvatting-sessy"), IpAddress, Username),
+        DeviceBrand.HomeWizard => string.Format(Taal.T("koppel.samenvatting-p1"), IpAddress),
+        DeviceBrand.Alfen => string.Format(Taal.T("koppel.samenvatting-laadpaal"), IpAddress),
+        DeviceBrand.Peblar => string.Format(Taal.T("koppel.samenvatting-laadpaal-token"), IpAddress, Mask(ApiToken)),
+        DeviceBrand.Enphase => string.Format(Taal.T("koppel.samenvatting-gateway"), IpAddress, Mask(ApiToken)),
+        DeviceBrand.Easee => string.Format(Taal.T("koppel.samenvatting-easee"), Username),
+        DeviceBrand.Demo => Taal.T("koppel.samenvatting-demo"),
         _ => ""
     };
 
@@ -195,7 +196,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         _auth = auth;
         _lokaal = lokaal;
         _zoeker = zoeker;
-        Title = "Apparaat koppelen";
+        Title = Taal.T("koppel.apparaat-koppelen");
         Groepen = MaakGroepen();
     }
 
@@ -217,7 +218,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     private async Task ZoekApparaatAsync()
     {
         IsZoeken = true;
-        ZoekResultaat = "Bezig met zoeken op je wifi-netwerk, dit duurt tot een halve minuut…";
+        ZoekResultaat = Taal.T("koppel.bezig-met-zoeken");
 
         try
         {
@@ -231,14 +232,14 @@ public partial class ConnectDeviceViewModel : BaseViewModel
             {
                 var subnet = ApparaatZoeker.EigenSubnet();
                 ZoekResultaat = subnet is null
-                    ? "Je telefoon zit niet op wifi. Verbind met je thuisnetwerk en probeer het opnieuw."
-                    : $"Niets gevonden op {subnet}.1 tot {subnet}.254. Zit je telefoon op dezelfde wifi als het apparaat?";
+                    ? Taal.T("koppel.niet-op-wifi")
+                    : string.Format(Taal.T("koppel.niets-gevonden-op-subnet"), subnet);
                 return;
             }
 
             IpAddress = gevonden.Adres;
             IpAddressError = null;
-            ZoekResultaat = $"Gevonden: {gevonden.Soort} op {gevonden.Adres}";
+            ZoekResultaat = string.Format(Taal.T("koppel.gevonden"), gevonden.Soort, gevonden.Adres);
         }
         finally
         {
@@ -266,7 +267,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         switch (Step)
         {
             case 1:
-                if (!HasBrand) { ErrorMessage = "Kies eerst een merk."; return; }
+                if (!HasBrand) { ErrorMessage = Taal.T("koppel.kies-eerst-een-merk"); return; }
                 Step = 2;
                 break;
             case 2:
@@ -344,7 +345,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                 if (proef is null)
                 {
                     Step = 2;
-                    IpAddressError = "Geen meter gevonden op dit adres. Staat je telefoon op hetzelfde wifi-netwerk?";
+                    IpAddressError = Taal.T("koppel.geen-meter-gevonden");
                     return;
                 }
 
@@ -381,9 +382,9 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                 var count = devices?.Count ?? 0;
                 DoneText = count switch
                 {
-                    0 => "Gekoppeld. Er zijn nog geen apparaten gevonden; dat kan even duren.",
-                    1 => $"Gelukt! {devices![0].Name} is gekoppeld.",
-                    _ => $"Gelukt! {count} apparaten zijn gekoppeld."
+                    0 => Taal.T("koppel.gekoppeld-nog-geen-apparaten"),
+                    1 => string.Format(Taal.T("koppel.gelukt-een"), devices![0].Name),
+                    _ => string.Format(Taal.T("koppel.gelukt-meer"), count)
                 };
                 IsDone = true;
             }
@@ -391,19 +392,19 @@ public partial class ConnectDeviceViewModel : BaseViewModel
             {
                 // Credentials afgekeurd door de connector: terug naar stap 2 met melding onder het veld.
                 Step = 2;
-                if (IsGrowatt) ApiTokenError = "Dit token wordt niet geaccepteerd. Controleer het in ShinePhone.";
-                else if (IsSolax) ApiTokenError = "SolaXCloud accepteert dit token of dongle-nummer niet. Controleer beide.";
-                else if (IsSessy) PasswordError = "De dongle accepteert deze gegevens niet.";
-                else if (IsHomeWizard) IpAddressError = "Geen HomeWizard-meter gevonden op dit adres.";
-                else if (IsZaptec) PasswordError = "Zaptec accepteert deze gegevens niet. Werkt het wel in de Zaptec-app zelf?";
-                else if (IsEasee) PasswordError = "Easee accepteert deze gegevens niet. Werkt het wel in de Easee-app zelf?";
+                if (IsGrowatt) ApiTokenError = Taal.T("koppel.fout-growatt");
+                else if (IsSolax) ApiTokenError = Taal.T("koppel.fout-solax");
+                else if (IsSessy) PasswordError = Taal.T("koppel.fout-sessy");
+                else if (IsHomeWizard) IpAddressError = Taal.T("koppel.fout-homewizard");
+                else if (IsZaptec) PasswordError = Taal.T("koppel.fout-zaptec");
+                else if (IsEasee) PasswordError = Taal.T("koppel.fout-easee");
                 // Een Alfen laat maar één sessie tegelijk toe. Staat de ACE Service Installer van de
                 // monteur open, dan word je geweigerd met een wachtwoord dat gewoon klopt.
-                else if (IsEnphase) ApiTokenError = "De gateway accepteert dit token niet. Haal een nieuw token op bij entrez.enphaseenergy.com.";
-                else if (IsAlfen) PasswordError = "De laadpaal accepteert dit niet. Controleer het wachtwoord, en sluit de ACE Service Installer als die openstaat.";
+                else if (IsEnphase) ApiTokenError = Taal.T("koppel.fout-enphase");
+                else if (IsAlfen) PasswordError = Taal.T("koppel.fout-alfen");
                 // Een nieuw token aanmaken in de webinterface maakt het vorige ongeldig. Dat is bij
                 // Peblar de gewone oorzaak van een weigering, dus noemen we hem meteen.
-                else if (IsPeblar) ApiTokenError = "De laadpaal accepteert dit token niet. Maak in de webinterface van de paal een nieuw token aan; een nieuw token maakt het oude ongeldig.";
+                else if (IsPeblar) ApiTokenError = Taal.T("koppel.fout-peblar");
                 else ErrorMessage = ex.Message;
             }
         }, _auth);
@@ -444,48 +445,48 @@ public partial class ConnectDeviceViewModel : BaseViewModel
 
         if (IsGrowatt)
         {
-            if (string.IsNullOrWhiteSpace(ApiToken)) ApiTokenError = "Vul je API-token in.";
-            else if (ApiToken.Trim().Length < 16) ApiTokenError = "Dit token lijkt te kort.";
+            if (string.IsNullOrWhiteSpace(ApiToken)) ApiTokenError = Taal.T("koppel.vul-api-token-in");
+            else if (ApiToken.Trim().Length < 16) ApiTokenError = Taal.T("koppel.token-te-kort");
         }
         if (IsSolax)
         {
-            if (string.IsNullOrWhiteSpace(ApiToken)) ApiTokenError = "Vul je SolaXCloud TokenID in.";
-            else if (ApiToken.Trim().Length < 16) ApiTokenError = "Dit TokenID lijkt te kort.";
+            if (string.IsNullOrWhiteSpace(ApiToken)) ApiTokenError = Taal.T("koppel.vul-tokenid-in");
+            else if (ApiToken.Trim().Length < 16) ApiTokenError = Taal.T("koppel.tokenid-te-kort");
             var sn = DongleSn.Trim();
             if (IsSolaxCharger)
             {
-                if (string.IsNullOrWhiteSpace(sn)) DongleSnError = "Vul het serienummer van de laadpaal in.";
-                else if (sn.Length < 8) DongleSnError = "Dit serienummer lijkt te kort.";
+                if (string.IsNullOrWhiteSpace(sn)) DongleSnError = Taal.T("koppel.vul-serienummer-in");
+                else if (sn.Length < 8) DongleSnError = Taal.T("koppel.serienummer-te-kort");
             }
-            else if (string.IsNullOrWhiteSpace(sn)) DongleSnError = "Vul het registratienummer van de dongle in.";
-            else if (sn.Length != 10) DongleSnError = "Het registratienummer heeft 10 tekens.";
+            else if (string.IsNullOrWhiteSpace(sn)) DongleSnError = Taal.T("koppel.vul-registratienummer-in");
+            else if (sn.Length != 10) DongleSnError = Taal.T("koppel.registratienummer-10-tekens");
         }
         if (IsSessy || IsHomeWizard || IsAlfen || IsEnphase || IsPeblar)
         {
-            if (string.IsNullOrWhiteSpace(IpAddress)) IpAddressError = "Vul het IP-adres in.";
+            if (string.IsNullOrWhiteSpace(IpAddress)) IpAddressError = Taal.T("koppel.vul-ip-adres-in");
             else if (!IsBruikbaarAdres(IpAddress))
-                IpAddressError = "Vul een adres in zoals 192.168.1.50, of laat de app je apparaat opzoeken.";
+                IpAddressError = Taal.T("koppel.adres-niet-bruikbaar");
         }
         if (IsSessy)
         {
-            if (string.IsNullOrWhiteSpace(Username)) UsernameError = "Vul de gebruikersnaam van de dongle in.";
-            if (string.IsNullOrEmpty(Password)) PasswordError = "Vul het wachtwoord van de dongle in.";
+            if (string.IsNullOrWhiteSpace(Username)) UsernameError = Taal.T("koppel.vul-gebruikersnaam-dongle-in");
+            if (string.IsNullOrEmpty(Password)) PasswordError = Taal.T("koppel.vul-wachtwoord-dongle-in");
         }
         if (IsEnphase && string.IsNullOrWhiteSpace(ApiToken))
-            ApiTokenError = "Vul het token van je gateway in.";
+            ApiTokenError = Taal.T("koppel.vul-gateway-token-in");
         if (IsPeblar && string.IsNullOrWhiteSpace(ApiToken))
-            ApiTokenError = "Vul het API-token van je laadpaal in.";
+            ApiTokenError = Taal.T("koppel.vul-laadpaal-token-in");
         if (IsAlfen && string.IsNullOrEmpty(Password))
-            PasswordError = "Vul het wachtwoord van je laadpaal in. Dat heb je van je installateur gekregen.";
+            PasswordError = Taal.T("koppel.vul-laadpaal-wachtwoord-in");
         if (IsZaptec)
         {
-            if (string.IsNullOrWhiteSpace(Username)) UsernameError = "Vul het e-mailadres van je Zaptec-account in.";
-            if (string.IsNullOrEmpty(Password)) PasswordError = "Vul het wachtwoord van je Zaptec-account in.";
+            if (string.IsNullOrWhiteSpace(Username)) UsernameError = Taal.T("koppel.vul-zaptec-e-mailadres-in");
+            if (string.IsNullOrEmpty(Password)) PasswordError = Taal.T("koppel.vul-zaptec-wachtwoord-in");
         }
         if (IsEasee)
         {
-            if (string.IsNullOrWhiteSpace(Username)) UsernameError = "Vul het e-mailadres van je Easee-account in.";
-            if (string.IsNullOrEmpty(Password)) PasswordError = "Vul het wachtwoord van je Easee-account in.";
+            if (string.IsNullOrWhiteSpace(Username)) UsernameError = Taal.T("koppel.vul-easee-e-mailadres-in");
+            if (string.IsNullOrEmpty(Password)) PasswordError = Taal.T("koppel.vul-easee-wachtwoord-in");
         }
 
         return !HasApiTokenError && !HasIpAddressError && !HasUsernameError && !HasPasswordError && !HasDongleSnError;

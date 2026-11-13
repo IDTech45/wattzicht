@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              x:Class="Wattzicht.App.Pages.SavingsPage"
              x:DataType="vm:SavingsViewModel"
-             Title="Besparing">
+             Title="{t:T besparen.besparing}">
 
     <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
         <CollectionView ItemsSource="{Binding Rows}" SelectionMode="None">
 
             <CollectionView.Header>
                 <VerticalStackLayout Padding="16,8,16,8" Spacing="12">
-                    <Label Text="Besparing" Style="{StaticResource PageTitle}" />
+                    <Label Text="{t:T besparen.besparing}" Style="{StaticResource PageTitle}" />
 
                     <!-- Segment Dag/Week/Maand/Jaar -->
                     <Border Style="{StaticResource Card}" Padding="4" StrokeShape="RoundRectangle 14">
                         <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="4">
-                            <Button Grid.Column="0" Text="Dag" Command="{Binding SetPeriodCommand}" CommandParameter="Day">
+                            <Button Grid.Column="0" Text="{t:T besparen.dag}" Command="{Binding SetPeriodCommand}" CommandParameter="Day">
                                 <Button.Style>
                                     <Style TargetType="Button" BasedOn="{StaticResource SegmentButton}">
                                         <Style.Triggers>
@@ -28,7 +29,7 @@
                                     </Style>
                                 </Button.Style>
                             </Button>
-                            <Button Grid.Column="1" Text="Week" Command="{Binding SetPeriodCommand}" CommandParameter="Week">
+                            <Button Grid.Column="1" Text="{t:T besparen.week}" Command="{Binding SetPeriodCommand}" CommandParameter="Week">
                                 <Button.Style>
                                     <Style TargetType="Button" BasedOn="{StaticResource SegmentButton}">
                                         <Style.Triggers>
@@ -40,7 +41,7 @@
                                     </Style>
                                 </Button.Style>
                             </Button>
-                            <Button Grid.Column="2" Text="Maand" Command="{Binding SetPeriodCommand}" CommandParameter="Month">
+                            <Button Grid.Column="2" Text="{t:T besparen.maand}" Command="{Binding SetPeriodCommand}" CommandParameter="Month">
                                 <Button.Style>
                                     <Style TargetType="Button" BasedOn="{StaticResource SegmentButton}">
                                         <Style.Triggers>
@@ -52,7 +53,7 @@
                                     </Style>
                                 </Button.Style>
                             </Button>
-                            <Button Grid.Column="3" Text="Jaar" Command="{Binding SetPeriodCommand}" CommandParameter="Year">
+                            <Button Grid.Column="3" Text="{t:T besparen.jaar}" Command="{Binding SetPeriodCommand}" CommandParameter="Year">
                                 <Button.Style>
                                     <Style TargetType="Button" BasedOn="{StaticResource SegmentButton}">
                                         <Style.Triggers>
@@ -87,19 +88,19 @@
                             <BoxView Style="{StaticResource DividerLine}" Margin="0,8,0,0" />
                             <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
                                 <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                    <Label Text="Opgewekt" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{t:T besparen.opgewekt}" Style="{StaticResource StatCaption}" />
                                     <Label Text="{Binding TotalPvText}" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource WarningTextDark}}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                    <Label Text="Zelf gebruikt" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{t:T besparen.zelf-gebruikt}" Style="{StaticResource StatCaption}" />
                                     <Label Text="{Binding TotalSelfUseText}" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="2" Spacing="2">
-                                    <Label Text="Teruggeleverd" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{t:T besparen.teruggeleverd}" Style="{StaticResource StatCaption}" />
                                     <Label Text="{Binding TotalExportText}" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="3" Spacing="2">
-                                    <Label Text="Geladen" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{t:T besparen.geladen}" Style="{StaticResource StatCaption}" />
                                     <Label Text="{Binding TotalChargedText}" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource PendingText}, Dark={StaticResource PendingTextDark}}" />
                                 </VerticalStackLayout>
                             </Grid>
@@ -109,19 +110,19 @@
                     <!-- Duurzaamheid dit jaar -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding HasSustainability}">
                         <VerticalStackLayout Spacing="10">
-                            <Label Text="Dit jaar" Style="{StaticResource SubtitleLabel}" />
+                            <Label Text="{t:T besparen.dit-jaar}" Style="{StaticResource SubtitleLabel}" />
                             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                                 <VerticalStackLayout Spacing="2">
                                     <Label Text="{Binding YearPvText}" FontAttributes="Bold" FontSize="16" TextColor="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource WarningTextDark}}" />
-                                    <Label Text="opgewekt" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{t:T besparen.opgewekt-2}" Style="{StaticResource StatCaption}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="1" Spacing="2">
                                     <Label Text="{Binding Co2Text}" FontAttributes="Bold" FontSize="16" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
-                                    <Label Text="CO₂ vermeden" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{t:T besparen.co2-vermeden}" Style="{StaticResource StatCaption}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="2" Spacing="2">
                                     <Label Text="{Binding SelfSufficiencyText}" FontAttributes="Bold" FontSize="16" />
-                                    <Label Text="zelfvoorzienend" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{t:T besparen.zelfvoorzienend}" Style="{StaticResource StatCaption}" />
                                 </VerticalStackLayout>
                             </Grid>
                             <Label Text="{Binding PerformanceText}" FontSize="14">
@@ -138,21 +139,21 @@
                     <!-- Terugleveren -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding HasFeedIn}">
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="Terugleveren" Style="{StaticResource SubtitleLabel}" />
+                            <Label Text="{t:T besparen.terugleveren}" Style="{StaticResource SubtitleLabel}" />
                             <Label Text="{Binding FeedInMonthText}" Style="{StaticResource CardTitle}" TextColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}" />
                             <Label Text="{Binding FeedInYearText}" Style="{StaticResource StatCaption}" />
                             <Label Text="{Binding FeedIn2027Text}" FontSize="14" Margin="0,4,0,0" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <Label Text="Per dag" Style="{StaticResource SectionTitle}" />
+                    <Label Text="{t:T besparen.per-dag}" Style="{StaticResource SectionTitle}" />
                 </VerticalStackLayout>
             </CollectionView.Header>
 
             <CollectionView.EmptyView>
                 <VerticalStackLayout Padding="32,24" Spacing="8" HorizontalOptions="Center" IsVisible="{Binding HasLoaded}">
-                    <Label Text="Nog geen dagen" Style="{StaticResource CardTitle}" HorizontalTextAlignment="Center" />
-                    <Label Text="Zodra je apparaten een dag hebben gemeten, zie je hier je besparing." Style="{StaticResource SubtitleLabel}" HorizontalTextAlignment="Center" />
+                    <Label Text="{t:T besparen.nog-geen-dagen}" Style="{StaticResource CardTitle}" HorizontalTextAlignment="Center" />
+                    <Label Text="{t:T besparen.zodra-je-apparaten-een-dag}" Style="{StaticResource SubtitleLabel}" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
 
@@ -173,7 +174,7 @@
             </CollectionView.ItemTemplate>
 
             <CollectionView.Footer>
-                <Label Text="☀ opgewekt · ⌂ zelf gebruikt · ▲ teruggeleverd" Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" Padding="16,12,16,32" />
+                <Label Text="{t:T besparen.opgewekt-zelf-gebruikt-teruggeleverd}" Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" Padding="16,12,16,32" />
             </CollectionView.Footer>
         </CollectionView>
     </RefreshView>

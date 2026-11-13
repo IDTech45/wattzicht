@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
              xmlns:views="clr-namespace:Wattzicht.App.Views"
              x:Class="Wattzicht.App.Views.EnergyFlowView"
              x:Name="Root">
@@ -17,7 +18,7 @@
                 BackgroundColor="{AppThemeBinding Light={StaticResource EnergySolarSoft}, Dark={StaticResource EnergySolarSoftDark}}"
                 Stroke="{StaticResource EnergySolar}">
             <VerticalStackLayout Spacing="4">
-                <Label Text="Zon" Style="{StaticResource StatCaption}" />
+                <Label Text="{t:T stroom.zon}" Style="{StaticResource StatCaption}" />
                 <Label Text="{Binding PvKwText}" Style="{StaticResource StatValue}"
                        TextColor="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource WarningTextDark}}" />
                 <Label Text="{Binding PvHint}" Style="{StaticResource StatCaption}" />
@@ -27,7 +28,7 @@
         <!-- Huis -->
         <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
             <VerticalStackLayout Spacing="4">
-                <Label Text="Huis" Style="{StaticResource StatCaption}" />
+                <Label Text="{t:T stroom.huis}" Style="{StaticResource StatCaption}" />
                 <Label Text="{Binding LoadKwText}" Style="{StaticResource StatValue}" />
                 <Label Text="{Binding LoadHint}" Style="{StaticResource StatCaption}" />
             </VerticalStackLayout>
@@ -39,7 +40,7 @@
                 Stroke="{StaticResource EnergyBattery}">
             <VerticalStackLayout Spacing="4">
                 <Grid ColumnDefinitions="*,Auto">
-                    <Label Text="Batterij" Style="{StaticResource StatCaption}" />
+                    <Label Text="{t:T stroom.batterij}" Style="{StaticResource StatCaption}" />
                     <Label Grid.Column="1" Text="{Binding SocText}" Style="{StaticResource StatCaption}" FontAttributes="Bold" />
                 </Grid>
                 <Label Text="{Binding BatteryKwText}" Style="{StaticResource StatValue}"
@@ -57,7 +58,7 @@
                 BackgroundColor="{Binding GridCardBackground}"
                 Stroke="{Binding GridAccent}">
             <VerticalStackLayout Spacing="4">
-                <Label Text="Net" Style="{StaticResource StatCaption}" />
+                <Label Text="{t:T stroom.net}" Style="{StaticResource StatCaption}" />
                 <Label Text="{Binding GridKwText}" Style="{StaticResource StatValue}" TextColor="{Binding GridAccent}" />
                 <Label Text="{Binding GridHint}" Style="{StaticResource StatCaption}" />
             </VerticalStackLayout>
@@ -70,7 +71,7 @@
                 Stroke="{StaticResource EnergyCharger}">
             <Grid ColumnDefinitions="*,Auto">
                 <VerticalStackLayout Spacing="2">
-                    <Label Text="Laadpaal" Style="{StaticResource StatCaption}" />
+                    <Label Text="{t:T stroom.laadpaal}" Style="{StaticResource StatCaption}" />
                     <Label Text="{Binding ChargerHint}" Style="{StaticResource StatCaption}" />
                 </VerticalStackLayout>
                 <Label Grid.Column="1" Text="{Binding ChargerKwText}" Style="{StaticResource StatValue}" VerticalOptions="Center"

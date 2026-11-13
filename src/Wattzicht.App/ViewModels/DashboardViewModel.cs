@@ -47,7 +47,8 @@ public partial class DashboardViewModel : BaseViewModel
         var exportW = fresh && value!.GridPowerW < 0 ? -value.GridPowerW : 0;
         HasSurplus = exportW >= 1500;
         SurplusText = HasSurplus
-            ? $"Je levert nu {(exportW / 1000).ToString("0.0", CultureInfo.GetCultureInfo("nl-NL"))} kW terug"
+            ? string.Format(Taal.T("home.je-levert-nu-terug"),
+                (exportW / 1000).ToString("0.0", CultureInfo.GetCultureInfo("nl-NL")))
             : string.Empty;
     }
 
@@ -85,7 +86,10 @@ public partial class DashboardViewModel : BaseViewModel
         get
         {
             var hour = DateTime.Now.Hour;
-            var dagdeel = hour < 6 ? "Goedenacht" : hour < 12 ? "Goedemorgen" : hour < 18 ? "Goedemiddag" : "Goedenavond";
+            var dagdeel = Taal.T(hour < 6 ? "home.goedenacht"
+                : hour < 12 ? "home.goedemorgen"
+                : hour < 18 ? "home.goedemiddag"
+                : "home.goedenavond");
             var name = _auth.Household?.Name;
             return string.IsNullOrWhiteSpace(name) ? dagdeel : $"{dagdeel}, {name}";
         }
@@ -171,8 +175,8 @@ public partial class DashboardViewModel : BaseViewModel
     {
         Live = dashboard.Live;
         UpdatedAtText = dashboard.Live is null
-            ? "Nog geen meting"
-            : $"Bijgewerkt {TimeText.Ago(dashboard.Live.UpdatedAt, "zojuist")}";
+            ? Taal.T("home.nog-geen-meting")
+            : string.Format(Taal.T("home.bijgewerkt"), TimeText.Ago(dashboard.Live.UpdatedAt, Taal.T("tijd.zojuist")));
 
         var today = dashboard.Today;
         var month = dashboard.ThisMonth;

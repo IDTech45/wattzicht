@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              x:Class="Wattzicht.App.Pages.AdvicePage"
              x:DataType="vm:AdviceViewModel"
-             Title="Slim sturen">
+             Title="{t:T advies.slim-sturen}">
 
     <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
         <CollectionView ItemsSource="{Binding Tips}" SelectionMode="None">
 
             <CollectionView.Header>
                 <VerticalStackLayout Padding="16,8,16,8" Spacing="12">
-                    <Label Text="Slim sturen · vandaag" Style="{StaticResource SubtitleLabel}" />
+                    <Label Text="{t:T advies.slim-sturen-vandaag}" Style="{StaticResource SubtitleLabel}" />
                     <Grid ColumnDefinitions="*,Auto">
                         <Label Text="{Binding TotalText}" Style="{StaticResource StatValueLarge}" TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
                         <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
@@ -35,7 +36,7 @@
                         <VerticalStackLayout Spacing="6">
                             <Label Text="{Binding CheapestText}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
                             <Label Text="{Binding ExpensiveText}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}" />
-                            <Label Text="Uurprijzen inclusief belasting (schatting)" Style="{StaticResource StatCaption}" />
+                            <Label Text="{t:T advies.uurprijzen-inclusief-belasting-schatting}" Style="{StaticResource StatCaption}" />
                         </VerticalStackLayout>
                     </Border>
                     <!--
@@ -46,29 +47,29 @@
                     -->
                     <Border Style="{StaticResource Card}" Margin="16,8,16,0">
                         <VerticalStackLayout Spacing="10">
-                            <Label Text="Wanneer laad ik mijn auto?" Style="{StaticResource CardTitle}" />
+                            <Label Text="{t:T advies.wanneer-laad-ik-mijn-auto}" Style="{StaticResource CardTitle}" />
 
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                                 <VerticalStackLayout Spacing="4">
-                                    <Label Text="Hoeveel erin moet" Style="{StaticResource FieldLabel}" />
+                                    <Label Text="{t:T advies.hoeveel-erin-moet}" Style="{StaticResource FieldLabel}" />
                                     <Border Style="{StaticResource InputBorder}">
                                         <Grid ColumnDefinitions="*,Auto">
                                             <Entry Text="{Binding PlanKwh}" Keyboard="Numeric" />
-                                            <Label Grid.Column="1" Text="kWh" VerticalOptions="Center"
+                                            <Label Grid.Column="1" Text="{t:T advies.kwh}" VerticalOptions="Center"
                                                    Style="{StaticResource SubtitleLabel}" />
                                         </Grid>
                                     </Border>
                                 </VerticalStackLayout>
 
                                 <VerticalStackLayout Grid.Column="1" Spacing="4">
-                                    <Label Text="Klaar om" Style="{StaticResource FieldLabel}" />
+                                    <Label Text="{t:T advies.klaar-om}" Style="{StaticResource FieldLabel}" />
                                     <Border Style="{StaticResource InputBorder}">
                                         <TimePicker Time="{Binding PlanKlaarOm}" VerticalOptions="Center" />
                                     </Border>
                                 </VerticalStackLayout>
                             </Grid>
 
-                            <Button Text="Bereken" Style="{StaticResource SecondaryButton}"
+                            <Button Text="{t:T advies.bereken}" Style="{StaticResource SecondaryButton}"
                                     Command="{Binding MaakLaadplanCommand}" IsEnabled="{Binding PlanBusy, Converter={StaticResource InvertedBool}}" />
 
                             <Label Text="{Binding PlanError}" Style="{StaticResource ErrorLabel}"
@@ -106,8 +107,8 @@
 
             <CollectionView.EmptyView>
                 <VerticalStackLayout Padding="32,24" Spacing="8" HorizontalOptions="Center" IsVisible="{Binding HasLoaded}">
-                    <Label Text="Nog geen tips" Style="{StaticResource CardTitle}" HorizontalTextAlignment="Center" />
-                    <Label Text="Koppel je zonnepanelen, batterij of laadpaal, of zet bij Instellingen een dynamisch contract aan."
+                    <Label Text="{t:T advies.nog-geen-tips}" Style="{StaticResource CardTitle}" HorizontalTextAlignment="Center" />
+                    <Label Text="{t:T advies.koppel-je-zonnepanelen-batterij-of}"
                            Style="{StaticResource SubtitleLabel}" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
@@ -129,7 +130,7 @@
             </CollectionView.ItemTemplate>
 
             <CollectionView.Footer>
-                <Label Text="Automatisch sturen komt binnenkort voor laadpalen en batterijen."
+                <Label Text="{t:T advies.automatisch-sturen-komt-binnenkort-voor}"
                        Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" Padding="16,12,16,32" />
             </CollectionView.Footer>
         </CollectionView>

@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              x:Class="Wattzicht.App.Pages.SettingsPage"
              x:DataType="vm:SettingsViewModel"
-             Title="Instellingen">
+             Title="{t:T meer.instellingen}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16,8,16,32" Spacing="12">
 
-            <Label Text="Instellingen" Style="{StaticResource PageTitle}" />
+            <Label Text="{t:T meer.instellingen}" Style="{StaticResource PageTitle}" />
             <Label Text="{Binding HouseholdName}" Style="{StaticResource SubtitleLabel}" IsVisible="{Binding HouseholdName, Converter={StaticResource IsNotNullOrEmpty}}" />
 
             <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
@@ -17,55 +18,68 @@
             </Border>
 
             <!-- ===== Tarief ===== -->
-            <Label Text="Weergave" Style="{StaticResource SectionTitle}" />
+            <Label Text="{t:T meer.weergave}" Style="{StaticResource SectionTitle}" />
             <Border Style="{StaticResource Card}">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
                     <VerticalStackLayout Spacing="2" VerticalOptions="Center">
-                        <Label Text="Donker thema" Style="{StaticResource CardTitle}" />
-                        <Label Text="Uit zet de app op een lichte achtergrond" Style="{StaticResource SubtitleLabel}" />
+                        <Label Text="{t:T meer.donker-thema}" Style="{StaticResource CardTitle}" />
+                        <Label Text="{t:T meer.uit-zet-de-app-op}" Style="{StaticResource SubtitleLabel}" />
                     </VerticalStackLayout>
                     <Switch Grid.Column="1" IsToggled="{Binding IsDonkerThema}" VerticalOptions="Center" />
                 </Grid>
             </Border>
 
+            <!-- Taal. Staat bij weergave en niet onderaan: het is het soort instelling dat je één keer
+                 zoekt en meteen wil vinden. De namen staan in de taal zelf; wie Turks zoekt zoekt
+                 "Türkçe" en niet "Turks". -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="{t:T meer.taal}" Style="{StaticResource CardTitle}" />
+                    <Picker ItemsSource="{Binding Talen}"
+                            ItemDisplayBinding="{Binding Naam}"
+                            SelectedItem="{Binding GekozenTaal}" />
+                    <Label Text="{t:T meer.taal-uitleg}" Style="{StaticResource StatCaption}" />
+                </VerticalStackLayout>
+            </Border>
+
             <!-- LaadCash. Alleen zichtbaar als de server zegt dat er iets te tonen is. -->
             <VerticalStackLayout Spacing="8" IsVisible="{Binding HeeftLaadcash}">
-                <Label Text="LaadCash" Style="{StaticResource SectionTitle}" />
+                <Label Text="{t:T meer.laadcash}" Style="{StaticResource SectionTitle}" />
                 <Border Style="{StaticResource Card}">
                     <VerticalStackLayout Spacing="10">
                         <Label Text="{Binding LaadcashTitel}" Style="{StaticResource CardTitle}" />
                         <Label Text="{Binding LaadcashTekst}" Style="{StaticResource SubtitleLabel}"
                                IsVisible="{Binding LaadcashTekst, Converter={StaticResource IsNotNullOrEmpty}}" />
-                        <Label Text="LaadCash is net als Wattzicht van DoganTech. Je laadt gewoon zoals je gewend bent; zij boeken je groene laadbewijzen in en storten jouw deel."
+                        <Label Text="{t:T meer.laadcash-is-net-als-wattzicht}"
                                Style="{StaticResource SubtitleLabel}" FontSize="13"
                                IsVisible="{Binding LaadcashNogNiet}" />
-                        <Button Text="Meer weten over LaadCash"
+                        <Button Text="{t:T meer.meer-weten-over-laadcash}"
                                 Style="{StaticResource SecondaryButton}"
                                 Command="{Binding LaadcashOpenenCommand}"
                                 IsVisible="{Binding LaadcashNogNiet}" />
-                        <Label Text="Je bent gekoppeld met LaadCash."
+                        <Label Text="{t:T meer.je-bent-gekoppeld-met-laadcash}"
                                Style="{StaticResource SubtitleLabel}"
                                IsVisible="{Binding LaadcashGekoppeld}" />
                     </VerticalStackLayout>
                 </Border>
             </VerticalStackLayout>
 
-            <Label Text="Je energietarief" Style="{StaticResource SectionTitle}" />
+            <Label Text="{t:T meer.je-energietarief}" Style="{StaticResource SectionTitle}" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="14">
-                    <Label Text="Hiermee rekenen we uit wat je bespaart. Je vindt het tarief op je energiecontract."
+                    <Label Text="{t:T meer.hiermee-rekenen-we-uit-wat}"
                            Style="{StaticResource SubtitleLabel}" FontSize="14" />
 
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
                         <VerticalStackLayout Spacing="2" VerticalOptions="Center">
-                            <Label Text="Dynamisch contract" Style="{StaticResource CardTitle}" />
-                            <Label Text="Uurprijzen van de markt in plaats van een vast tarief" Style="{StaticResource SubtitleLabel}" />
+                            <Label Text="{t:T meer.dynamisch-contract}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{t:T meer.uurprijzen-van-de-markt-in}" Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>
                         <Switch Grid.Column="1" IsToggled="{Binding IsDynamic}" VerticalOptions="Center" />
                     </Grid>
 
                     <VerticalStackLayout Spacing="4" IsVisible="{Binding IsDynamic, Converter={StaticResource InvertedBool}}">
-                        <Label Text="Leveringstarief (€ per kWh)" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{t:T meer.leveringstarief-per-kwh}" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputBorder}">
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
                                 <Label Text="€" VerticalOptions="Center" Style="{StaticResource SubtitleLabel}" FontSize="15" />
@@ -76,38 +90,38 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4" IsVisible="{Binding IsDynamic}">
-                        <Label Text="Gemiddeld leveringstarief (€ per kWh)" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{t:T meer.gemiddeld-leveringstarief-per-kwh}" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputBorder}">
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
                                 <Label Text="€" VerticalOptions="Center" Style="{StaticResource SubtitleLabel}" FontSize="15" />
                                 <Entry Grid.Column="1" Text="{Binding ImportTariff}" Keyboard="Numeric" Placeholder="0,25" />
                             </Grid>
                         </Border>
-                        <Label Text="Bij dynamisch gebruiken we dit als schatting tot de uurprijzen worden gekoppeld." Style="{StaticResource StatCaption}" />
+                        <Label Text="{t:T meer.bij-dynamisch-gebruiken-we-dit}" Style="{StaticResource StatCaption}" />
                         <Label Text="{Binding ImportTariffError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasImportTariffError}" />
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label Text="Terugleververgoeding (€ per kWh)" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{t:T meer.terugleververgoeding-per-kwh}" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputBorder}">
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
                                 <Label Text="€" VerticalOptions="Center" Style="{StaticResource SubtitleLabel}" FontSize="15" />
                                 <Entry Grid.Column="1" Text="{Binding ExportTariff}" Keyboard="Numeric" Placeholder="0,08" />
                             </Grid>
                         </Border>
-                        <Label Text="Tot 31-12-2026 geldt saldering; dan telt teruglevering als je leveringstarief." Style="{StaticResource StatCaption}" />
+                        <Label Text="{t:T meer.tot-31-12-2026-geldt}" Style="{StaticResource StatCaption}" />
                         <Label Text="{Binding ExportTariffError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasExportTariffError}" />
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label Text="Terugleverkosten (€ per kWh)" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{t:T meer.terugleverkosten-per-kwh}" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputBorder}">
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
                                 <Label Text="€" VerticalOptions="Center" Style="{StaticResource SubtitleLabel}" FontSize="15" />
                                 <Entry Grid.Column="1" Text="{Binding FeedInCost}" Keyboard="Numeric" Placeholder="0,120" />
                             </Grid>
                         </Border>
-                        <Label Text="Staat op je contract of jaarafrekening. Betaal je een vast bedrag per jaar (staffel)? Deel dat door je teruggeleverde kWh."
+                        <Label Text="{t:T meer.staat-op-je-contract-of}"
                                Style="{StaticResource StatCaption}" />
                         <Label Text="{Binding FeedInCostError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasFeedInCostError}" />
                     </VerticalStackLayout>
@@ -116,7 +130,7 @@
                            IsVisible="{Binding TariffSavedText, Converter={StaticResource IsNotNullOrEmpty}}" />
 
                     <Grid>
-                        <Button Text="Tarief opslaan" Style="{StaticResource PrimaryButton}" Command="{Binding SaveTariffCommand}"
+                        <Button Text="{t:T meer.tarief-opslaan}" Style="{StaticResource PrimaryButton}" Command="{Binding SaveTariffCommand}"
                                 IsEnabled="{Binding IsSavingTariff, Converter={StaticResource InvertedBool}}" />
                         <ActivityIndicator IsRunning="{Binding IsSavingTariff}" IsVisible="{Binding IsSavingTariff}"
                                            Color="{StaticResource Navy900}" HorizontalOptions="End" Margin="0,0,16,0" />
@@ -125,7 +139,7 @@
             </Border>
 
             <!-- ===== Installateur ===== -->
-            <Label Text="Je installateur" Style="{StaticResource SectionTitle}" />
+            <Label Text="{t:T meer.je-installateur}" Style="{StaticResource SectionTitle}" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12">
                     <Grid ColumnDefinitions="*" ColumnSpacing="12">
@@ -134,19 +148,19 @@
                             een logo van de installateur ernaast leest als een tweede merk.
                         -->
                         <VerticalStackLayout Spacing="2" VerticalOptions="Center">
-                            <Label Text="Jouw installateur" Style="{StaticResource StatCaption}" />
+                            <Label Text="{t:T meer.jouw-installateur}" Style="{StaticResource StatCaption}" />
                             <Label Text="{Binding InstallerName}" Style="{StaticResource CardTitle}" />
                             <Label Text="{Binding InstallerPhone}" Style="{StaticResource SubtitleLabel}" IsVisible="{Binding HasInstallerPhone}" />
-                            <Label Text="Voor vragen over je installatie" Style="{StaticResource SubtitleLabel}" IsVisible="{Binding HasInstallerPhone, Converter={StaticResource InvertedBool}}" />
+                            <Label Text="{t:T meer.voor-vragen-over-je-installatie}" Style="{StaticResource SubtitleLabel}" IsVisible="{Binding HasInstallerPhone, Converter={StaticResource InvertedBool}}" />
                         </VerticalStackLayout>
                     </Grid>
 
-                    <Button Text="Bel installateur" Style="{StaticResource SecondaryButton}" Command="{Binding CallInstallerCommand}" IsVisible="{Binding HasInstallerPhone}" />
+                    <Button Text="{t:T meer.bel-installateur}" Style="{StaticResource SecondaryButton}" Command="{Binding CallInstallerCommand}" IsVisible="{Binding HasInstallerPhone}" />
 
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
                         <VerticalStackLayout Spacing="2" VerticalOptions="Center">
-                            <Label Text="Installateur mag meekijken" Style="{StaticResource CardTitle}" />
-                            <Label Text="Dan ziet je installateur storingen en je opwek, en kan sneller helpen. Je kunt dit altijd uitzetten."
+                            <Label Text="{t:T meer.installateur-mag-meekijken}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{t:T meer.dan-ziet-je-installateur-storingen}"
                                    Style="{StaticResource SubtitleLabel}" />
                             <Label Text="{Binding LastViewedText}" Style="{StaticResource StatCaption}" />
                         </VerticalStackLayout>
@@ -156,27 +170,27 @@
 
                     <BoxView Style="{StaticResource DividerLine}" />
 
-                    <Label Text="Nog geen thuisbatterij? Sla je zonnestroom op en gebruik hem 's avonds zelf." FontSize="14" />
-                    <Button Text="Vraag offerte voor thuisbatterij" Style="{StaticResource PrimaryButton}" Command="{Binding RequestQuoteCommand}" />
+                    <Label Text="{t:T meer.nog-geen-thuisbatterij-sla-je}" FontSize="14" />
+                    <Button Text="{t:T meer.vraag-offerte-voor-thuisbatterij}" Style="{StaticResource PrimaryButton}" Command="{Binding RequestQuoteCommand}" />
                 </VerticalStackLayout>
             </Border>
 
             <!-- ===== Meldingen ===== -->
-            <Label Text="Meldingen" Style="{StaticResource SectionTitle}" />
+            <Label Text="{t:T meer.meldingen}" Style="{StaticResource SectionTitle}" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
                         <VerticalStackLayout Spacing="2" VerticalOptions="Center">
-                            <Label Text="Bij een storing" Style="{StaticResource CardTitle}" />
-                            <Label Text="Als een apparaat geen data meer geeft of niets opwekt" Style="{StaticResource SubtitleLabel}" />
+                            <Label Text="{t:T meer.bij-een-storing}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{t:T meer.als-een-apparaat-geen-data}" Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>
                         <Switch Grid.Column="1" IsToggled="{Binding NotifyAlerts}" VerticalOptions="Center"
                                 SemanticProperties.Description="Melding bij een storing" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
                         <VerticalStackLayout Spacing="2" VerticalOptions="Center">
-                            <Label Text="Bij veel terugleveren" Style="{StaticResource CardTitle}" />
-                            <Label Text="Tip om je stroom zelf te gebruiken. Hooguit eens per 3 uur, tussen 9 en 20 uur." Style="{StaticResource SubtitleLabel}" />
+                            <Label Text="{t:T meer.bij-veel-terugleveren}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{t:T meer.tip-om-je-stroom-zelf}" Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>
                         <Switch Grid.Column="1" IsToggled="{Binding NotifySurplus}" VerticalOptions="Center"
                                 SemanticProperties.Description="Melding bij veel terugleveren" />
@@ -185,21 +199,21 @@
             </Border>
 
             <!-- ===== Account ===== -->
-            <Label Text="Account" Style="{StaticResource SectionTitle}" />
+            <Label Text="{t:T meer.account}" Style="{StaticResource SectionTitle}" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12">
-                    <Button Text="Uitloggen" Style="{StaticResource SecondaryButton}"
+                    <Button Text="{t:T meer.uitloggen}" Style="{StaticResource SecondaryButton}"
                             TextColor="{AppThemeBinding Light={StaticResource ErrorDot}, Dark={StaticResource ErrorTextDark}}"
                             BorderColor="{AppThemeBinding Light={StaticResource ErrorDot}, Dark={StaticResource ErrorTextDark}}"
                             Command="{Binding LogoutCommand}" />
 
                     <!-- Verwijderen staat los van uitloggen, en bewust minder opvallend: het is het
                          enige in deze app dat je niet terug kunt draaien. -->
-                    <Button Text="Account verwijderen"
+                    <Button Text="{t:T meer.account-verwijderen}"
                             Style="{StaticResource LinkButton}"
                             TextColor="{AppThemeBinding Light={StaticResource ErrorDot}, Dark={StaticResource ErrorTextDark}}"
                             Command="{Binding AccountVerwijderenCommand}" />
-                    <Label Text="Hiermee verdwijnen je huishouden, je gekoppelde apparaten en al je meetgegevens. Dit kan niet ongedaan gemaakt worden."
+                    <Label Text="{t:T meer.hiermee-verdwijnen-je-huishouden-je}"
                            Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" />
 
                     <Label Text="{Binding VersionText}" Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" />

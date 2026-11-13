@@ -3,12 +3,21 @@ using System.Globalization;
 namespace Wattzicht.App.Services;
 
 /// <summary>
-/// Relatieve tijd in het Nederlands ("3 min geleden"). Accepteert DateTime, DateTimeOffset of null,
-/// zodat het type in Wattzicht.Shared mag verschillen zonder dat de app breekt.
+/// Relatieve tijd in de taal van de app ("3 min geleden"). Accepteert DateTime, DateTimeOffset of
+/// null, zodat het type in Wattzicht.Shared mag verschillen zonder dat de app breekt.
 /// </summary>
 public static class TimeText
 {
-    private static readonly CultureInfo Nl = CultureInfo.GetCultureInfo("nl-NL");
+    /// <summary>
+    /// De datumopmaak volgt de gekozen taal, niet de telefoon. Anders staat er "3 mrt" onder een
+    /// Turks scherm, en dat leest als een foutje.
+    /// </summary>
+    private static CultureInfo Cultuur => Taal.Code switch
+    {
+        "en" => CultureInfo.GetCultureInfo("en-GB"),
+        "tr" => CultureInfo.GetCultureInfo("tr-TR"),
+        _ => CultureInfo.GetCultureInfo("nl-NL"),
+    };
 
     public static DateTimeOffset? ToLocal(object? value) => value switch
     {
@@ -18,15 +27,15 @@ public static class TimeText
     };
 
     /// <summary>"zojuist", "5 min geleden", "om 14:20", "3 mrt 09:12"</summary>
-    public static string Ago(object? value, string empty = "nog niet")
+    public static string Ago(object? value, string? empty = null)
     {
         var local = ToLocal(value);
-        if (local is null) return empty;
+        if (local is null) return empty ?? Taal.T("tijd.nog-niet");
         var age = DateTimeOffset.Now - local.Value;
-        if (age < TimeSpan.FromMinutes(1)) return "zojuist";
-        if (age < TimeSpan.FromHours(1)) return $"{(int)age.TotalMinutes} min geleden";
-        if (age < TimeSpan.FromHours(24)) return $"{(int)age.TotalHours} uur geleden";
-        return local.Value.ToString("d MMM HH:mm", Nl);
+        if (age < TimeSpan.FromMinutes(1)) return Taal.T("tijd.zojuist");
+        if (age < TimeSpan.FromHours(1)) return string.Format(Taal.T("tijd.minuten-geleden"), (int)age.TotalMinutes);
+        if (age < TimeSpan.FromHours(24)) return string.Format(Taal.T("tijd.uren-geleden"), (int)age.TotalHours);
+        return local.Value.ToString("d MMM HH:mm", Cultuur);
     }
 
     /// <summary>"Sinds 12 min", "Sinds 3 uur", "Sinds 3 mrt 09:12"</summary>
@@ -35,8 +44,8 @@ public static class TimeText
         var local = ToLocal(value);
         if (local is null) return "";
         var age = DateTimeOffset.Now - local.Value;
-        if (age < TimeSpan.FromHours(1)) return $"Sinds {(int)Math.Max(1, age.TotalMinutes)} min";
-        if (age < TimeSpan.FromHours(24)) return $"Sinds {(int)age.TotalHours} uur";
-        return $"Sinds {local.Value.ToString("d MMM HH:mm", Nl)}";
+        if (age < TimeSpan.FromHours(1)) return string.Format(Taal.T("tijd.sinds-minuten"), (int)Math.Max(1, age.TotalMinutes));
+        if (age < TimeSpan.FromHours(24)) return string.Format(Taal.T("tijd.sinds-uren"), (int)age.TotalHours);
+        return string.Format(Taal.T("tijd.sinds-datum"), local.Value.ToString("d MMM HH:mm", Cultuur));
     }
 }

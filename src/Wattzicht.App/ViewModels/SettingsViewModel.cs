@@ -43,9 +43,32 @@ public partial class SettingsViewModel : BaseViewModel
         }
     }
 
+    // ---- Taal ----
+    /// <summary>De drie talen, in de taal zelf.</summary>
+    public IReadOnlyList<TaalKeuze> Talen { get; } = Taal.Keuzes;
+
+    /// <summary>
+    /// De gekozen taal. Zetten past de hele app meteen aan: elk label in de XAML hangt aan
+    /// <see cref="Taal.Nu"/> en ververst zichzelf, dus er is geen herstart nodig.
+    /// </summary>
+    public TaalKeuze GekozenTaal
+    {
+        get => Talen.FirstOrDefault(t => t.Code == Taal.Code) ?? Talen[0];
+        set
+        {
+            if (value is null || value.Code == Taal.Code) return;
+            Taal.Zet(value.Code);
+            OnPropertyChanged();
+
+            // De teksten die uit de viewmodel komen (de LaadCash-tegel komt van de server) hangen
+            // niet aan de indexer; die halen we opnieuw op.
+            _ = LoadAsync();
+        }
+    }
+
     // ---- Installateur ----
     [ObservableProperty] private InstallerBrandingDto? _installer;
-    [ObservableProperty] private string _installerName = "Je installateur";
+    [ObservableProperty] private string _installerName = string.Empty;
     [ObservableProperty] private string? _installerPhone;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(HasInstallerPhone))] private bool _hasPhone;
     [ObservableProperty] private bool _hasQuoteUrl;
@@ -75,7 +98,7 @@ public partial class SettingsViewModel : BaseViewModel
         _api = api;
         _auth = auth;
         _push = push;
-        Title = "Instellingen";
+        Title = Taal.T("meer.instellingen");
     }
 
     partial void OnImportTariffChanged(string value) { ImportTariffError = null; TariffSavedText = null; }
@@ -91,16 +114,15 @@ public partial class SettingsViewModel : BaseViewModel
     private async Task AccountVerwijderenAsync()
     {
         var zeker = await Shell.Current.DisplayAlert(
-            "Account verwijderen",
-            "Je huishouden, je gekoppelde apparaten en al je meetgegevens worden verwijderd. "
-            + "Dit kan niet ongedaan gemaakt worden.",
-            "Verder", "Annuleren");
+            Taal.T("meer.account-verwijderen"),
+            Taal.T("meer.verwijderen-waarschuwing"),
+            Taal.T("algemeen.verder"), Taal.T("algemeen.annuleren"));
         if (!zeker) return;
 
         var echt = await Shell.Current.DisplayAlert(
-            "Zeker weten?",
-            "Hierna is alles weg en kun je niet meer inloggen met dit account.",
-            "Ja, verwijder alles", "Nee, laat staan");
+            Taal.T("meer.zeker-weten"),
+            Taal.T("meer.verwijderen-definitief"),
+            Taal.T("meer.ja-verwijder-alles"), Taal.T("meer.nee-laat-staan"));
         if (!echt) return;
 
         await RunSafeAsync(async () =>
@@ -122,7 +144,7 @@ public partial class SettingsViewModel : BaseViewModel
     public bool LaadcashGekoppeld => Laadcash is { Linked: true };
     public bool LaadcashNogNiet => Laadcash is { Show: true, Linked: false };
 
-    public string LaadcashTitel => Laadcash?.Title ?? "Verdien geld met je laadpaal";
+    public string LaadcashTitel => Laadcash?.Title ?? Taal.T("meer.verdien-geld-met-je-laadpaal");
     public string LaadcashTekst => Laadcash?.Body ?? "";
 
     [RelayCommand]
@@ -163,7 +185,7 @@ public partial class SettingsViewModel : BaseViewModel
             try
             {
                 Installer = await _api.GetInstallerAsync();
-                InstallerName = string.IsNullOrWhiteSpace(Installer.Name) ? "Je installateur" : Installer.Name;
+                InstallerName = string.IsNullOrWhiteSpace(Installer.Name) ? Taal.T("meer.je-installateur") : Installer.Name;
                 InstallerPhone = Installer.Phone;
                 HasPhone = !string.IsNullOrWhiteSpace(Installer.Phone);
                 HasQuoteUrl = Uri.TryCreate(Installer.QuoteUrl, UriKind.Absolute, out _);
@@ -181,8 +203,8 @@ public partial class SettingsViewModel : BaseViewModel
 
                 var log = await _api.GetAccessLogAsync();
                 LastViewedText = log.Count == 0
-                    ? "Nog niet bekeken door je installateur"
-                    : $"Laatst bekeken: {log[0].At.ToLocalTime().ToString("d MMM HH:mm", Nl)}";
+                    ? Taal.T("meer.nog-niet-bekeken")
+                    : string.Format(Taal.T("meer.laatst-bekeken"), log[0].At.ToLocalTime().ToString("d MMM HH:mm", Nl));
             }
             catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
             finally { _syncingAccess = false; }
@@ -254,11 +276,11 @@ public partial class SettingsViewModel : BaseViewModel
         ImportTariffError = ExportTariffError = FeedInCostError = null;
 
         if (!TryParseEur(ImportTariff, out var import) || import <= 0 || import > 2)
-            ImportTariffError = "Vul een tarief in tussen € 0,01 en € 2,00 per kWh.";
+            ImportTariffError = Taal.T("meer.tarief-tussen");
         if (!TryParseEur(ExportTariff, out var export) || export < 0 || export > 2)
-            ExportTariffError = "Vul een vergoeding in tussen € 0,00 en € 2,00 per kWh.";
+            ExportTariffError = Taal.T("meer.vergoeding-tussen");
         if (!TryParseEur(FeedInCost, out var feedIn) || feedIn < 0 || feedIn > 1)
-            FeedInCostError = "Vul terugleverkosten in tussen € 0,00 en € 1,00 per kWh.";
+            FeedInCostError = Taal.T("meer.terugleverkosten-tussen");
         if (HasImportTariffError || HasExportTariffError || HasFeedInCostError) return;
 
         IsSavingTariff = true;
@@ -268,7 +290,7 @@ public partial class SettingsViewModel : BaseViewModel
             ImportTariff = saved.ImportTariffEur.ToString("0.00", Nl);
             ExportTariff = saved.ExportTariffEur.ToString("0.00", Nl);
             FeedInCost = (saved.FeedInCostEur ?? 0m).ToString("0.000", Nl);
-            TariffSavedText = "Opgeslagen. Je besparing wordt vanaf vandaag met dit tarief berekend.";
+            TariffSavedText = Taal.T("meer.tarief-opgeslagen");
         }
         catch (ApiException ex)
         {
@@ -294,7 +316,7 @@ public partial class SettingsViewModel : BaseViewModel
         }
         catch
         {
-            await ShowAlertAsync("Bellen lukt niet", $"Bel zelf: {InstallerPhone}");
+            await ShowAlertAsync(Taal.T("meer.bellen-lukt-niet"), string.Format(Taal.T("meer.bel-zelf"), InstallerPhone));
         }
     }
 
@@ -304,7 +326,7 @@ public partial class SettingsViewModel : BaseViewModel
         var url = Installer?.QuoteUrl;
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
         {
-            await ShowAlertAsync("Offerte", $"Neem contact op met {InstallerName} voor een offerte voor een thuisbatterij.");
+            await ShowAlertAsync(Taal.T("meer.offerte"), string.Format(Taal.T("meer.neem-contact-op-voor-offerte"), InstallerName));
             return;
         }
         try
@@ -313,14 +335,15 @@ public partial class SettingsViewModel : BaseViewModel
         }
         catch
         {
-            await ShowAlertAsync("Openen lukt niet", "De offertepagina kon niet worden geopend.");
+            await ShowAlertAsync(Taal.T("meer.openen-lukt-niet"), Taal.T("meer.offertepagina-niet-geopend"));
         }
     }
 
     [RelayCommand]
     private async Task LogoutAsync()
     {
-        var confirmed = await ConfirmAsync("Uitloggen?", "Je kunt daarna opnieuw inloggen met je e-mail en wachtwoord.", "Uitloggen");
+        var confirmed = await ConfirmAsync(Taal.T("meer.uitloggen-vraag"),
+            Taal.T("meer.uitloggen-uitleg"), Taal.T("meer.uitloggen"));
         if (!confirmed) return;
         await _auth.LogoutAsync(); // meldt ook het toestel af voor push
     }

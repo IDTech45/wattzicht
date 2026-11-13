@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
              xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
              xmlns:models="clr-namespace:Wattzicht.App.Models"
              x:Class="Wattzicht.App.Pages.DevicesPage"
              x:DataType="vm:DevicesViewModel"
-             Title="Apparaten">
+             Title="{t:T apparaten.apparaten}">
 
     <Grid>
         <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
@@ -15,7 +16,7 @@
 
                 <CollectionView.Header>
                     <VerticalStackLayout Padding="16,8,16,8" Spacing="8">
-                        <Label Text="Je apparaten" Style="{StaticResource PageTitle}" />
+                        <Label Text="{t:T apparaten.je-apparaten}" Style="{StaticResource PageTitle}" />
                         <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
                             <Label Text="{Binding ErrorMessage}" />
                         </Border>
@@ -26,8 +27,8 @@
                     <VerticalStackLayout Padding="32,48" Spacing="12" HorizontalOptions="Center">
                         <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
                         <VerticalStackLayout Spacing="8" IsVisible="{Binding HasLoaded}">
-                            <Label Text="Nog geen apparaten" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" Margin="0" />
-                            <Label Text="Koppel je omvormer, thuisbatterij, laadpaal of P1-meter."
+                            <Label Text="{t:T apparaten.nog-geen-apparaten}" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" Margin="0" />
+                            <Label Text="{t:T apparaten.koppel-je-omvormer-thuisbatterij-laadpaal}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" HorizontalTextAlignment="Center" />
                         </VerticalStackLayout>
                     </VerticalStackLayout>
@@ -38,7 +39,7 @@
                         <SwipeView Margin="16,4">
                             <SwipeView.RightItems>
                                 <SwipeItems Mode="Reveal">
-                                    <SwipeItem Text="Verwijderen"
+                                    <SwipeItem Text="{t:T apparaten.verwijderen}"
                                                BackgroundColor="{StaticResource ErrorDot}"
                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DevicesViewModel}}, Path=DeleteCommand}"
                                                CommandParameter="{Binding .}" />
@@ -96,7 +97,7 @@
         </RefreshView>
 
         <!-- FAB-achtige knop -->
-        <Button Text="＋  Apparaat koppelen"
+        <Button Text="{t:T apparaten.apparaat-koppelen}"
                 Style="{StaticResource PrimaryButton}"
                 Command="{Binding ConnectDeviceCommand}"
                 HorizontalOptions="Center"

@@ -88,7 +88,7 @@ public partial class AdviceViewModel : BaseViewModel
                     System.Globalization.NumberStyles.Float,
                     CultureInfo.InvariantCulture, out var kwh) || kwh is <= 0 or > 200)
             {
-                PlanError = "Vul in hoeveel kilowattuur erin moet, bijvoorbeeld 20.";
+                PlanError = Taal.T("advies.vul-kilowattuur-in");
                 PlanHasError = true;
                 return;
             }
@@ -109,12 +109,13 @@ public partial class AdviceViewModel : BaseViewModel
 
             PlanSummary = plan.Explanation;
             PlanHasSaving = plan.SavingEur > 0;
-            PlanSavingText = "€ " + plan.SavingEur.ToString("0.00", Nl) + " goedkoper dan nu beginnen";
+            PlanSavingText = string.Format(Taal.T("advies.goedkoper-dan-nu-beginnen"),
+                "€ " + plan.SavingEur.ToString("0.00", Nl));
             HasPlan = true;
 
             if (!plan.Feasible)
             {
-                PlanError = "In die tijd past het niet helemaal. Dit is het beste dat erin past.";
+                PlanError = Taal.T("advies.past-niet-helemaal");
                 PlanHasError = true;
             }
         }
@@ -155,7 +156,7 @@ public partial class AdviceViewModel : BaseViewModel
     {
         _api = api;
         _auth = auth;
-        Title = "Slim sturen";
+        Title = Taal.T("advies.slim-sturen");
     }
 
     [RelayCommand]
@@ -180,29 +181,31 @@ public partial class AdviceViewModel : BaseViewModel
     private void Apply(AdviceDto advice)
     {
         TotalText = "+€ " + advice.TotalSavingEur.ToString("0.00", Nl);
-        Subtitle = advice.TotalSavingEur > 0
-            ? "extra als je de tips hieronder volgt"
+        Subtitle = Taal.T(advice.TotalSavingEur > 0
+            ? "advies.extra-als-je-de-tips-volgt"
             : advice.IsDynamic
-                ? "vandaag valt er weinig te verschuiven"
-                : "met een vast contract scheelt verschuiven pas vanaf 2027";
+                ? "advies.weinig-te-verschuiven"
+                : "advies.vast-contract-pas-vanaf-2027");
 
         HasPrices = advice.Cheapest is not null;
-        CheapestText = advice.Cheapest is null ? string.Empty : $"Goedkoopst {Span(advice.Cheapest)} · {Cents(advice.Cheapest.AverageAllInEur)}";
-        ExpensiveText = advice.MostExpensive is null ? string.Empty : $"Duurst {Span(advice.MostExpensive)} · {Cents(advice.MostExpensive.AverageAllInEur)}";
+        CheapestText = advice.Cheapest is null ? string.Empty
+            : string.Format(Taal.T("advies.goedkoopst"), Span(advice.Cheapest), Cents(advice.Cheapest.AverageAllInEur));
+        ExpensiveText = advice.MostExpensive is null ? string.Empty
+            : string.Format(Taal.T("advies.duurst"), Span(advice.MostExpensive), Cents(advice.MostExpensive.AverageAllInEur));
 
         HeeftZon = true;
         if (advice.SolarSource is { Length: > 0 } bron && advice.ExpectedSolarKwh > 0)
         {
             var venster = advice.SunFrom is { } van && advice.SunTo is { } tot
-                ? $", het meest tussen {Tijd(van)} en {Tijd(tot)}"
+                ? string.Format(Taal.T("advies.zon-venster"), Tijd(van), Tijd(tot))
                 : string.Empty;
-            ZonTekst = $"Zon vandaag: ongeveer {advice.ExpectedSolarKwh.ToString("0.#", Nl)} kWh{venster}";
-            ZonBron = $"Verwachting van {bron}, op jouw plaats en je eigen piekvermogen. Dit telt mee in de tips hieronder.";
+            ZonTekst = string.Format(Taal.T("advies.zon-vandaag"), advice.ExpectedSolarKwh.ToString("0.#", Nl), venster);
+            ZonBron = string.Format(Taal.T("advies.zon-bron"), bron);
         }
         else
         {
-            ZonTekst = "Geen zonverwachting beschikbaar";
-            ZonBron = "De tips hieronder kijken nu alleen naar de prijs. Koppel je zonnepanelen en vul je postcode in, dan rekenen we het weer mee.";
+            ZonTekst = Taal.T("advies.geen-zonverwachting");
+            ZonBron = Taal.T("advies.geen-zonverwachting-uitleg");
         }
 
         Tips.Clear();
@@ -217,9 +220,10 @@ public partial class AdviceViewModel : BaseViewModel
     private static string Span(PriceWindowDto w)
     {
         var from = w.From.ToLocalTime();
-        var prefix = from.Date == DateTime.Today ? string.Empty : "morgen ";
+        var prefix = from.Date == DateTime.Today ? string.Empty : Taal.T("advies.morgen") + " ";
         return $"{prefix}{from:HH:mm}–{w.To.ToLocalTime():HH:mm}";
     }
 
-    private static string Cents(decimal eur) => ((int)Math.Round(eur * 100)).ToString(Nl) + " ct/kWh";
+    private static string Cents(decimal eur) =>
+        string.Format(Taal.T("advies.cent-per-kwh"), ((int)Math.Round(eur * 100)).ToString(Nl));
 }

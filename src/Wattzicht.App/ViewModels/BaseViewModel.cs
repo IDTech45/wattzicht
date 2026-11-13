@@ -52,7 +52,7 @@ public abstract partial class BaseViewModel : ObservableObject
         }
         catch (Exception)
         {
-            ErrorMessage = "Er ging iets mis. Probeer het opnieuw.";
+            ErrorMessage = Taal.T("algemeen.er-ging-iets-mis");
         }
         finally
         {
@@ -60,9 +60,11 @@ public abstract partial class BaseViewModel : ObservableObject
         }
     }
 
-    protected static Task ShowAlertAsync(string title, string message, string cancel = "Oké") =>
-        Shell.Current?.CurrentPage?.DisplayAlert(title, message, cancel) ?? Task.CompletedTask;
+    protected static Task ShowAlertAsync(string title, string message, string? cancel = null) =>
+        Shell.Current?.CurrentPage?.DisplayAlert(title, message, cancel ?? Taal.T("algemeen.oke"))
+        ?? Task.CompletedTask;
 
-    protected static Task<bool> ConfirmAsync(string title, string message, string accept, string cancel = "Annuleren") =>
-        Shell.Current?.CurrentPage?.DisplayAlert(title, message, accept, cancel) ?? Task.FromResult(false);
+    protected static Task<bool> ConfirmAsync(string title, string message, string accept, string? cancel = null) =>
+        Shell.Current?.CurrentPage?.DisplayAlert(title, message, accept, cancel ?? Taal.T("algemeen.annuleren"))
+        ?? Task.FromResult(false);
 }
