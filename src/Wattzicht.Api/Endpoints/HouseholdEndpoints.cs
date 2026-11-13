@@ -1136,7 +1136,11 @@ public static class HouseholdEndpoints
         [AsParameters] EnphaseAuthorizeUrlQuery query,
         EnphaseOptions enphase)
     {
-        if (string.IsNullOrWhiteSpace(enphase.ClientId))
+        // De sleutel van de bewoner gaat voor. Enphase rekent per developer-app, dus wie er zelf een
+        // aanmaakt heeft zijn eigen maandbudget en kan daardoor vaker worden uitgelezen.
+        var clientId = EnphaseAuthorize.Kies(query.ClientId, enphase.ClientId);
+
+        if (string.IsNullOrWhiteSpace(clientId))
         {
             return Task.FromResult(Results.Problem(
                 title: "Enphase is op de server nog niet ingesteld.",
@@ -1151,11 +1155,8 @@ public static class HouseholdEndpoints
                 statusCode: StatusCodes.Status400BadRequest));
         }
 
-        var url = "https://api.enphaseenergy.com/oauth/authorize?response_type=code"
-                  + "&client_id=" + Uri.EscapeDataString(enphase.ClientId)
-                  + "&redirect_uri=" + Uri.EscapeDataString(redirectUri);
-
-        return Task.FromResult(Results.Ok(new EnphaseAuthorizeUrlDto(url, redirectUri)));
+        return Task.FromResult(Results.Ok(
+            new EnphaseAuthorizeUrlDto(EnphaseAuthorize.Url(clientId, redirectUri), redirectUri)));
     }
 
     private static async Task<IResult> ConnectDeviceAsync(

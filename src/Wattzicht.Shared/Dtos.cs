@@ -648,7 +648,8 @@ public sealed record EnphaseAuthorizeUrlDto(string Url, string RedirectUri);
 
 /// <summary>Vraag om de Enphase-toestemmingspagina.</summary>
 /// <param name="RedirectUri">Gewenst terugkeeradres; leeg = het eerste adres van onze lijst.</param>
-public sealed record EnphaseAuthorizeUrlQuery(string? RedirectUri);
+/// <param name="ClientId">De client-id van de bewoner zelf; leeg betekent: onze eigen sleutel.</param>
+public sealed record EnphaseAuthorizeUrlQuery(string? RedirectUri, string? ClientId = null);
 
 /// <summary>Toestemming aan- of uitzetten (PUT /household/installer-access).</summary>
 public sealed record UpdateInstallerAccessRequest(bool Granted);

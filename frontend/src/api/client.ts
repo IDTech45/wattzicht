@@ -386,9 +386,10 @@ export interface EnphaseAuthorizeUrl {
 }
 
 /** De toestemmingspagina van Enphase. De client-id blijft op de server. */
-export function getEnphaseAuthorizeUrl(redirectUri: string): Promise<EnphaseAuthorizeUrl> {
+export function getEnphaseAuthorizeUrl(redirectUri: string, clientId?: string): Promise<EnphaseAuthorizeUrl> {
+  const eigen = clientId ? `&clientId=${encodeURIComponent(clientId)}` : ''
   return request<EnphaseAuthorizeUrl>(
-    `/connectors/enphase/authorize-url?redirectUri=${encodeURIComponent(redirectUri)}`,
+    `/connectors/enphase/authorize-url?redirectUri=${encodeURIComponent(redirectUri)}${eigen}`,
   )
 }
 

@@ -139,11 +139,69 @@ async function apparatenOphalen() {
   }
 }
 
+/**
+ * Eigen Enphase-sleutel.
+ *
+ * Enphase rekent per developer-app en niet per woning, dus met onze gedeelde sleutel delen alle
+ * klanten samen duizend aanroepen per maand. Daarom lezen we een Enphase maar eens per vijf uur uit.
+ * Wie zelf een app aanmaakt heeft zijn eigen duizend, en dan kan het vaker en met meer detail.
+ *
+ * Het is nadrukkelijk een keuze: wie niets invult gaat gewoon met onze sleutel mee.
+ */
+const eigenSleutelOpen = ref(false)
+const eigenClientId = ref('')
+const eigenSecret = ref('')
+const eigenApiKey = ref('')
+
+const EIGEN_SLEUTEL_KEY = 'wz.enphase-eigen'
+
+/**
+ * De sleutels moeten de omleiding naar Enphase overleven: pas als de bewoner terugkomt met een code
+ * wisselen we ze in. In sessionStorage en niet in localStorage, en meteen weg zodra het klaar is;
+ * het zijn zijn eigen sleutels, maar ze horen niet langer te blijven staan dan deze ene handeling.
+ */
+function bewaarEigenSleutel() {
+  try {
+    if (!eigenClientId.value.trim()) {
+      sessionStorage.removeItem(EIGEN_SLEUTEL_KEY)
+      return
+    }
+    sessionStorage.setItem(
+      EIGEN_SLEUTEL_KEY,
+      JSON.stringify({
+        client_id: eigenClientId.value.trim(),
+        client_secret: eigenSecret.value.trim(),
+        api_key: eigenApiKey.value.trim(),
+      }),
+    )
+  } catch {
+    /* geen opslag beschikbaar: dan gaat het gewoon via onze sleutel */
+  }
+}
+
+function leesEigenSleutel(): Record<string, string> {
+  try {
+    const rauw = sessionStorage.getItem(EIGEN_SLEUTEL_KEY)
+    if (!rauw) return {}
+    const gelezen = JSON.parse(rauw) as Record<string, string>
+    return gelezen.client_id && gelezen.client_secret && gelezen.api_key ? gelezen : {}
+  } catch {
+    return {}
+  }
+}
+
 async function naarEnphase() {
   fout.value = null
+
+  if (eigenClientId.value.trim() && !(eigenSecret.value.trim() && eigenApiKey.value.trim())) {
+    fout.value = 'Vul bij je eigen sleutel alle drie de velden in, of laat ze alle drie leeg.'
+    return
+  }
+
   bezig.value = true
   try {
-    const { url } = await getEnphaseAuthorizeUrl(terugkeeradres())
+    bewaarEigenSleutel()
+    const { url } = await getEnphaseAuthorizeUrl(terugkeeradres(), eigenClientId.value.trim() || undefined)
     window.location.href = url
   } catch (e) {
     fout.value = melding(e)
@@ -211,7 +269,7 @@ async function enphaseAfronden(code: string) {
     const gekoppeld = await connectDevice({
       brand: 'Enphase',
       type: 'Inverter',
-      credentials: { code, redirect_uri: terugkeeradres() },
+      credentials: { code, redirect_uri: terugkeeradres(), ...leesEigenSleutel() },
     })
     gelukt.value = `Enphase gekoppeld: ${gekoppeld.map((d) => d.name || 'zonnepanelen').join(', ')}. De eerste meting komt binnen een uur binnen.`
     await apparatenOphalen()
@@ -219,6 +277,11 @@ async function enphaseAfronden(code: string) {
     fout.value = melding(e)
   } finally {
     bezig.value = false
+    try {
+      sessionStorage.removeItem(EIGEN_SLEUTEL_KEY)
+    } catch {
+      /* niets te wissen */
+    }
     // De code is eenmalig: uit de adresbalk halen, anders mislukt een verversing van de pagina.
     await router.replace({ path: '/koppelen' })
   }
@@ -342,6 +405,40 @@ onMounted(async () => {
               Enphase achter een betaald plan, dus de besparing kunnen we pas berekenen als er ook een
               P1-meter bij zit.
             </p>
+            <!-- Eigen sleutel. Dichtgeklapt, want het is een omweg voor wie het leuk vindt en
+                 geen stap in het koppelen. Wie hem openklapt krijgt wel meteen het waarom. -->
+            <button class="uitklap" type="button" @click="eigenSleutelOpen = !eigenSleutelOpen">
+              {{ eigenSleutelOpen ? '▾' : '▸' }} Eigen Enphase-sleutel (vaker bijwerken)
+            </button>
+
+            <div v-if="eigenSleutelOpen" class="eigen">
+              <p>
+                Enphase telt aanroepen per app en niet per woning. Met onze sleutel delen alle klanten
+                samen duizend per maand, en daarom lezen we je panelen maar eens per vijf uur uit. Maak
+                je zelf een gratis app aan bij Enphase, dan heb je je eigen duizend en kan het vaker,
+                met cijfers per paneel.
+              </p>
+              <ol>
+                <li>Ga naar developer-v4.enphase.com en maak een account.</li>
+                <li>Maak een app aan op het gratis Watt-plan.</li>
+                <li>Zet dit adres als Redirect URI in die app: <code>{{ terugkeeradres() }}</code></li>
+                <li>Neem de Client ID, Client Secret en API key hieronder over.</li>
+              </ol>
+
+              <label for="k-enphase-id">Client ID</label>
+              <input id="k-enphase-id" v-model="eigenClientId" autocomplete="off" spellcheck="false" />
+
+              <label for="k-enphase-secret">Client Secret</label>
+              <input id="k-enphase-secret" v-model="eigenSecret" type="password" autocomplete="off" />
+
+              <label for="k-enphase-key">API key</label>
+              <input id="k-enphase-key" v-model="eigenApiKey" autocomplete="off" spellcheck="false" />
+
+              <p class="hint">
+                Laat je dit leeg, dan gaat het gewoon via onze sleutel. Je kunt het later altijd nog doen.
+              </p>
+            </div>
+
             <div class="rij">
               <button class="wz-btn wz-btn--primary" type="button" :disabled="bezig" @click="naarEnphase">
                 {{ bezig ? 'Bezig…' : 'Verbind met Enphase' }}
@@ -428,6 +525,30 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.uitklap {
+  background: none;
+  border: 0;
+  padding: 8px 0;
+  font: inherit;
+  color: var(--wz-accent, #0a7);
+  cursor: pointer;
+  text-align: left;
+}
+.eigen {
+  border-left: 3px solid var(--wz-accent, #0a7);
+  padding: 4px 0 4px 14px;
+  margin-bottom: 14px;
+}
+.eigen ol {
+  margin: 8px 0 14px;
+  padding-left: 20px;
+}
+.eigen li {
+  margin-bottom: 6px;
+}
+.eigen code {
+  word-break: break-all;
+}
 .koppel {
   max-width: 44rem;
 }
