@@ -112,8 +112,146 @@ public static class HouseholdEndpoints
             .Produces<TariffDto>()
             .ProducesValidationProblem();
 
+        household.MapPost("/history/import", HistorieImporterenAsync)
+            .WithSummary("Leest een CSV-export uit het portaal van de fabrikant in als dagtotalen opwek.")
+            .Produces<HistorieImportDto>()
+            .ProducesValidationProblem()
+            .DisableAntiforgery();
+
         return app;
     }
+
+    /// <summary>
+    /// Een export uit het portaal van de fabrikant inlezen.
+    ///
+    /// Wij beginnen te meten op de dag dat iemand koppelt; wie zijn panelen jaren eerder liet leggen
+    /// ziet dus een leeg jaaroverzicht. Die jaren staan wel in het portaal van zijn fabrikant, en
+    /// bij Enphase kun je ze als CSV downloaden.
+    ///
+    /// Alleen dagen die wij nog niet zelf gemeten hebben worden gevuld. Een eigen meting is
+    /// nauwkeuriger dan een dagtotaal uit een ander systeem, en hem overschrijven zou een gat in de
+    /// besparing maken die we al hadden uitgerekend. Vandaag slaan we altijd over: die dag is nog
+    /// niet klaar.
+    /// </summary>
+    private static async Task<IResult> HistorieImporterenAsync(
+        HttpContext http,
+        AppDbContext db,
+        SummaryService summaries,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+
+        if (!http.Request.HasFormContentType)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] = ["Stuur het CSV-bestand mee als formulierveld 'bestand'."],
+            });
+        }
+
+        var form = await http.Request.ReadFormAsync(ct);
+        var bestand = form.Files["bestand"] ?? form.Files.FirstOrDefault();
+
+        if (bestand is null || bestand.Length == 0)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] = ["Er zat geen bestand bij."],
+            });
+        }
+
+        if (bestand.Length > MaximumBestand)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] = [$"Dit bestand is groter dan {MaximumBestand / (1024 * 1024)} MB. Exporteer per jaar."],
+            });
+        }
+
+        string inhoud;
+        await using (var stroom = bestand.OpenReadStream())
+        {
+            using var lezer = new StreamReader(stroom, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+            inhoud = await lezer.ReadToEndAsync(ct);
+        }
+
+        var vandaag = DutchTime.LocalDate(clock.GetUtcNow());
+        var uitkomst = HistorieImport.Lees(inhoud, vandaag);
+
+        if (!uitkomst.Gelukt)
+        {
+            var uitleg = uitkomst.Fout ?? "Dit bestand konden we niet lezen.";
+            if (uitkomst.GezieneKoppen.Count > 0)
+            {
+                uitleg += " Gevonden kolommen: " + string.Join(", ", uitkomst.GezieneKoppen.Take(12)) + ".";
+            }
+
+            return Results.ValidationProblem(new Dictionary<string, string[]> { ["bestand"] = [uitleg] });
+        }
+
+        var dagen = uitkomst.Dagen.Where(d => d.Datum < vandaag).ToList();
+        if (dagen.Count == 0)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["bestand"] = ["In dit bestand staat alleen vandaag, en die dag is nog niet klaar."],
+            });
+        }
+
+        var van = dagen[0].Datum;
+        var tot = dagen[^1].Datum;
+
+        var bestaand = await db.DailySummaries
+            .Where(x => x.HouseholdId == householdId && x.Date >= van && x.Date <= tot)
+            .ToDictionaryAsync(x => x.Date, ct);
+
+        var nu = clock.GetUtcNow();
+        var toegevoegd = 0;
+        var overgeslagen = 0;
+
+        foreach (var dag in dagen)
+        {
+            if (bestaand.TryGetValue(dag.Datum, out var rij))
+            {
+                // Al een eigen meting van die dag: met rust laten.
+                if (rij.PvKwh > 0 || rij.LastSampleAt is not null)
+                {
+                    overgeslagen++;
+                    continue;
+                }
+
+                rij.PvKwh = dag.Kwh;
+                rij.ImportedAt = nu;
+                rij.UpdatedAt = nu;
+                toegevoegd++;
+                continue;
+            }
+
+            db.DailySummaries.Add(new DailySummary
+            {
+                Id = Guid.NewGuid(),
+                HouseholdId = householdId,
+                Date = dag.Datum,
+                PvKwh = dag.Kwh,
+                ImportedAt = nu,
+                UpdatedAt = nu,
+            });
+            toegevoegd++;
+        }
+
+        await db.SaveChangesAsync(ct);
+
+        // De besparing van die dagen uitrekenen met het tarief dat toen gold.
+        await summaries.RecalculateSavingsAsync(householdId, van, ct);
+        await db.SaveChangesAsync(ct);
+
+        return Results.Ok(new HistorieImportDto(toegevoegd, overgeslagen, van, tot,
+            Math.Round(dagen.Sum(d => d.Kwh), 1)));
+    }
+
+    /// <summary>Een export van meer dan dit is bijna altijd het verkeerde bestand.</summary>
+    private const long MaximumBestand = 8 * 1024 * 1024;
 
     private static async Task<IResult> HouseholdAsync(HttpContext http, AppDbContext db, CancellationToken ct)
     {

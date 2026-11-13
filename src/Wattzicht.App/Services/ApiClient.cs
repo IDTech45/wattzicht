@@ -184,6 +184,26 @@ public sealed class ApiClient
         }
     }
 
+    /// <summary>
+    /// Stuurt een export uit het portaal van de fabrikant naar de server, die er dagtotalen van maakt.
+    ///
+    /// Het bestand gaat zoals het is de deur uit. Hier parsen zou betekenen dat een telefoon die een
+    /// half jaar niet is bijgewerkt een ander resultaat geeft dan de server, en dat is precies het
+    /// soort verschil dat niemand terugvindt.
+    /// </summary>
+    public async Task<HistorieImportDto> ImporteerHistorieAsync(
+        Stream bestand, string bestandsnaam, CancellationToken ct = default)
+    {
+        using var inhoud = new MultipartFormDataContent();
+        using var deel = new StreamContent(bestand);
+        deel.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/csv");
+        inhoud.Add(deel, "bestand", bestandsnaam);
+
+        using var req = new HttpRequestMessage(HttpMethod.Post, Relative("/history/import")) { Content = inhoud };
+        await AuthorizeAsync(req);
+        return await SendAsync<HistorieImportDto>(req, ct);
+    }
+
     /// <summary>Wat de app over LaadCash mag tonen voor deze woning.</summary>
     public Task<LaadcashPromoDto> LaadcashPromoAsync(CancellationToken ct = default) =>
         GetAsync<LaadcashPromoDto>("/laadcash/promo", ct);

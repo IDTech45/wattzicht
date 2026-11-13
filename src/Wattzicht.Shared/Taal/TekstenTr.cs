@@ -469,5 +469,16 @@ public static class TekstenTr
         ["push.proef-nog-dagen"] = "{0} gün Plus kaldı. Sonrasında Wattzicht cihazlarınız ve panonuzla çalışmaya devam eder.",
         ["push.bericht-van"] = "{0} size yazdı",
 
+
+        // ---- oude cijfers uit het portaal van de fabrikant ----
+        ["historie.titel"] = "Eski verileriniz",
+        ["historie.uitleg"] = "Biz bağlandığınız günden itibaren ölçüyoruz. Öncesindeki yıllar üreticinizin portalında duruyor; oradan CSV olarak indirip buraya ekleyin.",
+        ["historie.stappen"] = "Enphase için: enlighten.enphaseenergy.com, Raporlar, günlük enerji üretimi, CSV olarak indirin.",
+        ["historie.knop"] = "Dosya seç",
+        ["historie.kies-bestand"] = "Dışa aktarma dosyanızı seçin",
+        ["historie.gelukt"] = "{0} gün eklendi, {1} ile {2} arası. Toplam {3} kWh.",
+        ["historie.overgeslagen"] = "{0} günü biz zaten ölçmüştük; onlara dokunulmadı.",
+        ["historie.mislukt"] = "Dosya okunamadı.",
+
     }.ToFrozenDictionary();
 }

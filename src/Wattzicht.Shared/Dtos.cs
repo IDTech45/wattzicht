@@ -262,6 +262,19 @@ public sealed record DailySummaryDto(
 /// <param name="Message">Korte uitleg in gewone taal.</param>
 /// <param name="Since">Sinds wanneer (UTC).</param>
 /// <param name="ResolvedAt">Wanneer opgelost (UTC); <c>null</c> zolang de melding open staat.</param>
+/// <summary>Uitkomst van het inlezen van een export uit het portaal van een fabrikant.</summary>
+/// <param name="Dagen">Aantal dagen dat erbij is gekomen.</param>
+/// <param name="Overgeslagen">Dagen die we al zelf gemeten hadden; die laten we met rust.</param>
+/// <param name="Van">Eerste dag uit het bestand.</param>
+/// <param name="Tot">Laatste dag uit het bestand.</param>
+/// <param name="TotaalKwh">Opwek in het hele bestand, om te kunnen controleren of het klopt.</param>
+public sealed record HistorieImportDto(
+    int Dagen,
+    int Overgeslagen,
+    DateOnly Van,
+    DateOnly Tot,
+    double TotaalKwh);
+
 public sealed record AlertDto(
     Guid Id,
     Guid DeviceId,

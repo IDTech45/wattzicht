@@ -472,5 +472,16 @@ public static class TekstenNl
         ["push.proef-nog-dagen"] = "Nog {0} dagen Plus. Daarna blijft Wattzicht gewoon werken, met je apparaten en je dashboard.",
         ["push.bericht-van"] = "Bericht van {0}",
 
+
+        // ---- oude cijfers uit het portaal van de fabrikant ----
+        ["historie.titel"] = "Je oude cijfers",
+        ["historie.uitleg"] = "Wij meten vanaf de dag dat je koppelde. De jaren daarvoor staan nog in het portaal van je fabrikant; haal ze daar als CSV op en zet ze hier erbij.",
+        ["historie.stappen"] = "Bij Enphase: enlighten.enphaseenergy.com, Rapporten, energieproductie per dag, downloaden als CSV.",
+        ["historie.knop"] = "Bestand kiezen",
+        ["historie.kies-bestand"] = "Kies je exportbestand",
+        ["historie.gelukt"] = "{0} dagen erbij, van {1} tot {2}. In totaal {3} kWh.",
+        ["historie.overgeslagen"] = "{0} dagen hadden we zelf al gemeten; die zijn niet aangeraakt.",
+        ["historie.mislukt"] = "Het bestand kon niet worden ingelezen.",
+
     }.ToFrozenDictionary();
 }

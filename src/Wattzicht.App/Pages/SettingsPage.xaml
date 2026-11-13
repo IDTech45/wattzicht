@@ -198,6 +198,23 @@
                 </VerticalStackLayout>
             </Border>
 
+            <!-- Historie uit het portaal van de fabrikant. Wij meten vanaf de dag dat je koppelt; de
+                 jaren daarvoor staan bij Enphase en die kun je daar downloaden. -->
+            <Label Text="{t:T historie.titel}" Style="{StaticResource SectionTitle}" />
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{t:T historie.uitleg}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                    <Label Text="{t:T historie.stappen}" Style="{StaticResource StatCaption}" />
+                    <Button Text="{t:T historie.knop}"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding HistorieImporterenCommand}" />
+                    <Label Text="{Binding ImportResultaat}"
+                           Style="{StaticResource SubtitleLabel}"
+                           FontSize="14"
+                           IsVisible="{Binding HeeftImportResultaat}" />
+                </VerticalStackLayout>
+            </Border>
+
             <!-- ===== Account ===== -->
             <Label Text="{t:T meer.account}" Style="{StaticResource SectionTitle}" />
             <Border Style="{StaticResource Card}">

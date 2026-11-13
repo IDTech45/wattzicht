@@ -284,6 +284,15 @@ public sealed class DailySummary
     /// <summary>Zonnestraling die dag op de locatie (kWh/m², Open-Meteo); voor de prestatiecheck.</summary>
     public double? IrradianceKwhM2 { get; set; }
 
+    /// <summary>
+    /// Gevuld als deze dag uit een export van de fabrikant komt en niet uit onze eigen metingen.
+    ///
+    /// Zo blijft het verschil zichtbaar. Een dagtotaal uit een ander systeem is minder nauwkeurig
+    /// dan wat wij elke vijf minuten zelf meten, en het heeft geen verbruiks- of netkant. Het hoort
+    /// dus wel in de jaargrafiek, maar niet te worden overschreven of verward met een eigen meting.
+    /// </summary>
+    public DateTimeOffset? ImportedAt { get; set; }
+
     /// <summary>Tijdstip van de laatst verwerkte meting; nodig om vermogen naar energie te integreren.</summary>
     public DateTimeOffset? LastSampleAt { get; set; }
 

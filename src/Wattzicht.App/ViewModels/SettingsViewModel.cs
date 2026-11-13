@@ -66,6 +66,72 @@ public partial class SettingsViewModel : BaseViewModel
         }
     }
 
+    // ---- Historie uit het portaal van de fabrikant ----
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftImportResultaat))] private string? _importResultaat;
+
+    public bool HeeftImportResultaat => !string.IsNullOrEmpty(ImportResultaat);
+
+    /// <summary>
+    /// Een export uit het portaal van de fabrikant inlezen.
+    ///
+    /// Waarom dit in de app staat en niet alleen op de site: het bestand komt bij Enphase per mail
+    /// binnen, en die mail staat op de telefoon. Hem daar openen en meteen uploaden is één stap;
+    /// eerst naar een computer lopen is er een te veel.
+    /// </summary>
+    [RelayCommand]
+    private async Task HistorieImporterenAsync()
+    {
+        ImportResultaat = null;
+
+        try
+        {
+            var keuze = await FilePicker.Default.PickAsync(new PickOptions
+            {
+                PickerTitle = Taal.T("historie.kies-bestand"),
+                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+                {
+                    // Android kent geen bestandsextensies maar MIME-typen, en een CSV uit een
+                    // mailbijlage komt daar regelmatig binnen als text/plain of als octet-stream.
+                    [DevicePlatform.Android] = ["text/csv", "text/comma-separated-values", "text/plain", "application/vnd.ms-excel", "application/octet-stream"],
+                    [DevicePlatform.iOS] = ["public.comma-separated-values-text", "public.plain-text"],
+                    [DevicePlatform.WinUI] = [".csv", ".txt"],
+                }),
+            });
+
+            if (keuze is null) return;
+
+            IsBusy = true;
+            await using var stroom = await keuze.OpenReadAsync();
+            var uit = await _api.ImporteerHistorieAsync(stroom, keuze.FileName);
+
+            ImportResultaat = string.Format(
+                Taal.T("historie.gelukt"),
+                uit.Dagen,
+                uit.Van.ToString("d MMM yyyy", Nl),
+                uit.Tot.ToString("d MMM yyyy", Nl),
+                uit.TotaalKwh.ToString("0", Nl));
+
+            if (uit.Overgeslagen > 0)
+            {
+                ImportResultaat += " " + string.Format(Taal.T("historie.overgeslagen"), uit.Overgeslagen);
+            }
+        }
+        catch (ApiException ex)
+        {
+            // De server vertelt precies wat er niet klopte, inclusief welke kolommen hij zag staan.
+            // Dat is hier de hele winst: "ongeldig bestand" helpt niemand.
+            ImportResultaat = ex.Message;
+        }
+        catch (Exception)
+        {
+            ImportResultaat = Taal.T("historie.mislukt");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     // ---- Installateur ----
     [ObservableProperty] private InstallerBrandingDto? _installer;
     [ObservableProperty] private string _installerName = string.Empty;
