@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             x:Class="Wattzicht.App.Pages.PanelsPage"
+             x:DataType="vm:PanelsViewModel"
+             Title="{t:Ts panelen.titel}">
+
+    <RefreshView IsRefreshing="{Binding IsRefreshing}" Command="{Binding RefreshCommand}">
+        <ScrollView>
+            <VerticalStackLayout Padding="16,8,16,32" Spacing="14">
+
+                <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
+                    <Label Text="{Binding ErrorMessage}" />
+                </Border>
+
+                <!-- Wat de hele rij op dit moment doet. Eén regel, want de rest is het raster. -->
+                <Border Style="{StaticResource Card}" IsVisible="{Binding HeeftPanelen}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="{Binding Kop}" Style="{StaticResource CardTitle}" />
+                        <Label Text="{Binding Oordeel}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                        <Label Text="{Binding Bijgewerkt}" Style="{StaticResource StatCaption}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Het dak. Elk vakje is een paneel: de balk is hoe hard het nu loopt, afgemeten
+                     aan het beste paneel van dit moment. Een oranje balk blijft achter bij de rest. -->
+                <CollectionView ItemsSource="{Binding Panelen}" IsVisible="{Binding HeeftPanelen}">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="4"
+                                         HorizontalItemSpacing="8" VerticalItemSpacing="8" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:PaneelItem">
+                            <Border Style="{StaticResource Card}" Padding="8,10" HeightRequest="118">
+                                <Grid RowDefinitions="Auto,*,Auto,Auto" RowSpacing="4">
+                                    <Label Grid.Row="0" Text="{Binding NummerTekst}"
+                                           Style="{StaticResource StatCaption}"
+                                           HorizontalOptions="Center" />
+
+                                    <!-- De balk staat onderaan en groeit omhoog, zoals een dak zich
+                                         vult. Vaste hoogte eromheen, anders springen de vakjes. -->
+                                    <Grid Grid.Row="1" HeightRequest="54" VerticalOptions="End">
+                                        <BoxView HeightRequest="{Binding BalkHoogte}"
+                                                 WidthRequest="18"
+                                                 CornerRadius="4"
+                                                 Color="{Binding BalkKleur}"
+                                                 HorizontalOptions="Center"
+                                                 VerticalOptions="End" />
+                                    </Grid>
+
+                                    <Label Grid.Row="2" Text="{Binding WattTekst}"
+                                           FontAttributes="Bold" FontSize="13"
+                                           HorizontalOptions="Center" />
+                                    <Label Grid.Row="3" Text="{Binding MaxTekst}"
+                                           Style="{StaticResource StatCaption}" FontSize="11"
+                                           HorizontalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Nog niets gezien. Dat is geen storing: de gateway praat alleen op je eigen wifi. -->
+                <Border Style="{StaticResource Card}" IsVisible="{Binding ToonLeeg}" Padding="20">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="{t:T panelen.nog-niets}" Style="{StaticResource CardTitle}" />
+                        <Label Text="{t:T panelen.nog-niets-uitleg}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

@@ -21,5 +21,6 @@ public partial class AppShell : Shell
         // Detail-routes (worden op de navigatiestack gepusht)
         Routing.RegisterRoute(nameof(ConnectDevicePage), typeof(ConnectDevicePage));
         Routing.RegisterRoute(nameof(AlertsPage), typeof(AlertsPage));
+        Routing.RegisterRoute(nameof(PanelsPage), typeof(PanelsPage));
     }
 }

@@ -242,6 +242,32 @@ public sealed record LocalReadingRequest(
     System.Text.Json.JsonElement Raw,
     DateTimeOffset? MeasuredAt = null);
 
+/// <summary>Eén paneel van een installatie (GET /devices/{id}/panels).</summary>
+/// <param name="Serial">Het serienummer van de micro-omvormer; het enige wat ze uit elkaar houdt.</param>
+/// <param name="Nummer">Volgnummer in de lijst, zodat er iets te noemen valt dat geen serienummer is.</param>
+/// <param name="Watt">Wat dit paneel als laatste meldde.</param>
+/// <param name="MaxWatt">Het hoogste dat dit paneel ooit meldde; de maat waarlangs we hem leggen.</param>
+/// <param name="GemeldOp">Wanneer dat was.</param>
+/// <param name="BlijftAchter">Of dit paneel duidelijk minder doet dan de rest op dit moment.</param>
+public sealed record PaneelDto(
+    string Serial,
+    int Nummer,
+    double Watt,
+    double MaxWatt,
+    DateTimeOffset? GemeldOp,
+    bool BlijftAchter);
+
+/// <summary>Alle panelen van één omvormer, met wat er over het geheel te zeggen valt.</summary>
+/// <param name="Panelen">De panelen, op volgorde van opbrengst; de beste bovenaan.</param>
+/// <param name="TotaalWatt">Wat ze samen op dit moment maken.</param>
+/// <param name="BijgewerktOp">Wanneer de app dit voor het laatst van de omvormer ophaalde.</param>
+/// <param name="Achterblijvers">Hoeveel panelen er duidelijk minder doen dan de rest.</param>
+public sealed record PanelenDto(
+    IReadOnlyList<PaneelDto> Panelen,
+    double TotaalWatt,
+    DateTimeOffset? BijgewerktOp,
+    int Achterblijvers);
+
 // ---------------------------------------------------------------------------
 // Metingen en dashboard
 // ---------------------------------------------------------------------------

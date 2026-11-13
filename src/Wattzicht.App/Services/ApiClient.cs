@@ -264,6 +264,10 @@ public sealed class ApiClient
         await EnsureSuccessAsync(antwoord, ct);
     }
 
+    /// <summary>Wat elk paneel afzonderlijk doet, zoals de omvormer het laatst meldde.</summary>
+    public Task<PanelenDto> PanelenAsync(Guid deviceId, CancellationToken ct = default) =>
+        GetAsync<PanelenDto>($"/devices/{deviceId}/panels", ct);
+
     /// <summary>Alle dagcijfers van deze woning als CSV.</summary>
     public async Task<string> ExportCsvAsync(CancellationToken ct = default)
     {

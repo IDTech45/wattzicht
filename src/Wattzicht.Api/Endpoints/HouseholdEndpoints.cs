@@ -77,6 +77,11 @@ public static class HouseholdEndpoints
             .Produces<List<DeviceDto>>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
+        household.MapGet("/devices/{id:guid}/panels", PanelenAsync)
+            .WithSummary("Wat elk paneel afzonderlijk doet, zoals de omvormer het laatst meldde.")
+            .Produces<PanelenDto>()
+            .Produces(StatusCodes.Status404NotFound);
+
         household.MapPost("/devices/{id:guid}/readings", LocalReadingAsync)
             .WithSummary("Een meting die de app zelf op het thuisnetwerk ophaalde (P1-meter).")
             .Produces(StatusCodes.Status204NoContent)
@@ -1332,6 +1337,27 @@ public static class HouseholdEndpoints
     /// Alleen voor merken die als lokaal bekendstaan. Voor een Growatt of Zaptec zou dit een gaatje
     /// zijn om zelf cijfers te verzinnen die wij ook gewoon zelf kunnen ophalen.
     /// </summary>
+    /// <summary>
+    /// Wat elk paneel afzonderlijk doet.
+    ///
+    /// Komt van de gateway op het thuisnetwerk, dus het is zo vers als de laatste keer dat de app
+    /// thuis openstond. Dat staat er ook bij: een lijst met panelen van gisteravond is prima om een
+    /// achterblijver mee te vinden, maar het is niet "nu".
+    /// </summary>
+    private static async Task<IResult> PanelenAsync(
+        Guid id, HttpContext http, AppDbContext db, CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var device = await db.Devices
+            .Where(d => d.Id == id && d.HouseholdId == householdId)
+            .Select(d => new { d.PanelsJson, d.PanelsUpdatedAt })
+            .FirstOrDefaultAsync(ct);
+
+        return device is null
+            ? Results.NotFound()
+            : Results.Ok(Panelen.Lees(device.PanelsJson, device.PanelsUpdatedAt));
+    }
+
     private static async Task<IResult> LocalReadingAsync(
         Guid id,
         LocalReadingRequest request,
@@ -1379,6 +1405,20 @@ public static class HouseholdEndpoints
 
         var entity = meting.ToEntity(device.Id);
         db.Readings.Add(entity);
+
+        // De stand per paneel komt als eigen lijst mee. Die hoort niet in de metingtabel thuis: het
+        // is geen vermogen van de woning maar de verdeling binnen een installatie, en we hebben er
+        // alleen de laatste stand van nodig.
+        if (request.Raw.ValueKind == System.Text.Json.JsonValueKind.Object
+            && request.Raw.TryGetProperty("__panelen", out var paneelLijst))
+        {
+            var opgeslagen = Panelen.UitGateway(paneelLijst);
+            if (opgeslagen is not null)
+            {
+                device.PanelsJson = opgeslagen;
+                device.PanelsUpdatedAt = gemeten;
+            }
+        }
 
         // Vertelt het kastje er iets over de installatie bij, dan nemen we dat over. Dit is de route
         // waar het hoort te gebeuren: de telefoon staat op het thuisnetwerk, dus dit komt binnen

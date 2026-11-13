@@ -53,7 +53,7 @@
                             <Border Style="{StaticResource Card}" Padding="12,12">
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DevicesViewModel}}, Path=HernoemCommand}"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DevicesViewModel}}, Path=OpenenCommand}"
                                         CommandParameter="{Binding .}" />
                                 </Border.GestureRecognizers>
                                 <Grid ColumnDefinitions="48,*,Auto" ColumnSpacing="12" MinimumHeightRequest="56">

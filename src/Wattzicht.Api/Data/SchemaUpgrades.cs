@@ -11,6 +11,10 @@ public static class SchemaUpgrades
 {
     private static readonly string[] Steps =
     [
+        // 2026-11: de laatste stand per paneel, voor het panelenscherm.
+        """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "PanelsJson" text NULL""",
+        """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "PanelsUpdatedAt" timestamp with time zone NULL""",
+
         // 2026-11: het aantal panelen zoals de omvormer het meldt.
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "PvPanelCount" integer NULL""",
 

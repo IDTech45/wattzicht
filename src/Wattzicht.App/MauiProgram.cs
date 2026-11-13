@@ -59,6 +59,7 @@ public static class MauiProgram
         builder.Services.AddTransient<DevicesViewModel>();
         builder.Services.AddTransient<ConnectDeviceViewModel>();
         builder.Services.AddTransient<AlertsViewModel>();
+        builder.Services.AddTransient<PanelsViewModel>();
         builder.Services.AddTransient<SavingsViewModel>();
         builder.Services.AddTransient<AdviceViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
@@ -69,6 +70,7 @@ public static class MauiProgram
         builder.Services.AddTransient<DevicesPage>();
         builder.Services.AddTransient<ConnectDevicePage>();
         builder.Services.AddTransient<AlertsPage>();
+        builder.Services.AddTransient<PanelsPage>();
         builder.Services.AddTransient<SavingsPage>();
         builder.Services.AddTransient<AdvicePage>();
         builder.Services.AddTransient<SettingsPage>();

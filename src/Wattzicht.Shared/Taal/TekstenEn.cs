@@ -618,5 +618,19 @@ public static class TekstenEn
         ["woning.panelen-gevonden"] = "Your inverter reports {0} panels; the peak power below comes from there.",
         ["woning.paneel-gevonden"] = "Your inverter reports {0} panel; the peak power below comes from there.",
 
+
+        // ---- je dak, paneel voor paneel ----
+        ["panelen.titel"] = "Your panels",
+        ["panelen.kop"] = "{0} panels · {1} kW now",
+        ["panelen.kop-een"] = "{0} panel · {1} kW now",
+        ["panelen.bijgewerkt"] = "From your inverter, {0}",
+        ["panelen.max"] = "max {0} W",
+        ["panelen.alles-gelijk"] = "All panels are doing about the same.",
+        ["panelen.achterblijver"] = "Panel {0} is clearly behind the rest. Shade, dirt or a fault.",
+        ["panelen.achterblijvers"] = "{0} panels are clearly behind the rest. Shade, dirt or a fault.",
+        ["panelen.te-donker"] = "Too little sun to compare panels.",
+        ["panelen.nog-niets"] = "No panels seen yet",
+        ["panelen.nog-niets-uitleg"] = "Your inverter only tells this to someone on your own wifi. Open the app at home once and they will be here.",
+
     }.ToFrozenDictionary();
 }

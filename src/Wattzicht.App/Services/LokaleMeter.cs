@@ -243,12 +243,66 @@ public sealed class LokaleMeter(ApiClient api, ILogger<LokaleMeter> logger)
             if (!antwoord.IsSuccessStatusCode) return null;
 
             var inhoud = await antwoord.Content.ReadFromJsonAsync<JsonElement>(ct);
-            return inhoud.ValueKind == JsonValueKind.Object ? inhoud.Clone() : null;
+            if (inhoud.ValueKind != JsonValueKind.Object) return null;
+
+            // En meteen de stand per paneel erbij. Dat is een tweede aanroep naar hetzelfde kastje in
+            // de meterkast, dus geen cloud en geen quotum, en het is het enige antwoord op de vraag
+            // die mensen over hun dak hebben: doet er een paneel minder dan de rest.
+            var panelen = await HaalEnphasePanelenAsync(adres, token, ct);
+
+            return panelen is null
+                ? inhoud.Clone()
+                : VoegToe(inhoud, "__panelen", panelen.Value);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// De lijst met micro-omvormers van de gateway.
+    ///
+    /// Per paneel het laatste vermogen en het hoogste ooit. Mislukt dit, dan is dat geen reden om de
+    /// hele meting weg te gooien: de opwek van het huis is belangrijker dan de verdeling erbinnen.
+    /// </summary>
+    private async Task<JsonElement?> HaalEnphasePanelenAsync(string adres, string token, CancellationToken ct)
+    {
+        try
+        {
+            using var verzoek = new HttpRequestMessage(HttpMethod.Get, $"https://{adres}/api/v1/production/inverters");
+            verzoek.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var antwoord = await PaalClient.SendAsync(verzoek, ct);
+            if (!antwoord.IsSuccessStatusCode) return null;
+
+            var lijst = await antwoord.Content.ReadFromJsonAsync<JsonElement>(ct);
+            return lijst.ValueKind == JsonValueKind.Array ? lijst.Clone() : null;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Een veld bij een JSON-object zetten zonder de rest aan te raken.</summary>
+    private static JsonElement VoegToe(JsonElement origineel, string naam, JsonElement waarde)
+    {
+        using var buffer = new MemoryStream();
+        using (var schrijver = new Utf8JsonWriter(buffer))
+        {
+            schrijver.WriteStartObject();
+            foreach (var veld in origineel.EnumerateObject())
+            {
+                veld.WriteTo(schrijver);
+            }
+
+            schrijver.WritePropertyName(naam);
+            waarde.WriteTo(schrijver);
+            schrijver.WriteEndObject();
+        }
+
+        using var doc = JsonDocument.Parse(buffer.ToArray());
+        return doc.RootElement.Clone();
     }
 
     /// <summary>

@@ -626,5 +626,19 @@ public static class TekstenNl
         ["woning.panelen-gevonden"] = "Je omvormer meldt {0} panelen; het piekvermogen hieronder komt daarvandaan.",
         ["woning.paneel-gevonden"] = "Je omvormer meldt {0} paneel; het piekvermogen hieronder komt daarvandaan.",
 
+
+        // ---- je dak, paneel voor paneel ----
+        ["panelen.titel"] = "Je panelen",
+        ["panelen.kop"] = "{0} panelen · {1} kW nu",
+        ["panelen.kop-een"] = "{0} paneel · {1} kW nu",
+        ["panelen.bijgewerkt"] = "Van je omvormer, {0}",
+        ["panelen.max"] = "max {0} W",
+        ["panelen.alles-gelijk"] = "Alle panelen doen ongeveer hetzelfde.",
+        ["panelen.achterblijver"] = "Paneel {0} doet duidelijk minder dan de rest. Schaduw, vuil of een storing.",
+        ["panelen.achterblijvers"] = "{0} panelen doen duidelijk minder dan de rest. Schaduw, vuil of een storing.",
+        ["panelen.te-donker"] = "Te weinig zon om panelen met elkaar te vergelijken.",
+        ["panelen.nog-niets"] = "Nog geen panelen gezien",
+        ["panelen.nog-niets-uitleg"] = "Je omvormer vertelt dit alleen aan iemand op je eigen wifi. Open de app een keer thuis, dan staan ze hier.",
+
     }.ToFrozenDictionary();
 }

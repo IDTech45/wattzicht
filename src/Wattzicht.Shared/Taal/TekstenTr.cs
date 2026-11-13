@@ -623,5 +623,19 @@ public static class TekstenTr
         ["woning.panelen-gevonden"] = "Invertörünüz {0} panel bildiriyor; aşağıdaki tepe gücü oradan geliyor.",
         ["woning.paneel-gevonden"] = "Invertörünüz {0} panel bildiriyor; aşağıdaki tepe gücü oradan geliyor.",
 
+
+        // ---- je dak, paneel voor paneel ----
+        ["panelen.titel"] = "Panelleriniz",
+        ["panelen.kop"] = "{0} panel · şu an {1} kW",
+        ["panelen.kop-een"] = "{0} panel · şu an {1} kW",
+        ["panelen.bijgewerkt"] = "İnvertörünüzden, {0}",
+        ["panelen.max"] = "en fazla {0} W",
+        ["panelen.alles-gelijk"] = "Tüm paneller yaklaşık aynı seviyede.",
+        ["panelen.achterblijver"] = "{0} numaralı panel diğerlerinin açıkça gerisinde. Gölge, kir veya arıza.",
+        ["panelen.achterblijvers"] = "{0} panel diğerlerinin açıkça gerisinde. Gölge, kir veya arıza.",
+        ["panelen.te-donker"] = "Panelleri karşılaştırmak için güneş yetersiz.",
+        ["panelen.nog-niets"] = "Henüz panel görülmedi",
+        ["panelen.nog-niets-uitleg"] = "İnvertörünüz bunu yalnızca kendi wifinizdeki birine söyler. Uygulamayı evde bir kez açın, burada görünecekler.",
+
     }.ToFrozenDictionary();
 }

@@ -65,6 +65,27 @@ public partial class DevicesViewModel : BaseViewModel
         IsRefreshing = false;
     }
 
+    /// <summary>
+    /// Op een kaart tikken.
+    ///
+    /// Bij een omvormer gaat dat naar de panelen: dat is wat iemand wil zien als hij op zijn
+    /// zonnepanelen tikt. Hernoemen zit op de veegbeweging, waar het hoort; dat was eerder de enige
+    /// actie op de hele kaart en dat is niet wat je verwacht als je ergens op drukt.
+    /// </summary>
+    [RelayCommand]
+    private async Task OpenenAsync(DeviceItem? item)
+    {
+        if (item is null) return;
+
+        if (item.Device.Type == DeviceType.Inverter)
+        {
+            await Shell.Current.GoToAsync($"{nameof(PanelsPage)}?deviceId={item.Id}");
+            return;
+        }
+
+        await HernoemAsync(item);
+    }
+
     [RelayCommand]
     private async Task RefreshAsync()
     {

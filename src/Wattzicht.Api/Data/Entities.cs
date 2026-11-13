@@ -234,6 +234,18 @@ public sealed class Device
     /// <summary>Laatste foutmelding bij uitlezen; <c>null</c> als de laatste poging slaagde.</summary>
     public string? LastError { get; set; }
 
+    /// <summary>
+    /// De laatste stand per paneel, zoals de omvormer die meldt, als JSON.
+    ///
+    /// Alleen de laatste stand en geen geschiedenis: daarmee is de vraag te beantwoorden die mensen
+    /// echt hebben ("doet er een paneel minder dan de rest"), zonder voor elk paneel een rij per
+    /// kwartier te bewaren. Een installatie van twintig panelen zou dat anders tot twee miljoen
+    /// rijen per jaar maken, voor een grafiek die niemand opvraagt.
+    /// </summary>
+    public string? PanelsJson { get; set; }
+
+    public DateTimeOffset? PanelsUpdatedAt { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public List<Reading> Readings { get; set; } = [];
