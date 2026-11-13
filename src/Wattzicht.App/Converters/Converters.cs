@@ -64,6 +64,7 @@ public sealed class BrandToColorConverter : IValueConverter
             DeviceBrand.Alfen => "EnergyCharger",
             DeviceBrand.Zaptec => "EnergyCharger",
             DeviceBrand.Peblar => "EnergyCharger",
+            DeviceBrand.Easee => "EnergyCharger",
             DeviceBrand.HomeWizard => "EnergyGrid",
             DeviceBrand.Demo => "TextMuted",
             _ => "TextMuted"

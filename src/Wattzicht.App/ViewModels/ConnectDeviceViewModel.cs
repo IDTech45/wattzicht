@@ -55,6 +55,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         new(DeviceBrand.Solax, "SolaX laadpaal", "Smart EV Charger met MID-meter via SolaXCloud", "EnergyCharger", DeviceType.Charger),
         new(DeviceBrand.Sessy, "Sessy", "Thuisbatterij met Sessy-dongle", "EnergyBattery", DeviceType.Battery),
         new(DeviceBrand.Zaptec, "Zaptec", "Laadpaal via je eigen Zaptec-account", "EnergyCharger", DeviceType.Charger),
+        new(DeviceBrand.Easee, "Easee", "Laadpaal via je eigen Easee-account", "EnergyCharger", DeviceType.Charger),
         // Een Alfen heeft geen cloud waar wij bij mogen: wie hem via 50five, E-Flux of de lease heeft,
         // ziet zijn data alleen in hún portaal. De paal zelf heeft wel een lokale interface, dezelfde
         // die de monteur gebruikt. Daarom staat hij hier en niet op de website: dit kan alleen vanuit
@@ -119,6 +120,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(SolaxHelp))]
     [NotifyPropertyChangedFor(nameof(IsSessy))]
     [NotifyPropertyChangedFor(nameof(IsZaptec))]
+    [NotifyPropertyChangedFor(nameof(IsEasee))]
     [NotifyPropertyChangedFor(nameof(IsAlfen))]
     [NotifyPropertyChangedFor(nameof(IsPeblar))]
     [NotifyPropertyChangedFor(nameof(IsEnphase))]
@@ -141,6 +143,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     public bool IsSessy => SelectedBrand?.Brand == DeviceBrand.Sessy;
     public bool IsHomeWizard => SelectedBrand?.Brand == DeviceBrand.HomeWizard;
     public bool IsZaptec => SelectedBrand?.Brand == DeviceBrand.Zaptec;
+    public bool IsEasee => SelectedBrand?.Brand == DeviceBrand.Easee;
     public bool IsAlfen => SelectedBrand?.Brand == DeviceBrand.Alfen;
     public bool IsPeblar => SelectedBrand?.Brand == DeviceBrand.Peblar;
     public bool IsEnphase => SelectedBrand?.Brand == DeviceBrand.Enphase;
@@ -178,6 +181,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         DeviceBrand.Alfen => $"Laadpaal op {IpAddress}",
         DeviceBrand.Peblar => $"Laadpaal op {IpAddress}, token {Mask(ApiToken)}",
         DeviceBrand.Enphase => $"Gateway op {IpAddress}, token {Mask(ApiToken)}",
+        DeviceBrand.Easee => $"Easee-account {Username}",
         DeviceBrand.Demo => "Voorbeeldapparaten worden toegevoegd",
         _ => ""
     };
@@ -309,6 +313,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                 credentials["ip"] = IpAddress.Trim();
                 break;
             case DeviceBrand.Zaptec:
+            case DeviceBrand.Easee:
                 credentials["username"] = Username.Trim();
                 credentials["password"] = Password;
                 break;
@@ -391,6 +396,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                 else if (IsSessy) PasswordError = "De dongle accepteert deze gegevens niet.";
                 else if (IsHomeWizard) IpAddressError = "Geen HomeWizard-meter gevonden op dit adres.";
                 else if (IsZaptec) PasswordError = "Zaptec accepteert deze gegevens niet. Werkt het wel in de Zaptec-app zelf?";
+                else if (IsEasee) PasswordError = "Easee accepteert deze gegevens niet. Werkt het wel in de Easee-app zelf?";
                 // Een Alfen laat maar één sessie tegelijk toe. Staat de ACE Service Installer van de
                 // monteur open, dan word je geweigerd met een wachtwoord dat gewoon klopt.
                 else if (IsEnphase) ApiTokenError = "De gateway accepteert dit token niet. Haal een nieuw token op bij entrez.enphaseenergy.com.";
@@ -475,6 +481,11 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         {
             if (string.IsNullOrWhiteSpace(Username)) UsernameError = "Vul het e-mailadres van je Zaptec-account in.";
             if (string.IsNullOrEmpty(Password)) PasswordError = "Vul het wachtwoord van je Zaptec-account in.";
+        }
+        if (IsEasee)
+        {
+            if (string.IsNullOrWhiteSpace(Username)) UsernameError = "Vul het e-mailadres van je Easee-account in.";
+            if (string.IsNullOrEmpty(Password)) PasswordError = "Vul het wachtwoord van je Easee-account in.";
         }
 
         return !HasApiTokenError && !HasIpAddressError && !HasUsernameError && !HasPasswordError && !HasDongleSnError;

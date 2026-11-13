@@ -39,26 +39,61 @@ const guides = [
     ],
   },
   {
-    brand: 'Deye / Solarman',
-    kind: 'Hybride omvormer',
-    connected: false,
-    steps: ['Koppeling via je Solarman-account.', 'Beschikbaar in de volgende release.'],
+    brand: 'Alfen',
+    kind: 'Laadpaal',
+    connected: true,
+    steps: [
+      'Dit gaat via de app, want een Alfen leest alleen uit op je eigen netwerk.',
+      'Tik in de app op Zoek mijn laadpaal, of vul het IP-adres van de paal in.',
+      'Vul het installateurswachtwoord in dat op de sticker in de paal staat.',
+      'Hangt je paal bij 50five, E-Flux of de lease, dan zit die partij ertussen en lukt het niet.',
+    ],
   },
   {
-    brand: 'Alfen en Zaptec',
+    brand: 'Zaptec',
     kind: 'Laadpaal',
-    connected: false,
-    steps: ['Koppeling via je laadpaalaccount of OCPP.', 'We testen dit nu met de eerste installateurs.'],
+    connected: true,
+    steps: [
+      'Log in met je eigen Zaptec-account bij Apparaat toevoegen → Zaptec.',
+      'Je palen verschijnen in de lijst; kies de jouwe.',
+      'Vanaf dat moment komen je laadsessies binnen, ook die van eerder deze maand.',
+    ],
+  },
+  {
+    brand: 'Peblar',
+    kind: 'Laadpaal',
+    connected: true,
+    steps: [
+      'Ook deze leest de app lokaal uit, dus je telefoon moet op dezelfde wifi zitten.',
+      'Maak in het webscherm van de paal een API-token aan.',
+      'Vul het IP-adres van de paal en dat token in bij Apparaat toevoegen → Peblar.',
+    ],
+  },
+  {
+    brand: 'Enphase',
+    kind: 'Micro-omvormers',
+    connected: true,
+    steps: [
+      'Wij lezen de IQ Gateway in je meterkast uit, niet de cloud van Enphase.',
+      'Tik op Zoek mijn gateway op wifi; de app vindt het adres zelf.',
+      'Haal één keer een token op bij Enphase (de app opent de juiste pagina) en plak dat erin.',
+    ],
   },
   {
     brand: 'P1-meter',
     kind: 'Slimme meter uitlezen',
-    connected: false,
+    connected: true,
     steps: [
       'Een dongle in de P1-poort van je slimme meter laat zien wat je van het net haalt en teruglevert.',
-      'Werkt straks met de gangbare kastjes; je hoeft geen bepaald merk te hebben.',
-      'Komt zodra de app lokaal kan uitlezen, want zo’n dongle praat alleen op je eigen wifi.',
+      'De app zoekt de dongle zelf op je wifi; je hoeft geen IP-adres op te zoeken.',
+      'Nu met HomeWizard; andere kastjes komen erbij.',
     ],
+  },
+  {
+    brand: 'Deye / Solarman',
+    kind: 'Hybride omvormer',
+    connected: false,
+    steps: ['Koppeling via je Solarman-account.', 'Hier zijn we nog mee bezig.'],
   },
 ]
 </script>

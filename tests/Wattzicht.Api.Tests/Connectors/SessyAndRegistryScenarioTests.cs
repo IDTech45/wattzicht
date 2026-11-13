@@ -149,7 +149,7 @@ public sealed class ConnectorContractTests
         var registry = sp.GetRequiredService<ConnectorRegistry>();
 
         Assert.Equal(
-            new[] { DeviceBrand.Growatt, DeviceBrand.Sessy, DeviceBrand.Alfen, DeviceBrand.Solax, DeviceBrand.Enphase, DeviceBrand.Zaptec, DeviceBrand.Peblar, DeviceBrand.HomeWizard, DeviceBrand.Demo }.OrderBy(b => b),
+            new[] { DeviceBrand.Growatt, DeviceBrand.Sessy, DeviceBrand.Alfen, DeviceBrand.Solax, DeviceBrand.Enphase, DeviceBrand.Zaptec, DeviceBrand.Peblar, DeviceBrand.Easee, DeviceBrand.HomeWizard, DeviceBrand.Demo }.OrderBy(b => b),
             registry.SupportedBrands.OrderBy(b => b));
     }
 
@@ -160,7 +160,9 @@ public sealed class ConnectorContractTests
         var registry = sp.GetRequiredService<ConnectorRegistry>();
 
         // Alfen kan sinds 06-11-2026 wel: via de lokale HTTPS-API van de paal, uitgelezen door de app.
-        // Deye staat nog in de merkenlijst zonder connector.
+        // Easee kan sinds 13-11-2026 wel, via de Easee-cloud. Deye is het enige merk dat nog in de
+        // merkenlijst staat zonder connector: dat gaat over de Solarman-logger en daar hebben we
+        // geen sleutel voor.
         Assert.Null(registry.Get(DeviceBrand.Deye));
         var ex = Assert.Throws<ConnectorException>(() => registry.GetRequired(DeviceBrand.Deye));
         Assert.Contains("nog niet ondersteund", ex.Message);

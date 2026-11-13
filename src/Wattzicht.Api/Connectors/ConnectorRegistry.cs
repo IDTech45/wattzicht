@@ -81,6 +81,14 @@ public static class ConnectorServiceCollectionExtensions
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Wattzicht/0.1");
         });
 
+        services.AddHttpClient(EaseeConnector.HttpClientName, client =>
+        {
+            var baseUrl = configuration["Connectors:Easee:BaseUrl"] ?? EaseeConnector.DefaultBaseUrl;
+            client.BaseAddress = new Uri(baseUrl);
+            client.Timeout = TimeSpan.FromSeconds(20);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Wattzicht/0.1");
+        });
+
         services.AddHttpClient(SolaxConnector.HttpClientName, client =>
         {
             var baseUrl = configuration["Connectors:Solax:BaseUrl"] ?? SolaxConnector.DefaultBaseUrl;
@@ -95,6 +103,7 @@ public static class ConnectorServiceCollectionExtensions
         services.AddSingleton<IDeviceConnector, AlfenConnector>();
         services.AddSingleton<IDeviceConnector, ZaptecConnector>();
         services.AddSingleton<IDeviceConnector, PeblarConnector>();
+        services.AddSingleton<IDeviceConnector, EaseeConnector>();
         services.AddSingleton<IDeviceConnector, HomeWizardConnector>();
         services.AddSingleton(new EnphaseOptions(
             configuration["Connectors:Enphase:ClientId"],

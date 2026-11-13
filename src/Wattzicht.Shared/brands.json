@@ -88,7 +88,7 @@
         "type": "password"
       }
     ],
-    "status": "planned",
+    "status": "supported",
     "haIntegration": "core: enphase_envoy (lokaal)",
     "docsUrl": "https://developer-v4.enphase.com/developer-plans",
     "difficulty": "medium",
@@ -835,7 +835,7 @@
         "type": "password"
       }
     ],
-    "status": "planned",
+    "status": "supported",
     "haIntegration": "HACS: alfen_wallbox (lokale HTTPS-API); HACS: alfen_modbus",
     "docsUrl": "https://github.com/leeyuentuen/alfen_wallbox",
     "difficulty": "medium",
@@ -862,7 +862,7 @@
         "type": "password"
       }
     ],
-    "status": "planned",
+    "status": "supported",
     "haIntegration": "HACS: zaptec (cloud API)",
     "docsUrl": "https://docs.zaptec.com/docs/api_authentication",
     "difficulty": "easy",
@@ -878,18 +878,18 @@
     "fields": [
       {
         "key": "username",
-        "label": "Easee-account (e-mail of telefoon)",
-        "hint": "",
-        "type": "text"
+        "label": "E-mailadres",
+        "hint": "Het account waarmee je in de Easee-app inlogt.",
+        "type": "email"
       },
       {
         "key": "password",
         "label": "Wachtwoord",
-        "hint": "",
+        "hint": "Van hetzelfde Easee-account.",
         "type": "password"
       }
     ],
-    "status": "planned",
+    "status": "supported",
     "haIntegration": "HACS: easee_hass (cloud API)",
     "docsUrl": "https://developer.easee.com/",
     "difficulty": "easy",
@@ -943,7 +943,7 @@
         "type": "password"
       }
     ],
-    "status": "planned",
+    "status": "supported",
     "haIntegration": "core: peblar (lokale REST API)",
     "docsUrl": "https://www.home-assistant.io/integrations/peblar/",
     "difficulty": "easy",
@@ -1206,7 +1206,7 @@
         "type": "ip"
       }
     ],
-    "status": "planned",
+    "status": "supported",
     "haIntegration": "core: homewizard_energy (lokaal)",
     "docsUrl": "https://api-documentation.homewizard.com/docs/introduction",
     "difficulty": "easy",

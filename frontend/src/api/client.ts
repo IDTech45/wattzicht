@@ -13,6 +13,7 @@ export type DeviceBrand =
   | 'Deye'
   | 'Alfen'
   | 'Zaptec'
+  | 'Easee'
   | 'HomeWizard'
   | string
 

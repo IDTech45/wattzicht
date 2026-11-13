@@ -20,6 +20,7 @@ const brands = [
   { name: 'SolaX laadpaal', kind: 'Laadpaal (MID)', connected: true },
   { name: 'Alfen', kind: 'Laadpaal', connected: true },
   { name: 'Zaptec', kind: 'Laadpaal', connected: true },
+  { name: 'Peblar', kind: 'Laadpaal', connected: true },
   { name: 'P1-meter', kind: 'Slimme meter uitlezen', connected: true },
   { name: 'Enphase', kind: 'Micro-omvormers', connected: true },
   { name: 'SolarEdge', kind: 'Omvormer', connected: false },
