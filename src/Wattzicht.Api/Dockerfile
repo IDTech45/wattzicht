@@ -19,7 +19,12 @@ COPY tests/Wattzicht.Api.Tests/ tests/Wattzicht.Api.Tests/
 
 # Bij elke deploy: alle tests, waaronder de scenario's voor elke koppeling (Growatt, SolaX, Sessy, demo).
 # Faalt er één, dan stopt de build en blijft de huidige versie gewoon draaien.
+#
+# Op één groep na: de tests die de bronbestanden van de app lezen (controleren of elke taalsleutel in
+# de XAML ook bestaat). Hierboven wordt alleen de server gekopieerd, dus die bestanden staan er niet.
+# Ze draaien wel in de gewone testronde en in de CI-stap "api", die de hele repo hebben.
 RUN dotnet test tests/Wattzicht.Api.Tests/Wattzicht.Api.Tests.csproj -c Release --no-restore \
+    --filter "LeestBronbestanden!=ja" \
     --logger "console;verbosity=normal"
 
 RUN dotnet publish src/Wattzicht.Api/Wattzicht.Api.csproj -c Release -o /app/publish --no-restore

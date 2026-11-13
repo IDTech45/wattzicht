@@ -59,6 +59,7 @@ public sealed class TaalpakketTests
     }
 
     [Fact]
+    [Trait(Bronnen, "ja")]
     public void Elke_sleutel_in_de_XAML_bestaat_ook_echt()
     {
         var map = AppMap();
@@ -83,6 +84,7 @@ public sealed class TaalpakketTests
     }
 
     [Fact]
+    [Trait(Bronnen, "ja")]
     public void Elke_tekst_in_het_pakket_wordt_ook_ergens_gebruikt()
     {
         // Andersom: een sleutel die nergens meer voorkomt is dode tekst die bij elke vertaling weer
@@ -105,7 +107,18 @@ public sealed class TaalpakketTests
         Assert.Empty(ongebruikt);
     }
 
-    /// <summary>De map van de app, gevonden vanaf de testmap omhoog tot de solution.</summary>
+    /// <summary>
+    /// Deze twee tests lezen de bronbestanden van de app en de server.
+    ///
+    /// Dat kan niet overal: de API-image wordt gebouwd met alleen de server en de tests erin, en
+    /// draait daar deze hele testronde. De Dockerfile sluit dit kenmerk daarom uit; de gewone
+    /// testronde en de CI-stap "api" hebben de hele repo en voeren het wel uit. Uitsluiten in de
+    /// Dockerfile is met opzet: dat staat er zichtbaar bij, in plaats van een test die zichzelf
+    /// stilletjes overslaat en voor altijd groen blijft.
+    /// </summary>
+    private const string Bronnen = "LeestBronbestanden";
+
+    /// <summary>De map van de app.</summary>
     private static string AppMap() => Path.Combine(SrcMap(), "Wattzicht.App");
 
     /// <summary>De src-map: de app en de server, want in beide staan sleutels.</summary>
