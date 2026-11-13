@@ -222,12 +222,12 @@ public static class ChargePlanner
 
         if (zon >= 0.5)
         {
-            delen.Add(T("plan.rechtstreeks-van-je-dak", zon.ToString("0.#")));
+            delen.Add(T("plan.rechtstreeks-van-je-dak", zon.ToString("0.#", Teksten.Cultuur(input.Taal))));
         }
 
         if (besparing >= 0.05m)
         {
-            delen.Add(T("plan.dat-scheelt", besparing.ToString("0.00")));
+            delen.Add(T("plan.dat-scheelt", besparing.ToString("0.00", Teksten.Cultuur(input.Taal))));
         }
 
         var zin = string.Join(", ", delen) + ".";

@@ -409,5 +409,65 @@ public static class TekstenTr
         ["plan.dat-scheelt"] = "bu, şimdi başlamaya göre € {0} kazandırır",
         ["plan.past-niet-helemaal-vol"] = "Dikkat: bu süre içinde tam dolmaz.",
 
+
+        // ---- soort apparaat in de lijst ----
+        ["soort.omvormer"] = "İnverter",
+        ["soort.thuisbatterij"] = "Ev bataryası",
+        ["soort.laadpaal"] = "Şarj istasyonu",
+        ["soort.online"] = "Çevrimiçi",
+        ["apparaten.zojuist-gezien"] = "Az önce görüldü",
+        ["apparaten.laatst-gezien"] = "Son görülme {0}",
+
+
+        // ---- inloggen met Google, netwerkfouten, grafiek ----
+        ["besparen.nog-geen-gegevens"] = "Henüz veri yok",
+        ["sociaal.manier-onbekend"] = "Uygulama bu giriş yöntemini tanımıyor.",
+        ["sociaal.scherm-niet-geopend"] = "Uygulama giriş ekranını açamadı.",
+        ["sociaal.geen-token"] = "Google giriş jetonu döndürmedi. Bize bildirin, düzeltiriz.",
+        ["sociaal.loopt-al"] = "Zaten bir giriş işlemi sürüyor. Birazdan tekrar deneyin.",
+        ["sociaal.geen-verbinding-google"] = "Google ile bağlantı yok. İnternetinizi kontrol edin.",
+        ["sociaal.fout-10"] = "Google uygulamanın bu sürümünü henüz kabul etmiyor (hata 10). Bu bizim ayarlarımızdan kaynaklanıyor, sizden değil.",
+        ["sociaal.geweigerd"] = "Google girişi reddetti (hata {0}).",
+        ["sociaal.niet-op-dit-toestel"] = "Bu cihazda henüz kullanılamıyor.",
+        ["fout.verwijderen-mislukt"] = "Silme işlemi başarısız oldu.",
+        ["fout.leeg-antwoord"] = "Sunucudan boş yanıt geldi.",
+        ["fout.onverwacht-antwoord"] = "Sunucudan beklenmeyen yanıt geldi.",
+        ["fout.server-reageert-niet"] = "Sunucu yanıt vermiyor. Daha sonra tekrar deneyin.",
+        ["stroom.auto-laadt"] = "Araba şarj oluyor",
+        ["stroom.niet-aan-het-laden"] = "Şarj olmuyor",
+
+        ["push.kanaal-uitleg"] = "Arızalar ve kendi güneş enerjinizi kullanma önerileri",
+
+
+        // ---- storingsteksten, in de app opgebouwd uit de velden ----
+        ["storing.tekst-geen-data"] = "{1} cihazından {0} veri gelmiyor.",
+        ["storing.tekst-geen-opwek"] = "{0} gün içinde hiç üretmiyor.",
+        ["storing.tekst-offline"] = "{0} cihazına ulaşılamıyor.",
+        ["storing.tekst-offline-met-reden"] = "{0} cihazına ulaşılamıyor: {1}",
+        ["storing.duur-minuten"] = "{0} dakikadır",
+        ["storing.duur-uren"] = "{0} saattir",
+        ["storing.duur-dagen"] = "{0} gündür",
+
+
+        // ---- pushmeldingen ----
+        ["push.auto-klaar"] = "Arabanız hazır",
+        ["push.er-ging-kwh-in"] = "{0} kWh yüklendi.",
+        ["push.geladen-op-eigen-zon"] = "Kendi güneşinizle şarj edildi",
+        ["push.kwh-waarvan-zon-procent"] = "{0} kWh yüklendi, bunun {1} kWh kadarı kendi çatınızdan. Bu yüzde {2} demek.",
+        ["push.kwh-waarvan-zon"] = "{0} kWh yüklendi, bunun {1} kWh kadarı kendi çatınızdan.",
+        ["push.morgen-zonnigste-uur"] = "Yarın güneş {0}:00 civarında en yüksekte olur; o saatte şarj etmek en çok kazandırır.",
+        ["push.straks-op-eigen-zon"] = "Birazdan kendi güneşinizle şarj",
+        ["push.straks-voordeligst"] = "Birazdan şarj etmek en avantajlı",
+        ["push.vanaf-tijd-zon"] = "{0} saatinden itibaren panelleriniz arabayı doldurmaya yetecek kadar üretiyor. Fişe şimdi takın.",
+        ["push.vanaf-tijd-goedkoopst"] = "{0} saatinden itibaren elektrik en ucuz. Arabanızı fişe takın.",
+        ["push.dat-scheelt-ongeveer"] = "Bu yaklaşık € {0} kazandırır.",
+        ["push.een-apparaat"] = "Bir cihaz",
+        ["push.storing-titel"] = "Arıza: {0}",
+        ["push.meerdere-storingen"] = "{0} arıza",
+        ["push.meerdere-storingen-tekst"] = "Birkaç cihaz sorun bildiriyor. Ayrıntılar için uygulamayı açın.",
+        ["push.proef-loopt-af"] = "Deneme süreniz sona eriyor",
+        ["push.proef-nog-dagen"] = "{0} gün Plus kaldı. Sonrasında Wattzicht cihazlarınız ve panonuzla çalışmaya devam eder.",
+        ["push.bericht-van"] = "{0} size yazdı",
+
     }.ToFrozenDictionary();
 }

@@ -125,7 +125,8 @@ public sealed class SmartMomentWorker(
                 configuration.GetValue("Advice:PvPeakKw", 4.0),
                 tariff?.IsDynamic ?? false,
                 rates,
-                configuration.GetValue("Advice:SurchargePerKwh", AdviceEngine.DefaultSurchargePerKwh)));
+                configuration.GetValue("Advice:SurchargePerKwh", AdviceEngine.DefaultSurchargePerKwh),
+                Taal: huishouden.Taal));
 
             if (!IsHetBijnaZover(plan, now))
             {
@@ -133,7 +134,7 @@ public sealed class SmartMomentWorker(
             }
 
             var start = plan.Slots.Min(s => s.StartUtc);
-            var (titel, tekst) = PushPolicy.SmartMomentMessage(start, plan.SavingEur, plan.SolarKwh);
+            var (titel, tekst) = PushPolicy.SmartMomentMessage(start, plan.SavingEur, plan.SolarKwh, huishouden.Taal);
             var verstuurd = await push.SendToHouseholdAsync(huishouden.Id, titel, tekst, "/advies", ct);
             if (verstuurd <= 0)
             {

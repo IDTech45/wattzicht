@@ -367,7 +367,7 @@ public sealed class PollingWorker(
         if (openedAlerts.Count > 0 && PushPolicy.MaySendAlert(household, now))
         {
             var names = devices.ToDictionary(d => d.Id, d => d.Name);
-            var (title, body) = PushPolicy.AlertMessage(openedAlerts, names);
+            var (title, body) = PushPolicy.AlertMessage(openedAlerts, names, household.Taal);
             await push.SendToHouseholdAsync(householdId, title, body, "alerts", ct);
             household.LastAlertPushAt = now;
             await db.SaveChangesAsync(ct);

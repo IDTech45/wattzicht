@@ -404,5 +404,65 @@ public static class TekstenEn
         ["plan.dat-scheelt"] = "that saves € {0} compared with starting now",
         ["plan.past-niet-helemaal-vol"] = "Note: it will not quite fill up within this time.",
 
+
+        // ---- soort apparaat in de lijst ----
+        ["soort.omvormer"] = "Inverter",
+        ["soort.thuisbatterij"] = "Home battery",
+        ["soort.laadpaal"] = "Charger",
+        ["soort.online"] = "Online",
+        ["apparaten.zojuist-gezien"] = "Seen just now",
+        ["apparaten.laatst-gezien"] = "Last seen {0}",
+
+
+        // ---- inloggen met Google, netwerkfouten, grafiek ----
+        ["besparen.nog-geen-gegevens"] = "No data yet",
+        ["sociaal.manier-onbekend"] = "The app does not know this way of logging in.",
+        ["sociaal.scherm-niet-geopend"] = "The app could not open the login screen.",
+        ["sociaal.geen-token"] = "Google did not return a login token. Let us know and we will fix it.",
+        ["sociaal.loopt-al"] = "A sign-in is already running. Try again in a moment.",
+        ["sociaal.geen-verbinding-google"] = "No connection to Google. Check your internet.",
+        ["sociaal.fout-10"] = "Google does not accept this version of the app yet (error 10). That is down to our settings, not to you.",
+        ["sociaal.geweigerd"] = "Google refused the sign-in (error {0}).",
+        ["sociaal.niet-op-dit-toestel"] = "That is not available on this device yet.",
+        ["fout.verwijderen-mislukt"] = "Deleting did not work.",
+        ["fout.leeg-antwoord"] = "Empty response from the server.",
+        ["fout.onverwacht-antwoord"] = "Unexpected response from the server.",
+        ["fout.server-reageert-niet"] = "The server is not responding. Please try again later.",
+        ["stroom.auto-laadt"] = "Car charging",
+        ["stroom.niet-aan-het-laden"] = "Not charging",
+
+        ["push.kanaal-uitleg"] = "Faults, and tips to use your own solar power",
+
+
+        // ---- storingsteksten, in de app opgebouwd uit de velden ----
+        ["storing.tekst-geen-data"] = "No data from {1} for {0}.",
+        ["storing.tekst-geen-opwek"] = "{0} is generating nothing during the day.",
+        ["storing.tekst-offline"] = "{0} cannot be reached.",
+        ["storing.tekst-offline-met-reden"] = "{0} cannot be reached: {1}",
+        ["storing.duur-minuten"] = "{0} minutes",
+        ["storing.duur-uren"] = "{0} hours",
+        ["storing.duur-dagen"] = "{0} days",
+
+
+        // ---- pushmeldingen ----
+        ["push.auto-klaar"] = "Your car is done",
+        ["push.er-ging-kwh-in"] = "{0} kWh went in.",
+        ["push.geladen-op-eigen-zon"] = "Charged on your own sun",
+        ["push.kwh-waarvan-zon-procent"] = "{0} kWh went in, of which {1} kWh came from your own roof. That is {2} percent.",
+        ["push.kwh-waarvan-zon"] = "{0} kWh went in, of which {1} kWh came from your own roof.",
+        ["push.morgen-zonnigste-uur"] = "Tomorrow the sun is highest around {0}:00; charging around then saves you the most.",
+        ["push.straks-op-eigen-zon"] = "Charge on your own sun soon",
+        ["push.straks-voordeligst"] = "Charging is cheapest soon",
+        ["push.vanaf-tijd-zon"] = "From {0} your panels produce enough to fill the car. Plug it in now.",
+        ["push.vanaf-tijd-goedkoopst"] = "From {0} power is cheapest. Plug your car in.",
+        ["push.dat-scheelt-ongeveer"] = "That saves around € {0}.",
+        ["push.een-apparaat"] = "A device",
+        ["push.storing-titel"] = "Fault: {0}",
+        ["push.meerdere-storingen"] = "{0} faults",
+        ["push.meerdere-storingen-tekst"] = "A few devices are reporting a problem. Open the app for details.",
+        ["push.proef-loopt-af"] = "Your trial is ending",
+        ["push.proef-nog-dagen"] = "{0} days of Plus left. After that Wattzicht keeps working, with your devices and your dashboard.",
+        ["push.bericht-van"] = "Message from {0}",
+
     }.ToFrozenDictionary();
 }

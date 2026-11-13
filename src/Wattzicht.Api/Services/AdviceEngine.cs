@@ -248,8 +248,8 @@ public static class AdviceEngine
                     AdviceTipKind.Charger,
                     T(input, "tip.laad-de-auto", Span(input, van, tot)),
                     opZon
-                        ? T(input, "tip.op-je-eigen-zon-ongeveer", kwh.ToString("0", Nl))
-                        : T(input, "tip.gemiddeld-per-kwh", Price(prijs), kwh.ToString("0", Nl)),
+                        ? T(input, "tip.op-je-eigen-zon-ongeveer", kwh.ToString("0", Cultuur(input)))
+                        : T(input, "tip.gemiddeld-per-kwh", Price(input, prijs), kwh.ToString("0", Cultuur(input))),
                     van,
                     tot,
                     saving));
@@ -365,7 +365,7 @@ public static class AdviceEngine
                     from,
                     to,
                     saldering ? 0m : value,
-                    saldering ? T(input, "tip.vanaf-2027-per-dag", Euro(value)) : null));
+                    saldering ? T(input, "tip.vanaf-2027-per-dag", Euro(input, value)) : null));
             }
         }
 
@@ -379,7 +379,7 @@ public static class AdviceEngine
                 from,
                 to,
                 saldering ? 0m : applianceValue,
-                saldering ? T(input, "tip.vanaf-2027-per-beurt", Euro(applianceValue)) : null));
+                saldering ? T(input, "tip.vanaf-2027-per-beurt", Euro(input, applianceValue)) : null));
         }
     }
 
@@ -455,9 +455,14 @@ public static class AdviceEngine
 
     private static decimal Money(decimal value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
 
-    private static string Euro(decimal value) => "€ " + value.ToString("0.00", Nl);
+    /// <summary>De notatie die bij de taal van de aanvrager hoort.</summary>
+    private static System.Globalization.CultureInfo Cultuur(AdviceInput input) => Teksten.Cultuur(input.Taal);
 
-    private static string Price(decimal value) => ((int)Math.Round(value * 100)).ToString(Nl) + " ct";
+    private static string Euro(AdviceInput input, decimal value) =>
+        "€ " + value.ToString("0.00", Cultuur(input));
+
+    private static string Price(AdviceInput input, decimal value) =>
+        ((int)Math.Round(value * 100)).ToString(Cultuur(input)) + " ct";
 
     /// <summary>
     /// Een tekst uit het taalpakket, in de taal van de aanvrager.
@@ -476,7 +481,7 @@ public static class AdviceEngine
     {
         var local = DutchTime.ToLocal(utc);
         var morgen = DutchTime.LocalDate(utc) != DutchTime.LocalDate(input.NowUtc);
-        var tijd = local.ToString("HH:mm", Nl);
+        var tijd = local.ToString("HH:mm", Cultuur(input));
         return morgen ? Teksten.T(input.Taal, "advies.morgen") + " " + tijd : tijd;
     }
 

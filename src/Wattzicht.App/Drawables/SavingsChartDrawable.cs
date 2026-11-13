@@ -49,7 +49,7 @@ public sealed class SavingsChartDrawable : IDrawable
         {
             canvas.FontColor = TextColor;
             canvas.FontSize = 13;
-            canvas.DrawString("Nog geen gegevens", plot, HorizontalAlignment.Center, VerticalAlignment.Center);
+            canvas.DrawString(Taal.T("besparen.nog-geen-gegevens"), plot, HorizontalAlignment.Center, VerticalAlignment.Center);
             return;
         }
 

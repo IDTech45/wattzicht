@@ -69,9 +69,13 @@ public static class FirebasePush
         if (manager?.GetNotificationChannel(ChannelId) is not null)
             return;
 
+        // De naam van het kanaal staat in de Android-instellingen van de telefoon, dus die hoort ook
+        // in de taal van de app te staan. Android onthoudt de tekst bij het aanmaken; wie later van
+        // taal wisselt ziet daar dus de oude tekst tot hij de app opnieuw installeert. Dat is een
+        // bewuste keuze: het kanaal opnieuw aanmaken zou zijn eigen instellingen wissen.
         var channel = new NotificationChannel(ChannelId, "Wattzicht", NotificationImportance.Default)
         {
-            Description = "Storingen en tips om je zonnestroom zelf te gebruiken"
+            Description = Taal.T("push.kanaal-uitleg")
         };
         manager?.CreateNotificationChannel(channel);
     }

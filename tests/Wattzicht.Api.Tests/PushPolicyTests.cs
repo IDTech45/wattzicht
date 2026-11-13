@@ -59,4 +59,52 @@ public sealed class PushPolicyTests
         Assert.Equal(("Storing: SolaX X1-Hybrid", "Geen data sinds 10:00"), PushPolicy.AlertMessage([a], names));
         Assert.Equal("2 storingen", PushPolicy.AlertMessage([a, b], names).Title);
     }
+
+    [Fact]
+    public void Een_melding_volgt_de_taal_van_het_huishouden()
+    {
+        // Een pushmelding komt uit een achtergrondtaak, dus zonder verzoek waarin een taal staat.
+        // Hij hoort de taal te volgen die bij de woning is vastgelegd.
+        var start = Local(14);
+
+        var nl = PushPolicy.SmartMomentMessage(start, 0.75m, 0, "nl");
+        var en = PushPolicy.SmartMomentMessage(start, 0.75m, 0, "en");
+        var tr = PushPolicy.SmartMomentMessage(start, 0.75m, 0, "tr");
+
+        Assert.Contains("Straks", nl.Title);
+        Assert.Contains("cheapest", en.Title);
+        Assert.Contains("avantajl", tr.Title);
+
+        // Het bedrag staat in alle drie, in de notatie van die taal. Dat is met opzet: een komma in
+        // een Engelse melding leest als een duizendscheiding, en "0.75" in een Nederlandse melding
+        // ziet eruit als een fout. Deze regel bewaakt ook dat het niet de cultuur van de server
+        // volgt; die is op Linux invariant en gaf iedereen een punt.
+        Assert.Contains("0,75", nl.Body);
+        Assert.Contains("0.75", en.Body);
+        Assert.Contains("0,75", tr.Body);
+    }
+
+    [Fact]
+    public void Zonder_taal_blijft_het_Nederlands()
+    {
+        // Oude woningen hebben nog geen taal staan; die horen gewoon Nederlands te krijgen en niet
+        // een lege melding.
+        var zonder = PushPolicy.SmartMomentMessage(Local(14), 0m, 1.5);
+        var leeg = PushPolicy.SmartMomentMessage(Local(14), 0m, 1.5, "");
+
+        Assert.Equal("Straks laden op je eigen zon", zonder.Title);
+        Assert.Equal(zonder, leeg);
+    }
+
+    [Fact]
+    public void Een_laadbeurt_in_het_Turks_noemt_nog_steeds_de_kilowatturen()
+    {
+        var sessie = new Laadsessie(Local(18), Local(20), 12.4, 9.3, true);
+
+        var tr = PushPolicy.ChargeSessionMessage(sessie, null, "tr");
+
+        Assert.Contains("12,4", tr.Body);
+        Assert.Contains("9,3", tr.Body);
+        Assert.DoesNotContain("Er ging", tr.Body);
+    }
 }

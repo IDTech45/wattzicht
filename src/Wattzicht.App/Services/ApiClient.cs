@@ -180,7 +180,7 @@ public sealed class ApiClient
         using var antwoord = await _http.SendAsync(req, ct);
         if (!antwoord.IsSuccessStatusCode)
         {
-            throw new ApiException("Verwijderen is niet gelukt.", antwoord.StatusCode);
+            throw new ApiException(Taal.T("fout.verwijderen-mislukt"), antwoord.StatusCode);
         }
     }
 
@@ -258,11 +258,11 @@ public sealed class ApiClient
         try
         {
             var result = await res.Content.ReadFromJsonAsync<T>(JsonOptions, ct);
-            return result ?? throw new ApiException("Leeg antwoord van de server.", res.StatusCode);
+            return result ?? throw new ApiException(Taal.T("fout.leeg-antwoord"), res.StatusCode);
         }
         catch (JsonException ex)
         {
-            throw new ApiException("Onverwacht antwoord van de server.", res.StatusCode, ex);
+            throw new ApiException(Taal.T("fout.onverwacht-antwoord"), res.StatusCode, ex);
         }
     }
 
@@ -286,7 +286,7 @@ public sealed class ApiClient
         }
         catch (TaskCanceledException ex)
         {
-            throw new ApiException("De server reageert niet. Probeer het later opnieuw.", null, ex);
+            throw new ApiException(Taal.T("fout.server-reageert-niet"), null, ex);
         }
         catch (HttpRequestException ex)
         {

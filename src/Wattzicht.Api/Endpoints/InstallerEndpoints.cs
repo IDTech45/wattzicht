@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Wattzicht.Api.Data;
 using Wattzicht.Api.Services;
 using Wattzicht.Shared;
+using Wattzicht.Shared.Taal;
 
 namespace Wattzicht.Api.Endpoints;
 
@@ -312,7 +313,14 @@ public static partial class InstallerEndpoints
             return Results.Ok(new InstallerActionResult(false, "Pushmeldingen staan nog niet aan op de server."));
         }
 
-        var sent = await push.SendToHouseholdAsync(id, $"Bericht van {installer.Name}", text, null, ct);
+        // De taal van de bewoner, niet die van de installateur: hij leest het bericht.
+        var taal = await db.Households.IgnoreQueryFilters()
+            .Where(h => h.Id == id)
+            .Select(h => h.Taal)
+            .FirstOrDefaultAsync(ct);
+
+        var sent = await push.SendToHouseholdAsync(
+            id, string.Format(Teksten.T(taal, "push.bericht-van"), installer.Name), text, null, ct);
         return Results.Ok(sent > 0
             ? new InstallerActionResult(true, "Verstuurd. Je klant krijgt het als melding in Wattzicht.")
             : new InstallerActionResult(false, "Niet verstuurd: deze klant heeft Wattzicht nog niet met meldingen op de telefoon staan."));

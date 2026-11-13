@@ -412,5 +412,65 @@ public static class TekstenNl
         ["plan.dat-scheelt"] = "dat scheelt € {0} ten opzichte van nu beginnen",
         ["plan.past-niet-helemaal-vol"] = "Let op: binnen deze tijd past hij niet helemaal vol.",
 
+
+        // ---- soort apparaat in de lijst ----
+        ["soort.omvormer"] = "Omvormer",
+        ["soort.thuisbatterij"] = "Thuisbatterij",
+        ["soort.laadpaal"] = "Laadpaal",
+        ["soort.online"] = "Online",
+        ["apparaten.zojuist-gezien"] = "Zojuist gezien",
+        ["apparaten.laatst-gezien"] = "Laatst gezien {0}",
+
+
+        // ---- inloggen met Google, netwerkfouten, grafiek ----
+        ["besparen.nog-geen-gegevens"] = "Nog geen gegevens",
+        ["sociaal.manier-onbekend"] = "Deze manier van inloggen kent de app niet.",
+        ["sociaal.scherm-niet-geopend"] = "De app kon het inlogscherm niet openen.",
+        ["sociaal.geen-token"] = "Google gaf geen inlogtoken terug. Laat ons dit weten, dan zetten wij het recht.",
+        ["sociaal.loopt-al"] = "Er loopt al een aanmelding. Probeer het zo opnieuw.",
+        ["sociaal.geen-verbinding-google"] = "Geen verbinding met Google. Controleer je internet.",
+        ["sociaal.fout-10"] = "Google accepteert deze versie van de app nog niet (fout 10). Dit ligt aan onze instellingen, niet aan jou.",
+        ["sociaal.geweigerd"] = "Google weigerde de aanmelding (fout {0}).",
+        ["sociaal.niet-op-dit-toestel"] = "Op dit toestel is dat nog niet beschikbaar.",
+        ["fout.verwijderen-mislukt"] = "Verwijderen is niet gelukt.",
+        ["fout.leeg-antwoord"] = "Leeg antwoord van de server.",
+        ["fout.onverwacht-antwoord"] = "Onverwacht antwoord van de server.",
+        ["fout.server-reageert-niet"] = "De server reageert niet. Probeer het later opnieuw.",
+        ["stroom.auto-laadt"] = "Auto laadt",
+        ["stroom.niet-aan-het-laden"] = "Niet aan het laden",
+
+        ["push.kanaal-uitleg"] = "Storingen en tips om je zonnestroom zelf te gebruiken",
+
+
+        // ---- storingsteksten, in de app opgebouwd uit de velden ----
+        ["storing.tekst-geen-data"] = "Al {0} geen gegevens van {1}.",
+        ["storing.tekst-geen-opwek"] = "{0} wekt overdag niets op.",
+        ["storing.tekst-offline"] = "{0} is niet bereikbaar.",
+        ["storing.tekst-offline-met-reden"] = "{0} is niet bereikbaar: {1}",
+        ["storing.duur-minuten"] = "{0} minuten",
+        ["storing.duur-uren"] = "{0} uur",
+        ["storing.duur-dagen"] = "{0} dagen",
+
+
+        // ---- pushmeldingen ----
+        ["push.auto-klaar"] = "Je auto is klaar",
+        ["push.er-ging-kwh-in"] = "Er ging {0} kWh in.",
+        ["push.geladen-op-eigen-zon"] = "Geladen op je eigen zon",
+        ["push.kwh-waarvan-zon-procent"] = "Er ging {0} kWh in, waarvan {1} kWh van je eigen dak. Dat is {2} procent.",
+        ["push.kwh-waarvan-zon"] = "Er ging {0} kWh in, waarvan {1} kWh van je eigen dak.",
+        ["push.morgen-zonnigste-uur"] = "Morgen staat de zon rond {0}:00 op zijn hoogst; laden rond dat uur scheelt je het meest.",
+        ["push.straks-op-eigen-zon"] = "Straks laden op je eigen zon",
+        ["push.straks-voordeligst"] = "Straks is laden het voordeligst",
+        ["push.vanaf-tijd-zon"] = "Vanaf {0} draaien je panelen genoeg om de auto te vullen. Zet hem nu aan de stekker.",
+        ["push.vanaf-tijd-goedkoopst"] = "Vanaf {0} is stroom het goedkoopst. Zet je auto aan de stekker.",
+        ["push.dat-scheelt-ongeveer"] = "Dat scheelt ongeveer € {0}.",
+        ["push.een-apparaat"] = "Een apparaat",
+        ["push.storing-titel"] = "Storing: {0}",
+        ["push.meerdere-storingen"] = "{0} storingen",
+        ["push.meerdere-storingen-tekst"] = "Een paar apparaten geven een melding. Open de app voor details.",
+        ["push.proef-loopt-af"] = "Je proefperiode loopt af",
+        ["push.proef-nog-dagen"] = "Nog {0} dagen Plus. Daarna blijft Wattzicht gewoon werken, met je apparaten en je dashboard.",
+        ["push.bericht-van"] = "Bericht van {0}",
+
     }.ToFrozenDictionary();
 }

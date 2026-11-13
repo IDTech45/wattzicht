@@ -25,23 +25,29 @@ public sealed class DeviceItem
 
     public string TypeName => Device.Type switch
     {
-        DeviceType.Inverter => "Omvormer",
-        DeviceType.Battery => "Thuisbatterij",
-        DeviceType.Charger => "Laadpaal",
-        DeviceType.P1Meter => "P1-meter",
+        DeviceType.Inverter => Taal.T("soort.omvormer"),
+        DeviceType.Battery => Taal.T("soort.thuisbatterij"),
+        DeviceType.Charger => Taal.T("soort.laadpaal"),
+        DeviceType.P1Meter => Taal.T("merk.p1-naam"),
         _ => Device.Type.ToString()
     };
 
     public string Subtitle => $"{BrandName} · {TypeName}";
 
-    public string StatusText => Device.IsOnline ? "Online" : "Offline";
+    public string StatusText => Taal.T(Device.IsOnline ? "soort.online" : "storing.offline");
 
     public string LastSeenText
     {
         get
         {
-            var text = TimeText.Ago(Device.LastSeen, "Nog geen meting");
-            return text == "zojuist" ? "Zojuist gezien" : text == "Nog geen meting" ? text : $"Laatst gezien {text}";
+            // Drie gevallen, en het verschil doet ertoe: nog nooit iets binnen, net iets binnen, of
+            // een tijd geleden. Vandaar het vergelijken met de losse teksten in plaats van één regel.
+            if (Device.LastSeen is null) return Taal.T("home.nog-geen-meting");
+
+            var tekst = TimeText.Ago(Device.LastSeen);
+            return tekst == Taal.T("tijd.zojuist")
+                ? Taal.T("apparaten.zojuist-gezien")
+                : string.Format(Taal.T("apparaten.laatst-gezien"), tekst);
         }
     }
 }

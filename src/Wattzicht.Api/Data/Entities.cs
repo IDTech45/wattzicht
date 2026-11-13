@@ -69,6 +69,16 @@ public sealed class Household
     public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
+    /// De taal waarin deze bewoner de app gebruikt: nl, en of tr.
+    ///
+    /// Nodig voor alles wat wij naar hem toe sturen zonder dat er een verzoek van hem onder zit: een
+    /// pushmelding over een storing of een laadmoment komt uit een achtergrondtaak, en die kan geen
+    /// kop uit zijn telefoon lezen. De app houdt dit veld bij: bij elk verzoek stuurt hij zijn taal
+    /// mee en we leggen een wijziging vast.
+    /// </summary>
+    public string Taal { get; set; } = "nl";
+
+    /// <summary>
     /// Toestemming van de bewoner: mag de installateur meekijken? Standaard uit (AVG: opt-in).
     /// Zonder toestemming ziet de installateur dit huishouden niet in het portal.
     /// </summary>

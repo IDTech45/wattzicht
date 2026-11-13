@@ -88,7 +88,8 @@ public static class DagTip
 
         return new DayTipDto(
             Headline: kop,
-            Body: T(input, "dagtip.zon-tekst", verwacht.ToString("0.#"), Tijd(from), Tijd(to), wat, staart),
+            Body: T(input, "dagtip.zon-tekst", verwacht.ToString("0.#", Teksten.Cultuur(input.Taal)),
+                Tijd(from), Tijd(to), wat, staart),
             ExpectedSolarKwh: Math.Round(verwacht, 1),
             Kind: "zon",
             From: from,
@@ -105,8 +106,11 @@ public static class DagTip
         return waarden.Length == 0 ? tekst : string.Format(tekst, waarden);
     }
 
-    private static string Bedrag(AdviceInput input, decimal euro) =>
-        euro >= 1m
-            ? $"€ {euro:0.00}".Replace('.', ',')
-            : string.Format(Teksten.T(input.Taal, "dagtip.cent"), (euro * 100).ToString("0"));
+    private static string Bedrag(AdviceInput input, decimal euro)
+    {
+        var cultuur = Teksten.Cultuur(input.Taal);
+        return euro >= 1m
+            ? "€ " + euro.ToString("0.00", cultuur)
+            : string.Format(Teksten.T(input.Taal, "dagtip.cent"), (euro * 100).ToString("0", cultuur));
+    }
 }

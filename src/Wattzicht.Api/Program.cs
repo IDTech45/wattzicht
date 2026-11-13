@@ -263,6 +263,10 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Legt vast in welke taal deze bewoner de app gebruikt, zodat een pushmelding uit een
+// achtergrondtaak dezelfde taal spreekt. Na de autorisatie, want het heeft zijn woning nodig.
+app.UseTaalBijhouden();
+
 app.MapHealthChecks("/health").AllowAnonymous();
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 

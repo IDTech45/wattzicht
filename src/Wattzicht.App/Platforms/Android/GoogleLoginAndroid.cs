@@ -38,12 +38,12 @@ public sealed class GoogleLoginAndroid : ISocialeLogin
     {
         if (!Ondersteunt(provider))
         {
-            return Task.FromResult(SocialeLoginUitkomst.Mislukt("Deze manier van inloggen kent de app niet."));
+            return Task.FromResult(SocialeLoginUitkomst.Mislukt(Taal.T("sociaal.manier-onbekend")));
         }
 
         if (Platform.CurrentActivity is not Activity activity)
         {
-            return Task.FromResult(SocialeLoginUitkomst.Mislukt("De app kon het inlogscherm niet openen."));
+            return Task.FromResult(SocialeLoginUitkomst.Mislukt(Taal.T("sociaal.scherm-niet-geopend")));
         }
 
         // Een vorige poging die nog open stond netjes afsluiten; anders blijft die voor altijd hangen
@@ -95,8 +95,7 @@ public sealed class GoogleLoginAndroid : ISocialeLogin
             {
                 // Aangemeld, maar zonder token. Dat gebeurt als de aanvraag zonder geldig
                 // serverClientId is gedaan, en dan hebben wij niets om te controleren.
-                wachtend.TrySetResult(SocialeLoginUitkomst.Mislukt(
-                    "Google gaf geen inlogtoken terug. Laat ons dit weten, dan zetten wij het recht."));
+                wachtend.TrySetResult(SocialeLoginUitkomst.Mislukt(Taal.T("sociaal.geen-token")));
                 return;
             }
 
@@ -109,11 +108,10 @@ public sealed class GoogleLoginAndroid : ISocialeLogin
             wachtend.TrySetResult(ex.StatusCode switch
             {
                 12501 => SocialeLoginUitkomst.Weggeklikt(),
-                12502 => SocialeLoginUitkomst.Mislukt("Er loopt al een aanmelding. Probeer het zo opnieuw."),
-                7 => SocialeLoginUitkomst.Mislukt("Geen verbinding met Google. Controleer je internet."),
-                10 => SocialeLoginUitkomst.Mislukt(
-                    "Google accepteert deze versie van de app nog niet (fout 10). Dit ligt aan onze instellingen, niet aan jou."),
-                _ => SocialeLoginUitkomst.Mislukt($"Google weigerde de aanmelding (fout {ex.StatusCode})."),
+                12502 => SocialeLoginUitkomst.Mislukt(Taal.T("sociaal.loopt-al")),
+                7 => SocialeLoginUitkomst.Mislukt(Taal.T("sociaal.geen-verbinding-google")),
+                10 => SocialeLoginUitkomst.Mislukt(Taal.T("sociaal.fout-10")),
+                _ => SocialeLoginUitkomst.Mislukt(string.Format(Taal.T("sociaal.geweigerd"), ex.StatusCode)),
             });
         }
     }

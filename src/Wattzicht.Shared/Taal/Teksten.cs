@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Globalization;
 
 namespace Wattzicht.Shared.Taal;
 
@@ -17,6 +18,20 @@ public static class Teksten
 {
     /// <summary>De talen die er zijn.</summary>
     public static readonly string[] Codes = ["nl", "en", "tr"];
+
+    /// <summary>
+    /// De notatie voor getallen en datums die bij een taal hoort.
+    ///
+    /// Dit hoort bij het taalpakket en niet bij de instelling van de server: een bedrag in een
+    /// melding werd met de cultuur van het proces opgemaakt, en op een Linux-server is dat de
+    /// invariante cultuur. Een Nederlandse klant kreeg dan "€ 0.75" in zijn melding te zien.
+    /// </summary>
+    public static CultureInfo Cultuur(string? code) => code switch
+    {
+        "en" => CultureInfo.GetCultureInfo("en-GB"),
+        "tr" => CultureInfo.GetCultureInfo("tr-TR"),
+        _ => CultureInfo.GetCultureInfo("nl-NL"),
+    };
 
     /// <summary>Het woordenboek bij een taalcode; onbekende code geeft Nederlands.</summary>
     public static FrozenDictionary<string, string> Voor(string? code) => code switch

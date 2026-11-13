@@ -98,7 +98,7 @@ public sealed class LaadsessieWorker(
             if (laatste is null) continue;
 
             var zonnigUur = await ZonnigsteUurMorgenAsync(kandidaat.Latitude, kandidaat.Longitude, now, ct);
-            var (titel, tekst) = PushPolicy.ChargeSessionMessage(laatste, zonnigUur);
+            var (titel, tekst) = PushPolicy.ChargeSessionMessage(laatste, zonnigUur, huishouden.Taal);
             var verstuurd = await push.SendToHouseholdAsync(huishouden.Id, titel, tekst, "/", ct);
 
             // Ook bij een mislukte verzending vastleggen dat deze beurt geweest is. Anders blijft hij

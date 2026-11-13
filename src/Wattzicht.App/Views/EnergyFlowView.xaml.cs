@@ -99,7 +99,7 @@ public partial class EnergyFlowView : ContentView
 
         HasCharger = s?.ChargerPowerW is not null;
         ChargerKwText = Kw(charger);
-        ChargerHint = charger > 50 ? "▼ Auto laadt" : "Niet aan het laden";
+        ChargerHint = charger > 50 ? "▼ " + Taal.T("stroom.auto-laadt") : Taal.T("stroom.niet-aan-het-laden");
     }
 
     private static string Kw(double watts) =>

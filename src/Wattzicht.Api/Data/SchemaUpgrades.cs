@@ -11,6 +11,9 @@ public static class SchemaUpgrades
 {
     private static readonly string[] Steps =
     [
+        // 2026-11: de taal van de bewoner (nl, en, tr), voor meldingen die niet uit een verzoek komen.
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "Taal" character varying(5) NOT NULL DEFAULT 'nl'""",
+
         // 2026-10: toestemming bewoner voor meekijken door de installateur (standaard uit).
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "InstallerAccessGranted" boolean NOT NULL DEFAULT false""",
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "InstallerAccessChangedAt" timestamp with time zone NULL""",

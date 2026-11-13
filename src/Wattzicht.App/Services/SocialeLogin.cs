@@ -41,5 +41,5 @@ public sealed class GeenSocialeLogin : ISocialeLogin
     public bool Ondersteunt(string provider) => false;
 
     public Task<SocialeLoginUitkomst> TokenAsync(string provider, CancellationToken ct = default) =>
-        Task.FromResult(SocialeLoginUitkomst.Mislukt("Op dit toestel is dat nog niet beschikbaar."));
+        Task.FromResult(SocialeLoginUitkomst.Mislukt(Taal.T("sociaal.niet-op-dit-toestel")));
 }

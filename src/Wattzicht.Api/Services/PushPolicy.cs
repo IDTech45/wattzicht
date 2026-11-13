@@ -1,5 +1,7 @@
 using Wattzicht.Api.Data;
 
+using Wattzicht.Shared.Taal;
+
 namespace Wattzicht.Api.Services;
 
 /// <summary>
@@ -58,32 +60,34 @@ public static class PushPolicy
     /// </summary>
     /// <param name="sessie">De afgelopen laadbeurt.</param>
     /// <param name="zonnigUurMorgen">Het zonnigste uur van morgen (lokaal), of null als we dat niet weten.</param>
-    public static (string Title, string Body) ChargeSessionMessage(Laadsessie sessie, int? zonnigUurMorgen)
+    public static (string Title, string Body) ChargeSessionMessage(
+        Laadsessie sessie, int? zonnigUurMorgen, string? taal = null)
     {
-        var kwh = sessie.Kwh.ToString("0.#", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"));
+        var kwh = sessie.Kwh.ToString("0.#", Teksten.Cultuur(taal));
 
         if (!sessie.HerkomstBekend)
         {
             // Geen P1-meter of CT-klemmen: dan weten we alleen hoeveel erin ging. Een zonaandeel van
             // nul tonen zou betekenen "alles van het net", en dat weten we niet.
-            return ("Je auto is klaar", $"Er ging {kwh} kWh in.");
+            return (T(taal, "push.auto-klaar"), T(taal, "push.er-ging-kwh-in", kwh));
         }
 
-        var zon = sessie.ZonKwh.ToString("0.#", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"));
+        var zon = sessie.ZonKwh.ToString("0.#", Teksten.Cultuur(taal));
         var aandeel = (int)Math.Round(sessie.ZonAandeel * 100);
 
         if (aandeel >= 60)
         {
-            return ("Geladen op je eigen zon",
-                $"Er ging {kwh} kWh in, waarvan {zon} kWh van je eigen dak. Dat is {aandeel} procent.");
+            return (T(taal, "push.geladen-op-eigen-zon"),
+                T(taal, "push.kwh-waarvan-zon-procent", kwh, zon, aandeel));
         }
 
-        var body = $"Er ging {kwh} kWh in, waarvan {zon} kWh van je eigen dak.";
+        var body = T(taal, "push.kwh-waarvan-zon", kwh, zon);
         if (zonnigUurMorgen is { } uur)
         {
-            body += $" Morgen staat de zon rond {uur:00}:00 op zijn hoogst; laden rond dat uur scheelt je het meest.";
+            body += " " + T(taal, "push.morgen-zonnigste-uur", uur.ToString("00"));
         }
-        return ("Je auto is klaar", body);
+
+        return (T(taal, "push.auto-klaar"), body);
     }
 
     /// <summary>
@@ -109,20 +113,18 @@ public static class PushPolicy
     }
 
     /// <summary>Titel en tekst van de laadmoment-melding.</summary>
-    public static (string Title, string Body) SmartMomentMessage(DateTimeOffset startUtc, decimal savingEur, double solarKwh)
+    public static (string Title, string Body) SmartMomentMessage(
+        DateTimeOffset startUtc, decimal savingEur, double solarKwh, string? taal = null)
     {
         var tijd = DutchTime.LocalHour(startUtc).ToString("00") + ":00";
-        var titel = solarKwh >= 0.5
-            ? "Straks laden op je eigen zon"
-            : "Straks is laden het voordeligst";
+        var zon = solarKwh >= 0.5;
 
-        var body = solarKwh >= 0.5
-            ? $"Vanaf {tijd} draaien je panelen genoeg om de auto te vullen. Zet hem nu aan de stekker."
-            : $"Vanaf {tijd} is stroom het goedkoopst. Zet je auto aan de stekker.";
+        var titel = T(taal, zon ? "push.straks-op-eigen-zon" : "push.straks-voordeligst");
+        var body = T(taal, zon ? "push.vanaf-tijd-zon" : "push.vanaf-tijd-goedkoopst", tijd);
 
         if (savingEur >= 0.10m)
         {
-            body += $" Dat scheelt ongeveer € {savingEur:0.00}.";
+            body += " " + T(taal, "push.dat-scheelt-ongeveer", savingEur.ToString("0.00", Teksten.Cultuur(taal)));
         }
 
         return (titel, body);
@@ -149,15 +151,23 @@ public static class PushPolicy
     }
 
     /// <summary>Titel en tekst voor nieuw geopende storingen (één melding per pollronde).</summary>
-    public static (string Title, string Body) AlertMessage(IReadOnlyList<Alert> opened, IReadOnlyDictionary<Guid, string> deviceNames)
+    public static (string Title, string Body) AlertMessage(
+        IReadOnlyList<Alert> opened, IReadOnlyDictionary<Guid, string> deviceNames, string? taal = null)
     {
         if (opened.Count == 1)
         {
             var alert = opened[0];
-            var name = deviceNames.TryGetValue(alert.DeviceId, out var n) ? n : "Een apparaat";
-            return ($"Storing: {name}", alert.Message);
+            var name = deviceNames.TryGetValue(alert.DeviceId, out var n) ? n : T(taal, "push.een-apparaat");
+            return (T(taal, "push.storing-titel", name), alert.Message);
         }
 
-        return ($"{opened.Count} storingen", "Een paar apparaten geven een melding. Open de app voor details.");
+        return (T(taal, "push.meerdere-storingen", opened.Count), T(taal, "push.meerdere-storingen-tekst"));
+    }
+
+    /// <summary>Een tekst uit het taalpakket, in de taal van het huishouden.</summary>
+    private static string T(string? taal, string sleutel, params object[] waarden)
+    {
+        var tekst = Teksten.T(taal, sleutel);
+        return waarden.Length == 0 ? tekst : string.Format(tekst, waarden);
     }
 }

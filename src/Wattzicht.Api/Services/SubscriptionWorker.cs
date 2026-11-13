@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Wattzicht.Api.Data;
+using Wattzicht.Shared.Taal;
 
 namespace Wattzicht.Api.Services;
 
@@ -116,10 +117,17 @@ public sealed class SubscriptionWorker(
         foreach (var rij in bijnaOm)
         {
             var dagen = Math.Max(1, (int)Math.Ceiling((rij.EndsAt!.Value - now).TotalDays));
+
+            // De taal van dit huishouden; een melding uit een achtergrondtaak heeft geen verzoek
+            // waar een taal in staat.
+            var taal = await db.Households.IgnoreQueryFilters()
+                .Where(h => h.Id == rij.HouseholdId)
+                .Select(h => h.Taal)
+                .FirstOrDefaultAsync(ct);
             var verstuurd = await push.SendToHouseholdAsync(
                 rij.HouseholdId,
-                "Je proefperiode loopt af",
-                $"Nog {dagen} dagen Plus. Daarna blijft Wattzicht gewoon werken, met je apparaten en je dashboard.",
+                Teksten.T(taal, "push.proef-loopt-af"),
+                string.Format(Teksten.T(taal, "push.proef-nog-dagen"), dagen),
                 route: "settings",
                 ct);
 
