@@ -280,6 +280,15 @@ public partial class DashboardViewModel : BaseViewModel
         try
         {
             var woning = await _api.GetHouseholdAsync();
+
+            // En onthouden, want hier staat de naam waarmee we je begroeten.
+            //
+            // Die werd alleen bij het inloggen opgeslagen, en daarna nooit meer opgehaald. Een token
+            // is een maand geldig, dus wie gewoon de app opent had helemaal geen woning in het
+            // geheugen: dan viel de naam uit de begroeting weg en stond er kaal "Goedenavond". Pas
+            // bij het verlopen van het token kwam hij terug.
+            _auth.ZetHuishouden(woning);
+
             PlaatsOntbreekt = !woning.HasLocation;
             PvPeakKw = woning.PvPeakKw ?? 0;
 

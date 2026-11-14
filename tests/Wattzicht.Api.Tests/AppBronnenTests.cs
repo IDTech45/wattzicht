@@ -294,6 +294,23 @@ public sealed class AppBronnenTests
         Assert.Contains("OpenPanelenAsync", model);
     }
 
+    /// <summary>
+    /// De woning wordt bij het openen opgehaald en onthouden.
+    ///
+    /// De naam waarmee het beginscherm je begroet staat in de woning, en die werd alleen bij het
+    /// inloggen opgeslagen. Een token is een maand geldig, dus wie de app gewoon opende had geen
+    /// woning in het geheugen en kreeg een kale "Goedenavond" zonder naam. Dat is niet aan het
+    /// scherm te zien en ook niet aan een foutmelding: er stond simpelweg niets.
+    /// </summary>
+    [Fact]
+    public void Het_beginscherm_onthoudt_de_woning()
+    {
+        var model = File.ReadAllText(Path.Combine(AppMap(), "ViewModels", "DashboardViewModel.cs"));
+
+        Assert.Contains("GetHouseholdAsync", model);
+        Assert.Contains("ZetHuishouden", model);
+    }
+
     private static IEnumerable<string> Xaml() => Bestanden("*.xaml");
 
     private static IEnumerable<string> Cs() => Bestanden("*.cs");
