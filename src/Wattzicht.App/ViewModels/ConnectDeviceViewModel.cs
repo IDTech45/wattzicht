@@ -24,7 +24,7 @@ public sealed partial class BrandOption : ObservableObject
     public string Description { get; }
     public DeviceType DefaultType { get; }
     public Color Accent { get; }
-    public string Initial => Name[..1];
+    public string Initial => Name.Length > 0 ? Name[..1] : "?";
 
     [ObservableProperty] private bool _isSelected;
 
@@ -136,7 +136,9 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     public bool IsSolaxCharger => IsSolax && SelectedBrand?.DefaultType == DeviceType.Charger;
     public bool IsSolaxInverter => IsSolax && !IsSolaxCharger;
     public string SolaxSnLabel => Taal.T(IsSolaxCharger ? "koppel.serienummer-laadpaal" : "koppel.registratienummer-dongle");
-    public string SolaxSnPlaceholder => IsSolaxCharger ? Taal.T("koppel.staat-op-de-zijkant") : "Bijv. SXXXXXXXXX";
+    public string SolaxSnPlaceholder => Taal.T(IsSolaxCharger
+        ? "koppel.staat-op-de-zijkant"
+        : "koppel.registratienummer-voorbeeld");
     public string SolaxHelp => IsSolaxCharger
         ? Taal.T("koppel.solax-hulp-laadpaal")
         : Taal.T("koppel.solax-hulp-omvormer");
@@ -220,6 +222,8 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         IsZoeken = true;
         ZoekResultaat = Taal.T("koppel.bezig-met-zoeken");
 
+        // Alles in een try: zoeken praat met het hele netwerk, en een knop in een koppelscherm hoort
+        // nooit de app mee te nemen als daar iets misgaat.
         try
         {
             var gevonden = IsEnphase
@@ -240,6 +244,10 @@ public partial class ConnectDeviceViewModel : BaseViewModel
             IpAddress = gevonden.Adres;
             IpAddressError = null;
             ZoekResultaat = string.Format(Taal.T("koppel.gevonden"), gevonden.Soort, gevonden.Adres);
+        }
+        catch (Exception)
+        {
+            ZoekResultaat = Taal.T("koppel.niet-op-wifi");
         }
         finally
         {
@@ -372,11 +380,20 @@ public partial class ConnectDeviceViewModel : BaseViewModel
                 {
                     foreach (var apparaat in devices)
                     {
-                        await LokaleMeter.BewaarAdresAsync(apparaat.Id, IpAddress.Trim());
-                        if (IsSessy) await LokaleMeter.BewaarSessyInlogAsync(apparaat.Id, Username.Trim(), Password);
-                        if (IsAlfen) await LokaleMeter.BewaarAlfenInlogAsync(apparaat.Id, "admin", Password);
-                        if (IsEnphase) await LokaleMeter.BewaarEnphaseTokenAsync(apparaat.Id, ApiToken);
-                        if (IsPeblar) await LokaleMeter.BewaarPeblarTokenAsync(apparaat.Id, ApiToken);
+                        try
+                        {
+                            await LokaleMeter.BewaarAdresAsync(apparaat.Id, IpAddress.Trim());
+                            if (IsSessy) await LokaleMeter.BewaarSessyInlogAsync(apparaat.Id, Username.Trim(), Password);
+                            if (IsAlfen) await LokaleMeter.BewaarAlfenInlogAsync(apparaat.Id, "admin", Password);
+                            if (IsEnphase) await LokaleMeter.BewaarEnphaseTokenAsync(apparaat.Id, ApiToken);
+                            if (IsPeblar) await LokaleMeter.BewaarPeblarTokenAsync(apparaat.Id, ApiToken);
+                        }
+                        catch (Exception)
+                        {
+                            // De koppeling staat al bij de server. Weigert de opslag op dit toestel,
+                            // dan kwam dat eerder omhoog als "Er ging iets mis" boven een apparaat
+                            // dat gewoon gekoppeld was.
+                        }
                     }
                 }
                 var count = devices?.Count ?? 0;

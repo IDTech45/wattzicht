@@ -42,7 +42,7 @@ public sealed class ChargeSlotRow(ChargeSlotDto slot)
 
     /// <summary>Hoeveel daarvan van het eigen dak komt; dat is het hele punt van deze planner.</summary>
     public bool HasSolar => slot.SolarKwh > 0.05;
-    public string SolarText => "waarvan " + slot.SolarKwh.ToString("0.#", Nl) + " kWh zon";
+    public string SolarText => string.Format(Taal.T("advies.waarvan-zon"), slot.SolarKwh.ToString("0.#", Nl));
     public string CostText => "€ " + slot.CostEur.ToString("0.00", Nl);
 }
 

@@ -271,7 +271,7 @@
                             <VerticalStackLayout Spacing="4">
                                 <Label Text="{t:T koppel.e-mailadres}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
-                                    <Entry Text="{Binding Username}" Placeholder="jij@voorbeeld.nl" Keyboard="Email" IsSpellCheckEnabled="False" />
+                                    <Entry Text="{Binding Username}" Placeholder="{t:T inlog.e-mail-voorbeeld}" Keyboard="Email" IsSpellCheckEnabled="False" />
                                 </Border>
                                 <Label Text="{Binding UsernameError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasUsernameError}" />
                             </VerticalStackLayout>
@@ -293,7 +293,7 @@
                             <VerticalStackLayout Spacing="4">
                                 <Label Text="{t:T koppel.e-mailadres}" Style="{StaticResource FieldLabel}" />
                                 <Border Style="{StaticResource InputBorder}">
-                                    <Entry Text="{Binding Username}" Placeholder="jij@voorbeeld.nl" Keyboard="Email" IsSpellCheckEnabled="False" />
+                                    <Entry Text="{Binding Username}" Placeholder="{t:T inlog.e-mail-voorbeeld}" Keyboard="Email" IsSpellCheckEnabled="False" />
                                 </Border>
                                 <Label Text="{Binding UsernameError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasUsernameError}" />
                             </VerticalStackLayout>

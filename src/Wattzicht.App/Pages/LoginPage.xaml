@@ -62,7 +62,7 @@
                         <Label Text="{t:T inlog.e-mailadres}" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputBorder}">
                             <Entry Text="{Binding Email}"
-                                   Placeholder="naam@voorbeeld.nl"
+                                   Placeholder="{t:T inlog.e-mail-voorbeeld}"
                                    Keyboard="Email"
                                    ReturnType="Next"
                                    IsSpellCheckEnabled="False"
@@ -91,7 +91,7 @@
                                         MinimumWidthRequest="72"
                                         Padding="8,0"
                                         Command="{Binding TogglePasswordVisibilityCommand}"
-                                        SemanticProperties.Description="Wachtwoord tonen of verbergen" />
+                                        SemanticProperties.Description="{t:T schermlezer.wachtwoord-tonen}" />
                             </Grid>
                         </Border>
                         <Label Text="{Binding PasswordError}"

@@ -97,7 +97,7 @@
                                             WidthRequest="48"
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DevicesViewModel}}, Path=DeleteCommand}"
                                             CommandParameter="{Binding .}"
-                                            SemanticProperties.Description="Apparaat verwijderen" />
+                                            SemanticProperties.Description="{t:T schermlezer.apparaat-verwijderen}" />
                                 </Grid>
                             </Border>
                         </SwipeView>

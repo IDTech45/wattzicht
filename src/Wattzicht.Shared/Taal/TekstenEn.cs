@@ -683,5 +683,28 @@ public static class TekstenEn
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "not measured",
 
+
+        // ---- schermlezer: wat een knop of een schakelaar doet ----
+        ["schermlezer.apparaat-verwijderen"] = "Remove device",
+        ["schermlezer.wachtwoord-tonen"] = "Show or hide password",
+        ["schermlezer.besparingsgrafiek"] = "Bar chart of your savings per day",
+        ["schermlezer.installateur-meekijken"] = "Installer may look along",
+        ["schermlezer.melding-storing"] = "Notification when something fails",
+        ["schermlezer.melding-teruglevering"] = "Notification when you export a lot",
+        ["schermlezer.maandbericht"] = "Monthly message",
+
+        // ---- stond als vaste tekst in de viewmodels ----
+        ["storing.aantal-een"] = "1 fault",
+        ["storing.aantal"] = "{0} faults",
+        ["advies.waarvan-zon"] = "of which {0} kWh solar",
+        ["besparen.tot-en-met"] = "{0} to {1}",
+        ["koppel.registratienummer-voorbeeld"] = "E.g. SXXXXXXXXX",
+        ["inlog.e-mail-voorbeeld"] = "you@example.com",
+
+        // ---- niets om te tonen, en waarom ----
+        ["panelen.geen-apparaat"] = "This screen belongs to an inverter. Open it from Devices and tap your solar panels.",
+        ["besparen.niets-gekoppeld"] = "Nothing connected yet",
+        ["besparen.niets-gekoppeld-uitleg"] = "Connect your inverter, battery or charger. From that day on we work out your savings.",
+
     }.ToFrozenDictionary();
 }

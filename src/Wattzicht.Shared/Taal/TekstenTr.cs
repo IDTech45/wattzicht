@@ -688,5 +688,28 @@ public static class TekstenTr
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "ölçülmedi",
 
+
+        // ---- schermlezer: wat een knop of een schakelaar doet ----
+        ["schermlezer.apparaat-verwijderen"] = "Cihazı kaldır",
+        ["schermlezer.wachtwoord-tonen"] = "Şifreyi göster veya gizle",
+        ["schermlezer.besparingsgrafiek"] = "Günlük tasarrufunuzun çubuk grafiği",
+        ["schermlezer.installateur-meekijken"] = "Kurulumcu birlikte bakabilir",
+        ["schermlezer.melding-storing"] = "Arıza olduğunda bildirim",
+        ["schermlezer.melding-teruglevering"] = "Çok şebekeye verildiğinde bildirim",
+        ["schermlezer.maandbericht"] = "Aylık mesaj",
+
+        // ---- stond als vaste tekst in de viewmodels ----
+        ["storing.aantal-een"] = "1 arıza",
+        ["storing.aantal"] = "{0} arıza",
+        ["advies.waarvan-zon"] = "bunun {0} kWh kadarı güneşten",
+        ["besparen.tot-en-met"] = "{0} - {1}",
+        ["koppel.registratienummer-voorbeeld"] = "Örnek: SXXXXXXXXX",
+        ["inlog.e-mail-voorbeeld"] = "sen@ornek.com",
+
+        // ---- niets om te tonen, en waarom ----
+        ["panelen.geen-apparaat"] = "Bu ekran bir invertöre aittir. Cihazlar ekranından güneş panellerinize dokunun.",
+        ["besparen.niets-gekoppeld"] = "Henüz hiçbir şey bağlı değil",
+        ["besparen.niets-gekoppeld-uitleg"] = "İnvertörünüzu, bataryanızı veya şarj istasyonunuzu bağlayın. O günden itibaren tasarrufunuzu hesaplarız.",
+
     }.ToFrozenDictionary();
 }

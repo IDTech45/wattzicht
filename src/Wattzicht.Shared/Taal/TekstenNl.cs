@@ -691,5 +691,30 @@ public static class TekstenNl
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "niet gemeten",
 
+
+        // ---- schermlezer: wat een knop of een schakelaar doet ----
+        // Deze stonden als vaste Nederlandse tekst in de XAML. Een schermlezer is de enige die ze
+        // voorleest, en juist daar valt een vergeten vertaling niemand op.
+        ["schermlezer.apparaat-verwijderen"] = "Apparaat verwijderen",
+        ["schermlezer.wachtwoord-tonen"] = "Wachtwoord tonen of verbergen",
+        ["schermlezer.besparingsgrafiek"] = "Staafgrafiek van je besparing per dag",
+        ["schermlezer.installateur-meekijken"] = "Installateur mag meekijken",
+        ["schermlezer.melding-storing"] = "Melding bij een storing",
+        ["schermlezer.melding-teruglevering"] = "Melding bij veel terugleveren",
+        ["schermlezer.maandbericht"] = "Maandbericht",
+
+        // ---- stond als vaste tekst in de viewmodels ----
+        ["storing.aantal-een"] = "1 storing",
+        ["storing.aantal"] = "{0} storingen",
+        ["advies.waarvan-zon"] = "waarvan {0} kWh zon",
+        ["besparen.tot-en-met"] = "{0} t/m {1}",
+        ["koppel.registratienummer-voorbeeld"] = "Bijv. SXXXXXXXXX",
+        ["inlog.e-mail-voorbeeld"] = "naam@voorbeeld.nl",
+
+        // ---- niets om te tonen, en waarom ----
+        ["panelen.geen-apparaat"] = "Dit scherm hoort bij een omvormer. Open het via Apparaten en tik op je zonnepanelen.",
+        ["besparen.niets-gekoppeld"] = "Nog niets gekoppeld",
+        ["besparen.niets-gekoppeld-uitleg"] = "Koppel je omvormer, batterij of laadpaal. Vanaf die dag rekenen we je besparing uit.",
+
     }.ToFrozenDictionary();
 }
