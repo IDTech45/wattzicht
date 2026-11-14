@@ -1238,8 +1238,27 @@ public static class HouseholdEndpoints
             // token dat verlopen was, een wachtwoord dat veranderde, een kastje op een nieuw adres.
             // Tot 13-11-2026 sloegen we zo'n poging over met "al gekoppeld", en dan was de enige
             // uitweg het apparaat verwijderen — inclusief alle metingen die eraan hingen.
-            if (existing.FirstOrDefault(e => e.ExternalId == found.ExternalId && e.Type == found.Type) is { } bestaand)
+            // Eén dak, twee wegen naar binnen.
+            //
+            // Dezelfde installatie via de gateway in huis én via de cloud levert twee kenmerken op
+            // (enphase-lokaal-192.168.178.59 tegenover het systeemnummer), dus twee apparaten in
+            // dezelfde woning. De dagtotalen tellen alle apparaten bij elkaar op, en dan staat er het
+            // dubbele opgewekt van wat er op het dak ligt. Een omvormer van hetzelfde merk in dezelfde
+            // woning is dezelfde omvormer; de tweede koppeling is een extra bron, geen extra dak.
+            if (ZelfdeInstallatie.Kies(existing, found.Type, found.ExternalId) is { } bestaand)
             {
+                // De bestaande inloggegevens blijven staan. Het adres en het token van de gateway
+                // thuis zijn niet te herleiden uit een cloudkoppeling, en zonder die twee kan de app
+                // het huisverbruik en de netkant niet meer uitlezen.
+                var oud = protector.Unprotect(bestaand.EncryptedCredentials);
+                foreach (var pair in oud)
+                {
+                    if (!merged.ContainsKey(pair.Key)) merged[pair.Key] = pair.Value;
+                }
+
+                // Het kenmerk van de nieuwe weg wint: een systeemnummer uit de cloud is bruikbaar voor
+                // de geschiedenis, en de app leest lokaal op het apparaat-id en niet op dit veld.
+                bestaand.ExternalId = found.ExternalId;
                 bestaand.EncryptedCredentials = protector.Protect(merged);
                 bestaand.LastError = null;
                 if (single && !string.IsNullOrWhiteSpace(request.Name))
