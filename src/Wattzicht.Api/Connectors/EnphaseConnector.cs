@@ -124,14 +124,29 @@ public sealed class EnphaseConnector(
     /// </summary>
     public DeviceReading LeesLokaal(JsonElement rauw, DateTimeOffset gemeten)
     {
-        var zon = Regel(rauw, "production", "eim") ?? Regel(rauw, "production", "inverters");
+        // De zonkant staat er twee keer in: de som van de micro-omvormers (altijd aanwezig) en, als
+        // er CT-klemmen hangen, een gemeten regel van het type "eim". Die gemeten regel is
+        // nauwkeuriger, en daarom kozen we hem blind.
+        //
+        // Dat ging mis bij een installatie zonder productieklem. Daar staat die eim-regel er wel,
+        // maar hij meet niets: wNow blijft nul en whLifetime stond op 0,343 Wh, twee dagen lang
+        // onveranderd. Wij namen dat over als zijn opwekteller, en dus stond er in de app nul
+        // opgewekt terwijl de panelen gewoon draaiden (14-11-2026).
+        //
+        // Nu kijken we wie er werkelijk meet: de regel met de hoogste levenslange teller wint. Een
+        // meter die op nul blijft staan verliest het van de micro-omvormers die hun eigen productie
+        // optellen.
+        var eim = Regel(rauw, "production", "eim");
+        var omvormers = Regel(rauw, "production", "inverters");
+        var zon = MeestBetrouwbaar(eim, omvormers);
+
         var netto = Regel(rauw, "consumption", "net-consumption");
         var huis = Regel(rauw, "consumption", "total-consumption");
 
         // In de regel van de micro-omvormers staat activeCount: het aantal dat op dit moment meedoet,
         // en dat is het aantal panelen. Dat hoeft dus niet uit de cloud te komen en ook niet uit een
         // invulveld: staat de telefoon op het thuisnetwerk, dan vertelt de gateway het zelf.
-        var micros = Regel(rauw, "production", "inverters");
+        var micros = omvormers;
 
         // De gateway rekent teruglevering negatief op de netkant, net als onze eigen afspraak, dus
         // het getal kan rechtstreeks mee. Laten we dat aan de app over, dan hangt de betekenis van
@@ -147,6 +162,24 @@ public sealed class EnphaseConnector(
             PanelCount: Getal(micros, "activeCount") is { } aantal and > 0 and < 10_000
                 ? (int)aantal
                 : null);
+    }
+
+    /// <summary>
+    /// Welke van de twee zonregels we geloven.
+    ///
+    /// De gemeten regel wint, maar alleen als hij ook echt iets gemeten heeft. Een CT-klem die er
+    /// niet is levert een regel op die er volwaardig uitziet en alleen maar nullen bevat; wie die
+    /// klakkeloos overneemt krijgt een app die zegt dat er niets is opgewekt.
+    /// </summary>
+    internal static JsonElement? MeestBetrouwbaar(JsonElement? gemeten, JsonElement? omvormers)
+    {
+        if (gemeten is null) return omvormers;
+        if (omvormers is null) return gemeten;
+
+        var a = Getal(gemeten, "whLifetime") ?? 0;
+        var b = Getal(omvormers, "whLifetime") ?? 0;
+
+        return b > a ? omvormers : gemeten;
     }
 
     /// <summary>Zoekt in production/consumption de regel met het gevraagde type of measurementType.</summary>

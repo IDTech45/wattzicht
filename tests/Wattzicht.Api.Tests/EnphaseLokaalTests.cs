@@ -47,6 +47,28 @@ public class EnphaseLokaalTests
         return connector.LeesLokaal(doc.RootElement, DateTimeOffset.UnixEpoch);
     }
 
+    /// <summary>Een gateway met een productieklem die er niet is: de eim-regel staat er wel, maar meet niets.</summary>
+    private const string KlemMeetNiets = """
+    {
+      "production": [
+        { "type": "inverters", "activeCount": 10, "wNow": 1840, "whLifetime": 343000 },
+        { "type": "eim", "measurementType": "production", "wNow": 0, "whLifetime": 0.343 }
+      ]
+    }
+    """;
+
+    [Fact]
+    public void Een_klem_die_niets_meet_verliest_van_de_omvormers()
+    {
+        // Hier ging het mis bij een echte installatie: de eim-regel stond op 0,343 Wh en bleef daar
+        // twee dagen staan. Wij namen dat over als opwekteller, dus stond er nul opgewekt in de app
+        // terwijl de panelen draaiden. Wie werkelijk meet, wint.
+        var uit = Lees(KlemMeetNiets);
+
+        Assert.Equal(1840, uit.PvPowerW);
+        Assert.Equal(343_000, uit.PvEnergyWh);
+    }
+
     [Fact]
     public void Het_aantal_panelen_komt_van_het_thuisnetwerk()
     {
