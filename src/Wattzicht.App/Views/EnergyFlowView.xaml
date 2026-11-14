@@ -16,7 +16,14 @@
         Het vermogen van nu staat daardoor twee keer op het scherm. Dat is bewust: het plaatje wordt
         gescand, de kaart wordt gelezen.
     -->
-    <VerticalStackLayout Spacing="12" BindingContext="{x:Reference Root}">
+    <!--
+        x:DataType hoort hier en niet op de ContentView: de BindingContext van dit blok is de view
+        zelf (x:Reference Root), en met het type erbij controleert de compiler elke binding
+        hieronder. Zonder dat zijn het runtime-bindingen en levert een verschrijving een leeg label
+        op dat je alleen op een toestel ziet.
+    -->
+    <VerticalStackLayout Spacing="12" BindingContext="{x:Reference Root}"
+                         x:DataType="views:EnergyFlowView">
 
         <GraphicsView x:Name="Stroom"
                       Drawable="{Binding Tekening}"

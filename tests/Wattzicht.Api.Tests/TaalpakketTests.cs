@@ -30,6 +30,55 @@ public sealed class TaalpakketTests
     }
 
     [Fact]
+    public void Elke_taal_heeft_dezelfde_waarden_in_de_tekst()
+    {
+        // Een vertaling waarin {0} is weggevallen verliest stilletjes het getal: "Al geen gegevens
+        // van de omvormer" in plaats van "Al 3 uur geen gegevens van de omvormer". En een vertaling
+        // met een {1} erbij die er in het Nederlands niet is, gooit een FormatException zodra het
+        // scherm opengaat. Beide zijn onzichtbaar zolang niemand de app in die taal openmaakt.
+        foreach (var (sleutel, nederlands) in TekstenNl.Alles)
+        {
+            var verwacht = Plaatshouders(nederlands);
+            foreach (var code in Teksten.Codes)
+            {
+                var tekst = Teksten.Voor(code)[sleutel];
+                Assert.Equal(verwacht, Plaatshouders(tekst));
+            }
+        }
+    }
+
+    /// <summary>Welke {n} er in een tekst staan.</summary>
+    private static SortedSet<int> Plaatshouders(string tekst)
+    {
+        var uit = new SortedSet<int>();
+        foreach (Match m in Regex.Matches(tekst, @"\{(\d+)\}"))
+        {
+            uit.Add(int.Parse(m.Groups[1].Value));
+        }
+
+        return uit;
+    }
+
+    [Fact]
+    public void Geen_losse_accolades_in_een_tekst()
+    {
+        // string.Format struikelt over een enkele { die geen plaatshouder is. Dat is geen leeg veld
+        // maar een uitzondering, en dus een scherm dat eruit klapt.
+        foreach (var code in Teksten.Codes)
+        {
+            foreach (var (sleutel, tekst) in Teksten.Voor(code))
+            {
+                var rest = Regex.Replace(tekst, @"\{\d+\}", string.Empty)
+                    .Replace("{{", string.Empty)
+                    .Replace("}}", string.Empty);
+
+                Assert.DoesNotContain("{", rest, StringComparison.Ordinal);
+                Assert.DoesNotContain("}", rest, StringComparison.Ordinal);
+            }
+        }
+    }
+
+    [Fact]
     public void Geen_enkele_tekst_is_leeg()
     {
         foreach (var code in Teksten.Codes)
