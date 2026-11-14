@@ -13,6 +13,15 @@ namespace Wattzicht.App.Views;
 /// </summary>
 public partial class EnergyFlowView : ContentView
 {
+    /// <summary>
+    /// Wat er staat als we het niet weten.
+    ///
+    /// Een streepje en geen 0,0 kW: dat laatste leest als een meting die toevallig nul was, terwijl
+    /// het betekent dat er nog nooit iets binnenkwam. Precies het soort stilzwijgen waar iemand de
+    /// verkeerde conclusie uit trekt.
+    /// </summary>
+    private const string Onbekend = "–";
+
     public static readonly BindableProperty SnapshotProperty = BindableProperty.Create(
         nameof(Snapshot), typeof(LiveSnapshotDto), typeof(EnergyFlowView), null,
         propertyChanged: (b, _, _) => ((EnergyFlowView)b).Recalculate());
@@ -50,24 +59,29 @@ public partial class EnergyFlowView : ContentView
         set => SetValue(PvPeakKwProperty, value);
     }
 
-    // Afgeleide, read-only bindable properties voor de XAML
-    public static readonly BindableProperty PvKwTextProperty = BindableProperty.Create(nameof(PvKwText), typeof(string), typeof(EnergyFlowView), "0,0 kW");
-    public static readonly BindableProperty PvHintProperty = BindableProperty.Create(nameof(PvHint), typeof(string), typeof(EnergyFlowView), "Geen opwek");
-    public static readonly BindableProperty LoadKwTextProperty = BindableProperty.Create(nameof(LoadKwText), typeof(string), typeof(EnergyFlowView), "0,0 kW");
-    public static readonly BindableProperty LoadHintProperty = BindableProperty.Create(nameof(LoadHint), typeof(string), typeof(EnergyFlowView), "Verbruik");
-    public static readonly BindableProperty BatteryKwTextProperty = BindableProperty.Create(nameof(BatteryKwText), typeof(string), typeof(EnergyFlowView), "0,0 kW");
-    public static readonly BindableProperty BatteryHintProperty = BindableProperty.Create(nameof(BatteryHint), typeof(string), typeof(EnergyFlowView), "Rust");
-    public static readonly BindableProperty SocTextProperty = BindableProperty.Create(nameof(SocText), typeof(string), typeof(EnergyFlowView), "–");
+    // Afgeleide, read-only bindable properties voor de XAML.
+    //
+    // De beginwaarden zijn met opzet een streepje en geen 0,0 kW en geen Nederlandse tekst: zolang
+    // er geen momentopname is weten we niets, en een nul die eruitziet als een meting is erger dan
+    // een leeg veld. Taal.T hoort hier ook niet: deze waarden worden één keer gelezen als de klasse
+    // geladen wordt, dus zou een latere taalwissel ze nooit meer raken.
+    public static readonly BindableProperty PvKwTextProperty = BindableProperty.Create(nameof(PvKwText), typeof(string), typeof(EnergyFlowView), Onbekend);
+    public static readonly BindableProperty PvHintProperty = BindableProperty.Create(nameof(PvHint), typeof(string), typeof(EnergyFlowView), string.Empty);
+    public static readonly BindableProperty LoadKwTextProperty = BindableProperty.Create(nameof(LoadKwText), typeof(string), typeof(EnergyFlowView), Onbekend);
+    public static readonly BindableProperty LoadHintProperty = BindableProperty.Create(nameof(LoadHint), typeof(string), typeof(EnergyFlowView), string.Empty);
+    public static readonly BindableProperty BatteryKwTextProperty = BindableProperty.Create(nameof(BatteryKwText), typeof(string), typeof(EnergyFlowView), Onbekend);
+    public static readonly BindableProperty BatteryHintProperty = BindableProperty.Create(nameof(BatteryHint), typeof(string), typeof(EnergyFlowView), string.Empty);
+    public static readonly BindableProperty SocTextProperty = BindableProperty.Create(nameof(SocText), typeof(string), typeof(EnergyFlowView), Onbekend);
     public static readonly BindableProperty SocFractionProperty = BindableProperty.Create(nameof(SocFraction), typeof(double), typeof(EnergyFlowView), 0d);
-    public static readonly BindableProperty GridKwTextProperty = BindableProperty.Create(nameof(GridKwText), typeof(string), typeof(EnergyFlowView), "0,0 kW");
-    public static readonly BindableProperty GridHintProperty = BindableProperty.Create(nameof(GridHint), typeof(string), typeof(EnergyFlowView), "Geen uitwisseling");
+    public static readonly BindableProperty GridKwTextProperty = BindableProperty.Create(nameof(GridKwText), typeof(string), typeof(EnergyFlowView), Onbekend);
+    public static readonly BindableProperty GridHintProperty = BindableProperty.Create(nameof(GridHint), typeof(string), typeof(EnergyFlowView), string.Empty);
     public static readonly BindableProperty GridAccentProperty = BindableProperty.Create(nameof(GridAccent), typeof(Color), typeof(EnergyFlowView), Colors.Gray);
     public static readonly BindableProperty GridCardBackgroundProperty = BindableProperty.Create(nameof(GridCardBackground), typeof(Color), typeof(EnergyFlowView), Colors.Transparent);
-    public static readonly BindableProperty ChargerKwTextProperty = BindableProperty.Create(nameof(ChargerKwText), typeof(string), typeof(EnergyFlowView), "0,0 kW");
-    public static readonly BindableProperty ChargerHintProperty = BindableProperty.Create(nameof(ChargerHint), typeof(string), typeof(EnergyFlowView), "Niet aan het laden");
+    public static readonly BindableProperty ChargerKwTextProperty = BindableProperty.Create(nameof(ChargerKwText), typeof(string), typeof(EnergyFlowView), Onbekend);
+    public static readonly BindableProperty ChargerHintProperty = BindableProperty.Create(nameof(ChargerHint), typeof(string), typeof(EnergyFlowView), string.Empty);
     public static readonly BindableProperty HasChargerProperty = BindableProperty.Create(nameof(HasCharger), typeof(bool), typeof(EnergyFlowView), false);
     public static readonly BindableProperty HasBatteryProperty = BindableProperty.Create(nameof(HasBattery), typeof(bool), typeof(EnergyFlowView), false);
-    public static readonly BindableProperty PvTitleProperty = BindableProperty.Create(nameof(PvTitle), typeof(string), typeof(EnergyFlowView), "Zon");
+    public static readonly BindableProperty PvTitleProperty = BindableProperty.Create(nameof(PvTitle), typeof(string), typeof(EnergyFlowView), string.Empty);
     public static readonly BindableProperty NetColumnProperty = BindableProperty.Create(nameof(NetColumn), typeof(int), typeof(EnergyFlowView), 1);
     public static readonly BindableProperty NetColumnSpanProperty = BindableProperty.Create(nameof(NetColumnSpan), typeof(int), typeof(EnergyFlowView), 1);
 
@@ -133,11 +147,26 @@ public partial class EnergyFlowView : ContentView
         {
             app.RequestedThemeChanged += (_, _) => Stroom?.Invalidate();
         }
+
+        // Dezelfde reden, maar voor de taal. De teksten in deze kaarten komen uit Taal.T op het
+        // moment dat Recalculate loopt, en niet uit een binding op de taal zoals de rest van de
+        // XAML. Zonder dit bleef "Geen uitwisseling" na een taalwissel in het Nederlands staan tot
+        // er een nieuwe meting binnenkwam.
+        Taal.Nu.PropertyChanged += (_, _) => Recalculate();
     }
 
     private void Recalculate()
     {
         var s = Snapshot;
+
+        // Nog nooit een meting binnen. Dan staat er geen 0,0 kW op vijf kaarten alsof het huis
+        // stilstaat, maar een streepje met de reden eronder. De tekening doet hetzelfde.
+        if (s is null)
+        {
+            NogNiets();
+            return;
+        }
+
         double pv = ToDouble(s?.PvPowerW);
         double load = ToDouble(s?.LoadPowerW);
         double grid = ToDouble(s?.GridPowerW);
@@ -166,7 +195,7 @@ public partial class EnergyFlowView : ContentView
         BatteryHint = battery > 50 ? Taal.T("stroom.ontladen")
             : battery < -50 ? Taal.T("stroom.laden")
             : Taal.T("stroom.rust");
-        SocText = soc is null ? "–" : $"{soc:0}%";
+        SocText = soc is null ? Onbekend : $"{soc:0}%";
         SocFraction = soc is null ? 0 : Math.Clamp(soc.Value / 100.0, 0, 1);
 
         GridKwText = Kw(grid);
@@ -218,6 +247,46 @@ public partial class EnergyFlowView : ContentView
         Tekening.Snapshot = s;
         TekeningHoogte = EnergyFlowDrawable.HoogteVoor(s);
         TekeningBeschrijving = Beschrijf();
+        Stroom?.Invalidate();
+    }
+
+    /// <summary>
+    /// Elke kaart op "nog geen meting".
+    ///
+    /// Batterij en laadpaal blijven weg: zonder momentopname weten we niet eens of ze er hangen, en
+    /// een kaart neerzetten voor een apparaat dat er misschien niet is, is een tweede aanname.
+    /// </summary>
+    private void NogNiets()
+    {
+        var reden = Taal.T("home.nog-geen-meting");
+
+        PvTitle = Taal.T("stroom.zon");
+        PvKwText = Onbekend;
+        PvHint = reden;
+
+        LoadKwText = Onbekend;
+        LoadHint = reden;
+
+        GridKwText = Onbekend;
+        GridHint = reden;
+        GridAccent = ThemeRes("TextMuted", "TextMutedDark");
+        GridCardBackground = ThemeRes("Surface", "SurfaceDark");
+
+        BatteryKwText = Onbekend;
+        BatteryHint = string.Empty;
+        SocText = Onbekend;
+        SocFraction = 0;
+        ChargerKwText = Onbekend;
+        ChargerHint = string.Empty;
+
+        HasBattery = false;
+        HasCharger = false;
+        NetColumn = 0;
+        NetColumnSpan = 2;
+
+        Tekening.Snapshot = null;
+        TekeningHoogte = EnergyFlowDrawable.HoogteVoor(null);
+        TekeningBeschrijving = reden;
         Stroom?.Invalidate();
     }
 

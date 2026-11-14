@@ -34,6 +34,15 @@ public sealed class EnergyFlowDrawable : IDrawable
     private const float Drempel = 50f;
 
     /// <summary>
+    /// Wat er onder een bol staat als er nog geen meting is.
+    ///
+    /// Zonder dit stond er 0,0 kW onder zon, huis en net bij iemand die net gekoppeld had. Het
+    /// scherm zei bovenaan "nog geen meting" en liet er vervolgens drie nullen onder zien, en van
+    /// die twee gelooft een mens het getal.
+    /// </summary>
+    private const string Onbekend = "–";
+
+    /// <summary>
     /// Hoe hoog de tekening moet zijn. Twee rijen zonder batterij en zonder laadpaal, drie met.
     ///
     /// De GraphicsView moet zijn hoogte van buiten krijgen (hij kan niet meten wat hij gaat
@@ -69,8 +78,9 @@ public sealed class EnergyFlowDrawable : IDrawable
         var netW = s?.GridPowerW ?? 0;
         var batterijW = s?.BatteryPowerW ?? 0;
         var laadpaalW = s?.ChargerPowerW ?? 0;
-        var meetHuis = s?.HasLoadData ?? true;
-        var meetNet = s?.HasGridData ?? true;
+        var meetHuis = s is not null && s.HasLoadData;
+        var meetNet = s is not null && s.HasGridData;
+        var geenMeting = s is null;
 
         // Eerst alle lijnen, dan de bollen: zo verdwijnt het uiteinde van elke lijn onder de bol en
         // hoeft er niets op een halve pixel uitgerekend te worden.
@@ -112,15 +122,15 @@ public sealed class EnergyFlowDrawable : IDrawable
 
         Bol(canvas, zon, Kleur("EnergySolar"), Zacht("EnergySolarSoft", "EnergySolarSoftDark"));
         ZonGlyph(canvas, zon);
-        Tekst(canvas, zon, Taal.T("stroom.zon"), Kw(pv));
+        Tekst(canvas, zon, Taal.T("stroom.zon"), geenMeting ? Onbekend : Kw(pv));
 
         Bol(canvas, net, Kleur("EnergyGrid"), Zacht("EnergyGridSoft", "EnergyGridSoftDark"));
         MastGlyph(canvas, net);
-        Tekst(canvas, net, Taal.T("stroom.net"), meetNet ? Kw(netW) : Taal.T("stroom.niet-gemeten"));
+        Tekst(canvas, net, Taal.T("stroom.net"), Waarde(geenMeting, meetNet, netW));
 
         Bol(canvas, huis, Thema("EnergyHome", "EnergyHomeDark"), Zacht("Surface", "SurfaceDark"));
         HuisGlyph(canvas, huis);
-        Tekst(canvas, huis, Taal.T("stroom.huis"), meetHuis ? Kw(huisW) : Taal.T("stroom.niet-gemeten"));
+        Tekst(canvas, huis, Taal.T("stroom.huis"), Waarde(geenMeting, meetHuis, huisW));
 
         if (heeftBatterij)
         {
@@ -302,6 +312,16 @@ public sealed class EnergyFlowDrawable : IDrawable
         kabel.CurveTo(p.X + 12f, p.Y - 2f, p.X + 12f, p.Y + 8f, p.X + 7f, p.Y + 10f);
         canvas.DrawPath(kabel);
     }
+
+    /// <summary>
+    /// Drie gevallen die niet hetzelfde betekenen: nog nooit een meting binnen, geen klem in de
+    /// kast, of gewoon een getal. "Niet gemeten" onder een verse koppeling stuurt iemand op zoek
+    /// naar een P1-meter die hij niet nodig heeft.
+    /// </summary>
+    private static string Waarde(bool geenMeting, bool gemeten, double watts) =>
+        geenMeting ? Onbekend
+        : gemeten ? Kw(watts)
+        : Taal.T("stroom.niet-gemeten");
 
     private static string Kw(double watts) =>
         $"{Math.Abs(watts) / 1000.0:0.0} kW".Replace('.', ',');
