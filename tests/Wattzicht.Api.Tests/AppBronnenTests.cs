@@ -266,6 +266,34 @@ public sealed class AppBronnenTests
         return aantal;
     }
 
+    /// <summary>
+    /// Tikken op de zon in de energiestroom gaat naar de panelen.
+    ///
+    /// Drie losse stukken moeten op elkaar aansluiten: de tekening weet waar de zon staat, de view
+    /// vangt de tik op en het scherm geeft het commando mee. Mist er één, dan gebeurt er niets als
+    /// je erop drukt en is er ook geen foutmelding. Dat is precies het soort stilte waar deze
+    /// bestandentests voor zijn.
+    /// </summary>
+    [Fact]
+    public void De_zon_in_de_energiestroom_is_aan_te_tikken()
+    {
+        var tekening = File.ReadAllText(Path.Combine(AppMap(), "Drawables", "EnergyFlowDrawable.cs"));
+        Assert.Contains("OpDeZon", tekening);
+
+        var view = File.ReadAllText(Path.Combine(AppMap(), "Views", "EnergyFlowView.xaml.cs"));
+        Assert.Contains("ZonCommandProperty", view);
+        Assert.Contains("OpDeZon", view);
+
+        var xaml = File.ReadAllText(Path.Combine(AppMap(), "Views", "EnergyFlowView.xaml"));
+        Assert.Contains("OpTekeningGetikt", xaml);
+
+        var scherm = File.ReadAllText(Path.Combine(AppMap(), "Pages", "DashboardPage.xaml"));
+        Assert.Contains("ZonCommand=\"{Binding OpenPanelenCommand}\"", scherm);
+
+        var model = File.ReadAllText(Path.Combine(AppMap(), "ViewModels", "DashboardViewModel.cs"));
+        Assert.Contains("OpenPanelenAsync", model);
+    }
+
     private static IEnumerable<string> Xaml() => Bestanden("*.xaml");
 
     private static IEnumerable<string> Cs() => Bestanden("*.cs");

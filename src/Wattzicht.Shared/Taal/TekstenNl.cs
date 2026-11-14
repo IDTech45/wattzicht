@@ -16,6 +16,7 @@ public static class TekstenNl
     {
         // ---- shell ----
         ["shell.home"] = "Home",
+        ["start.opstarten"] = "Even opstarten…",
         ["shell.sturen"] = "Sturen",
         ["shell.apparaten"] = "Apparaten",
         ["shell.besparen"] = "Besparen",
@@ -492,6 +493,7 @@ public static class TekstenNl
         ["woning.titel"] = "Je woning",
         ["woning.uitleg"] = "Je plaats gebruiken we voor de zonverwachting. We bewaren geen adres; alleen de plaats.",
         ["woning.naam"] = "Naam van je huishouden",
+        ["woning.naam-hint"] = "Hiermee begroeten we je op het beginscherm. Je eigen naam mag ook.",
         ["woning.plaats"] = "Plaats of postcode",
         ["woning.plaats-voorbeeld"] = "Bijvoorbeeld Enschede",
         ["woning.piek"] = "Piekvermogen van je panelen",
@@ -634,7 +636,7 @@ public static class TekstenNl
         ["panelen.kop"] = "{0} panelen · {1} kW nu",
         ["panelen.kop-een"] = "{0} paneel · {1} kW nu",
         ["panelen.bijgewerkt"] = "Van je omvormer, {0}",
-        ["panelen.max"] = "max {0} W",
+        ["panelen.max"] = "piek ooit {0} W",
         ["panelen.alles-gelijk"] = "Alle panelen doen ongeveer hetzelfde.",
         ["panelen.achterblijver"] = "Paneel {0} doet duidelijk minder dan de rest. Schaduw, vuil of een storing.",
         ["panelen.achterblijvers"] = "{0} panelen doen duidelijk minder dan de rest. Schaduw, vuil of een storing.",

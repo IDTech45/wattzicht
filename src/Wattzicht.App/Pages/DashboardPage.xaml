@@ -171,7 +171,8 @@
                         <Label Text="{t:T home.energiestroom-nu}" Style="{StaticResource SectionTitle}" />
                         <views:EnergyFlowView Snapshot="{Binding Live}"
                                               PvTodayKwh="{Binding PvTodayKwh}"
-                                              PvPeakKw="{Binding PvPeakKw}" />
+                                              PvPeakKw="{Binding PvPeakKw}"
+                                              ZonCommand="{Binding OpenPanelenCommand}" />
 
                         <!--
                             Meten we het huis en het net niet, dan staat er bij die twee "Niet

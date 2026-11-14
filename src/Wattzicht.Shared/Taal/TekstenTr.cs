@@ -14,6 +14,7 @@ public static class TekstenTr
     {
         // ---- shell ----
         ["shell.home"] = "Ana ekran",
+        ["start.opstarten"] = "Başlatılıyor…",
         ["shell.sturen"] = "Yönet",
         ["shell.apparaten"] = "Cihazlar",
         ["shell.besparen"] = "Tasarruf",
@@ -489,6 +490,7 @@ public static class TekstenTr
         ["woning.titel"] = "Eviniz",
         ["woning.uitleg"] = "Güneş tahmini için bulunduğunuz yeri kullanıyoruz. Adres saklamıyoruz, yalnızca yerleşim yerini.",
         ["woning.naam"] = "Evinizin adı",
+        ["woning.naam-hint"] = "Ana ekranda seni böyle selamlıyoruz. Kendi adın da olabilir.",
         ["woning.plaats"] = "Yer veya posta kodu",
         ["woning.plaats-voorbeeld"] = "Örneğin Enschede",
         ["woning.piek"] = "Panellerinizin tepe gücü",
@@ -631,7 +633,7 @@ public static class TekstenTr
         ["panelen.kop"] = "{0} panel · şu an {1} kW",
         ["panelen.kop-een"] = "{0} panel · şu an {1} kW",
         ["panelen.bijgewerkt"] = "İnvertörünüzden, {0}",
-        ["panelen.max"] = "en fazla {0} W",
+        ["panelen.max"] = "şimdiye kadarki zirve {0} W",
         ["panelen.alles-gelijk"] = "Tüm paneller yaklaşık aynı seviyede.",
         ["panelen.achterblijver"] = "{0} numaralı panel diğerlerinin açıkça gerisinde. Gölge, kir veya arıza.",
         ["panelen.achterblijvers"] = "{0} panel diğerlerinin açıkça gerisinde. Gölge, kir veya arıza.",

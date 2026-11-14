@@ -1,4 +1,5 @@
 using Wattzicht.App.Services;
+using Wattzicht.App.ViewModels;
 
 namespace Wattzicht.App;
 
@@ -6,8 +7,19 @@ public partial class App : Application
 {
     private readonly AuthService _auth;
     private readonly PushService _push;
+    private readonly IServiceProvider _diensten;
 
-    public App(AuthService auth, PushService push)
+    /// <summary>
+    /// Hoe lang het startscherm hoogstens op het dashboard wacht.
+    ///
+    /// Een grens moet er zijn. Op een slecht netwerk hoort niemand naar een logo te blijven kijken:
+    /// dan gaat hij naar binnen en laadt het scherm zelf verder, met zijn eigen foutmelding als het
+    /// echt niet lukt. Acht seconden is ruim voor een trage verbinding en kort genoeg om niet als
+    /// vastlopen te voelen.
+    /// </summary>
+    private static readonly TimeSpan Geduld = TimeSpan.FromSeconds(8);
+
+    public App(AuthService auth, PushService push, IServiceProvider diensten)
     {
         InitializeComponent();
         // Donker is de standaard, licht kan bij Instellingen. Alle kleuren hebben beide varianten
@@ -15,6 +27,7 @@ public partial class App : Application
         ThemaVoorkeur.Pas();
         _auth = auth;
         _push = push;
+        _diensten = diensten;
         _auth.LoggedOut += OnLoggedOut;
         _auth.LoggedIn += (_, _) => MainThread.BeginInvokeOnMainThread(async () => await _push.RegisterAsync());
         PushService.TokenRefreshed += async (_, token) =>
@@ -58,6 +71,11 @@ public partial class App : Application
             // Het token staat er nog; verder met wat we hebben.
         }
 
+        // Het dashboard alvast ophalen terwijl het startscherm nog staat. Zo is het scherm gevuld op
+        // het moment dat je het ziet, in plaats van dat je naar een lege balk kijkt die zelf nog moet
+        // gaan laden. Het startscherm ademt door zolang dit duurt.
+        if (loggedIn) await VoorladenAsync();
+
         try
         {
             await Shell.Current.GoToAsync(loggedIn ? AppShell.Routes.Home : AppShell.Routes.Login);
@@ -81,8 +99,32 @@ public partial class App : Application
         }
     }
 
+    /// <summary>
+    /// Het dashboard ophalen voordat we erheen gaan, met een grens aan het geduld.
+    ///
+    /// Fouten blijven hier: dit is voorwerk zonder scherm. Lukt het niet, dan doet het dashboard het
+    /// zelf nog een keer en krijgt de bewoner daar te zien wat er mis is, op de plek waar hij er
+    /// iets mee kan.
+    /// </summary>
+    private async Task VoorladenAsync()
+    {
+        try
+        {
+            using var geduld = new CancellationTokenSource(Geduld);
+            var dashboard = _diensten.GetRequiredService<DashboardViewModel>();
+            await dashboard.VoorladenAsync(geduld.Token).WaitAsync(geduld.Token);
+        }
+        catch (Exception)
+        {
+            // Te traag of mislukt; dan gaan we gewoon naar binnen.
+        }
+    }
+
     private void OnLoggedOut(object? sender, EventArgs e)
     {
+        // De cijfers van de vorige bewoner horen niet in het geheugen te blijven staan.
+        DashboardViewModel.VergeetVoorraad();
+
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             if (Shell.Current is not null)

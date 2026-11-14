@@ -189,11 +189,47 @@ public partial class DashboardViewModel : BaseViewModel
     }
     protected override void OnErrorChanged() => OnPropertyChanged(nameof(ShowEmptyState));
 
+    /// <summary>
+    /// Wat er bij het opstarten al is opgehaald.
+    ///
+    /// Het startscherm haalt het dashboard al op terwijl het logo nog knippert. Zonder deze
+    /// tussenstap zou het scherm daarna alles nog een keer vragen, en dan sta je alsnog naar een
+    /// leeg dashboard te kijken terwijl het net binnen was.
+    ///
+    /// Kort houdbaar, want het is een momentopname: wie een minuut later terugkomt hoort verse
+    /// cijfers te zien en niet die van zijn vorige kop koffie.
+    /// </summary>
+    private sealed record Voorraad(
+        DateTimeOffset Op,
+        IReadOnlyList<DeviceDto> Apparaten,
+        DashboardDto? Dashboard,
+        DayTipDto? Tip,
+        WeerDto? Weer);
+
+    private static Voorraad? _gedeeld;
+
+    /// <summary>Hoe lang zo'n momentopname meegaat.</summary>
+    private static readonly TimeSpan Houdbaar = TimeSpan.FromSeconds(90);
+
+    /// <summary>Bij uitloggen hoort de vorige bewoner niet in het geheugen te blijven staan.</summary>
+    public static void VergeetVoorraad() => _gedeeld = null;
+
     [RelayCommand]
-    public async Task LoadAsync()
+    public Task LoadAsync() => LoadAsync(vers: false);
+
+    public async Task LoadAsync(bool vers)
     {
         await RunSafeAsync(async () =>
         {
+            // Net opgehaald bij het opstarten? Dan die, en geen tweede ronde langs de server.
+            if (!vers && _gedeeld is { } klaar && DateTimeOffset.UtcNow - klaar.Op < Houdbaar)
+            {
+                _gedeeld = null;
+                Toepassen(klaar);
+                await RestAsync();
+                return;
+            }
+
             var devices = await _api.GetDevicesAsync();
             HasDevices = devices.Count > 0;
 
@@ -205,61 +241,130 @@ public partial class DashboardViewModel : BaseViewModel
 
             if (HasDevices)
             {
-                var dashboard = await _api.GetDashboardAsync();
-                Apply(dashboard);
-
-                var tip = await _api.GetDayTipAsync();
-                HasDayTip = tip is not null;
-                DayTipHeadline = tip?.Headline ?? string.Empty;
-                DayTipBody = tip?.Body ?? string.Empty;
-
-                ZetWeer(await _api.WeerAsync());
+                Toepassen(new Voorraad(
+                    DateTimeOffset.UtcNow,
+                    devices,
+                    await _api.GetDashboardAsync(),
+                    await _api.GetDayTipAsync(),
+                    await _api.WeerAsync()));
             }
 
-            // Twee dingen waar de app zonder niet goed werkt, en die je nergens vanzelf tegenkomt:
-            // zonder plaats geen zonverwachting, zonder tarief geen besparing in euro's.
-            try
-            {
-                var woning = await _api.GetHouseholdAsync();
-                PlaatsOntbreekt = !woning.HasLocation;
-                PvPeakKw = woning.PvPeakKw ?? 0;
-
-                var tarief = await _api.GetTariffAsync();
-                TariefOntbreekt = tarief.ImportTariffEur <= 0;
-            }
-            catch (ApiException)
-            {
-                PlaatsOntbreekt = false;
-                TariefOntbreekt = false;
-            }
-
-            if (InstallerName is null)
-            {
-                try
-                {
-                    var installer = await _api.GetInstallerAsync();
-                    InstallerName = installer.Name;
-                    InstallerLogo = installer.LogoDataUrl;
-                    HasInstallerLogo = !string.IsNullOrWhiteSpace(installer.LogoDataUrl);
-                }
-                catch (ApiException ex) when (!ex.IsUnauthorized)
-                {
-                    // Geen logo is geen probleem.
-                }
-            }
-
-            HasLoaded = true;
-            OnPropertyChanged(nameof(Greeting));
+            await RestAsync();
         }, _auth);
 
         IsRefreshing = false;
+    }
+
+    /// <summary>De cijfers van een momentopname op het scherm zetten.</summary>
+    private void Toepassen(Voorraad voorraad)
+    {
+        HasDevices = voorraad.Apparaten.Count > 0;
+        OmvormerId = voorraad.Apparaten.FirstOrDefault(d => d.Type == DeviceType.Inverter)?.Id;
+        if (voorraad.Dashboard is { } dashboard) Apply(dashboard);
+
+        HasDayTip = voorraad.Tip is not null;
+        DayTipHeadline = voorraad.Tip?.Headline ?? string.Empty;
+        DayTipBody = voorraad.Tip?.Body ?? string.Empty;
+
+        ZetWeer(voorraad.Weer);
+    }
+
+    /// <summary>
+    /// De rest: woning, tarief en installateur. Apart gehouden omdat het de kleine lettertjes van
+    /// het scherm zijn en niet de cijfers; het opstarten hoeft er niet op te wachten.
+    /// </summary>
+    private async Task RestAsync()
+    {
+        // Twee dingen waar de app zonder niet goed werkt, en die je nergens vanzelf tegenkomt:
+        // zonder plaats geen zonverwachting, zonder tarief geen besparing in euro's.
+        try
+        {
+            var woning = await _api.GetHouseholdAsync();
+            PlaatsOntbreekt = !woning.HasLocation;
+            PvPeakKw = woning.PvPeakKw ?? 0;
+
+            var tarief = await _api.GetTariffAsync();
+            TariefOntbreekt = tarief.ImportTariffEur <= 0;
+        }
+        catch (ApiException)
+        {
+            PlaatsOntbreekt = false;
+            TariefOntbreekt = false;
+        }
+
+        if (InstallerName is null)
+        {
+            try
+            {
+                var installer = await _api.GetInstallerAsync();
+                InstallerName = installer.Name;
+                InstallerLogo = installer.LogoDataUrl;
+                HasInstallerLogo = !string.IsNullOrWhiteSpace(installer.LogoDataUrl);
+            }
+            catch (ApiException ex) when (!ex.IsUnauthorized)
+            {
+                // Geen logo is geen probleem.
+            }
+        }
+
+        HasLoaded = true;
+        OnPropertyChanged(nameof(Greeting));
+    }
+
+    /// <summary>
+    /// Het dashboard alvast ophalen terwijl het startscherm nog knippert.
+    ///
+    /// Hier staat geen scherm aan; dit vult alleen de voorraad die het dashboard daarna oppakt. Een
+    /// fout verdwijnt met opzet in de grond: lukt het voorladen niet, dan haalt het scherm het zelf
+    /// op en krijgt de bewoner daar zijn foutmelding, op de plek waar hij er iets mee kan.
+    /// </summary>
+    public async Task VoorladenAsync(CancellationToken ct)
+    {
+        try
+        {
+            var devices = await _api.GetDevicesAsync();
+            if (devices.Count == 0)
+            {
+                _gedeeld = new Voorraad(DateTimeOffset.UtcNow, devices, null, null, null);
+                return;
+            }
+
+            ct.ThrowIfCancellationRequested();
+            var dashboard = await _api.GetDashboardAsync();
+            ct.ThrowIfCancellationRequested();
+            var tip = await _api.GetDayTipAsync();
+            ct.ThrowIfCancellationRequested();
+            var weer = await _api.WeerAsync();
+
+            _gedeeld = new Voorraad(DateTimeOffset.UtcNow, devices, dashboard, tip, weer);
+        }
+        catch (Exception)
+        {
+            _gedeeld = null;
+        }
+    }
+
+    /// <summary>De omvormer van deze woning, voor de weg naar het panelenscherm.</summary>
+    [ObservableProperty] private Guid? _omvormerId;
+
+    /// <summary>
+    /// Tikken op de zon in de energiestroom gaat naar de panelen.
+    ///
+    /// Dat is wat je verwacht als je op je zonnepanelen drukt, en vanaf het beginscherm was er geen
+    /// andere weg ernaartoe: je moest eerst naar Apparaten en daar de omvormer aantikken.
+    /// </summary>
+    [RelayCommand]
+    private async Task OpenPanelenAsync()
+    {
+        if (OmvormerId is not { } id) return;
+        await Shell.Current.GoToAsync($"{nameof(PanelsPage)}?deviceId={id}");
     }
 
     [RelayCommand]
     private async Task RefreshAsync()
     {
         IsRefreshing = true;
-        await LoadAsync();
+        await LoadAsync(vers: true);
     }
 
     [RelayCommand]

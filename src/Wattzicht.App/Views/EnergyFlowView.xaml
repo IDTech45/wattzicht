@@ -25,10 +25,16 @@
     <VerticalStackLayout Spacing="12" BindingContext="{x:Reference Root}"
                          x:DataType="views:EnergyFlowView">
 
+        <!-- Tikken op de zon gaat naar de panelen. Dat is wat iemand verwacht als hij op zijn
+             zonnepanelen drukt, en er was geen andere weg ernaartoe vanaf dit scherm. -->
         <GraphicsView x:Name="Stroom"
                       Drawable="{Binding Tekening}"
                       HeightRequest="{Binding TekeningHoogte}"
-                      SemanticProperties.Description="{Binding TekeningBeschrijving}" />
+                      SemanticProperties.Description="{Binding TekeningBeschrijving}">
+            <GraphicsView.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OpTekeningGetikt" />
+            </GraphicsView.GestureRecognizers>
+        </GraphicsView>
 
         <Grid RowDefinitions="Auto,Auto,Auto"
               ColumnDefinitions="*,*"

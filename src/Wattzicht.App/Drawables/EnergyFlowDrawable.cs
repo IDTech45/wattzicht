@@ -52,6 +52,31 @@ public sealed class EnergyFlowDrawable : IDrawable
     public static double HoogteVoor(LiveSnapshotDto? snapshot) =>
         (snapshot?.HasBattery == true || snapshot?.HasCharger == true) ? RijHoogte * 3 : RijHoogte * 2;
 
+    /// <summary>
+    /// Zit deze tik op de zon?
+    ///
+    /// De tekening is één vlak, dus een tik erop zegt op zichzelf niets. Deze som zegt waar de
+    /// zonnebol staat, en hij staat hier omdat de tekening dat bepaalt; zet je hem ergens anders
+    /// neer, dan gaat hij schuiven zodra de indeling verandert en tikt iemand in het luchtledige.
+    ///
+    /// Het raakvlak is iets ruimer dan de bol zelf: het label eronder hoort erbij, en een vinger is
+    /// geen muisaanwijzer.
+    /// </summary>
+    public static bool OpDeZon(PointF tik, RectF vlak, LiveSnapshotDto? snapshot)
+    {
+        var rijen = (snapshot?.HasBattery == true || snapshot?.HasCharger == true) ? 3 : 2;
+        var top = vlak.Y + Math.Max(0, (vlak.Height - rijen * RijHoogte) / 2f);
+        var midden = new PointF(vlak.X + (float)(vlak.Width * 0.18), top + BolRadius + 2f);
+
+        var raakvlak = new RectF(
+            midden.X - BolRadius - 12f,
+            midden.Y - BolRadius - 8f,
+            (BolRadius + 12f) * 2f,
+            (BolRadius + 8f) * 2f + 18f);
+
+        return raakvlak.Contains(tik);
+    }
+
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
         canvas.Antialias = true;

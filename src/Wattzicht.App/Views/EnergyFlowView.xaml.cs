@@ -22,6 +22,31 @@ public partial class EnergyFlowView : ContentView
     /// </summary>
     private const string Onbekend = "–";
 
+    /// <summary>
+    /// Wat er moet gebeuren als iemand op de zon tikt. Het scherm bepaalt dat, niet deze tekening.
+    /// </summary>
+    public static readonly BindableProperty ZonCommandProperty = BindableProperty.Create(
+        nameof(ZonCommand), typeof(System.Windows.Input.ICommand), typeof(EnergyFlowView), null);
+
+    public System.Windows.Input.ICommand? ZonCommand
+    {
+        get => (System.Windows.Input.ICommand?)GetValue(ZonCommandProperty);
+        set => SetValue(ZonCommandProperty, value);
+    }
+
+    private void OpTekeningGetikt(object? sender, TappedEventArgs e)
+    {
+        if (ZonCommand is null) return;
+
+        var punt = e.GetPosition(Stroom);
+        if (punt is not { } p) return;
+
+        var vlak = new RectF(0, 0, (float)Stroom.Width, (float)Stroom.Height);
+        if (!EnergyFlowDrawable.OpDeZon(new PointF((float)p.X, (float)p.Y), vlak, Snapshot)) return;
+
+        if (ZonCommand.CanExecute(null)) ZonCommand.Execute(null);
+    }
+
     public static readonly BindableProperty SnapshotProperty = BindableProperty.Create(
         nameof(Snapshot), typeof(LiveSnapshotDto), typeof(EnergyFlowView), null,
         propertyChanged: (b, _, _) => ((EnergyFlowView)b).Recalculate());

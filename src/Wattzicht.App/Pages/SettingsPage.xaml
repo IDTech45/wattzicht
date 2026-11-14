@@ -64,6 +64,7 @@
 
                     <VerticalStackLayout Spacing="4">
                         <Label Text="{t:T woning.naam}" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{t:T woning.naam-hint}" Style="{StaticResource StatCaption}" />
                         <Border Style="{StaticResource InputBorder}">
                             <Entry Text="{Binding WoningNaam}" Placeholder="{t:Ts inlog.bijvoorbeeld-thuis}" />
                         </Border>

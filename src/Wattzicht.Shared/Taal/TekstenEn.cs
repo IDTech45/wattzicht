@@ -9,6 +9,7 @@ public static class TekstenEn
     {
         // ---- shell ----
         ["shell.home"] = "Home",
+        ["start.opstarten"] = "Starting up…",
         ["shell.sturen"] = "Control",
         ["shell.apparaten"] = "Devices",
         ["shell.besparen"] = "Savings",
@@ -484,6 +485,7 @@ public static class TekstenEn
         ["woning.titel"] = "Your home",
         ["woning.uitleg"] = "We use your town for the sun forecast. We do not store an address, only the town.",
         ["woning.naam"] = "Name of your household",
+        ["woning.naam-hint"] = "This is how we greet you on the home screen. Your own name works too.",
         ["woning.plaats"] = "Town or postcode",
         ["woning.plaats-voorbeeld"] = "For example Enschede",
         ["woning.piek"] = "Peak power of your panels",
@@ -626,7 +628,7 @@ public static class TekstenEn
         ["panelen.kop"] = "{0} panels · {1} kW now",
         ["panelen.kop-een"] = "{0} panel · {1} kW now",
         ["panelen.bijgewerkt"] = "From your inverter, {0}",
-        ["panelen.max"] = "max {0} W",
+        ["panelen.max"] = "peak so far {0} W",
         ["panelen.alles-gelijk"] = "All panels are doing about the same.",
         ["panelen.achterblijver"] = "Panel {0} is clearly behind the rest. Shade, dirt or a fault.",
         ["panelen.achterblijvers"] = "{0} panels are clearly behind the rest. Shade, dirt or a fault.",

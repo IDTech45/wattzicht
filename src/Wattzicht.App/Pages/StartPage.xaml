@@ -32,6 +32,14 @@
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
+            <!-- De regel die verschijnt als het opstarten langer duurt dan een paar tellen. Tot die
+                 tijd leeg: wie binnen een seconde binnen is hoeft niet te lezen dat er iets laadt. -->
+            <Label x:Name="Wachtregel"
+                   FontSize="14"
+                   Opacity="0"
+                   HorizontalTextAlignment="Center"
+                   TextColor="{StaticResource White}"
+                   HorizontalOptions="Center" />
         </VerticalStackLayout>
     </Grid>
 </ContentPage>
