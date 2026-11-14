@@ -138,6 +138,34 @@ public partial class SavingsViewModel : BaseViewModel
     };
 
     /// <summary>
+    /// Of er vanavond nog cijfers bijkomen voor deze woning.
+    ///
+    /// Alleen bij een omvormer die wij bij de fabrikant kunnen opvragen. Een gateway die we via het
+    /// thuisnetwerk lezen telt hier niet: die meet alleen terwijl de app openstaat, en dan zou de
+    /// belofte "vanavond maken we de dag compleet" nergens op slaan.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DagLooptNog))]
+    [NotifyPropertyChangedFor(nameof(DagLooptNogTekst))]
+    private bool _avondAanvulling;
+
+    /// <summary>
+    /// Waarom het getal van vandaag lager staat dan je verwacht.
+    ///
+    /// Een dag die nog loopt is geen dagtotaal. Zonder deze regel is een lage stand om twee uur 's
+    /// middags niet te onderscheiden van een storing, en dat is precies de vraag die erover kwam.
+    /// </summary>
+    public bool DagLooptNog => Period == SavingsPeriod.Day && Vandaag;
+
+    public string DagLooptNogTekst =>
+        Taal.T(AvondAanvulling ? "besparen.dag-loopt-nog-avond" : "besparen.dag-loopt-nog");
+
+    /// <summary>Of de getoonde dag vandaag is.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DagLooptNog))]
+    private bool _vandaag = true;
+
+    /// <summary>
     /// Welke dagen je nu ziet, voluit.
     ///
     /// Boven de cijfers stond alleen "deze maand". Welke maand dat was moest je zelf bedenken, en
@@ -305,7 +333,14 @@ public partial class SavingsViewModel : BaseViewModel
             // nul zijn, en dat is op dit scherm geen uitkomst maar een ontbrekende koppeling.
             try
             {
-                GeenApparaten = (await _api.GetDevicesAsync()).Count == 0;
+                var apparaten = await _api.GetDevicesAsync();
+                GeenApparaten = apparaten.Count == 0;
+
+                // Hangt er een omvormer die wij bij de fabrikant kunnen opvragen, dan wordt de dag
+                // vanavond compleet gemaakt. Dat is iets anders dan een gateway die alleen vanaf het
+                // thuisnetwerk te lezen is: daar meten we alleen terwijl de app openstaat.
+                AvondAanvulling = apparaten.Any(d => d.Type == DeviceType.Inverter
+                    && !(d.ExternalId ?? string.Empty).Contains("-lokaal-", StringComparison.OrdinalIgnoreCase));
             }
             catch (ApiException)
             {
@@ -333,6 +368,7 @@ public partial class SavingsViewModel : BaseViewModel
                 .ToList();
 
             PeriodeBereik = BereikTekst(from, to);
+            Vandaag = to == DateOnly.FromDateTime(DateTime.Today);
             Apply(summaries, from, to);
             HasLoaded = true;
 

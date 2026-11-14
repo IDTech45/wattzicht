@@ -38,9 +38,6 @@ public sealed class EnphaseGeschiedenisWorker(
     /// </summary>
     public const int VersDagen = 7;
 
-    /// <summary>Niet vaker dan dit per apparaat; het maandquotum van Enphase is niet groot.</summary>
-    public static readonly TimeSpan Tussenpoos = TimeSpan.FromHours(20);
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
@@ -52,10 +49,10 @@ public sealed class EnphaseGeschiedenisWorker(
             return;
         }
 
-        // Elke vier uur kijken of er iets te halen valt. Hoe vaak er werkelijk een aanroep uitgaat
-        // bepaalt de tussenpoos per apparaat, en die staat op twintig uur: zo blijft het binnen het
-        // maandquotum en wordt de laatste week toch elke dag nagelopen.
-        using var timer = new PeriodicTimer(TimeSpan.FromHours(4));
+        // Elk kwartier langskomen, maar bijna altijd meteen weer weggaan. Wie nog nooit is opgehaald
+        // krijgt zijn geschiedenis zodra hij koppelt; de rest alleen in het avondvenster, als de dag
+        // voorbij is. Zie AvondRonde voor waarom dat tien uur 's avonds is.
+        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(15));
         do
         {
             try
@@ -89,15 +86,20 @@ public sealed class EnphaseGeschiedenisWorker(
         if (registry.Get(DeviceBrand.Enphase) is not EnphaseConnector enphase) return 0;
 
         var nu = clock.GetUtcNow();
-        var grens = nu - Tussenpoos;
 
-        // Twee soorten werk in één ronde: wie nog nooit is opgehaald krijgt zijn hele geschiedenis,
-        // en wie dat al had krijgt de laatste week opnieuw. Dat tweede is wat een gat dichttrekt dat
-        // gisteren is ontstaan doordat er even niets binnenkwam.
-        var apparaten = await db.Devices.IgnoreQueryFilters()
-            .Where(d => d.Brand == DeviceBrand.Enphase
-                        && (d.PvHistorieOpgehaaldAt == null || d.PvHistorieOpgehaaldAt < grens))
+        // Twee soorten werk, en ze hebben elk hun eigen moment.
+        //
+        // Wie nog nooit is opgehaald krijgt zijn hele geschiedenis, en die hoeft niet tot vanavond te
+        // wachten: dat is het eerste wat iemand wil zien nadat hij gekoppeld heeft. Wie dat al had
+        // krijgt de laatste week opnieuw, maar alleen in het avondvenster, als de dag van vandaag
+        // voorbij is. Overdag ophalen geeft een dagtotaal dat een uur later alweer verouderd is.
+        var alles = await db.Devices.IgnoreQueryFilters()
+            .Where(d => d.Brand == DeviceBrand.Enphase)
             .ToListAsync(ct);
+
+        var apparaten = alles
+            .Where(d => d.PvHistorieOpgehaaldAt is null || AvondRonde.IsTijd(nu, d.PvHistorieOpgehaaldAt))
+            .ToList();
 
         if (apparaten.Count == 0) return 0;
 

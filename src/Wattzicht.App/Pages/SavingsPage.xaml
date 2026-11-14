@@ -100,6 +100,13 @@
                                           HeightRequest="160"
                                           Margin="0,8,0,0"
                                           SemanticProperties.Description="{t:T schermlezer.besparingsgrafiek}" />
+                            <!-- Waarom vandaag laag staat. Een dag die nog loopt is geen dagtotaal, en
+                                 zonder dat erbij is een lage stand 's middags niet te onderscheiden
+                                 van een storing. -->
+                            <Label Text="{Binding DagLooptNogTekst}"
+                                   IsVisible="{Binding DagLooptNog}"
+                                   Style="{StaticResource StatCaption}"
+                                   Margin="0,4,0,0" />
                             <BoxView Style="{StaticResource DividerLine}" Margin="0,8,0,0" />
                             <!-- Vier kolommen op een telefoonbreedte: "Teruggeleverd" past daar niet
                                  in en brak af als "Teruggelev erd". Kortere woorden en een regel

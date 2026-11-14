@@ -244,6 +244,8 @@ public static class TekstenNl
         ["inlog.geen-geldig-e-mailadres"] = "Dit is geen geldig e-mailadres.",
         ["inlog.vul-wachtwoord-in"] = "Vul je wachtwoord in.",
         ["besparen.gisteren"] = "Gisteren",
+        ["besparen.dag-loopt-nog"] = "Vandaag loopt nog; dit is de stand tot nu toe.",
+        ["besparen.dag-loopt-nog-avond"] = "Vandaag loopt nog. Rond tien uur vanavond maken we de dag compleet met de cijfers van je omvormer.",
         ["besparen.vandaag-bespaard"] = "Vandaag bespaard",
         ["besparen.deze-week-bespaard"] = "Deze week bespaard",
         ["besparen.deze-maand-bespaard"] = "Deze maand bespaard",

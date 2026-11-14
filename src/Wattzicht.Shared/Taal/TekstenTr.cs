@@ -241,6 +241,8 @@ public static class TekstenTr
         ["inlog.geen-geldig-e-mailadres"] = "Bu geçerli bir e-posta adresi değil.",
         ["inlog.vul-wachtwoord-in"] = "Şifrenizi girin.",
         ["besparen.gisteren"] = "Dün",
+        ["besparen.dag-loopt-nog"] = "Bugün henüz bitmedi; bu şu ana kadarki durum.",
+        ["besparen.dag-loopt-nog-avond"] = "Bugün henüz bitmedi. Akşam saat on civarında günü invertörünün verileriyle tamamlıyoruz.",
         ["besparen.vandaag-bespaard"] = "Bugün tasarruf",
         ["besparen.deze-week-bespaard"] = "Bu hafta tasarruf",
         ["besparen.deze-maand-bespaard"] = "Bu ay tasarruf",
