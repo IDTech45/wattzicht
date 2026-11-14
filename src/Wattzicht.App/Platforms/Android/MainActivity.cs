@@ -41,7 +41,7 @@ public class MainActivity : MauiAppCompatActivity
                 if (!opHome)
                 {
                     Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(
-                        async () => await shell.GoToAsync("//main/home"));
+                        async () => await shell.GoToAsync(AppShell.Routes.Home));
                     return;
                 }
             }

@@ -122,7 +122,7 @@ public partial class DevicesViewModel : BaseViewModel
 
     /// <summary>Naar het scherm waar je je oude cijfers kunt inlezen.</summary>
     [RelayCommand]
-    private Task NaarInstellingenAsync() => Shell.Current.GoToAsync("//settings");
+    private Task NaarInstellingenAsync() => Shell.Current.GoToAsync(AppShell.Routes.Settings);
 
     /// <summary>
     /// Een apparaat hernoemen.

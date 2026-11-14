@@ -10,6 +10,7 @@ public partial class AppShell : Shell
         public const string Start = "//start";
         public const string Login = "//login";
         public const string Home = "//main/home";
+        public const string Advice = "//main/advice";
         public const string Devices = "//main/devices";
         public const string Savings = "//main/savings";
         public const string Settings = "//main/settings";

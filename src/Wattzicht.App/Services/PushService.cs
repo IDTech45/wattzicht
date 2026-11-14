@@ -108,7 +108,7 @@ public sealed class PushService
         switch (route)
         {
             case "advice":
-                await Shell.Current.GoToAsync("//main/advice");
+                await Shell.Current.GoToAsync(AppShell.Routes.Advice);
                 break;
             case "alerts":
                 await Shell.Current.GoToAsync(AppShell.Routes.Home);
