@@ -431,16 +431,22 @@ public partial class SavingsViewModel : BaseViewModel
             ? summaries.Where(s => SummaryRow.ToDate(s.Date) == to).ToList()
             : summaries;
 
-        TotalSavedText = Sum(scope, s => s.SavedEur).ToString("C2", Nl);
-        TotalPvText = KwhText(Sum(scope, s => s.PvKwh));
+        // Geen enkele dag waar de totalen over gaan. Dan is de som nul, maar die nul is niemands
+        // uitkomst: er is nog niets gemeten. Alleen de totalen; de grafiek en de lijst hieronder
+        // kijken naar de hele periode en hebben soms wel dagen terwijl vandaag er nog geen is.
+        var leeg = scope.Count == 0;
+        var nietGemeten = Taal.T("besparen.niet-gemeten");
+
+        TotalSavedText = leeg ? Onbekend : Sum(scope, s => s.SavedEur).ToString("C2", Nl);
+        TotalPvText = leeg ? Onbekend : KwhText(Sum(scope, s => s.PvKwh));
 
         // Zonder netmeting weten we niet wat er naar het net ging, en dus ook niet wat er zelf
         // gebruikt is: de server rekent zelfverbruik als zon min teruglevering. Zonder meting is
         // die teruglevering nul, en dan zou hier staan dat alles zelf gebruikt is. Dat is geen nul
         // te veel maar een verzonnen honderd procent. Hetzelfde geldt voor laden zonder laadpaal.
-        TotalSelfUseText = MeetNet ? KwhText(Sum(scope, s => s.SelfUseKwh)) : Taal.T("besparen.niet-gemeten");
-        TotalExportText = MeetNet ? KwhText(Sum(scope, s => s.ExportKwh)) : Taal.T("besparen.niet-gemeten");
-        TotalChargedText = MeetLaden ? KwhText(Sum(scope, s => s.ChargedKwh)) : Taal.T("besparen.niet-gemeten");
+        TotalSelfUseText = !MeetNet ? nietGemeten : leeg ? Onbekend : KwhText(Sum(scope, s => s.SelfUseKwh));
+        TotalExportText = !MeetNet ? nietGemeten : leeg ? Onbekend : KwhText(Sum(scope, s => s.ExportKwh));
+        TotalChargedText = !MeetLaden ? nietGemeten : leeg ? Onbekend : KwhText(Sum(scope, s => s.ChargedKwh));
 
         // Lijst: nieuwste eerst
         Rows.Clear();

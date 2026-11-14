@@ -75,13 +75,15 @@
                                     <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                                         <Label Text="{Binding Name}" Style="{StaticResource CardTitle}" LineBreakMode="TailTruncation" />
                                         <Label Text="{Binding Subtitle}" Style="{StaticResource SubtitleLabel}" />
-                                        <HorizontalStackLayout Spacing="6">
-                                            <Ellipse WidthRequest="8" HeightRequest="8" VerticalOptions="Center"
+                                        <!-- Een Grid en niet drie labels naast elkaar: deze regel is
+                                             langer dan de kaart breed is, en een
+                                             HorizontalStackLayout breekt niet af maar snijdt af. -->
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                            <Ellipse WidthRequest="8" HeightRequest="8" VerticalOptions="Start" Margin="0,4,0,0"
                                                      Fill="{Binding ToonAlsProbleem, Converter={StaticResource ProbleemNaarKleur}}" />
-                                            <Label Text="{Binding StatusText}" Style="{StaticResource StatCaption}" />
-                                            <Label Text="·" Style="{StaticResource StatCaption}" />
-                                            <Label Text="{Binding LastSeenText}" Style="{StaticResource StatCaption}" />
-                                        </HorizontalStackLayout>
+                                            <Label Grid.Column="1" Text="{Binding StatusRegel}"
+                                                   Style="{StaticResource StatCaption}" LineBreakMode="WordWrap" />
+                                        </Grid>
                                         <Label Text="{Binding Reden}"
                                                Style="{StaticResource StatCaption}"
                                                TextColor="{AppThemeBinding Light={StaticResource ErrorDot}, Dark={StaticResource ErrorTextDark}}"

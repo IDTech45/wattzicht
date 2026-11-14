@@ -104,6 +104,17 @@ public sealed class DeviceItem
         }
     }
 
+    /// <summary>
+    /// De status en wanneer we het apparaat voor het laatst zagen, als één regel.
+    ///
+    /// Waarom één regel en niet twee labels naast elkaar: dat stond in een
+    /// HorizontalStackLayout, en die breekt niet af maar snijdt af. "Wordt thuis uitgelezen · Laatst
+    /// gezien 3 uur geleden" is ruim vijftig tekens en de kaart heeft er een kleine dertig; op een
+    /// toestel van 1080 breed viel de helft buiten het scherm, zonder dat er iets op wees. Als tekst
+    /// in één label mag hij gewoon naar de volgende regel.
+    /// </summary>
+    public string StatusRegel => $"{StatusText} · {LastSeenText}";
+
     /// <summary>Alleen een rode stip als er echt iets mis kan zijn; niet omdat jij onderweg bent.</summary>
     public bool ToonAlsProbleem => !Device.IsOnline && (!WordtThuisGelezen || OpWifi);
 
