@@ -67,6 +67,48 @@ public class EnphaseLokaalTests
     }
     """;
 
+    /// <summary>
+    /// Wat Ibo's gateway op 14-11-2026 stuurde: /api/v1/production gaf alleen nullen terug, terwijl de
+    /// omvormers 400 W maakten en op 8.036 kWh stonden.
+    /// </summary>
+    private const string GatewayMeldtAlleenNullen = """
+    {
+      "production": [
+        { "type": "inverters", "activeCount": 10, "wNow": 400, "whLifetime": 8036027 }
+      ],
+      "__productie": { "wattsNow": 0, "wattHoursToday": 0, "wattHoursLifetime": 0 }
+    }
+    """;
+
+    [Fact]
+    public void Een_gateway_die_alleen_nullen_meldt_bepaalt_de_dag_niet()
+    {
+        // Hier stond de app op nul terwijl de panelen draaiden. Een opgegeven dagstand gaat voor op
+        // onze eigen tellerroute, dus die nul hield de hele dag op nul. Een bron zonder levensteller
+        // meet niets, en dan zegt zijn nul ook niets: de dag blijft onbekend en de teller doet het
+        // werk.
+        var uit = Lees(GatewayMeldtAlleenNullen);
+
+        Assert.Null(uit.PvTodayWh);
+        Assert.Equal(8_036_027, uit.PvEnergyWh);
+        Assert.Equal(400, uit.PvPowerW);
+    }
+
+    [Fact]
+    public void Nul_opgewekt_bij_een_lopende_teller_is_gewoon_de_nacht()
+    {
+        // Het omgekeerde moet ook blijven kloppen: een gateway die wél meet en midden in de nacht
+        // nul meldt, geeft een echt antwoord.
+        var uit = Lees("""
+        {
+          "production": [ { "type": "inverters", "activeCount": 10, "wNow": 0, "whLifetime": 8036027 } ],
+          "__productie": { "wattsNow": 0, "wattHoursToday": 0, "wattHoursLifetime": 8036027 }
+        }
+        """);
+
+        Assert.Equal(0, uit.PvTodayWh);
+    }
+
     [Fact]
     public void De_dagopbrengst_komt_van_de_gateway_zelf()
     {

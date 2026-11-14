@@ -69,6 +69,28 @@ public sealed class DagopwekTests
     }
 
     [Fact]
+    public async Task Een_nul_wist_een_dag_niet_die_al_opwek_heeft()
+    {
+        // Een omvormer of gateway die zijn dagstand kwijt is, meldt nul. Dat overschreef de opwek die
+        // er die ochtend al stond, en dan staat de app op nul terwijl de zon gewoon geschenen heeft.
+        var id = Guid.NewGuid();
+        await using var db = Db();
+        var apparaat = Apparaat(id);
+        db.Devices.Add(apparaat);
+        await db.SaveChangesAsync();
+
+        var dienst = Dienst(db);
+        await dienst.ApplyPvTodayAsync(apparaat, 4_120, Op(14, 12), default);
+        await db.SaveChangesAsync();
+        Assert.Equal(4.12, await OpwekAsync(db, 14));
+
+        await dienst.ApplyPvTodayAsync(apparaat, 0, Op(14, 14), default);
+        await db.SaveChangesAsync();
+
+        Assert.Equal(4.12, await OpwekAsync(db, 14));
+    }
+
+    [Fact]
     public async Task Een_dag_waarop_de_app_dicht_bleef_telt_gewoon_mee()
     {
         // Dit is het hele punt. De app stond de 12e niet open, dus er kwam die dag geen enkele

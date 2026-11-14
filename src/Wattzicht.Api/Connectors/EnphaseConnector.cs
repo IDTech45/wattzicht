@@ -148,9 +148,16 @@ public sealed class EnphaseConnector(
             ? p
             : (JsonElement?)null;
 
-        var vandaagWh = Getal(productie, "wattHoursToday")
-                        ?? Getal(eim, "whToday")
-                        ?? Getal(omvormers, "whToday");
+        // Maar dan moet die gateway-regel zelf wel meten. Op 14-11-2026 bleek /api/v1/production hier
+        // alleen nullen te geven: wattHoursToday 0 én wattHoursLifetime 0, terwijl de omvormers op
+        // datzelfde moment 400 W stonden te maken en een levensteller van 8.036 kWh meldden. Wij namen
+        // die nul over als "vandaag opgewekt", en omdat een opgegeven dagstand voorgaat op de
+        // tellerroute stond de app op nul zolang de gateway dat volhield.
+        //
+        // Dus dezelfde vraag als bij de eim-regel hierboven: meet deze bron iets? Een bron zonder
+        // levensteller meet niets, en dan zegt zijn nul ook niets.
+        var vandaagWh = DagstandVan(productie, "wattHoursToday", "wattHoursLifetime")
+                        ?? DagstandVan(zon, "whToday", "whLifetime");
 
         var netto = Regel(rauw, "consumption", "net-consumption");
         var huis = Regel(rauw, "consumption", "total-consumption");
@@ -168,7 +175,9 @@ public sealed class EnphaseConnector(
             PvPowerW: Getal(zon, "wNow") ?? 0,
             LoadPowerW: Getal(huis, "wNow") ?? 0,
             GridPowerW: Getal(netto, "wNow") ?? 0,
-            PvEnergyWh: Getal(productie, "wattHoursLifetime") ?? Getal(zon, "whLifetime"),
+            // De hoogste levensteller wint, om dezelfde reden: de gateway-regel ging hier van 8.036.027
+            // naar 0 en weer terug, en op zo'n nul valt geen dag te berekenen.
+            PvEnergyWh: Hoogste(Getal(productie, "wattHoursLifetime"), Getal(zon, "whLifetime")),
             ImportEnergyWh: Getal(netto, "whLifetimeImport"),
             ExportEnergyWh: Getal(netto, "whLifetimeExport"),
             PanelCount: Getal(micros, "activeCount") is { } aantal and > 0 and < 10_000
@@ -193,6 +202,30 @@ public sealed class EnphaseConnector(
         var b = Getal(omvormers, "whLifetime") ?? 0;
 
         return b > a ? omvormers : gemeten;
+    }
+
+    /// <summary>
+    /// De dagstand van een bron, maar alleen als die bron ook werkelijk meet.
+    ///
+    /// Een levensteller van nul (of helemaal geen levensteller) betekent dat hier niets gemeten wordt.
+    /// Zo'n regel mag dan ook geen antwoord geven op de vraag wat er vandaag is opgewekt. Staat de
+    /// teller wel te lopen, dan is een dagstand van nul een echt antwoord: dat is de nacht.
+    /// </summary>
+    internal static double? DagstandVan(JsonElement? bron, string dagVeld, string levenVeld)
+    {
+        if (bron is null) return null;
+        if (Getal(bron, levenVeld) is not > 0) return null;
+        return Getal(bron, dagVeld);
+    }
+
+    /// <summary>De hoogste van twee tellerstanden; nul en niets tellen niet mee.</summary>
+    internal static double? Hoogste(double? a, double? b)
+    {
+        var x = a is > 0 ? a : null;
+        var y = b is > 0 ? b : null;
+        if (x is null) return y;
+        if (y is null) return x;
+        return Math.Max(x.Value, y.Value);
     }
 
     /// <summary>Zoekt in production/consumption de regel met het gevraagde type of measurementType.</summary>

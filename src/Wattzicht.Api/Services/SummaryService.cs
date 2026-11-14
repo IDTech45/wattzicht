@@ -132,6 +132,11 @@ public sealed class SummaryService(AppDbContext db, SavingsCalculator calculator
         var totaalKwh = standen.Values.Sum() / 1000d;
         if (totaalKwh > MaximumDagKwh) return;
 
+        // Een nul mag een dag die al opwek heeft niet wissen. Een omvormer die zijn dagstand kwijt is
+        // of een gateway die even niets meldt, hoort geen zonnige ochtend uit te gummen; dan houden we
+        // vast wat we al gemeten hadden. Vannacht begint de dag toch opnieuw.
+        if (totaalKwh <= 0 && summary.PvKwh > 0) return;
+
         summary.PvKwh = Math.Round(totaalKwh, 3);
         summary.UpdatedAt = clock.GetUtcNow();
 
