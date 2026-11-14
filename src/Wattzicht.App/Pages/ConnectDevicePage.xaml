@@ -158,8 +158,35 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <!-- Enphase: de gateway in de meterkast, niet de cloud van Enphase -->
+                    <!-- Enphase: twee wegen, en ze vullen elkaar aan. De gateway in de meterkast
+                         geeft de netkant en het huisverbruik maar alleen terwijl de app openstaat;
+                         de cloud geeft je oude dagen en telt door zonder telefoon. -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsEnphase}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="{t:T koppel.cloud-uitleg}"
+                                   Style="{StaticResource SubtitleLabel}" FontSize="13" />
+                            <HorizontalStackLayout Spacing="10">
+                                <Switch IsToggled="{Binding ViaDeCloud}" />
+                                <Label Text="{t:T koppel.cloud-keuze}" VerticalOptions="Center"
+                                       Style="{StaticResource FieldLabel}" />
+                            </HorizontalStackLayout>
+
+                            <VerticalStackLayout Spacing="10" IsVisible="{Binding ViaDeCloud}">
+                                <Button Text="{t:T koppel.cloud-knop}"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Command="{Binding NaarEnphaseCommand}" />
+                                <Label Text="{Binding CloudMelding}" Style="{StaticResource SubtitleLabel}"
+                                       FontSize="13"
+                                       IsVisible="{Binding CloudMelding, Converter={StaticResource IsNotNullOrEmpty}}" />
+                                <Button Text="{t:T koppel.cloud-klaar}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        IsVisible="{Binding WachtOpEnphase}"
+                                        Command="{Binding ControleerCloudCommand}" />
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding ToonGateway}">
                         <VerticalStackLayout Spacing="12">
                             <Label Text="{t:T koppel.je-telefoon-praat-rechtstreeks-met}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" />

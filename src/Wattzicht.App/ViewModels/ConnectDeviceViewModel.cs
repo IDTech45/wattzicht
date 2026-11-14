@@ -124,6 +124,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(IsAlfen))]
     [NotifyPropertyChangedFor(nameof(IsPeblar))]
     [NotifyPropertyChangedFor(nameof(IsEnphase))]
+    [NotifyPropertyChangedFor(nameof(ToonGateway))]
     [NotifyPropertyChangedFor(nameof(IsHomeWizard))]
     [NotifyPropertyChangedFor(nameof(IsDemo))]
     [NotifyPropertyChangedFor(nameof(BrandName))]
@@ -149,6 +150,76 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     public bool IsAlfen => SelectedBrand?.Brand == DeviceBrand.Alfen;
     public bool IsPeblar => SelectedBrand?.Brand == DeviceBrand.Peblar;
     public bool IsEnphase => SelectedBrand?.Brand == DeviceBrand.Enphase;
+
+    /// <summary>
+    /// Bij Enphase kun je twee kanten op, en ze vullen elkaar aan.
+    ///
+    /// De gateway in de meterkast geeft opwek, huisverbruik en netkant, maar alleen van nu en alleen
+    /// terwijl de app openstaat. De cloud van Enphase geeft de dagen van vóór je koppelde en blijft
+    /// doortellen als je telefoon er niet is. Wie zijn oude cijfers wil, wil die cloud.
+    ///
+    /// Tot nu toe kon dat alleen op de website. Iemand met zijn telefoon in de hand moest dus ergens
+    /// anders inloggen om iets te doen wat hier thuishoort.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ToonGateway))]
+    private bool _viaDeCloud;
+
+    /// <summary>De gateway-velden; die verdwijnen als iemand voor de cloud kiest.</summary>
+    public bool ToonGateway => IsEnphase && !ViaDeCloud;
+
+    /// <summary>Staat er al een adres klaar, dan is de bewoner onderweg naar Enphase.</summary>
+    [ObservableProperty] private bool _wachtOpEnphase;
+
+    [ObservableProperty] private string _cloudMelding = string.Empty;
+
+    /// <summary>
+    /// De bewoner naar Enphase sturen en daarna kijken of het gelukt is.
+    ///
+    /// De koppeling wordt op onze terugkeerpagina afgemaakt, dus hier valt niets op te vangen: we
+    /// openen de browser en kijken daarna of er een apparaat bij is gekomen.
+    /// </summary>
+    [RelayCommand]
+    private async Task NaarEnphaseAsync()
+    {
+        CloudMelding = string.Empty;
+        try
+        {
+            var adres = await _api.EnphaseAdresAsync();
+            WachtOpEnphase = true;
+            await Browser.Default.OpenAsync(adres.Url, BrowserLaunchMode.SystemPreferred);
+            CloudMelding = Taal.T("koppel.cloud-onderweg");
+        }
+        catch (ApiException ex)
+        {
+            CloudMelding = ex.Message;
+            WachtOpEnphase = false;
+        }
+    }
+
+    /// <summary>Terug uit de browser: is de koppeling er?</summary>
+    [RelayCommand]
+    private async Task ControleerCloudAsync()
+    {
+        try
+        {
+            var apparaten = await _api.GetDevicesAsync();
+            var gekoppeld = apparaten.Any(d => d.Brand == DeviceBrand.Enphase
+                && !(d.ExternalId ?? string.Empty).Contains("-lokaal-", StringComparison.OrdinalIgnoreCase));
+
+            if (gekoppeld)
+            {
+                await Shell.Current.GoToAsync("..");
+                return;
+            }
+
+            CloudMelding = Taal.T("koppel.cloud-nog-niet");
+        }
+        catch (ApiException ex)
+        {
+            CloudMelding = ex.Message;
+        }
+    }
 
     /// <summary>Merken die de app zelf uitleest; die moeten adres en inlog op de telefoon bewaren.</summary>
     private bool IsLokaalGelezen => IsHomeWizard || IsSessy || IsAlfen || IsEnphase || IsPeblar;

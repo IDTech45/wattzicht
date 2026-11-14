@@ -13,6 +13,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   ApiError,
   connectDevice,
+  enphaseCallback,
   getEnphaseAuthorizeUrl,
   getMyDevices,
   login as apiLogin,
@@ -287,6 +288,23 @@ async function enphaseAfronden(code: string) {
   }
 }
 
+/** Afronden voor wie in de app begon: geen inlog, wel een kaartje. */
+async function enphaseAfrondenMetKaartje(code: string, kaartje: string) {
+  fout.value = null
+  gelukt.value = null
+  bezig.value = true
+  try {
+    await enphaseCallback(code, kaartje)
+    gelukt.value = 'Enphase is gekoppeld. Je kunt dit venster sluiten en terug naar de app; '
+      + 'je oude cijfers staan er binnen een paar minuten in.'
+  } catch (e) {
+    fout.value = melding(e)
+  } finally {
+    bezig.value = false
+    await router.replace({ path: '/oauth/enphase' })
+  }
+}
+
 function melding(e: unknown): string {
   return e instanceof Error ? e.message : 'Er ging iets mis.'
 }
@@ -304,6 +322,15 @@ onMounted(async () => {
   if (ingelogd.value) await apparatenOphalen()
 
   if (typeof code === 'string' && code) {
+    // Komt er een kaartje mee, dan is dit iemand die in de app is begonnen. Die heeft hier geen
+    // sessie en hoeft die ook niet: het kaartje zegt bij welke woning dit hoort. Zonder die route
+    // zou de app iemand naar een inlogscherm sturen om iets af te maken wat hij in de app begon.
+    const kaartje = route.query.state
+    if (typeof kaartje === 'string' && kaartje) {
+      await enphaseAfrondenMetKaartje(code, kaartje)
+      return
+    }
+
     if (!ingelogd.value) {
       fout.value = 'Log eerst in, dan kun je de koppeling met Enphase afronden.'
       return

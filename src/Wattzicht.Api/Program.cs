@@ -155,6 +155,10 @@ builder.Services.AddHostedService<EnphaseGeschiedenisWorker>();
 builder.Services.AddHttpClient(LaadcashLaaddata.HttpClientName);
 builder.Services.AddScoped<LaadcashLaaddata>();
 builder.Services.AddHostedService<LaadcashLaaddataWorker>();
+
+// De omweg langs Enphase vanuit de app: kaartjes die tien minuten geldig zijn. In het geheugen, want
+// het is een afspraak voor één handeling en geen gegeven dat een herstart hoort te overleven.
+builder.Services.AddSingleton<EnphaseKoppelsessie>();
 builder.Services.AddScoped<InsightsService>();
 builder.Services.AddScoped<AandachtService>();
 

@@ -17,6 +17,15 @@ public static class HouseholdEndpoints
             .WithSummary("Ingelogde gebruiker met huishouden en white-label instellingen.")
             .Produces<MeDto>();
 
+        // De terugkeerpagina van Enphase, zonder inlog. Zie EnphaseKoppelsessie: het kaartje zegt bij
+        // welke woning deze toestemming hoort, en dat is precies genoeg. Een pagina die hier wél een
+        // inlog zou eisen maakt de koppeling vanuit de app onmogelijk, want daar is geen websessie.
+        app.MapPost("/connectors/enphase/callback", EnphaseCallbackAsync)
+            .WithTags("Huishouden")
+            .WithSummary("Maakt de Enphase-koppeling af met de code en het kaartje uit de app.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
         var household = app.MapGroup(string.Empty)
             .RequireAuthorization(AuthPolicies.Resident)
             .WithTags("Huishouden");
@@ -1134,7 +1143,9 @@ public static class HouseholdEndpoints
 
     private static Task<IResult> EnphaseAuthorizeUrlAsync(
         [AsParameters] EnphaseAuthorizeUrlQuery query,
-        EnphaseOptions enphase)
+        EnphaseOptions enphase,
+        EnphaseKoppelsessie sessies,
+        HttpContext http)
     {
         // De sleutel van de bewoner gaat voor. Enphase rekent per developer-app, dus wie er zelf een
         // aanmaakt heeft zijn eigen maandbudget en kan daardoor vaker worden uitgelezen.
@@ -1155,8 +1166,55 @@ public static class HouseholdEndpoints
                 statusCode: StatusCodes.Status400BadRequest));
         }
 
-        return Task.FromResult(Results.Ok(
-            new EnphaseAuthorizeUrlDto(EnphaseAuthorize.Url(clientId, redirectUri), redirectUri)));
+        // Een kaartje voor deze woning erbij. De website heeft het niet nodig (daar is de bewoner al
+        // ingelogd), maar de app wel: die kan niet wachten op een webadres, dus moet de terugkeerpagina
+        // zonder inlog kunnen zien bij wie deze toestemming hoort.
+        var kaartje = sessies.Maak(http.User.GetHouseholdId()!.Value, redirectUri, query.ClientId);
+
+        return Task.FromResult(Results.Ok(new EnphaseAuthorizeUrlDto(
+            EnphaseAuthorize.Url(clientId, redirectUri) + "&state=" + Uri.EscapeDataString(kaartje),
+            redirectUri,
+            kaartje)));
+    }
+
+    /// <summary>
+    /// De toestemming van Enphase afmaken voor de woning die bij het kaartje hoort.
+    ///
+    /// Dit is dezelfde koppeling als op de website, alleen zonder inlog: het kaartje is tien minuten
+    /// geldig, hoort bij één woning en vervalt zodra het gebruikt is. Zo kan de app de bewoner naar
+    /// Enphase sturen en de koppeling afmaken zonder dat hij ergens anders moet inloggen.
+    ///
+    /// Een kaartje dat niet klopt krijgt dezelfde nietszeggende fout als een code die niet klopt: wie
+    /// hier zit te proberen hoort niet te weten welke van de twee het was.
+    /// </summary>
+    private static async Task<IResult> EnphaseCallbackAsync(
+        EnphaseCallbackRequest request,
+        EnphaseKoppelsessie sessies,
+        AppDbContext db,
+        ConnectorRegistry registry,
+        CredentialProtector protector,
+        SubscriptionWriter subscriptions,
+        TimeProvider clock,
+        ILoggerFactory loggerFactory,
+        CancellationToken ct)
+    {
+        if (sessies.Verzilver(request.State) is not { } sessie || string.IsNullOrWhiteSpace(request.Code))
+        {
+            return Results.Problem(
+                title: "Deze koppelpoging is verlopen. Probeer het opnieuw vanuit de app.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var inlog = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["code"] = request.Code.Trim(),
+            ["redirect_uri"] = sessie.RedirectUri,
+        };
+        if (!string.IsNullOrWhiteSpace(sessie.ClientId)) inlog["client_id"] = sessie.ClientId!;
+
+        return await KoppelAsync(
+            new ConnectDeviceRequest(DeviceBrand.Enphase, DeviceType.Inverter, inlog),
+            sessie.Woning, db, registry, protector, subscriptions, clock, loggerFactory, ct);
     }
 
     private static async Task<IResult> ConnectDeviceAsync(
@@ -1168,9 +1226,28 @@ public static class HouseholdEndpoints
         SubscriptionWriter subscriptions,
         TimeProvider clock,
         ILoggerFactory loggerFactory,
+        CancellationToken ct) =>
+        await KoppelAsync(request, http.User.GetHouseholdId()!.Value, db, registry, protector,
+            subscriptions, clock, loggerFactory, ct);
+
+    /// <summary>
+    /// Het koppelen zelf, los van de vraag wie het vraagt.
+    ///
+    /// Twee wegen komen hier uit: de ingelogde bewoner op de website of in de app, en de
+    /// terugkeerpagina van Enphase met een kaartje. Dat laatste heeft geen websessie, dus de woning
+    /// komt hier als gegeven binnen en niet uit de inlog.
+    /// </summary>
+    private static async Task<IResult> KoppelAsync(
+        ConnectDeviceRequest request,
+        Guid householdId,
+        AppDbContext db,
+        ConnectorRegistry registry,
+        CredentialProtector protector,
+        SubscriptionWriter subscriptions,
+        TimeProvider clock,
+        ILoggerFactory loggerFactory,
         CancellationToken ct)
     {
-        var householdId = http.User.GetHouseholdId()!.Value;
         var logger = loggerFactory.CreateLogger("Devices");
 
         var connector = registry.Get(request.Brand);

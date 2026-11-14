@@ -405,6 +405,19 @@ export function connectDevice(body: {
   })
 }
 
+/**
+ * De Enphase-koppeling afmaken met het kaartje uit de app.
+ *
+ * Zonder inlog, want wie vanuit de app begint heeft hier geen sessie. Het kaartje zegt bij welke
+ * woning deze toestemming hoort, is tien minuten geldig en vervalt zodra het gebruikt is.
+ */
+export function enphaseCallback(code: string, state: string): Promise<void> {
+  return request<void>('/connectors/enphase/callback', {
+    method: 'POST',
+    body: JSON.stringify({ code, state }),
+  })
+}
+
 /** De apparaten van het eigen huishouden. */
 export function getMyDevices(): Promise<DeviceSummary[]> {
   return request<DeviceSummary[]>('/devices')

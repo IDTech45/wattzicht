@@ -652,7 +652,15 @@ public sealed record InstallerAccessDto(bool Granted, DateTimeOffset? ChangedAt,
 /// <summary>Waar de bewoner naartoe moet om Enphase toestemming te geven.</summary>
 /// <param name="Url">De toestemmingspagina van Enphase, met onze client-id en het terugkeeradres erin.</param>
 /// <param name="RedirectUri">Het terugkeeradres dat erin zit; exact dit moet straks mee bij het koppelen.</param>
-public sealed record EnphaseAuthorizeUrlDto(string Url, string RedirectUri);
+/// <param name="State">Het kaartje dat bij deze woning hoort; komt ongewijzigd terug van Enphase en
+/// maakt het mogelijk om de koppeling af te maken zonder dat er iemand op de website inlogt. Leeg bij
+/// de oude route vanaf de website, waar de bewoner al is ingelogd.</param>
+public sealed record EnphaseAuthorizeUrlDto(string Url, string RedirectUri, string? State = null);
+
+/// <summary>De toestemming van Enphase afmaken met het kaartje uit de app.</summary>
+/// <param name="Code">De code die Enphase meegaf op de terugkeerpagina.</param>
+/// <param name="State">Het kaartje waarmee wij weten bij welke woning dit hoort.</param>
+public sealed record EnphaseCallbackRequest(string Code, string State);
 
 /// <summary>Vraag om de Enphase-toestemmingspagina.</summary>
 /// <param name="RedirectUri">Gewenst terugkeeradres; leeg = het eerste adres van onze lijst.</param>

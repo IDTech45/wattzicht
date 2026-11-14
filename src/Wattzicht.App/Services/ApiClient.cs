@@ -85,6 +85,16 @@ public sealed class ApiClient
     public Task<IReadOnlyList<DeviceDto>> GetDevicesAsync(CancellationToken ct = default) =>
         GetAsync<IReadOnlyList<DeviceDto>>("/devices", ct);
 
+    /// <summary>
+    /// Het adres waar de bewoner bij Enphase toestemming geeft, met het kaartje van deze woning erin.
+    ///
+    /// Enphase keert alleen terug op een webadres, dus de app kan die toestemming niet zelf opvangen.
+    /// Het kaartje lost dat op: onze terugkeerpagina ziet daaraan bij welke woning het hoort en maakt
+    /// de koppeling af, zonder dat er iemand op de website hoeft in te loggen.
+    /// </summary>
+    public Task<EnphaseAuthorizeUrlDto> EnphaseAdresAsync(CancellationToken ct = default) =>
+        GetAsync<EnphaseAuthorizeUrlDto>("/connectors/enphase/authorize-url", ct);
+
     public Task<IReadOnlyList<DeviceDto>> ConnectDeviceAsync(ConnectDeviceRequest request, CancellationToken ct = default) =>
         PostAsync<ConnectDeviceRequest, IReadOnlyList<DeviceDto>>("/devices", request, authenticated: true, ct);
 
