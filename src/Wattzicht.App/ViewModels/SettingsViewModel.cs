@@ -531,6 +531,16 @@ public partial class SettingsViewModel : BaseViewModel
     [ObservableProperty] private string? _installerLogo;
     [ObservableProperty] private bool _hasInstallerLogo;
 
+    /// <summary>
+    /// Hangt er een installateur aan deze woning?
+    ///
+    /// Sinds iedereen zich zelf kan aanmelden is dat vaak niet zo: de server geeft dan 404 op
+    /// /installer. De hele kaart bleef toch staan, met "Jouw installateur" boven een leeg veld, een
+    /// schakelaar om iemand te laten meekijken die er niet is, en een knop die een offerte vroeg
+    /// "bij " met niets erachter. Nu blijft het blok weg tot er een installateur is.
+    /// </summary>
+    [ObservableProperty] private bool _heeftInstallateur;
+
     /// <summary>Mag de installateur meekijken? Wijzigen slaat direct op.</summary>
     [ObservableProperty] private bool _installerAccess;
     [ObservableProperty] private string? _lastViewedText;
@@ -588,7 +598,7 @@ public partial class SettingsViewModel : BaseViewModel
         {
             await _api.VerwijderHuishoudenAsync();
             await _auth.LogoutAsync();
-            await Shell.Current.GoToAsync("//login");
+            await Shell.Current.GoToAsync(AppShell.Routes.Login);
         });
     }
 
@@ -665,8 +675,13 @@ public partial class SettingsViewModel : BaseViewModel
                 HasQuoteUrl = Uri.TryCreate(Installer.QuoteUrl, UriKind.Absolute, out _);
                 InstallerLogo = Installer.LogoDataUrl;
                 HasInstallerLogo = !string.IsNullOrWhiteSpace(Installer.LogoDataUrl);
+                HeeftInstallateur = true;
             }
-            catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
+            catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // Geen installateur aan deze woning. Geen fout, wel een reden om het blok weg te laten.
+                HeeftInstallateur = false;
+            }
 
             try
             {
@@ -702,6 +717,14 @@ public partial class SettingsViewModel : BaseViewModel
     partial void OnNotifySurplusChanged(bool value) => SaveNotifySettings();
     partial void OnNotifyMonthlyChanged(bool value) => SaveNotifySettings();
 
+    /// <summary>
+    /// Een schakelaar omzetten slaat meteen op.
+    ///
+    /// Dit is een async void, want hij hangt aan een property-wijziging. Alles wat hier omhoog komt
+    /// vangt niemand meer op, dus staat er ook een vangnet voor fouten die geen ApiException zijn:
+    /// het aanmelden voor meldingen loopt langs het toestel, en dat kan op zijn eigen manier
+    /// weigeren.
+    /// </summary>
     private async void SaveNotifySettings()
     {
         if (_syncingNotify) return;
@@ -715,6 +738,10 @@ public partial class SettingsViewModel : BaseViewModel
         catch (ApiException ex)
         {
             ErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            ErrorMessage = Taal.T("algemeen.er-ging-iets-mis");
         }
     }
 

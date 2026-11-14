@@ -43,8 +43,12 @@
                 <VerticalStackLayout Spacing="8">
                     <Label Text="{t:T meer.taal}" Style="{StaticResource CardTitle}" />
                     <Border Style="{StaticResource InputBorder}">
+                        <!-- x:DataType in de binding zelf: een ItemDisplayBinding kijkt naar een
+                             regel uit de lijst en niet naar de viewmodel, dus moet het type daar
+                             staan. Zonder dat wordt deze binding niet gecompileerd en zou "Naam"
+                             pas op een toestel leeg blijken. -->
                         <Picker ItemsSource="{Binding Talen}"
-                                ItemDisplayBinding="{Binding Naam}"
+                                ItemDisplayBinding="{Binding Naam, x:DataType=t:TaalKeuze}"
                                 SelectedItem="{Binding GekozenTaal}" />
                     </Border>
                     <Label Text="{t:T meer.taal-uitleg}" Style="{StaticResource StatCaption}" />
@@ -211,9 +215,12 @@
                 </VerticalStackLayout>
             </Border>
 
-            <!-- ===== Installateur ===== -->
-            <Label Text="{t:T meer.je-installateur}" Style="{StaticResource SectionTitle}" />
-            <Border Style="{StaticResource Card}">
+            <!-- ===== Installateur =====
+                 Alleen als er een is. Wie zich zelf heeft aangemeld heeft geen installateur, en dan
+                 stond hier een kaart met een lege naam en een schakelaar voor iemand die er niet is. -->
+            <Label Text="{t:T meer.je-installateur}" Style="{StaticResource SectionTitle}"
+                   IsVisible="{Binding HeeftInstallateur}" />
+            <Border Style="{StaticResource Card}" IsVisible="{Binding HeeftInstallateur}">
                 <VerticalStackLayout Spacing="12">
                     <Grid ColumnDefinitions="*" ColumnSpacing="12">
                         <!--
@@ -238,7 +245,7 @@
                             <Label Text="{Binding LastViewedText}" Style="{StaticResource StatCaption}" />
                         </VerticalStackLayout>
                         <Switch Grid.Column="1" IsToggled="{Binding InstallerAccess}" VerticalOptions="Center"
-                                SemanticProperties.Description="Installateur mag meekijken" />
+                                SemanticProperties.Description="{t:T schermlezer.installateur-meekijken}" />
                     </Grid>
 
                     <BoxView Style="{StaticResource DividerLine}" />
@@ -258,7 +265,7 @@
                             <Label Text="{t:T meer.als-een-apparaat-geen-data}" Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>
                         <Switch Grid.Column="1" IsToggled="{Binding NotifyAlerts}" VerticalOptions="Center"
-                                SemanticProperties.Description="Melding bij een storing" />
+                                SemanticProperties.Description="{t:T schermlezer.melding-storing}" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
                         <VerticalStackLayout Spacing="2" VerticalOptions="Center">
@@ -266,7 +273,7 @@
                             <Label Text="{t:T meer.tip-om-je-stroom-zelf}" Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>
                         <Switch Grid.Column="1" IsToggled="{Binding NotifySurplus}" VerticalOptions="Center"
-                                SemanticProperties.Description="Melding bij veel terugleveren" />
+                                SemanticProperties.Description="{t:T schermlezer.melding-teruglevering}" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
                         <VerticalStackLayout Spacing="2" VerticalOptions="Center">
@@ -274,7 +281,7 @@
                             <Label Text="{t:T meer.maandbericht-uitleg}" Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>
                         <Switch Grid.Column="1" IsToggled="{Binding NotifyMonthly}" VerticalOptions="Center"
-                                SemanticProperties.Description="Maandbericht" />
+                                SemanticProperties.Description="{t:T schermlezer.maandbericht}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
