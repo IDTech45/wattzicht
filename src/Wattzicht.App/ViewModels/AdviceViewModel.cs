@@ -102,12 +102,12 @@ public partial class AdviceViewModel : BaseViewModel
             var plan = await _api.GetChargePlanAsync(kwh, klaar.ToUniversalTime());
 
             PlanSlots.Clear();
-            foreach (var slot in plan.Slots)
+            foreach (var slot in plan.Slots ?? [])
             {
                 PlanSlots.Add(new ChargeSlotRow(slot));
             }
 
-            PlanSummary = plan.Explanation;
+            PlanSummary = plan.Explanation ?? string.Empty;
             PlanHasSaving = plan.SavingEur > 0;
             PlanSavingText = string.Format(Taal.T("advies.goedkoper-dan-nu-beginnen"),
                 "€ " + plan.SavingEur.ToString("0.00", Nl));
@@ -119,9 +119,21 @@ public partial class AdviceViewModel : BaseViewModel
                 PlanHasError = true;
             }
         }
-        catch (ApiException ex) when (!ex.IsUnauthorized)
+        catch (ApiException ex)
         {
+            // Zonder "when" en met een vangnet erachter.
+            //
+            // De filter liet 401 er doorheen, en dan is er niemand meer die hem opvangt: een
+            // commando dat een Task teruggeeft gooit de fout op de hoofddraad en de app sluit.
+            // Precies wat er gebeurt als iemand na een week de app opent, op Sturen blijft staan en
+            // op Bereken drukt. Nu loopt een verlopen sessie langs de gewone uitlog.
             PlanError = ex.Message;
+            PlanHasError = true;
+            if (ex.IsUnauthorized) await _auth.LogoutAsync();
+        }
+        catch (Exception)
+        {
+            PlanError = Taal.T("algemeen.er-ging-iets-mis");
             PlanHasError = true;
         }
         finally
@@ -134,7 +146,12 @@ public partial class AdviceViewModel : BaseViewModel
 
     public ObservableCollection<AdviceTipRow> Tips { get; } = [];
 
-    [ObservableProperty] private string _totalText = "€ 0,00";
+    /// <summary>
+    /// Beginwaarde een streepje: tot het antwoord van de server binnen is weten we niet wat er te
+    /// verschuiven valt, en "+€ 0,00" leest als die uitkomst. Zelfde afspraak als op de andere
+    /// schermen.
+    /// </summary>
+    [ObservableProperty] private string _totalText = "–";
     [ObservableProperty] private string _subtitle = string.Empty;
     [ObservableProperty] private string _cheapestText = string.Empty;
     [ObservableProperty] private string _expensiveText = string.Empty;
@@ -213,6 +230,7 @@ public partial class AdviceViewModel : BaseViewModel
     [RelayCommand]
     private Task NuLadenAsync() => StuurAsync(start: true);
 
+
     [RelayCommand]
     private Task PauzerenAsync() => StuurAsync(start: false);
 
@@ -232,6 +250,10 @@ public partial class AdviceViewModel : BaseViewModel
         {
             // De paal zegt zelf waarom het niet lukte; dat is bruikbaarder dan "mislukt".
             StuurResultaat = ex.Message;
+        }
+        catch (Exception)
+        {
+            StuurResultaat = Taal.T("algemeen.er-ging-iets-mis");
         }
         finally
         {
@@ -277,7 +299,7 @@ public partial class AdviceViewModel : BaseViewModel
         }
 
         Tips.Clear();
-        foreach (var tip in advice.Tips)
+        foreach (var tip in advice.Tips ?? [])
             Tips.Add(new AdviceTipRow(tip));
         HasTips = Tips.Count > 0;
     }

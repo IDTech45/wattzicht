@@ -582,13 +582,13 @@ public partial class SettingsViewModel : BaseViewModel
     [RelayCommand]
     private async Task AccountVerwijderenAsync()
     {
-        var zeker = await Shell.Current.DisplayAlert(
+        var zeker = await ConfirmAsync(
             Taal.T("meer.account-verwijderen"),
             Taal.T("meer.verwijderen-waarschuwing"),
             Taal.T("algemeen.verder"), Taal.T("algemeen.annuleren"));
         if (!zeker) return;
 
-        var echt = await Shell.Current.DisplayAlert(
+        var echt = await ConfirmAsync(
             Taal.T("meer.zeker-weten"),
             Taal.T("meer.verwijderen-definitief"),
             Taal.T("meer.ja-verwijder-alles"), Taal.T("meer.nee-laat-staan"));
@@ -624,7 +624,18 @@ public partial class SettingsViewModel : BaseViewModel
         // Eerst vastleggen dat hij geklikt heeft, dan pas openen. Andersom is de app weg voordat het
         // verzoek de deur uit is, en dan weten we niet wat er werkt.
         try { await _api.LaadcashActieAsync("tile", "clicked"); } catch (Exception) { }
-        await Launcher.Default.OpenAsync(link);
+
+        try
+        {
+            await Launcher.Default.OpenAsync(link);
+        }
+        catch (Exception)
+        {
+            // Geen app of browser die deze link aankan. Dat is niets om te melden en al helemaal
+            // geen reden om de app te sluiten, en dat laatste gebeurde: dit commando geeft een Task
+            // terug en er stond niets om de fout heen.
+            await ShowAlertAsync(Taal.T("meer.openen-lukt-niet"), Taal.T("meer.offertepagina-niet-geopend"));
+        }
     }
 
     public async Task LaadcashLadenAsync()

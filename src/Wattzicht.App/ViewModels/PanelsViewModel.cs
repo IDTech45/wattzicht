@@ -80,9 +80,10 @@ public partial class PanelsViewModel(ApiClient api, AuthService auth) : BaseView
             // De beste van dit moment is de maat op het scherm: daar wordt elke balk aan afgemeten.
             // Zo zie je in een oogopslag wie meeloopt en wie niet, ook als de hele rij halve kracht
             // draait omdat het bewolkt is.
-            var beste = uit.Panelen.Count == 0 ? 0 : uit.Panelen.Max(p => p.Watt);
+            var lijst = uit.Panelen ?? [];
+            var beste = lijst.Count == 0 ? 0 : lijst.Max(p => p.Watt);
 
-            foreach (var p in uit.Panelen)
+            foreach (var p in lijst)
             {
                 Panelen.Add(new PaneelItem(p, beste));
             }
@@ -114,12 +115,13 @@ public partial class PanelsViewModel(ApiClient api, AuthService auth) : BaseView
     /// </summary>
     private static string Oordelen(PanelenDto uit)
     {
-        if (uit.Panelen.Count == 0) return string.Empty;
+        var lijst = uit.Panelen ?? [];
+        if (lijst.Count == 0) return string.Empty;
         if (uit.TotaalWatt < Panelen_MinimumTotaal) return Taal.T("panelen.te-donker");
 
         if (uit.Achterblijvers == 0) return Taal.T("panelen.alles-gelijk");
 
-        var achter = uit.Panelen.Where(p => p.BlijftAchter).ToList();
+        var achter = lijst.Where(p => p.BlijftAchter).ToList();
         return achter.Count == 1
             ? string.Format(Taal.T("panelen.achterblijver"), achter[0].Nummer)
             : string.Format(Taal.T("panelen.achterblijvers"), achter.Count);

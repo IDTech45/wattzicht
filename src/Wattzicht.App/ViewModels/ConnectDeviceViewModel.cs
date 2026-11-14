@@ -255,10 +255,23 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         }
     }
 
-    /// <summary>De pagina van Enphase waar je zelf een token aanmaakt.</summary>
+    /// <summary>
+    /// De pagina van Enphase waar je zelf een token aanmaakt.
+    ///
+    /// In een try, want zonder browser gooit dit, en dan sluit de app zich midden in het koppelen.
+    /// Het adres staat op het scherm, dus wie wil kan het overtypen; een melding hoeft niet.
+    /// </summary>
     [RelayCommand]
-    private Task OpenEntrezAsync() =>
-        Launcher.Default.OpenAsync("https://entrez.enphaseenergy.com");
+    private async Task OpenEntrezAsync()
+    {
+        try
+        {
+            await Launcher.Default.OpenAsync("https://entrez.enphaseenergy.com");
+        }
+        catch (Exception)
+        {
+        }
+    }
 
     [RelayCommand]
     private void SelectBrand(BrandOption option)

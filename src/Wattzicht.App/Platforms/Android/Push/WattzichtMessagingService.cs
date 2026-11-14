@@ -22,7 +22,26 @@ public sealed class WattzichtMessagingService : FirebaseMessagingService
         PushService.RaiseTokenRefreshed(token);
     }
 
+    /// <summary>
+    /// Een binnengekomen melding tonen.
+    ///
+    /// Alles in een try: dit loopt in een achtergronddienst van Android, en wat hier omhoog komt
+    /// neemt het hele proces mee. Een melding met een veld dat we niet verwachten is dan niet een
+    /// melding die wegblijft maar een app die zich sluit terwijl de bewoner er niet eens naar keek.
+    /// </summary>
     public override void OnMessageReceived(RemoteMessage message)
+    {
+        try
+        {
+            Toon(message);
+        }
+        catch (Exception)
+        {
+            // Een melding die niet gebracht kan worden is het verlies van die ene melding.
+        }
+    }
+
+    private void Toon(RemoteMessage message)
     {
         base.OnMessageReceived(message);
 
