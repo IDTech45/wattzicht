@@ -11,6 +11,9 @@ public static class SchemaUpgrades
 {
     private static readonly string[] Steps =
     [
+        // 2026-11: wanneer de geschiedenis bij de fabrikant is opgehaald.
+        """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "PvHistorieOpgehaaldAt" timestamp with time zone NULL""",
+
         // 2026-11: de dagopbrengst zoals het apparaat hem zelf meldt.
         """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "PvTodayDate" date NULL""",
         """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "PvTodayWh" double precision NULL""",

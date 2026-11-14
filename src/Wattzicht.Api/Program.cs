@@ -146,6 +146,10 @@ builder.Services.AddHostedService<OpruimWorker>();
 
 // Eenmalig na het starten: dagen die op nul bleven staan invullen uit de tellerstanden.
 builder.Services.AddHostedService<OpwekHerstelWorker>();
+
+// En wat daarvoor ligt bij de fabrikant ophalen: wie al een jaar panelen heeft, hoort geen lege
+// grafiek te zien omdat hij pas vorige week koppelde.
+builder.Services.AddHostedService<EnphaseGeschiedenisWorker>();
 builder.Services.AddScoped<InsightsService>();
 builder.Services.AddScoped<AandachtService>();
 

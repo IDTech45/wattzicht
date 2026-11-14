@@ -379,6 +379,66 @@ public sealed class EnphaseConnector(
             PvTodayWh: vandaagWh is >= 0 ? vandaagWh : null);
     }
 
+    /// <summary>
+    /// De dagopbrengst van alle dagen sinds een datum, zoals Enphase die zelf bijhoudt.
+    ///
+    /// Waarom dit bestaat: wij bouwden de geschiedenis op uit onze eigen metingen, en die beginnen
+    /// pas op het moment dat iemand koppelt. Wie daarvoor al een jaar zonnepanelen had, zag een
+    /// lege grafiek. Enphase heeft dat jaar gewoon liggen en geeft het in een aanroep terug, dus is
+    /// er geen reden om de bewoner met een leeg scherm te laten zitten.
+    ///
+    /// Eén aanroep voor de hele reeks: dat telt, want het developer-plan heeft een maandquotum.
+    /// </summary>
+    public async Task<IReadOnlyList<(DateOnly Dag, double Kwh)>> DagelijkseOpwekAsync(
+        Device device, DeviceCredentials credentials, DateOnly vanaf, CancellationToken ct)
+    {
+        var refreshToken = credentials.Get("refresh_token");
+        if (string.IsNullOrWhiteSpace(refreshToken)) return [];
+
+        var sleutels = Sleutels(credentials);
+        var systemId = credentials.Get("system_id") ?? device.ExternalId;
+        if (string.IsNullOrWhiteSpace(systemId)) return [];
+
+        var tokens = await VernieuwAsync(refreshToken, sleutels, ct);
+        credentials.Set("refresh_token", tokens.RefreshToken);
+
+        var client = Client(tokens.AccessToken);
+        using var doc = await GetAsync(client,
+            $"/api/v4/systems/{Uri.EscapeDataString(systemId)}/energy_lifetime"
+            + $"?key={Uri.EscapeDataString(sleutels.Key)}"
+            + $"&start_date={vanaf:yyyy-MM-dd}",
+            sleutels.Id, ct);
+
+        var root = doc.RootElement;
+        if (!root.TryGetPropertyIgnoreCase("production", out var reeks) || reeks.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        // Enphase begint de reeks op de dag die wij vroegen, tenzij het systeem later aan ging; dan
+        // staat de echte startdatum in het antwoord. Die volgen we, anders schuift de hele
+        // geschiedenis een paar dagen op en klopt geen enkele dag meer.
+        var start = root.GetStringOrNull("start_date", "startDate") is { } sd
+                    && DateOnly.TryParse(sd, out var gelezen)
+            ? gelezen
+            : vanaf;
+
+        var uit = new List<(DateOnly, double)>();
+        var i = 0;
+
+        foreach (var waarde in reeks.EnumerateArray())
+        {
+            if (waarde.ValueKind == JsonValueKind.Number && waarde.TryGetDouble(out var wh) && wh > 0)
+            {
+                uit.Add((start.AddDays(i), Math.Round(wh / 1000d, 3)));
+            }
+
+            i++;
+        }
+
+        return uit;
+    }
+
     // -----------------------------------------------------------------------
     // OAuth
     // -----------------------------------------------------------------------

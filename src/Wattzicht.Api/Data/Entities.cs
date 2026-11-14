@@ -268,6 +268,15 @@ public sealed class Device
     /// Het beste antwoord komt van het apparaat: die weet wanneer zijn dag begon. Zelf rekenen met
     /// tellerstanden werkt ook, maar valt om zodra een teller van bron wisselt of wordt teruggezet.
     /// </summary>
+    /// <summary>
+    /// Wanneer we de geschiedenis van dit apparaat bij de fabrikant hebben opgehaald.
+    ///
+    /// Een keer is genoeg: de dagen daarna vullen zich uit wat het apparaat dagelijks meldt. Zonder
+    /// dit zou elke herstart de hele geschiedenis opnieuw opvragen, en daar is het maandquotum van
+    /// Enphase te klein voor.
+    /// </summary>
+    public DateTimeOffset? PvHistorieOpgehaaldAt { get; set; }
+
     public DateOnly? PvTodayDate { get; set; }
 
     public double? PvTodayWh { get; set; }
