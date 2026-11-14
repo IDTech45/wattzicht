@@ -6,79 +6,95 @@
              x:Class="Wattzicht.App.Views.EnergyFlowView"
              x:Name="Root">
 
-    <!-- Vier stroomkaarten in een 2x2 raster; laadpaal als smalle rij eronder (alleen als aanwezig). -->
-    <Grid RowDefinitions="Auto,Auto,Auto"
-          ColumnDefinitions="*,*"
-          RowSpacing="12"
-          ColumnSpacing="12"
-          BindingContext="{x:Reference Root}">
+    <!--
+        Eerst de tekening, daaronder de kaarten met de getallen.
 
-        <!-- Zon -->
-        <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}"
-                BackgroundColor="{AppThemeBinding Light={StaticResource EnergySolarSoft}, Dark={StaticResource EnergySolarSoftDark}}"
-                Stroke="{StaticResource EnergySolar}">
-            <VerticalStackLayout Spacing="4">
-                <Label Text="{Binding PvTitle}" Style="{StaticResource StatCaption}" />
-                <Label Text="{Binding PvKwText}" Style="{StaticResource StatValue}"
-                       TextColor="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource WarningTextDark}}" />
-                <Label Text="{Binding PvHint}" Style="{StaticResource StatCaption}" />
-            </VerticalStackLayout>
-        </Border>
+        De tekening laat zien waar de stroom heen gaat; dat is wat je in een oogopslag wil zien en wat
+        met vier losse getallen niet lukt. De kaarten blijven staan omdat ze iets anders vertellen dan
+        de tekening kan: wat de panelen vandaag al gemaakt hebben, het piekvermogen van het dak, de
+        laadtoestand van de batterij als balkje, en de richting in woorden in plaats van als pijl.
+        Het vermogen van nu staat daardoor twee keer op het scherm. Dat is bewust: het plaatje wordt
+        gescand, de kaart wordt gelezen.
+    -->
+    <VerticalStackLayout Spacing="12" BindingContext="{x:Reference Root}">
 
-        <!-- Huis -->
-        <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
-            <VerticalStackLayout Spacing="4">
-                <Label Text="{t:T stroom.huis}" Style="{StaticResource StatCaption}" />
-                <Label Text="{Binding LoadKwText}" Style="{StaticResource StatValue}" />
-                <Label Text="{Binding LoadHint}" Style="{StaticResource StatCaption}" />
-            </VerticalStackLayout>
-        </Border>
+        <GraphicsView x:Name="Stroom"
+                      Drawable="{Binding Tekening}"
+                      HeightRequest="{Binding TekeningHoogte}"
+                      SemanticProperties.Description="{Binding TekeningBeschrijving}" />
 
-        <!-- Batterij. Alleen als er een batterij is; anders schuift het net hieronder naar links. -->
-        <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}"
-                IsVisible="{Binding HasBattery}"
-                BackgroundColor="{AppThemeBinding Light={StaticResource EnergyBatterySoft}, Dark={StaticResource EnergyBatterySoftDark}}"
-                Stroke="{StaticResource EnergyBattery}">
-            <VerticalStackLayout Spacing="4">
-                <Grid ColumnDefinitions="*,Auto">
-                    <Label Text="{t:T stroom.batterij}" Style="{StaticResource StatCaption}" />
-                    <Label Grid.Column="1" Text="{Binding SocText}" Style="{StaticResource StatCaption}" FontAttributes="Bold" />
-                </Grid>
-                <Label Text="{Binding BatteryKwText}" Style="{StaticResource StatValue}"
-                       TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
-                <Label Text="{Binding BatteryHint}" Style="{StaticResource StatCaption}" />
-                <ProgressBar Progress="{Binding SocFraction}"
-                             ProgressColor="{StaticResource EnergyBattery}"
-                             HeightRequest="6"
-                             Margin="0,4,0,0" />
-            </VerticalStackLayout>
-        </Border>
+        <Grid RowDefinitions="Auto,Auto,Auto"
+              ColumnDefinitions="*,*"
+              RowSpacing="12"
+              ColumnSpacing="12">
 
-        <!-- Net -->
-        <Border Grid.Row="1" Grid.Column="{Binding NetColumn}" Grid.ColumnSpan="{Binding NetColumnSpan}"
-                Style="{StaticResource Card}"
-                BackgroundColor="{Binding GridCardBackground}"
-                Stroke="{Binding GridAccent}">
-            <VerticalStackLayout Spacing="4">
-                <Label Text="{t:T stroom.net}" Style="{StaticResource StatCaption}" />
-                <Label Text="{Binding GridKwText}" Style="{StaticResource StatValue}" TextColor="{Binding GridAccent}" />
-                <Label Text="{Binding GridHint}" Style="{StaticResource StatCaption}" />
-            </VerticalStackLayout>
-        </Border>
-
-        <!-- Laadpaal -->
-        <Border Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource Card}"
-                IsVisible="{Binding HasCharger}"
-                BackgroundColor="{AppThemeBinding Light={StaticResource EnergyChargerSoft}, Dark={StaticResource EnergyChargerSoftDark}}"
-                Stroke="{StaticResource EnergyCharger}">
-            <Grid ColumnDefinitions="*,Auto">
-                <VerticalStackLayout Spacing="2">
-                    <Label Text="{t:T stroom.laadpaal}" Style="{StaticResource StatCaption}" />
-                    <Label Text="{Binding ChargerHint}" Style="{StaticResource StatCaption}" />
+            <!-- Zon -->
+            <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource EnergySolarSoft}, Dark={StaticResource EnergySolarSoftDark}}"
+                    Stroke="{StaticResource EnergySolar}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{Binding PvTitle}" Style="{StaticResource StatCaption}" />
+                    <Label Text="{Binding PvKwText}" Style="{StaticResource StatValue}"
+                           TextColor="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource WarningTextDark}}" />
+                    <Label Text="{Binding PvHint}" Style="{StaticResource StatCaption}" />
                 </VerticalStackLayout>
-                <Label Grid.Column="1" Text="{Binding ChargerKwText}" Style="{StaticResource StatValue}" VerticalOptions="Center"
-                       TextColor="{AppThemeBinding Light={StaticResource PendingText}, Dark={StaticResource PendingTextDark}}" />
-            </Grid>
-        </Border>
-    </Grid>
+            </Border>
+
+            <!-- Huis -->
+            <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{t:T stroom.huis}" Style="{StaticResource StatCaption}" />
+                    <Label Text="{Binding LoadKwText}" Style="{StaticResource StatValue}" />
+                    <Label Text="{Binding LoadHint}" Style="{StaticResource StatCaption}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Batterij. Alleen als er een batterij is; anders schuift het net hieronder naar links. -->
+            <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}"
+                    IsVisible="{Binding HasBattery}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource EnergyBatterySoft}, Dark={StaticResource EnergyBatterySoftDark}}"
+                    Stroke="{StaticResource EnergyBattery}">
+                <VerticalStackLayout Spacing="4">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="{t:T stroom.batterij}" Style="{StaticResource StatCaption}" />
+                        <Label Grid.Column="1" Text="{Binding SocText}" Style="{StaticResource StatCaption}" FontAttributes="Bold" />
+                    </Grid>
+                    <Label Text="{Binding BatteryKwText}" Style="{StaticResource StatValue}"
+                           TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
+                    <Label Text="{Binding BatteryHint}" Style="{StaticResource StatCaption}" />
+                    <ProgressBar Progress="{Binding SocFraction}"
+                                 ProgressColor="{StaticResource EnergyBattery}"
+                                 HeightRequest="6"
+                                 Margin="0,4,0,0" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Net -->
+            <Border Grid.Row="1" Grid.Column="{Binding NetColumn}" Grid.ColumnSpan="{Binding NetColumnSpan}"
+                    Style="{StaticResource Card}"
+                    BackgroundColor="{Binding GridCardBackground}"
+                    Stroke="{Binding GridAccent}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{t:T stroom.net}" Style="{StaticResource StatCaption}" />
+                    <Label Text="{Binding GridKwText}" Style="{StaticResource StatValue}" TextColor="{Binding GridAccent}" />
+                    <Label Text="{Binding GridHint}" Style="{StaticResource StatCaption}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Laadpaal -->
+            <Border Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource Card}"
+                    IsVisible="{Binding HasCharger}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource EnergyChargerSoft}, Dark={StaticResource EnergyChargerSoftDark}}"
+                    Stroke="{StaticResource EnergyCharger}">
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="{t:T stroom.laadpaal}" Style="{StaticResource StatCaption}" />
+                        <Label Text="{Binding ChargerHint}" Style="{StaticResource StatCaption}" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="1" Text="{Binding ChargerKwText}" Style="{StaticResource StatValue}" VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource PendingText}, Dark={StaticResource PendingTextDark}}" />
+                </Grid>
+            </Border>
+        </Grid>
+    </VerticalStackLayout>
 </ContentView>

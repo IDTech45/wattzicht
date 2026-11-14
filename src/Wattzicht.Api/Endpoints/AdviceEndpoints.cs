@@ -23,6 +23,13 @@ public static class AdviceEndpoints
             .Produces<DayTipDto>()
             .Produces(StatusCodes.Status204NoContent);
 
+        app.MapGet("/weather", WeerAsync)
+            .RequireAuthorization(AuthPolicies.Resident)
+            .WithTags("Slim sturen")
+            .WithSummary("Het weer van vandaag en morgen, en het zonnige blok van morgen.")
+            .Produces<WeerDto>()
+            .Produces(StatusCodes.Status204NoContent);
+
         app.MapGet("/feed-in", FeedInAsync)
             .RequireAuthorization(AuthPolicies.Resident)
             .WithTags("Slim sturen")
@@ -68,6 +75,108 @@ public static class AdviceEndpoints
 
         var tip = DagTip.Bouw(input, today, AdviceEngine.Build(input));
         return tip is null ? Results.NoContent() : Results.Ok(tip);
+    }
+
+    /// <summary>
+    /// Het weer van vandaag en morgen voor het beginscherm.
+    ///
+    /// Geeft 204 als we de plaats van deze woning niet kennen of de weerdienst niets geeft. Dat is
+    /// met opzet geen leeg object met nullen erin: dan zou de app "0 graden en bewolkt" tonen, en dat
+    /// is een bewering en geen gebrek aan gegevens.
+    /// </summary>
+    private static async Task<IResult> WeerAsync(
+        HttpContext http,
+        AppDbContext db,
+        IWeatherProvider weather,
+        InsightsService insights,
+        IConfiguration configuration,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var woning = await db.Households.FirstOrDefaultAsync(h => h.Id == householdId, ct);
+        if (woning is null)
+        {
+            return Results.NoContent();
+        }
+
+        await ZorgVoorLocatieAsync(woning, db, weather, ct);
+        if (woning is not { Latitude: { } lat, Longitude: { } lon })
+        {
+            return Results.NoContent();
+        }
+
+        var dagen = await weather.DailyForecastAsync(lat, lon, ct);
+        if (dagen.Count == 0)
+        {
+            return Results.NoContent();
+        }
+
+        var vandaag = DutchTime.LocalDate(clock.GetUtcNow());
+        var dagVandaag = dagen.FirstOrDefault(d => d.Datum == vandaag);
+        if (dagVandaag is null)
+        {
+            return Results.NoContent();
+        }
+
+        // Het piekvermogen van dit dak, langs dezelfde ladder als het advies: wat de bewoner opgaf,
+        // anders onze schatting uit zijn eigen metingen, en als laatste een gemiddeld dak. Zonder
+        // opgave en zonder schatting blijft het getal weg; dan is het niet van dit dak.
+        var piek = woning.PvPeakKw ?? await insights.GeschatPiekvermogenAsync(householdId, vandaag, ct);
+        var uren = await weather.HourlyForecastAsync(lat, lon, ct);
+
+        var dagMorgen = dagen.FirstOrDefault(d => d.Datum == vandaag.AddDays(1));
+        var blok = piek is { } kwp ? ZonnigBlok.VoorDag(uren, vandaag.AddDays(1), kwp) : null;
+
+        return Results.Ok(new WeerDto(
+            NaarDto(dagVandaag, uren, piek),
+            dagMorgen is null ? null : NaarDto(dagMorgen, uren, piek),
+            blok));
+    }
+
+    /// <summary>Eén dag naar de app, met de verwachte opbrengst van dit dak erbij als we die kennen.</summary>
+    private static DagWeerDto NaarDto(DagWeer dag, IReadOnlyList<HourlyIrradiance> uren, double? pvPiekKw)
+    {
+        double? kwh = null;
+        if (pvPiekKw is { } kwp)
+        {
+            var straling = uren
+                .Where(u => DutchTime.LocalDate(u.StartUtc) == dag.Datum)
+                .Sum(u => u.WattPerM2 / 1000.0 * kwp);
+            kwh = Math.Round(straling, 1);
+        }
+
+        return new DagWeerDto(dag.Datum, dag.Soort, dag.TempMaxC, dag.TempMinC, dag.ZonUren, kwh);
+    }
+
+    /// <summary>
+    /// De plaats opzoeken als we alleen een postcode of stadsnaam hebben.
+    ///
+    /// Gebeurt hier en niet alleen in de nachtelijke weertaak, want anders vult iemand zijn postcode
+    /// in en staat er een dag lang dat er geen verwachting is.
+    /// </summary>
+    private static async Task ZorgVoorLocatieAsync(
+        Household woning, AppDbContext db, IWeatherProvider weather, CancellationToken ct)
+    {
+        if (woning.Latitude is not null || (woning.City is null && woning.PostalCode is null))
+        {
+            return;
+        }
+
+        var zoekterm = !string.IsNullOrWhiteSpace(woning.City) ? woning.City : woning.PostalCode;
+        try
+        {
+            if (await weather.GeocodeAsync(zoekterm!, ct) is { } gevonden)
+            {
+                woning.Latitude = gevonden.Lat;
+                woning.Longitude = gevonden.Lon;
+                await db.SaveChangesAsync(ct);
+            }
+        }
+        catch (Exception)
+        {
+            // De weerdienst is niet van ons; dan deze ronde zonder verwachting.
+        }
     }
 
     /// <summary>
@@ -117,22 +226,9 @@ public static class AdviceEndpoints
         // Staat de plaats er wel maar de coordinaten nog niet, dan zoeken we ze hier op in plaats van
         // te wachten op de nachtelijke weertaak. Anders vult iemand zijn postcode in en blijft er bij
         // "wanneer laad ik mijn auto" een dag lang staan dat er geen zonverwachting is.
-        if (woning is { Latitude: null } && (woning.City is not null || woning.PostalCode is not null))
+        if (woning is not null)
         {
-            var zoekterm = !string.IsNullOrWhiteSpace(woning.City) ? woning.City : woning.PostalCode;
-            try
-            {
-                if (await weather.GeocodeAsync(zoekterm!, ct) is { } gevonden)
-                {
-                    woning.Latitude = gevonden.Lat;
-                    woning.Longitude = gevonden.Lon;
-                    await db.SaveChangesAsync(ct);
-                }
-            }
-            catch (Exception)
-            {
-                // De weerdienst is niet van ons; dan deze ronde zonder verwachting.
-            }
+            await ZorgVoorLocatieAsync(woning, db, weather, ct);
         }
 
         var forecast = woning is { Latitude: { } lat, Longitude: { } lon }

@@ -128,11 +128,81 @@
                             </Border.GestureRecognizers>
                         </Border>
 
+                        <!--
+                            Het weer. Staat boven de energiecijfers en niet onderaan: alles op dit
+                            scherm gaat over zon, en zonder het weer ernaast kan niemand zien of een
+                            matige dag aan de panelen lag of aan de bewolking. Geen plaats bij de
+                            woning betekent geen verwachting, en dan blijft de kaart weg.
+                        -->
+                        <Border Style="{StaticResource Card}" IsVisible="{Binding HeeftWeer}">
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                    <Grid Grid.Column="0" ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <GraphicsView x:Name="WeerVandaagView" Grid.Column="0"
+                                                      Drawable="{Binding WeerVandaagIcoon}"
+                                                      WidthRequest="36" HeightRequest="36"
+                                                      VerticalOptions="Center" />
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="{t:T weer.vandaag}" Style="{StaticResource StatCaption}" />
+                                            <Label Text="{Binding WeerVandaagTemp}" Style="{StaticResource CardTitle}" />
+                                            <Label Text="{Binding WeerVandaagTekst}" Style="{StaticResource StatCaption}" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                    <Grid Grid.Column="1" ColumnDefinitions="Auto,*" ColumnSpacing="10"
+                                          IsVisible="{Binding HeeftWeerMorgen}">
+                                        <GraphicsView x:Name="WeerMorgenView" Grid.Column="0"
+                                                      Drawable="{Binding WeerMorgenIcoon}"
+                                                      WidthRequest="36" HeightRequest="36"
+                                                      VerticalOptions="Center" />
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="{t:T weer.morgen}" Style="{StaticResource StatCaption}" />
+                                            <Label Text="{Binding WeerMorgenTemp}" Style="{StaticResource CardTitle}" />
+                                            <Label Text="{Binding WeerMorgenTekst}" Style="{StaticResource StatCaption}" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Grid>
+                                <Label Text="{Binding WeerVandaagExtra}" Style="{StaticResource StatCaption}" />
+                                <Label Text="{Binding ZonMorgenTekst}" Style="{StaticResource SubtitleLabel}"
+                                       FontSize="14" IsVisible="{Binding HeeftZonMorgen}" />
+                            </VerticalStackLayout>
+                        </Border>
+
                         <!-- Energiestroom -->
                         <Label Text="{t:T home.energiestroom-nu}" Style="{StaticResource SectionTitle}" />
                         <views:EnergyFlowView Snapshot="{Binding Live}"
                                               PvTodayKwh="{Binding PvTodayKwh}"
                                               PvPeakKw="{Binding PvPeakKw}" />
+
+                        <!--
+                            Meten we het huis en het net niet, dan staat er bij die twee "Niet
+                            gemeten" en legt deze kaart uit waarom. Zonder deze kaart is "Niet
+                            gemeten" een mededeling zonder uitweg.
+                        -->
+                        <Border Style="{StaticResource Card}" IsVisible="{Binding ToonNietGemeten}">
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="{t:T meten.titel}" Style="{StaticResource CardTitle}" />
+                                <Label Text="{t:T meten.uitleg}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                                <Button Text="{t:T meten.knop}" Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding ConnectDeviceCommand}" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!--
+                            De uitnodiging. Staat hier en niet bovenaan: precies op de plek waar de
+                            tegel zou staan die er niet is. Eén kaart voor beide apparaten, en hij
+                            verdwijnt zodra ze er zijn.
+                        -->
+                        <Border Style="{StaticResource Card}" IsVisible="{Binding ToonKoppelUitnodiging}">
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="{t:T koppelen.meer-titel}" Style="{StaticResource CardTitle}" />
+                                <Label Text="{t:T koppelen.batterij-regel}" Style="{StaticResource SubtitleLabel}"
+                                       FontSize="14" IsVisible="{Binding MistBatterij}" />
+                                <Label Text="{t:T koppelen.laadpaal-regel}" Style="{StaticResource SubtitleLabel}"
+                                       FontSize="14" IsVisible="{Binding MistLaadpaal}" />
+                                <Button Text="{t:T koppelen.meer-knop}" Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding ConnectDeviceCommand}" />
+                            </VerticalStackLayout>
+                        </Border>
 
                         <!-- Stat-tiles -->
                         <Label Text="{t:T home.vandaag}" Style="{StaticResource SectionTitle}" />

@@ -657,5 +657,35 @@ public static class TekstenNl
         ["panelen.meer-uitleg"] = "Met je eigen Enphase-sleutel kunnen we vaker uitlezen en straks per paneel laten zien wat het die dag opleverde.",
         ["panelen.meer-knop"] = "Hoe werkt dat?",
 
+        // ---- het weer op het beginscherm ----
+        ["weer.vandaag"] = "Vandaag",
+        ["weer.morgen"] = "Morgen",
+        ["weer.zonnig"] = "Zonnig",
+        ["weer.halfbewolkt"] = "Half bewolkt",
+        ["weer.bewolkt"] = "Bewolkt",
+        ["weer.mist"] = "Mist",
+        ["weer.regen"] = "Regen",
+        ["weer.sneeuw"] = "Sneeuw",
+        ["weer.onweer"] = "Onweer",
+        ["weer.zonuren"] = "{0} uur zon",
+        ["weer.verwacht"] = "verwacht {0} kWh",
+        ["weer.zon-morgen"] = "Morgen zon tussen {0} en {1}. Zet je auto dan aan de lader.",
+
+        // ---- wat we niet meten ----
+        ["meten.titel"] = "Je huis en het net meten we niet",
+        ["meten.uitleg"] = "We zien wat je panelen maken. Wat je huis verbruikt en wat er naar het net gaat weten we niet, want daar zit geen meter tussen.",
+        ["meten.knop"] = "P1-meter koppelen",
+        ["stroom.niet-gemeten"] = "Niet gemeten",
+
+        // ---- uitnodiging om er meer bij te koppelen ----
+        ["koppelen.meer-titel"] = "Er kan meer in beeld",
+        ["koppelen.batterij-regel"] = "Koppel je thuisbatterij en je ziet wat erin gaat en wat eruit komt.",
+        ["koppelen.laadpaal-regel"] = "Koppel je laadpaal en je ziet hoeveel van je auto van je eigen dak komt.",
+        ["koppelen.meer-knop"] = "Apparaat koppelen",
+
+        // ---- melding de avond ervoor ----
+        ["push.morgen-zon-titel"] = "Morgen is het zonnig",
+        ["push.morgen-zon-tekst"] = "Morgen zon tussen {0} en {1}. Zet je auto dan aan de lader.",
+
     }.ToFrozenDictionary();
 }

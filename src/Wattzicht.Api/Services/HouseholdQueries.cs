@@ -38,7 +38,45 @@ public sealed class HouseholdQueries(AppDbContext db, TimeProvider clock, Connec
     public async Task<LiveSnapshotDto> LiveAsync(Guid householdId, CancellationToken ct) =>
         SnapshotBuilder.Build(
             await LatestReadingsAsync(householdId, ct),
-            await DeviceTypesAsync(householdId, ct));
+            await DeviceTypesAsync(householdId, ct),
+            await MeetBereikAsync(householdId, ct));
+
+    /// <summary>
+    /// Wat we van deze woning echt meten: huisverbruik, netkant, of geen van beide.
+    ///
+    /// Veel woningen hebben alleen een omvormer. Die vertelt wat de panelen maken en verder niets,
+    /// dus staan het verbruik en de netkant op nul. Op het beginscherm leest dat als een huis waar
+    /// niemand thuis is en een net waar niets over gaat, en dat is geen meting maar een leeg veld.
+    ///
+    /// Daarom kijken we naar de metingen van de afgelopen week in plaats van naar de laatste: nul op
+    /// dit moment hoort erbij (een huis in balans), nul over een hele week niet. Zijn er helemaal
+    /// geen metingen, dan beweren we niets; dat is een verse koppeling en geen ontbrekende meter.
+    /// </summary>
+    public async Task<SnapshotBuilder.MeetBereik> MeetBereikAsync(Guid householdId, CancellationToken ct)
+    {
+        var sinds = clock.GetUtcNow() - MeetVenster;
+
+        var apparaten = await db.Devices
+            .Where(d => d.HouseholdId == householdId)
+            .Select(d => d.Id)
+            .ToListAsync(ct);
+
+        var metingen = db.Readings.Where(r => apparaten.Contains(r.DeviceId) && r.Timestamp >= sinds);
+
+        // Drie keer "bestaat er een rij": dat is een EXISTS op de index die er al ligt, en het stopt
+        // bij de eerste treffer. Een optelling over een week metingen zou hier niets extra opleveren.
+        if (!await metingen.AnyAsync(ct))
+        {
+            return SnapshotBuilder.MeetBereik.Onbekend;
+        }
+
+        return new SnapshotBuilder.MeetBereik(
+            await metingen.AnyAsync(r => r.LoadPowerW != 0, ct),
+            await metingen.AnyAsync(r => r.GridPowerW != 0, ct));
+    }
+
+    /// <summary>Hoe ver we terugkijken om te zien of er een meter hangt.</summary>
+    private static readonly TimeSpan MeetVenster = TimeSpan.FromDays(7);
 
     /// <summary>Dagsamenvattingen in een bereik (inclusief), oplopend op datum.</summary>
     public async Task<List<DailySummaryDto>> SummariesAsync(Guid householdId, DateOnly from, DateOnly to, CancellationToken ct)

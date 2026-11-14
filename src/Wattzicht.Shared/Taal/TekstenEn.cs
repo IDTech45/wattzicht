@@ -649,5 +649,35 @@ public static class TekstenEn
         ["panelen.meer-uitleg"] = "With your own Enphase key we can read more often and later show what each panel produced that day.",
         ["panelen.meer-knop"] = "How does that work?",
 
+        // ---- het weer op het beginscherm ----
+        ["weer.vandaag"] = "Today",
+        ["weer.morgen"] = "Tomorrow",
+        ["weer.zonnig"] = "Sunny",
+        ["weer.halfbewolkt"] = "Partly cloudy",
+        ["weer.bewolkt"] = "Cloudy",
+        ["weer.mist"] = "Fog",
+        ["weer.regen"] = "Rain",
+        ["weer.sneeuw"] = "Snow",
+        ["weer.onweer"] = "Thunderstorm",
+        ["weer.zonuren"] = "{0} hours of sun",
+        ["weer.verwacht"] = "{0} kWh expected",
+        ["weer.zon-morgen"] = "Sun tomorrow between {0} and {1}. Plug your car in then.",
+
+        // ---- wat we niet meten ----
+        ["meten.titel"] = "We do not measure your house or the grid",
+        ["meten.uitleg"] = "We can see what your panels produce. What your house uses and what goes to the grid we do not know, because there is no meter for it.",
+        ["meten.knop"] = "Connect a P1 meter",
+        ["stroom.niet-gemeten"] = "Not measured",
+
+        // ---- uitnodiging om er meer bij te koppelen ----
+        ["koppelen.meer-titel"] = "There is more to see",
+        ["koppelen.batterij-regel"] = "Connect your home battery and you will see what goes in and what comes out.",
+        ["koppelen.laadpaal-regel"] = "Connect your charger and you will see how much of your car came from your own roof.",
+        ["koppelen.meer-knop"] = "Connect a device",
+
+        // ---- melding de avond ervoor ----
+        ["push.morgen-zon-titel"] = "Tomorrow will be sunny",
+        ["push.morgen-zon-tekst"] = "Sun tomorrow between {0} and {1}. Plug your car in then.",
+
     }.ToFrozenDictionary();
 }

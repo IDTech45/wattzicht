@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Wattzicht.App.Drawables;
 using Wattzicht.App.Pages;
 using Wattzicht.App.Services;
 using Wattzicht.Shared;
@@ -41,6 +42,49 @@ public partial class DashboardViewModel : BaseViewModel
     [ObservableProperty] private bool _hasSurplus;
     [ObservableProperty] private string _surplusText = string.Empty;
 
+    // ---- Het weer ----
+    // Waarom dit op het beginscherm staat: alle cijfers in deze app gaan over zon, en zonder het
+    // weer ernaast kan niemand zien of een matige dag aan de panelen lag of aan de bewolking.
+    [ObservableProperty] private bool _heeftWeer;
+    [ObservableProperty] private string _weerVandaagTekst = string.Empty;
+    [ObservableProperty] private string _weerVandaagTemp = string.Empty;
+    [ObservableProperty] private string _weerVandaagExtra = string.Empty;
+    [ObservableProperty] private bool _heeftWeerMorgen;
+    [ObservableProperty] private string _weerMorgenTekst = string.Empty;
+    [ObservableProperty] private string _weerMorgenTemp = string.Empty;
+    [ObservableProperty] private bool _heeftZonMorgen;
+    [ObservableProperty] private string _zonMorgenTekst = string.Empty;
+
+    /// <summary>De twee weericoontjes; zie <see cref="WeerIcoonDrawable"/>.</summary>
+    public WeerIcoonDrawable WeerVandaagIcoon { get; } = new();
+    public WeerIcoonDrawable WeerMorgenIcoon { get; } = new();
+
+    /// <summary>Gaat omhoog zodra er nieuw weer in staat, zodat de pagina de icoontjes opnieuw tekent.</summary>
+    [ObservableProperty] private int _weerVersie;
+
+    // ---- Wat we niet meten ----
+    /// <summary>
+    /// Komt er van het huis en het net niets binnen, dan staat dat er eerlijk bij.
+    ///
+    /// Veel woningen hebben alleen een omvormer: geen CT-klemmen, geen P1-meter. Dan stond er op dit
+    /// scherm overal 0,0 kW, alsof het huis niets gebruikte en er niets naar het net ging. Dat is
+    /// geen meting maar een leeg veld, en het is het soort stilzwijgen waar iemand verkeerde
+    /// conclusies uit trekt.
+    /// </summary>
+    [ObservableProperty] private bool _toonNietGemeten;
+
+    // ---- Uitnodiging om meer te koppelen ----
+    /// <summary>
+    /// Eén rustige kaart onder de energiestroom: je kunt er een batterij of een laadpaal bij hangen.
+    ///
+    /// De tegels verbergen zichzelf al als het apparaat er niet is, en daarmee verdween ook het idee
+    /// dat het kán. Dit is de uitnodiging, en hij verdwijnt zodra het apparaat er staat.
+    /// </summary>
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(ToonKoppelUitnodiging))] private bool _mistBatterij;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(ToonKoppelUitnodiging))] private bool _mistLaadpaal;
+
+    public bool ToonKoppelUitnodiging => MistBatterij || MistLaadpaal;
+
     partial void OnLiveChanged(LiveSnapshotDto? value)
     {
         var fresh = value?.UpdatedAt is { } at && DateTimeOffset.UtcNow - at <= TimeSpan.FromMinutes(15);
@@ -50,6 +94,12 @@ public partial class DashboardViewModel : BaseViewModel
             ? string.Format(Taal.T("home.je-levert-nu-terug"),
                 (exportW / 1000).ToString("0.0", CultureInfo.GetCultureInfo("nl-NL")))
             : string.Empty;
+
+        // Pas iets beweren als er een momentopname is. Zonder meting weten we niet of er een
+        // batterij hangt en al helemaal niet of er een meter in de kast zit.
+        MistBatterij = value is { HasBattery: false };
+        MistLaadpaal = value is { HasCharger: false };
+        ToonNietGemeten = value is { HasLoadData: false, HasGridData: false };
     }
 
     [RelayCommand]
@@ -155,6 +205,8 @@ public partial class DashboardViewModel : BaseViewModel
                 HasDayTip = tip is not null;
                 DayTipHeadline = tip?.Headline ?? string.Empty;
                 DayTipBody = tip?.Body ?? string.Empty;
+
+                ZetWeer(await _api.WeerAsync());
             }
 
             // Twee dingen waar de app zonder niet goed werkt, en die je nergens vanzelf tegenkomt:
@@ -212,6 +264,62 @@ public partial class DashboardViewModel : BaseViewModel
     /// <summary>Naar het scherm waar die twee dingen staan.</summary>
     [RelayCommand]
     private Task AfmakenAsync() => Shell.Current.GoToAsync("//settings");
+
+    /// <summary>
+    /// Het weer in het scherm zetten.
+    ///
+    /// Geen weer is geen fout: zonder plaats bij de woning is er geen verwachting, en dan blijft de
+    /// kaart weg. Een weerkaart die nul graden en bewolkt zegt omdat er niets binnenkwam is erger
+    /// dan geen weerkaart, want die eerste lijkt een meting.
+    /// </summary>
+    private void ZetWeer(WeerDto? weer)
+    {
+        HeeftWeer = weer is not null;
+        if (weer is null)
+        {
+            HeeftWeerMorgen = false;
+            HeeftZonMorgen = false;
+            return;
+        }
+
+        WeerVandaagIcoon.Soort = weer.Vandaag.Soort;
+        WeerVandaagTekst = SoortTekst(weer.Vandaag.Soort);
+        WeerVandaagTemp = Temperatuur(weer.Vandaag);
+        WeerVandaagExtra = weer.Vandaag.VerwachtKwh is { } kwh
+            ? string.Format(Taal.T("weer.verwacht"), kwh.ToString("0.#", Nl))
+            : string.Format(Taal.T("weer.zonuren"), weer.Vandaag.ZonUren.ToString("0.#", Nl));
+
+        HeeftWeerMorgen = weer.Morgen is not null;
+        if (weer.Morgen is { } morgen)
+        {
+            WeerMorgenIcoon.Soort = morgen.Soort;
+            WeerMorgenTekst = SoortTekst(morgen.Soort);
+            WeerMorgenTemp = Temperatuur(morgen);
+        }
+
+        HeeftZonMorgen = weer.ZonVanMorgen is not null;
+        ZonMorgenTekst = weer.ZonVanMorgen is { } blok
+            ? string.Format(Taal.T("weer.zon-morgen"),
+                blok.VanUur.ToString("00") + ":00", blok.TotUur.ToString("00") + ":00")
+            : string.Empty;
+
+        WeerVersie++;
+    }
+
+    /// <summary>Hoogste en laagste temperatuur van een dag, als één regel.</summary>
+    private static string Temperatuur(DagWeerDto dag) =>
+        $"{dag.TempMaxC.ToString("0", Nl)}° / {dag.TempMinC.ToString("0", Nl)}°";
+
+    private static string SoortTekst(WeerSoort soort) => soort switch
+    {
+        WeerSoort.Zonnig => Taal.T("weer.zonnig"),
+        WeerSoort.HalfBewolkt => Taal.T("weer.halfbewolkt"),
+        WeerSoort.Mist => Taal.T("weer.mist"),
+        WeerSoort.Regen => Taal.T("weer.regen"),
+        WeerSoort.Sneeuw => Taal.T("weer.sneeuw"),
+        WeerSoort.Onweer => Taal.T("weer.onweer"),
+        _ => Taal.T("weer.bewolkt"),
+    };
 
     private void Apply(DashboardDto dashboard)
     {

@@ -152,6 +152,25 @@ public sealed class ApiClient
     }
 
     /// <summary>
+    /// Het weer van vandaag en morgen voor het beginscherm.
+    ///
+    /// Geeft null als de server 204 stuurt: dan kennen we de plaats van de woning niet, of de
+    /// weerdienst gaf niets. De kaart blijft dan weg. Een weerkaart met nul graden en bewolkt is
+    /// erger dan geen weerkaart.
+    /// </summary>
+    public async Task<WeerDto?> WeerAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            return await GetAsync<WeerDto?>("/weather", ct);
+        }
+        catch (ApiException ex) when (!ex.IsUnauthorized)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Wanneer de auto laden het voordeligst is. De planner weegt de uurprijs tegen de zon die op het
     /// eigen dak wordt verwacht; een kilowattuur van je eigen panelen kost alleen de
     /// terugleververgoeding die je misloopt.

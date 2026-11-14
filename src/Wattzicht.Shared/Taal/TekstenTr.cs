@@ -654,5 +654,35 @@ public static class TekstenTr
         ["panelen.meer-uitleg"] = "Kendi Enphase anahtarınızla daha sık okuyabilir ve ileride her panelin o gün ne ürettiğini gösterebiliriz.",
         ["panelen.meer-knop"] = "Bu nasıl çalışır?",
 
+        // ---- het weer op het beginscherm ----
+        ["weer.vandaag"] = "Bugün",
+        ["weer.morgen"] = "Yarın",
+        ["weer.zonnig"] = "Güneşli",
+        ["weer.halfbewolkt"] = "Parçalı bulutlu",
+        ["weer.bewolkt"] = "Bulutlu",
+        ["weer.mist"] = "Sis",
+        ["weer.regen"] = "Yağmur",
+        ["weer.sneeuw"] = "Kar",
+        ["weer.onweer"] = "Gök gürültülü fırtına",
+        ["weer.zonuren"] = "{0} saat güneş",
+        ["weer.verwacht"] = "beklenen {0} kWh",
+        ["weer.zon-morgen"] = "Yarın {0} ile {1} arasında güneş var. Arabanızı o saatte şarja takın.",
+
+        // ---- wat we niet meten ----
+        ["meten.titel"] = "Evinizi ve şebekeyi ölçmüyoruz",
+        ["meten.uitleg"] = "Panellerinizin ne ürettiğini görüyoruz. Evinizin ne kullandığını ve şebekeye ne gittiğini bilmiyoruz, çünkü bunun için bir sayaç yok.",
+        ["meten.knop"] = "P1 sayacı bağla",
+        ["stroom.niet-gemeten"] = "Ölçülmüyor",
+
+        // ---- uitnodiging om er meer bij te koppelen ----
+        ["koppelen.meer-titel"] = "Görülecek daha çok şey var",
+        ["koppelen.batterij-regel"] = "Ev bataryanızı bağlayın, içine ne girdiğini ve ne çıktığını görün.",
+        ["koppelen.laadpaal-regel"] = "Şarj istasyonunuzu bağlayın, arabanızın ne kadarının kendi çatınızdan geldiğini görün.",
+        ["koppelen.meer-knop"] = "Cihaz bağla",
+
+        // ---- melding de avond ervoor ----
+        ["push.morgen-zon-titel"] = "Yarın güneşli olacak",
+        ["push.morgen-zon-tekst"] = "Yarın {0} ile {1} arasında güneş var. Arabanızı o saatte şarja takın.",
+
     }.ToFrozenDictionary();
 }

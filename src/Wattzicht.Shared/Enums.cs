@@ -91,6 +91,30 @@ public enum OpportunityKind
     DynamicContract = 3
 }
 
+/// <summary>
+/// Hoe een dag eruitziet, zoals de app hem met een icoon toont.
+///
+/// Dit komt uit de WMO-code van Open-Meteo, die honderd waarden kent waarvan wij er zeven kunnen
+/// tekenen. De omzetting staat in de weerprovider: hier staat alleen wat de app kan laten zien, want
+/// een achtste soort betekent een achtste icoon en dat is werk in de app, niet op de server.
+/// </summary>
+public enum WeerSoort
+{
+    /// <summary>Onbewolkt tot vrijwel onbewolkt.</summary>
+    Zonnig = 0,
+
+    /// <summary>Half bewolkt; zon en wolken wisselen elkaar af.</summary>
+    HalfBewolkt = 1,
+
+    /// <summary>Dicht bewolkt.</summary>
+    Bewolkt = 2,
+
+    Mist = 3,
+    Regen = 4,
+    Sneeuw = 5,
+    Onweer = 6
+}
+
 /// <summary>Soort slim-sturen-tip.</summary>
 public enum AdviceTipKind
 {

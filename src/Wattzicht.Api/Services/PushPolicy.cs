@@ -1,5 +1,5 @@
 using Wattzicht.Api.Data;
-
+using Wattzicht.Shared;
 using Wattzicht.Shared.Taal;
 
 namespace Wattzicht.Api.Services;
@@ -128,6 +128,64 @@ public static class PushPolicy
         }
 
         return (titel, body);
+    }
+
+    /// <summary>Het uur (lokaal) waarop de melding over morgen uitgaat.</summary>
+    public const int ZonMorgenUur = 20;
+
+    /// <summary>
+    /// Zoveel tijd moet er tussen een laadmoment-melding en de melding over morgen zitten.
+    ///
+    /// Die twee kunnen op dezelfde avond vallen, en dan staan er twee berichten over laden onder
+    /// elkaar die het ook nog oneens zijn: het ene zegt "zet hem er nu in, de stroom is goedkoop",
+    /// het andere "wacht tot morgenmiddag". Dan is zwijgen beter dan kiezen.
+    /// </summary>
+    public static readonly TimeSpan ZonMorgenRust = TimeSpan.FromHours(3);
+
+    /// <summary>
+    /// Mag de melding over morgen nu uit?
+    ///
+    /// Eén keer per dag, en alleen in het uur van acht. Eerder weet je niet of de verwachting voor
+    /// morgen nog verschuift, later ligt de helft van de mensen in bed en is het geen avond meer.
+    /// </summary>
+    public static bool MaySendZonMorgen(Household household, DateTimeOffset now)
+    {
+        if (!household.NotifyZonMorgen)
+        {
+            return false;
+        }
+
+        if (DutchTime.LocalHour(now) != ZonMorgenUur)
+        {
+            return false;
+        }
+
+        if (household.LastSmartMomentPushAt is { } laadmoment && now - laadmoment < ZonMorgenRust)
+        {
+            return false;
+        }
+
+        // Op de dag zelf vergelijken en niet op een tussenpoos: twee keer in hetzelfde uur van acht
+        // op twee opeenvolgende avonden mag, twee keer op één avond niet.
+        return household.LastZonMorgenPushAt is not { } last
+               || DutchTime.LocalDate(last) < DutchTime.LocalDate(now);
+    }
+
+    /// <summary>
+    /// De melding over morgen.
+    ///
+    /// Eerst wanneer, dan wat je ermee doet. De tijden staan als heel uur in de tekst omdat de
+    /// verwachting niet nauwkeuriger is dan dat; "tussen 11:12 en 14:48" zou een precisie suggereren
+    /// die er niet is.
+    /// </summary>
+    public static (string Title, string Body) ZonMorgenMessage(ZonBlokDto blok, string? taal = null)
+    {
+        var titel = T(taal, "push.morgen-zon-titel");
+        var tekst = T(taal, "push.morgen-zon-tekst",
+            blok.VanUur.ToString("00") + ":00",
+            blok.TotUur.ToString("00") + ":00");
+
+        return (titel, tekst);
     }
 
     public static bool MaySendAlert(Household household, DateTimeOffset now) =>

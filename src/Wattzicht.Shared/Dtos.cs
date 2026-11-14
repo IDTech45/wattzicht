@@ -282,6 +282,12 @@ public sealed record PanelenDto(
 /// <param name="UpdatedAt">Tijdstip van de meest recente meting (UTC).</param>
 /// <param name="HasBattery">Of deze woning een thuisbatterij heeft.</param>
 /// <param name="HasCharger">Of deze woning een laadpaal heeft.</param>
+/// <param name="HasLoadData">
+/// Of we het verbruik van het huis echt meten. Zonder CT-klemmen of P1-meter weten we alleen wat de
+/// panelen maken; <c>LoadPowerW</c> is dan altijd nul en dat is geen meting maar een leeg veld.
+/// Staat dit op <c>false</c>, dan hoort de app te zeggen dat we het niet weten in plaats van 0,0 kW.
+/// </param>
+/// <param name="HasGridData">Hetzelfde voor de netkant: afname en teruglevering.</param>
 public sealed record LiveSnapshotDto(
     double PvPowerW,
     double LoadPowerW,
@@ -291,7 +297,9 @@ public sealed record LiveSnapshotDto(
     double ChargerPowerW,
     DateTimeOffset? UpdatedAt,
     bool HasBattery = false,
-    bool HasCharger = false)
+    bool HasCharger = false,
+    bool HasLoadData = true,
+    bool HasGridData = true)
 {
     /// <summary>Alias van <see cref="UpdatedAt"/> voor het portal (leest <c>timestamp</c>).</summary>
     public DateTimeOffset? Timestamp => UpdatedAt;
@@ -1054,3 +1062,45 @@ public sealed record LaadcashPromoDto(
     string? DeepLink,
     bool Linked,
     decimal? EarnedThisYearEur);
+
+// ---------------------------------------------------------------------------
+// Het weer
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// Het weer van één dag, zoals het beginscherm het laat zien.
+/// </summary>
+/// <param name="Datum">De dag zelf, in Nederlandse tijd.</param>
+/// <param name="Soort">Wat voor dag het is; bepaalt het icoon in de app.</param>
+/// <param name="TempMaxC">Hoogste temperatuur in graden Celsius.</param>
+/// <param name="TempMinC">Laagste temperatuur in graden Celsius.</param>
+/// <param name="ZonUren">Uren zon die dag, zoals de weerdienst ze verwacht.</param>
+/// <param name="VerwachtKwh">
+/// Wat de panelen van dit dak die dag naar verwachting maken. Null als we het piekvermogen niet
+/// weten; dan is er geen getal te geven en hoort er ook geen te staan.
+/// </param>
+public sealed record DagWeerDto(
+    DateOnly Datum,
+    WeerSoort Soort,
+    double TempMaxC,
+    double TempMinC,
+    double ZonUren,
+    double? VerwachtKwh);
+
+/// <summary>
+/// Vandaag en morgen (GET /weather). Geeft 204 als we de plaats van de woning niet kennen: zonder
+/// plaats is er geen verwachting, en een landelijk gemiddelde is geen verwachting voor dit dak.
+/// </summary>
+/// <param name="Vandaag">Het weer van vandaag.</param>
+/// <param name="Morgen">Het weer van morgen; null als de verwachting niet zo ver reikt.</param>
+/// <param name="ZonVanMorgen">Het zonnige blok van morgen, als er een duidelijk blok is.</param>
+public sealed record WeerDto(
+    DagWeerDto Vandaag,
+    DagWeerDto? Morgen,
+    ZonBlokDto? ZonVanMorgen);
+
+/// <summary>Een aaneengesloten blok uren waarin de zon doorzet.</summary>
+/// <param name="VanUur">Beginuur in Nederlandse tijd (0–23).</param>
+/// <param name="TotUur">Einduur in Nederlandse tijd; het blok loopt tot het begin van dit uur.</param>
+/// <param name="VerwachtKwh">Wat de panelen in dat blok naar verwachting maken.</param>
+public sealed record ZonBlokDto(int VanUur, int TotUur, double VerwachtKwh);

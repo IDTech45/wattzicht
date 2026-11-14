@@ -126,6 +126,8 @@ builder.Services.AddSingleton<IWeatherProvider, OpenMeteoWeatherProvider>();
 builder.Services.AddHostedService<WeatherWorker>();
 // Brengt het laadadvies naar de bewoner in plaats van andersom; zie SmartMomentWorker.
 builder.Services.AddHostedService<SmartMomentWorker>();
+// De avond ervoor: morgen is het zonnig, zet je auto dan aan de lader. Zie ZonMorgenWorker.
+builder.Services.AddHostedService<ZonMorgenWorker>();
 // Waarschuwt als de panelen minder leveren dan het weer toeliet; zie PrestatieWorker.
 builder.Services.AddHostedService<PrestatieWorker>();
 // Eén bericht per maand met wat die maand heeft gedaan; zie MaandberichtWorker.

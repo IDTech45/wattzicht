@@ -171,6 +171,22 @@ public sealed class Household
     /// <summary>Laatste laadmoment-melding; hoogstens één per dag, zie PushPolicy.</summary>
     public DateTimeOffset? LastSmartMomentPushAt { get; set; }
 
+    /// <summary>
+    /// De melding van de avond ervoor: morgen is er een zonnig blok, zet je auto dan aan de lader.
+    ///
+    /// Apart van <see cref="NotifySmartMoment"/> omdat het een ander soort bericht is. Dat ene komt
+    /// vlak voordat het moment begint en gaat over vannacht; dit komt een dag eerder en gaat over
+    /// morgenmiddag. Wie alleen 's avonds thuis is heeft aan het eerste niets en aan het tweede wel,
+    /// want hij kan de stekker er nu al in doen.
+    /// </summary>
+    public bool NotifyZonMorgen { get; set; } = true;
+
+    /// <summary>
+    /// Wanneer die melding voor het laatst uitging. Hoogstens één per dag, en zie
+    /// <see cref="Services.PushPolicy.MaySendZonMorgen"/> voor de rest van de rem.
+    /// </summary>
+    public DateTimeOffset? LastZonMorgenPushAt { get; set; }
+
     /// <summary>Bericht na afloop van een laadbeurt: wat erin ging en hoeveel daarvan van eigen dak kwam.</summary>
     public bool NotifyChargeSession { get; set; } = true;
 

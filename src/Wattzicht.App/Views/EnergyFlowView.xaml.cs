@@ -1,10 +1,12 @@
+using System.Text;
+using Wattzicht.App.Drawables;
 using Wattzicht.App.Services;
 using Wattzicht.Shared;
 
 namespace Wattzicht.App.Views;
 
 /// <summary>
-/// "Energiestroom nu": vier kaarten (Zon, Huis, Batterij, Net) en de laadpaal.
+/// "Energiestroom nu": de tekening met zon, huis, net, batterij en laadpaal, en daaronder de kaarten.
 /// Richting van de stroom wordt getoond met ▲ (eruit/teruglevering/ontladen) en ▼ (erin/afname/laden).
 /// Tekenconventie: GridPowerW &gt; 0 = afname van het net, &lt; 0 = teruglevering;
 /// BatteryPowerW &gt; 0 = ontladen, &lt; 0 = laden (conventie uit Wattzicht.Shared).
@@ -91,10 +93,46 @@ public partial class EnergyFlowView : ContentView
     public int NetColumn { get => (int)GetValue(NetColumnProperty); private set => SetValue(NetColumnProperty, value); }
     public int NetColumnSpan { get => (int)GetValue(NetColumnSpanProperty); private set => SetValue(NetColumnSpanProperty, value); }
 
+    /// <summary>De tekening zelf; zie <see cref="EnergyFlowDrawable"/>.</summary>
+    public EnergyFlowDrawable Tekening { get; } = new();
+
+    public static readonly BindableProperty TekeningHoogteProperty = BindableProperty.Create(
+        // De beginwaarde moet echt een double zijn: MAUI vergelijkt het type van de standaardwaarde
+        // met het opgegeven type en gooit anders bij het laden van de klasse. RijHoogte is een float.
+        nameof(TekeningHoogte), typeof(double), typeof(EnergyFlowView), (double)(EnergyFlowDrawable.RijHoogte * 2));
+
+    /// <summary>Hoogte van de tekening: twee rijen, of drie als er een batterij of laadpaal is.</summary>
+    public double TekeningHoogte
+    {
+        get => (double)GetValue(TekeningHoogteProperty);
+        private set => SetValue(TekeningHoogteProperty, value);
+    }
+
+    public static readonly BindableProperty TekeningBeschrijvingProperty = BindableProperty.Create(
+        nameof(TekeningBeschrijving), typeof(string), typeof(EnergyFlowView), string.Empty);
+
+    /// <summary>
+    /// Wat de tekening zegt, in woorden. Een canvas is voor een schermlezer een leeg vlak, dus staat
+    /// hier dezelfde inhoud als tekst.
+    /// </summary>
+    public string TekeningBeschrijving
+    {
+        get => (string)GetValue(TekeningBeschrijvingProperty);
+        private set => SetValue(TekeningBeschrijvingProperty, value);
+    }
+
     public EnergyFlowView()
     {
         InitializeComponent();
         Recalculate();
+
+        // De tekening haalt zijn kleuren uit Colors.xaml op het moment van tekenen. Wisselt het
+        // thema terwijl de app open staat, dan moet hij opnieuw: anders blijven de lijnen van het
+        // lichte thema op een donkere achtergrond staan.
+        if (Application.Current is { } app)
+        {
+            app.RequestedThemeChanged += (_, _) => Stroom?.Invalidate();
+        }
     }
 
     private void Recalculate()
@@ -159,6 +197,49 @@ public partial class EnergyFlowView : ContentView
 
         ChargerKwText = Kw(charger);
         ChargerHint = charger > 50 ? "▼ " + Taal.T("stroom.auto-laadt") : Taal.T("stroom.niet-aan-het-laden");
+
+        // Meten we het huisverbruik of de netkant niet, dan hoort er geen 0,0 kW te staan. Dat
+        // leest als "er gebeurt niets" en het betekent "wij weten het niet". De kaart die uitlegt
+        // hoe je dat oplost staat op het beginscherm, niet hier: deze tegels zijn de meting.
+        if (s is { HasLoadData: false })
+        {
+            LoadKwText = Taal.T("stroom.niet-gemeten");
+            LoadHint = string.Empty;
+        }
+
+        if (s is { HasGridData: false })
+        {
+            GridKwText = Taal.T("stroom.niet-gemeten");
+            GridHint = string.Empty;
+            GridAccent = ThemeRes("TextMuted", "TextMutedDark");
+            GridCardBackground = ThemeRes("Surface", "SurfaceDark");
+        }
+
+        Tekening.Snapshot = s;
+        TekeningHoogte = EnergyFlowDrawable.HoogteVoor(s);
+        TekeningBeschrijving = Beschrijf();
+        Stroom?.Invalidate();
+    }
+
+    /// <summary>Dezelfde inhoud als de tekening, maar als zin voor een schermlezer.</summary>
+    private string Beschrijf()
+    {
+        var zin = new StringBuilder()
+            .Append(Taal.T("stroom.zon")).Append(' ').Append(PvKwText)
+            .Append(", ").Append(Taal.T("stroom.huis")).Append(' ').Append(LoadKwText)
+            .Append(", ").Append(Taal.T("stroom.net")).Append(' ').Append(GridKwText);
+
+        if (HasBattery)
+        {
+            zin.Append(", ").Append(Taal.T("stroom.batterij")).Append(' ').Append(BatteryKwText);
+        }
+
+        if (HasCharger)
+        {
+            zin.Append(", ").Append(Taal.T("stroom.laadpaal")).Append(' ').Append(ChargerKwText);
+        }
+
+        return zin.ToString();
     }
 
     private static string Getal(double waarde) => waarde.ToString("0.#").Replace('.', ',');
