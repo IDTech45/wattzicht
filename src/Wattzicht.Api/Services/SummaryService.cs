@@ -92,6 +92,53 @@ public sealed class SummaryService(AppDbContext db, SavingsCalculator calculator
     /// </summary>
     public const double MaximumDagKwh = 150;
 
+    /// <summary>
+    /// De dagopbrengst zoals het apparaat hem zelf meldt.
+    ///
+    /// Dit heeft voorrang op onze eigen berekening uit tellerstanden. Een omvormer weet wanneer zijn
+    /// dag begon en wat hij sindsdien gemaakt heeft; wij leiden dat af uit verschillen en lopen dan
+    /// tegen alles aan wat een teller kan doen: van bron wisselen, teruggezet worden, overlopen.
+    /// </summary>
+    public async Task ApplyPvTodayAsync(Device apparaat, double vandaagWh, DateTimeOffset gemetenOp, CancellationToken ct)
+    {
+        if (vandaagWh < 0) return;
+
+        var dag = DutchTime.LocalDate(gemetenOp);
+        var kwh = vandaagWh / 1000d;
+        if (kwh > MaximumDagKwh) return;
+
+        apparaat.PvTodayDate = dag;
+        apparaat.PvTodayWh = vandaagWh;
+
+        var summary = await DagAsync(apparaat.HouseholdId, dag, ct)
+                      ?? Nieuw(apparaat.HouseholdId, dag, gemetenOp);
+
+        // Meerdere omvormers op een dak: ieder meldt zijn eigen dag, dus optellen. Wat er in dit
+        // verzoek al is aangepast gaat voor op wat er in de database staat.
+        var uitGeheugen = db.Devices.Local
+            .Where(d => d.HouseholdId == apparaat.HouseholdId && d.PvTodayDate == dag)
+            .ToList();
+
+        var uitDatabase = await db.Devices.IgnoreQueryFilters()
+            .Where(d => d.HouseholdId == apparaat.HouseholdId && d.PvTodayDate == dag)
+            .Select(d => new { d.Id, d.PvTodayWh })
+            .ToListAsync(ct);
+
+        var standen = new Dictionary<Guid, double>();
+        foreach (var d in uitDatabase) standen[d.Id] = d.PvTodayWh ?? 0;
+        foreach (var d in uitGeheugen) standen[d.Id] = d.PvTodayWh ?? 0;
+        standen[apparaat.Id] = vandaagWh;
+
+        var totaalKwh = standen.Values.Sum() / 1000d;
+        if (totaalKwh > MaximumDagKwh) return;
+
+        summary.PvKwh = Math.Round(totaalKwh, 3);
+        summary.UpdatedAt = clock.GetUtcNow();
+
+        var rates = await GetRatesAsync(apparaat.HouseholdId, dag, ct);
+        summary.SavedEur = calculator.CalculateTotal(ToInput(summary), rates);
+    }
+
     public async Task ApplyPvCounterAsync(Device apparaat, double tellerWh, DateTimeOffset gemetenOp, CancellationToken ct)
     {
         if (tellerWh <= 0) return;

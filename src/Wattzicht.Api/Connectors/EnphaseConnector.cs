@@ -140,6 +140,18 @@ public sealed class EnphaseConnector(
         var omvormers = Regel(rauw, "production", "inverters");
         var zon = MeestBetrouwbaar(eim, omvormers);
 
+        // De gateway heeft een eigen antwoord op "wat is er vandaag opgewekt": wattHoursToday, uit
+        // /api/v1/production. De app haalt dat erbij en zet het hieronder neer. Dat is beter dan
+        // zelf rekenen met tellerstanden: de gateway weet wanneer zijn dag begon en wij niet.
+        var productie = rauw.ValueKind == JsonValueKind.Object
+                        && rauw.TryGetProperty("__productie", out var p) && p.ValueKind == JsonValueKind.Object
+            ? p
+            : (JsonElement?)null;
+
+        var vandaagWh = Getal(productie, "wattHoursToday")
+                        ?? Getal(eim, "whToday")
+                        ?? Getal(omvormers, "whToday");
+
         var netto = Regel(rauw, "consumption", "net-consumption");
         var huis = Regel(rauw, "consumption", "total-consumption");
 
@@ -156,12 +168,13 @@ public sealed class EnphaseConnector(
             PvPowerW: Getal(zon, "wNow") ?? 0,
             LoadPowerW: Getal(huis, "wNow") ?? 0,
             GridPowerW: Getal(netto, "wNow") ?? 0,
-            PvEnergyWh: Getal(zon, "whLifetime"),
+            PvEnergyWh: Getal(productie, "wattHoursLifetime") ?? Getal(zon, "whLifetime"),
             ImportEnergyWh: Getal(netto, "whLifetimeImport"),
             ExportEnergyWh: Getal(netto, "whLifetimeExport"),
             PanelCount: Getal(micros, "activeCount") is { } aantal and > 0 and < 10_000
                 ? (int)aantal
-                : null);
+                : null,
+            PvTodayWh: vandaagWh is >= 0 ? vandaagWh : null);
     }
 
     /// <summary>
@@ -349,6 +362,11 @@ public sealed class EnphaseConnector(
         // eraan hangen. Dat hoort de bewoner niet uit een offerte van jaren geleden over te tikken,
         // en het kost ons geen extra aanroep: het staat in het antwoord dat we toch al ophalen. Dat
         // laatste telt, want het developer-plan heeft een maandquotum.
+        // De dagopbrengst staat er gewoon in. Die hoeven we dus niet uit tellerstanden af te
+        // leiden, en dat scheelt een hoop: een teller die van bron wisselt of wordt teruggezet
+        // levert een sprong op die er als dagopbrengst uitziet en dat niet is.
+        var vandaagWh = root.GetDoubleOrNull("energy_today", "energyToday");
+
         var piekW = root.GetDoubleOrNull("size_w", "sizeW");
         var panelen = root.GetDoubleOrNull("modules", "module_count", "moduleCount");
 
@@ -357,7 +375,8 @@ public sealed class EnphaseConnector(
             PvPowerW: Math.Round(vermogenW),
             PvEnergyWh: opwekTotaalWh,
             PvPeakW: piekW is > 0 ? piekW : null,
-            PanelCount: panelen is > 0 and < 10_000 ? (int)panelen.Value : null);
+            PanelCount: panelen is > 0 and < 10_000 ? (int)panelen.Value : null,
+            PvTodayWh: vandaagWh is >= 0 ? vandaagWh : null);
     }
 
     // -----------------------------------------------------------------------

@@ -262,6 +262,16 @@ public sealed class Device
     /// van nu en die van gisteravond is precies wat er vandaag is opgewekt, ongeacht hoe vaak wij
     /// gekeken hebben. Vandaar deze drie velden.
     /// </summary>
+    /// <summary>
+    /// Wat dit apparaat zelf zegt dat het vandaag heeft opgewekt, in Wh.
+    ///
+    /// Het beste antwoord komt van het apparaat: die weet wanneer zijn dag begon. Zelf rekenen met
+    /// tellerstanden werkt ook, maar valt om zodra een teller van bron wisselt of wordt teruggezet.
+    /// </summary>
+    public DateOnly? PvTodayDate { get; set; }
+
+    public double? PvTodayWh { get; set; }
+
     public DateOnly? PvCounterDate { get; set; }
 
     public double? PvCounterStartWh { get; set; }

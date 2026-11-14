@@ -300,7 +300,11 @@ public sealed class PollingWorker(
 
                 // De teller van het apparaat is nauwkeuriger dan onze eigen optelling, ook hier:
                 // een gemiste ronde kost dan geen kilowatturen meer.
-                if (reading.PvEnergyWh is { } tellerWh)
+                if (reading.PvTodayWh is { } vandaagWh)
+                {
+                    await summaries.ApplyPvTodayAsync(device, vandaagWh, entity.Timestamp, ct);
+                }
+                else if (reading.PvEnergyWh is { } tellerWh)
                 {
                     await summaries.ApplyPvCounterAsync(device, tellerWh, entity.Timestamp, ct);
                 }

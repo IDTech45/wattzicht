@@ -57,6 +57,34 @@ public class EnphaseLokaalTests
     }
     """;
 
+    /// <summary>Wat de app erbij haalt uit /api/v1/production: de gateway houdt de dag zelf bij.</summary>
+    private const string MetDagvanDeGateway = """
+    {
+      "production": [
+        { "type": "inverters", "activeCount": 10, "wNow": 1840, "whLifetime": 8036027 }
+      ],
+      "__productie": { "wattsNow": 1840, "wattHoursToday": 4120, "wattHoursLifetime": 8036027 }
+    }
+    """;
+
+    [Fact]
+    public void De_dagopbrengst_komt_van_de_gateway_zelf()
+    {
+        // Zelf rekenen met tellerstanden werkt tot een teller van bron wisselt; dan staat er ineens
+        // een levensopbrengst als dagopbrengst in de app. De gateway weet wanneer zijn dag begon.
+        var uit = Lees(MetDagvanDeGateway);
+
+        Assert.Equal(4120, uit.PvTodayWh);
+        Assert.Equal(8_036_027, uit.PvEnergyWh);
+    }
+
+    [Fact]
+    public void Zonder_die_extra_aanroep_blijft_de_dag_onbekend()
+    {
+        // Dan valt het terug op het verschil in tellerstanden, zoals het was.
+        Assert.Null(Lees(MetMeters).PvTodayWh);
+    }
+
     [Fact]
     public void Een_klem_die_niets_meet_verliest_van_de_omvormers()
     {

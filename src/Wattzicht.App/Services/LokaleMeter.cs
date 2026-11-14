@@ -250,9 +250,15 @@ public sealed class LokaleMeter(ApiClient api, ILogger<LokaleMeter> logger)
             // die mensen over hun dak hebben: doet er een paneel minder dan de rest.
             var panelen = await HaalEnphasePanelenAsync(adres, token, ct);
 
-            return panelen is null
-                ? inhoud.Clone()
-                : VoegToe(inhoud, "__panelen", panelen.Value);
+            // En de dagopbrengst zoals de gateway hem zelf bijhoudt. Dat is beter dan zelf rekenen
+            // met tellerstanden: de gateway weet wanneer zijn dag begon, wij niet, en een teller
+            // die van bron wisselt levert een sprong op die er als dagopbrengst uitziet.
+            var productie = await HaalJsonAsync($"https://{adres}/api/v1/production", token, ct);
+
+            var uit = inhoud.Clone();
+            if (panelen is not null) uit = VoegToe(uit, "__panelen", panelen.Value);
+            if (productie is not null) uit = VoegToe(uit, "__productie", productie.Value);
+            return uit;
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
@@ -277,6 +283,30 @@ public sealed class LokaleMeter(ApiClient api, ILogger<LokaleMeter> logger)
 
             var lijst = await antwoord.Content.ReadFromJsonAsync<JsonElement>(ct);
             return lijst.ValueKind == JsonValueKind.Array ? lijst.Clone() : null;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Een stukje JSON van de gateway halen, met het token van de bewoner.
+    ///
+    /// Mislukt het, dan is dat geen reden om de hele meting weg te gooien: de opwek van het huis is
+    /// belangrijker dan het extraatje dat we erbij wilden hebben.
+    /// </summary>
+    private async Task<JsonElement?> HaalJsonAsync(string url, string token, CancellationToken ct)
+    {
+        try
+        {
+            using var verzoek = new HttpRequestMessage(HttpMethod.Get, url);
+            verzoek.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var antwoord = await PaalClient.SendAsync(verzoek, ct);
+            if (!antwoord.IsSuccessStatusCode) return null;
+
+            var inhoud = await antwoord.Content.ReadFromJsonAsync<JsonElement>(ct);
+            return inhoud.ValueKind is JsonValueKind.Object or JsonValueKind.Array ? inhoud.Clone() : null;
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {

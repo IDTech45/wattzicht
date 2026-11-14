@@ -11,6 +11,10 @@ public static class SchemaUpgrades
 {
     private static readonly string[] Steps =
     [
+        // 2026-11: de dagopbrengst zoals het apparaat hem zelf meldt.
+        """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "PvTodayDate" date NULL""",
+        """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "PvTodayWh" double precision NULL""",
+
         // 2026-11: de melding dat morgen een zonnig blok heeft.
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "NotifyZonMorgen" boolean NOT NULL DEFAULT true""",
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "LastZonMorgenPushAt" timestamp with time zone NULL""",

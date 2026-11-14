@@ -1418,7 +1418,13 @@ public static class HouseholdEndpoints
 
         // En als het apparaat een opwekteller meestuurt, wint die voor de dagopbrengst: die klopt
         // ook als de app een halve dag dicht stond.
-        if (meting.PvEnergyWh is { } tellerWh)
+        // Het apparaat zelf gaat voor: dat weet wanneer zijn dag begon. Alleen als het die niet
+        // meldt, leiden we de dag af uit het verschil in tellerstanden.
+        if (meting.PvTodayWh is { } vandaagWh)
+        {
+            await summaries.ApplyPvTodayAsync(device, vandaagWh, gemeten, ct);
+        }
+        else if (meting.PvEnergyWh is { } tellerWh)
         {
             await summaries.ApplyPvCounterAsync(device, tellerWh, gemeten, ct);
         }
