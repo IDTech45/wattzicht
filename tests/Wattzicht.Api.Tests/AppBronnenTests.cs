@@ -311,6 +311,26 @@ public sealed class AppBronnenTests
         Assert.Contains("ZetHuishouden", model);
     }
 
+    /// <summary>
+    /// De meterkast wordt uitgelezen bij élke start, ook als het dashboard is voorgeladen.
+    ///
+    /// Een P1-meter of een gateway in huis praat alleen op het thuisnetwerk, dus het moment waarop
+    /// de app opent is het enige moment waarop er iets te meten valt. Toen het voorladen erbij kwam
+    /// nam het scherm die cijfers over en kwam het nooit meer langs het uitlezen: er kwam van die
+    /// woningen helemaal niets meer binnen, zonder dat er iets kapot leek.
+    /// </summary>
+    [Fact]
+    public void Het_opstarten_leest_de_meterkast_uit()
+    {
+        var model = File.ReadAllText(Path.Combine(AppMap(), "ViewModels", "DashboardViewModel.cs"));
+
+        var voorladen = model[model.IndexOf("VoorladenAsync", StringComparison.Ordinal)..];
+        var einde = voorladen.IndexOf("RefreshAsync", StringComparison.Ordinal);
+        if (einde > 0) voorladen = voorladen[..einde];
+
+        Assert.Contains("StuurDoorAsync", voorladen);
+    }
+
     private static IEnumerable<string> Xaml() => Bestanden("*.xaml");
 
     private static IEnumerable<string> Cs() => Bestanden("*.cs");

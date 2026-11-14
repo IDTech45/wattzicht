@@ -338,6 +338,15 @@ public partial class DashboardViewModel : BaseViewModel
                 return;
             }
 
+            // Eerst de meterkast uitlezen, dan pas het dashboard ophalen. Dit stond in LoadAsync en
+            // viel bij het voorladen weg, en daarmee viel het bij élke start weg: het scherm nam
+            // daarna de voorgeladen cijfers over en kwam hier nooit meer langs. Een P1-meter of een
+            // gateway in huis wordt alleen gelezen als de app openstaat, dus zonder deze regel komt
+            // er van zo'n woning helemaal niets meer binnen. Bij mij stond de laatste meting daardoor
+            // op kwart over twee 's middags terwijl ik de app die avond vier keer had geopend.
+            ct.ThrowIfCancellationRequested();
+            await _lokaal.StuurDoorAsync(devices);
+
             ct.ThrowIfCancellationRequested();
             var dashboard = await _api.GetDashboardAsync();
             ct.ThrowIfCancellationRequested();
