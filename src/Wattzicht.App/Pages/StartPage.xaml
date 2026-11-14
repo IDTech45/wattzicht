@@ -18,13 +18,20 @@
                    Source="logo.png"
                    HeightRequest="112" WidthRequest="112"
                    SemanticProperties.Description="Wattzicht" />
+            <!-- Zoals het logo: "watt" wit, "zicht" geel. Het stond hier helemaal in het wit, en
+                 dan is het ineens een ander merk dan op de site en op het pictogram. -->
             <Label x:Name="Naam"
-                   Text="wattzicht"
                    FontSize="26"
                    FontAttributes="Bold"
                    Opacity="0"
-                   TextColor="{StaticResource White}"
-                   HorizontalOptions="Center" />
+                   HorizontalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="watt" TextColor="{StaticResource White}" />
+                        <Span Text="zicht" TextColor="{StaticResource Accent500}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
         </VerticalStackLayout>
     </Grid>
 </ContentPage>

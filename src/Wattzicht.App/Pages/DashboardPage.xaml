@@ -222,7 +222,12 @@
                             <Border Grid.Column="2" Style="{StaticResource Card}" Padding="12">
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="{t:T home.opgewekt}" Style="{StaticResource StatCaption}" />
-                                    <Label Text="{Binding PvTodayText}" Style="{StaticResource StatValue}" FontSize="20" />
+                                    <!-- Kleiner en krimpend: "8.036 kWh" paste niet in een derde van
+                                         het scherm en werd afgekapt tot "8.036 k...". Een getal dat
+                                         je niet kunt lezen is geen getal. -->
+                                    <Label Text="{Binding PvTodayText}" Style="{StaticResource StatValue}"
+                                           FontSize="18" FontAutoScalingEnabled="False"
+                                           LineBreakMode="NoWrap" MaxLines="1" />
                                 </VerticalStackLayout>
                             </Border>
                         </Grid>

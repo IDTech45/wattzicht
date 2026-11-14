@@ -76,6 +76,7 @@
                     <Border Style="{StaticResource Card}">
                         <VerticalStackLayout Spacing="8">
                             <Label Text="{Binding PeriodTitle}" Style="{StaticResource SubtitleLabel}" />
+                            <Label Text="{Binding PeriodeBereik}" Style="{StaticResource StatCaption}" />
                             <Grid ColumnDefinitions="*,Auto">
                                 <Label Text="{Binding TotalSavedText}" Style="{StaticResource StatValueLarge}" TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
                                 <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />

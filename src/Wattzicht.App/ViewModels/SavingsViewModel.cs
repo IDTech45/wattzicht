@@ -99,6 +99,23 @@ public partial class SavingsViewModel : BaseViewModel
     public bool IsMonth => Period == SavingsPeriod.Month;
     public bool IsYear => Period == SavingsPeriod.Year;
 
+    /// <summary>
+    /// De periode in woorden. Een dag is een datum, een week een reeks, een maand een naam.
+    ///
+    /// Geen jaartal bij de lopende maand of week: dat weet je wel, en het maakt de regel langer dan
+    /// de ruimte die ernaast staat. Bij een jaar staat het er juist wel, want dat is het hele punt.
+    /// </summary>
+    private string BereikTekst(DateOnly van, DateOnly tot) => Period switch
+    {
+        SavingsPeriod.Day => Datum(tot, "d MMMM"),
+        SavingsPeriod.Week => $"{Datum(van, "d MMM")} t/m {Datum(tot, "d MMM")}",
+        SavingsPeriod.Month => Datum(tot, "MMMM yyyy"),
+        _ => tot.Year.ToString(Nl),
+    };
+
+    private static string Datum(DateOnly dag, string vorm) =>
+        new DateTime(dag.Year, dag.Month, dag.Day).ToString(vorm, Nl);
+
     public string PeriodTitle => Period switch
     {
         SavingsPeriod.Day => Taal.T("besparen.vandaag-bespaard"),
@@ -106,6 +123,15 @@ public partial class SavingsViewModel : BaseViewModel
         SavingsPeriod.Month => Taal.T("besparen.deze-maand-bespaard"),
         _ => Taal.T("home.dit-jaar-bespaard")
     };
+
+    /// <summary>
+    /// Welke dagen je nu ziet, voluit.
+    ///
+    /// Boven de cijfers stond alleen "deze maand". Welke maand dat was moest je zelf bedenken, en
+    /// bij een grafiek waar je doorheen bladert is dat precies de vraag die je hebt. Nu staat de
+    /// periode er gewoon bij.
+    /// </summary>
+    [ObservableProperty] private string _periodeBereik = string.Empty;
 
     [ObservableProperty] private string _totalSavedText = "€ 0,00";
     /// <summary>Wat deze woning werkelijk meet; bepaalt of er een getal of "niet gemeten" staat.</summary>
@@ -257,6 +283,7 @@ public partial class SavingsViewModel : BaseViewModel
                 .OrderBy(s => SummaryRow.ToDate(s.Date))
                 .ToList();
 
+            PeriodeBereik = BereikTekst(from, to);
             Apply(summaries, from, to);
             HasLoaded = true;
 
