@@ -41,10 +41,36 @@ public partial class PanelsViewModel(ApiClient api, AuthService auth) : BaseView
     [NotifyPropertyChangedFor(nameof(ToonLeeg))]
     private bool _heeftPanelen;
 
-    public bool ToonLeeg => HasLoaded && !HeeftPanelen;
+    /// <summary>
+    /// Dit scherm is geopend zonder bruikbaar apparaat. Dat is iets anders dan een omvormer die nog
+    /// niets gemeld heeft, en hoort dus ook iets anders te zeggen.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ToonLeeg))]
+    private bool _geenApparaat;
+
+    public bool ToonLeeg => HasLoaded && !HeeftPanelen && !GeenApparaat;
 
     public async Task LoadAsync()
     {
+        // Zonder bruikbaar apparaat valt er niets op te vragen. Dat zeggen we met zoveel woorden in
+        // plaats van een verzoek te doen over een id van alleen nullen en de 404 van de server door
+        // te geven als "Niet gevonden".
+        if (DeviceId == Guid.Empty)
+        {
+            Panelen.Clear();
+            HeeftPanelen = false;
+            Kop = string.Empty;
+            Bijgewerkt = string.Empty;
+            Oordeel = string.Empty;
+            GeenApparaat = true;
+            HasLoaded = true;
+            IsRefreshing = false;
+            return;
+        }
+
+        GeenApparaat = false;
+
         await RunSafeAsync(async () =>
         {
             var uit = await _api.PanelenAsync(DeviceId);

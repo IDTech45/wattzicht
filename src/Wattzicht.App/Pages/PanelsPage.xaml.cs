@@ -17,14 +17,20 @@ public partial class PanelsPage : ContentPage
         BindingContext = _viewModel = viewModel;
     }
 
+    /// <summary>
+    /// Het apparaat uit de route.
+    ///
+    /// Komt er niets mee of iets onleesbaars, dan blijft de id leeg en vraagt de viewmodel niets
+    /// op. Eerder ging er een verzoek uit over een apparaat met alleen nullen, en dan stond er
+    /// "Niet gevonden" op het scherm: een foutmelding over de server terwijl het aan de route lag.
+    /// </summary>
     public string DeviceId
     {
         set
         {
-            if (Guid.TryParse(Uri.UnescapeDataString(value ?? string.Empty), out var id))
-            {
-                _viewModel.DeviceId = id;
-            }
+            _viewModel.DeviceId = Guid.TryParse(Uri.UnescapeDataString(value ?? string.Empty), out var id)
+                ? id
+                : Guid.Empty;
         }
     }
 

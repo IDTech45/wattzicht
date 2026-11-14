@@ -73,6 +73,11 @@
                     </VerticalStackLayout>
                 </Border>
 
+                <!-- Geopend zonder apparaat. Dan is het geen storing en ook geen lege gateway. -->
+                <Border Style="{StaticResource Card}" IsVisible="{Binding GeenApparaat}" Padding="20">
+                    <Label Text="{t:T panelen.geen-apparaat}" Style="{StaticResource SubtitleLabel}" />
+                </Border>
+
                 <!-- Nog niets gezien. Dat is geen storing: de gateway praat alleen op je eigen wifi. -->
                 <Border Style="{StaticResource Card}" IsVisible="{Binding ToonLeeg}" Padding="20">
                     <VerticalStackLayout Spacing="8">
