@@ -196,9 +196,11 @@ public partial class SettingsViewModel : BaseViewModel
     /// De knop van de schakelaar.
     ///
     /// Wit staat goed op de groene baan als hij aan staat, maar uit staat hij op een witte kaart en
-    /// dan zie je hem niet. Daarom uit: grijs met genoeg contrast.
+    /// dan zie je hem niet. Daarom uit: grijs met genoeg contrast, en dat grijs komt uit Colors.xaml
+    /// in plaats van als losse kleurcode hier. Op een eigen code liep de kleurcontrole stuk, en het
+    /// grijs van de tekst past hier ook beter: het trekt naar het navy van de rest.
     /// </summary>
-    public Color ThemaKnopKleur => IsDonkerThema ? Colors.White : Color.FromArgb("#6B7280");
+    public Color ThemaKnopKleur => IsDonkerThema ? Colors.White : ThemeColors.Get("TextMuted");
 
     // ---- Je gegevens meenemen ----
     /// <summary>
