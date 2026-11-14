@@ -233,6 +233,16 @@ public static class AuthEndpoints
 
         if (bestaand is not null)
         {
+            // Heet de woning nog "Thuis" en weet Google of Apple hoe deze persoon heet, dan nemen we
+            // die naam alsnog over. Dat is geen aanname over wat iemand wil: "Thuis" is onze eigen
+            // beginwaarde en niet iets dat hij heeft ingevuld. Wie zijn woning zelf een naam gaf,
+            // houdt die; wie hem wijzigt naar Thuis krijgt hem hoogstens één keer terug.
+            if (Naamgeving.MagOvernemen(bestaand.Household?.Name, info.FullName))
+            {
+                bestaand.Household!.Name = info.FullName!.Trim();
+                await db.SaveChangesAsync(ct);
+            }
+
             var (bestaandToken, bestaandTot) = tokens.CreateToken(bestaand);
             return Results.Ok(new AuthResponse(bestaandToken, bestaandTot,
                 bestaand.Household is null ? null : HouseholdQueries.ToDto(bestaand.Household),
@@ -251,9 +261,11 @@ public static class AuthEndpoints
         var woning = new Household
         {
             Id = Guid.NewGuid(),
-            // Zonder opgegeven naam gewoon "Thuis". Iemand die met één druk op de knop binnenkomt,
-            // hoort niet eerst een formulier te krijgen; hij kan de naam later wijzigen.
-            Name = string.IsNullOrWhiteSpace(request.HouseholdName) ? "Thuis" : request.HouseholdName.Trim(),
+            // Zonder opgegeven naam die van Google of Apple, en anders "Thuis". Iemand die met één
+            // druk op de knop binnenkomt hoort niet eerst een formulier te krijgen, maar begroet
+            // worden met "Goedenavond, Thuis" is ook niet wat je wilt: de naam stond in het token
+            // dat we toch al controleerden, en we deden er niets mee.
+            Name = Naamgeving.Kies(request.HouseholdName, info.FullName),
             InstallerId = installer.Id,
             Installer = installer,
             InstallerAccessGranted = false,
