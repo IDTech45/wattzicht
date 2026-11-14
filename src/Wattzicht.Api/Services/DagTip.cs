@@ -35,10 +35,17 @@ public static class DagTip
 
         if (input.HasPv)
         {
-            var verwacht = AdviceEngine.VerwachtVandaagKwh(input, vandaag);
+            // Over welke dag deze tip gaat. 's Avonds is vandaag op: het zonnigste blok ligt dan
+            // morgen, en dan hoort het aantal kilowatturen ook van morgen te zijn. Anders stond er
+            // om negen uur 's avonds "je panelen maken 6,2 kWh" over een dag die al voorbij was,
+            // met daarachter een venster van morgen. Twee dagen in één zin.
+            var (venster, _) = AdviceEngine.ZonnigsteVenster(input, vandaag);
+            var dag = venster == default ? vandaag : DutchTime.LocalDate(venster);
+
+            var verwacht = AdviceEngine.VerwachtVandaagKwh(input, dag);
             if (verwacht >= IetsZonVanafKwh)
             {
-                return ZonTip(input, vandaag, verwacht);
+                return ZonTip(input, vandaag, dag, verwacht);
             }
         }
 
@@ -64,8 +71,9 @@ public static class DagTip
         return null;
     }
 
-    private static DayTipDto ZonTip(AdviceInput input, DateOnly vandaag, double verwacht)
+    private static DayTipDto ZonTip(AdviceInput input, DateOnly vandaag, DateOnly dag, double verwacht)
     {
+        var morgen = dag != vandaag;
         var (from, to) = AdviceEngine.ZonnigsteVenster(input, vandaag);
         var inVenster = AdviceEngine.VerwachteKwh(input, from, to);
 
@@ -74,7 +82,13 @@ public static class DagTip
         var waarde = Math.Round((decimal)inVenster * winstPerKwh, 2, MidpointRounding.AwayFromZero);
 
         var zonnig = verwacht >= ZonnigVanafKwh;
-        var kop = T(input, zonnig ? "dagtip.zon-kop-zonnig" : "dagtip.zon-kop-wat-zon");
+        var kop = T(input, (zonnig, morgen) switch
+        {
+            (true, false) => "dagtip.zon-kop-zonnig",
+            (true, true) => "dagtip.zon-kop-zonnig-morgen",
+            (false, false) => "dagtip.zon-kop-wat-zon",
+            _ => "dagtip.zon-kop-wat-zon-morgen",
+        });
 
         var wat = T(input, input.HasCharger
             ? "dagtip.wat-laadpaal"

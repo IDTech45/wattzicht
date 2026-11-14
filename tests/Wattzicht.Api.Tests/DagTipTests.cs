@@ -137,6 +137,28 @@ public sealed class DagTipTests
 
     // ---- Hulpstukken -------------------------------------------------------
 
+    [Fact]
+    public void Is_vandaag_op_dan_gaat_de_tip_over_morgen()
+    {
+        // 's Avonds om negen uur stond er "Vandaag is er wat zon, je panelen maken 6,2 kWh, het
+        // meest tussen morgen 13:00 en 16:00". Drie dingen in één zin die niet bij elkaar horen: een
+        // kop over vandaag, een dagtotaal van een dag die voorbij is, en een venster van morgen.
+        var vandaagUren = new Dictionary<int, double> { [9] = 300, [10] = 350, [11] = 320, [12] = 280 };
+        var morgenUren = new Dictionary<int, double> { [11] = 600, [12] = 700, [13] = 750, [14] = 700, [15] = 500 };
+
+        var forecast = Zon(vandaagUren).Concat(Zon(morgenUren, Vandaag.AddDays(1))).ToList();
+        var invoer = Invoer(forecast, nu: new DateTimeOffset(2027, 6, 15, 19, 0, 0, TimeSpan.Zero));
+
+        var tip = DagTip.Bouw(invoer, Vandaag, AdviceEngine.Build(invoer));
+
+        Assert.NotNull(tip);
+        Assert.Equal(Wattzicht.Shared.Taal.Teksten.T("nl", "dagtip.zon-kop-zonnig-morgen"), tip!.Headline);
+
+        // En het aantal kilowatturen hoort dan ook van morgen te zijn, niet van vandaag.
+        var morgen = AdviceEngine.VerwachtVandaagKwh(invoer, Vandaag.AddDays(1));
+        Assert.Equal(Math.Round(morgen, 1), tip.ExpectedSolarKwh);
+    }
+
     private static AdviceInput Invoer(
         IReadOnlyList<HourlyIrradiance> forecast,
         bool heeftPv = true,

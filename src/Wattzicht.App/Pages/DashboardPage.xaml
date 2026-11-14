@@ -168,7 +168,7 @@
                         </Border>
 
                         <!-- Energiestroom -->
-                        <Label Text="{t:T home.energiestroom-nu}" Style="{StaticResource SectionTitle}" />
+                        <Label Text="{Binding StroomTitel}" Style="{StaticResource SectionTitle}" />
                         <views:EnergyFlowView Snapshot="{Binding Live}"
                                               PvTodayKwh="{Binding PvTodayKwh}"
                                               PvPeakKw="{Binding PvPeakKw}"

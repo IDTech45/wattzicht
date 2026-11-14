@@ -442,12 +442,31 @@ public partial class DashboardViewModel : BaseViewModel
         _ => Taal.T("weer.bewolkt"),
     };
 
+    /// <summary>
+    /// Hoe vers een meting moet zijn om "nu" te mogen heten.
+    ///
+    /// Een kastje op het thuisnetwerk wordt alleen uitgelezen als de app openstaat, en een cloud
+    /// mag maar een paar keer per dag bevraagd worden. Een meting van uren geleden is dus normaal.
+    /// Wat niet normaal is, is hem onder het kopje "Energiestroom nu" zetten: dan staat er 0,4 kW
+    /// bij iemand die om negen uur 's avonds naar zijn donkere dak kijkt.
+    /// </summary>
+    private static readonly TimeSpan NogNu = TimeSpan.FromMinutes(20);
+
+    /// <summary>Het kopje boven de energiestroom: "nu", of wanneer het dan wel gemeten is.</summary>
+    [ObservableProperty] private string _stroomTitel = Taal.T("home.energiestroom-nu");
+
     private void Apply(DashboardDto dashboard)
     {
         Live = dashboard.Live;
         UpdatedAtText = dashboard.Live is null
             ? Taal.T("home.nog-geen-meting")
             : string.Format(Taal.T("home.bijgewerkt"), TimeText.Ago(dashboard.Live.UpdatedAt, Taal.T("tijd.zojuist")));
+
+        var gemetenOp = TimeText.ToLocal(dashboard.Live?.UpdatedAt);
+        StroomTitel = gemetenOp is { } op && DateTimeOffset.Now - op > NogNu
+            ? string.Format(Taal.T("home.energiestroom-toen"),
+                TimeText.Ago(dashboard.Live!.UpdatedAt, Taal.T("tijd.zojuist")))
+            : Taal.T("home.energiestroom-nu");
 
         var today = dashboard.Today;
         var month = dashboard.ThisMonth;
