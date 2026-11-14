@@ -141,6 +141,9 @@ builder.Services.AddHostedService<LaadcashPromoWorker>();
 
 // Dagelijks: wat een bewaartermijn heeft en eroverheen is, gaat weg.
 builder.Services.AddHostedService<OpruimWorker>();
+
+// Eenmalig na het starten: dagen die op nul bleven staan invullen uit de tellerstanden.
+builder.Services.AddHostedService<OpwekHerstelWorker>();
 builder.Services.AddScoped<InsightsService>();
 builder.Services.AddScoped<AandachtService>();
 

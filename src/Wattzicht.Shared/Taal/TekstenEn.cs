@@ -127,7 +127,7 @@ public static class TekstenEn
         ["besparen.maand"] = "Month",
         ["besparen.jaar"] = "Year",
         ["besparen.opgewekt"] = "Generated",
-        ["besparen.zelf-gebruikt"] = "Used yourself",
+        ["besparen.zelf-gebruikt"] = "Own use",
         ["besparen.teruggeleverd"] = "Fed back",
         ["besparen.geladen"] = "Charged",
         ["besparen.dit-jaar"] = "This year",

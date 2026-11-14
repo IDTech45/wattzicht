@@ -60,25 +60,30 @@ public partial class StartPage : ContentPage
     private async Task KnipperAsync()
     {
         Logo.AnchorY = 0.5;
+        Logo.Scale = 0.88;
 
+        // Opkomen duurt even: een logo dat er in tweehonderd milliseconden staat voelt als een
+        // plaatje dat aanknipt, niet als iets dat wakker wordt.
         await Task.WhenAll(
-            Logo.FadeTo(1, 220, Easing.CubicOut),
-            Logo.ScaleTo(1.04, 220, Easing.CubicOut));
+            Logo.FadeTo(1, 420, Easing.CubicOut),
+            Logo.ScaleTo(1, 420, Easing.CubicOut));
 
-        await Knip(110);
-        await Task.Delay(90);
-        await Knip(90);
+        await Task.Delay(260);
 
-        await Task.WhenAll(
-            Naam.FadeTo(1, 200, Easing.CubicOut),
-            Logo.ScaleTo(1, 200, Easing.CubicOut));
+        // Een echte knipper gaat snel dicht en langzamer open, met een korte rust ertussen. Twee
+        // keer, want één keer leest als een storing in het beeld.
+        await Knip(dicht: 130, rust: 70, open: 240);
+        await Task.Delay(380);
+        await Knip(dicht: 110, rust: 50, open: 200);
 
-        await Task.Delay(220);
+        await Naam.FadeTo(1, 320, Easing.CubicOut);
+        await Task.Delay(420);
     }
 
-    private async Task Knip(uint duur)
+    private async Task Knip(uint dicht, int rust, uint open)
     {
-        await Logo.ScaleYTo(0.06, duur / 2, Easing.CubicIn);
-        await Logo.ScaleYTo(1, duur, Easing.CubicOut);
+        await Logo.ScaleYTo(0.05, dicht, Easing.CubicIn);
+        await Task.Delay(rust);
+        await Logo.ScaleYTo(1, open, Easing.CubicOut);
     }
 }

@@ -86,21 +86,28 @@
                                           Margin="0,8,0,0"
                                           SemanticProperties.Description="Staafgrafiek van je besparing per dag" />
                             <BoxView Style="{StaticResource DividerLine}" Margin="0,8,0,0" />
+                            <!-- Vier kolommen op een telefoonbreedte: "Teruggeleverd" past daar niet
+                                 in en brak af als "Teruggelev erd". Kortere woorden en een regel
+                                 die niet afbreekt, dan blijft het leesbaar op een smal toestel. -->
                             <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
                                 <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                    <Label Text="{t:T besparen.opgewekt}" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{t:T besparen.opgewekt}" Style="{StaticResource StatCaption}"
+                                           LineBreakMode="TailTruncation" MaxLines="1" />
                                     <Label Text="{Binding TotalPvText}" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource WarningText}, Dark={StaticResource WarningTextDark}}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                    <Label Text="{t:T besparen.zelf-gebruikt}" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{t:T besparen.zelf-gebruikt}" Style="{StaticResource StatCaption}"
+                                           LineBreakMode="TailTruncation" MaxLines="1" />
                                     <Label Text="{Binding TotalSelfUseText}" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="2" Spacing="2">
-                                    <Label Text="{t:T besparen.teruggeleverd}" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{t:T besparen.teruggeleverd}" Style="{StaticResource StatCaption}"
+                                           LineBreakMode="TailTruncation" MaxLines="1" />
                                     <Label Text="{Binding TotalExportText}" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource TextMutedDark}}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="3" Spacing="2">
-                                    <Label Text="{t:T besparen.geladen}" Style="{StaticResource StatCaption}" />
+                                    <Label Text="{t:T besparen.geladen}" Style="{StaticResource StatCaption}"
+                                           LineBreakMode="TailTruncation" MaxLines="1" />
                                     <Label Text="{Binding TotalChargedText}" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource PendingText}, Dark={StaticResource PendingTextDark}}" />
                                 </VerticalStackLayout>
                             </Grid>

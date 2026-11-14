@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  De balk bovenin was wit.
+
+  MAUI geeft zijn standaardthema een lichte statusbalk, en die bleef wit staan terwijl de app zelf
+  donkerblauw is. Op een telefoon ziet dat eruit als een strook die er niet hoort, en in de donkere
+  stand springt hij er helemaal uit.
+
+  Hier staat dus de kleur van de balk bovenin en die van de knoppenbalk onderin, allebei op het
+  donkerblauw van het logo. De pictogrammen in die balken moeten dan licht zijn, en dat is precies
+  wat windowLightStatusBar=false zegt: geen donkere tekens op een donkere balk.
+-->
+<resources>
+
+  <color name="wzNavy">#0A2540</color>
+
+  <style name="Maui.MainTheme" parent="Maui.MainTheme.NoActionBar" />
+
+  <style name="Maui.MainTheme.NoActionBar" parent="Theme.MaterialComponents.DayNight">
+    <item name="windowActionBar">false</item>
+    <item name="windowNoTitle">true</item>
+    <item name="android:statusBarColor">@color/wzNavy</item>
+    <item name="android:navigationBarColor">@color/wzNavy</item>
+    <item name="android:windowLightStatusBar">false</item>
+    <item name="colorPrimary">@color/colorPrimary</item>
+    <item name="colorPrimaryDark">@color/wzNavy</item>
+    <item name="colorAccent">@color/colorAccent</item>
+  </style>
+
+  <!-- Het opstartscherm zelf laten we met rust: dat bouwt MAUI zelf op uit splash.svg en de kleur
+       die in het projectbestand staat, en die staat al op hetzelfde donkerblauw. -->
+
+</resources>

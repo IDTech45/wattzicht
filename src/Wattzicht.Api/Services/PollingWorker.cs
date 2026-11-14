@@ -298,6 +298,13 @@ public sealed class PollingWorker(
                 db.Readings.Add(entity);
                 latest.Add(entity);
 
+                // De teller van het apparaat is nauwkeuriger dan onze eigen optelling, ook hier:
+                // een gemiste ronde kost dan geen kilowatturen meer.
+                if (reading.PvEnergyWh is { } tellerWh)
+                {
+                    await summaries.ApplyPvCounterAsync(device, tellerWh, entity.Timestamp, ct);
+                }
+
                 // Vertelt het merk hoe groot de installatie is, dan nemen we dat over. Dat scheelt
                 // de bewoner een invulveld waarvan hij het antwoord in een oude offerte moet zoeken.
                 if (reading.PvPeakW is not null || reading.PanelCount is not null)

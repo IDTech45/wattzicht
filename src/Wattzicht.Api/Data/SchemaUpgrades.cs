@@ -11,6 +11,11 @@ public static class SchemaUpgrades
 {
     private static readonly string[] Steps =
     [
+        // 2026-11: de opwekteller per apparaat, voor een dagtotaal dat niet van de meetfrequentie afhangt.
+        """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "PvCounterDate" date NULL""",
+        """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "PvCounterStartWh" double precision NULL""",
+        """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "PvCounterLastWh" double precision NULL""",
+
         // 2026-11: de laatste stand per paneel, voor het panelenscherm.
         """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "PanelsJson" text NULL""",
         """ALTER TABLE devices ADD COLUMN IF NOT EXISTS "PanelsUpdatedAt" timestamp with time zone NULL""",

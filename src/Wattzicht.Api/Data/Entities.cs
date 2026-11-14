@@ -235,6 +235,24 @@ public sealed class Device
     public string? LastError { get; set; }
 
     /// <summary>
+    /// De opwekteller van dit apparaat, bijgehouden per dag.
+    ///
+    /// Waarom dit bestaat: de dagopbrengst werd berekend door vermogen over de tijd op te tellen,
+    /// en dat werkt alleen als er elke paar minuten een meting binnenkomt. Bij een kastje dat de
+    /// app zelf uitleest is dat niet zo: die meet alleen als jij thuis bent en de app openmaakt.
+    /// Daardoor stond er bij zulke woningen altijd nul.
+    ///
+    /// Een omvormer houdt zelf een teller bij die alleen maar oploopt. Het verschil tussen de stand
+    /// van nu en die van gisteravond is precies wat er vandaag is opgewekt, ongeacht hoe vaak wij
+    /// gekeken hebben. Vandaar deze drie velden.
+    /// </summary>
+    public DateOnly? PvCounterDate { get; set; }
+
+    public double? PvCounterStartWh { get; set; }
+
+    public double? PvCounterLastWh { get; set; }
+
+    /// <summary>
     /// De laatste stand per paneel, zoals de omvormer die meldt, als JSON.
     ///
     /// Alleen de laatste stand en geen geschiedenis: daarmee is de vraag te beantwoorden die mensen

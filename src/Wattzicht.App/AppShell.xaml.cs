@@ -45,17 +45,34 @@ public partial class AppShell : Shell
 
         try
         {
+            // De richting volgt wat er gebeurde. Een scherm dat je opent komt van rechts, een stap
+            // terug komt van links, en een ander tabblad komt van onderen. Dat is hoe een telefoon
+            // zich hoort te gedragen: de beweging vertelt waar je heen gaat, nog voor je leest.
+            var (vanX, vanY) = e.Source switch
+            {
+                ShellNavigationSource.Push => (46d, 0d),
+                ShellNavigationSource.Pop or ShellNavigationSource.PopToRoot => (-46d, 0d),
+                _ => (0d, 18d),
+            };
+
             inhoud.Opacity = 0;
-            inhoud.TranslationY = 14;
+            inhoud.TranslationX = vanX;
+            inhoud.TranslationY = vanY;
+            inhoud.Scale = 0.985;
 
             await Task.WhenAll(
-                inhoud.FadeTo(1, 200, Easing.CubicOut),
-                inhoud.TranslateTo(0, 0, 200, Easing.CubicOut));
+                inhoud.FadeTo(1, 240, Easing.CubicOut),
+                inhoud.TranslateTo(0, 0, 260, Easing.CubicOut),
+                inhoud.ScaleTo(1, 260, Easing.CubicOut));
         }
         catch (Exception)
         {
+            // Versiering mag nooit een scherm tegenhouden; staat de animatie halverwege stil, dan
+            // zetten we de pagina gewoon neer zoals hij hoort te staan.
             inhoud.Opacity = 1;
+            inhoud.TranslationX = 0;
             inhoud.TranslationY = 0;
+            inhoud.Scale = 1;
         }
     }
 }

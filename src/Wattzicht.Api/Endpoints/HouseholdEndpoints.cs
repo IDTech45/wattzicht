@@ -1366,6 +1366,8 @@ public static class HouseholdEndpoints
         AppDbContext db,
         ConnectorRegistry registry,
         AlertService alerts,
+        SummaryService summaries,
+        HouseholdQueries queries,
         TimeProvider clock,
         CancellationToken ct)
     {
@@ -1406,6 +1408,20 @@ public static class HouseholdEndpoints
 
         var entity = meting.ToEntity(device.Id);
         db.Readings.Add(entity);
+
+        // De dagtotalen bijwerken. Dit ontbrak hier, en daardoor stond bij iedereen met een kastje
+        // dat de app zelf uitleest overal nul: geen opwek vandaag, geen besparing, geen maand en
+        // geen jaar. Alleen de serverronde deed dit, en die komt bij een apparaat op het
+        // thuisnetwerk nooit langs.
+        var momentopname = await queries.LiveAsync(householdId, ct);
+        await summaries.ApplySnapshotAsync(householdId, momentopname, ct);
+
+        // En als het apparaat een opwekteller meestuurt, wint die voor de dagopbrengst: die klopt
+        // ook als de app een halve dag dicht stond.
+        if (meting.PvEnergyWh is { } tellerWh)
+        {
+            await summaries.ApplyPvCounterAsync(device, tellerWh, gemeten, ct);
+        }
 
         // De stand per paneel komt als eigen lijst mee. Die hoort niet in de metingtabel thuis: het
         // is geen vermogen van de woning maar de verdeling binnen een installatie, en we hebben er
