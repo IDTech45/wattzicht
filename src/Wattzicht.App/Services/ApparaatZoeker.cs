@@ -35,6 +35,20 @@ public sealed class ApparaatZoeker
     /// </summary>
     public static string? EigenSubnet()
     {
+        try
+        {
+            return ZoekSubnet();
+        }
+        catch (Exception)
+        {
+            // Het opvragen van de netwerkkaarten kan op Android weigeren. Dat is geen reden om het
+            // koppelscherm te laten crashen: zonder subnet zoeken we niet, en dat staat er ook.
+            return null;
+        }
+    }
+
+    private static string? ZoekSubnet()
+    {
         foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
         {
             if (nic.OperationalStatus != OperationalStatus.Up) continue;

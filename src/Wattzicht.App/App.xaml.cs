@@ -32,20 +32,52 @@ public partial class App : Application
         return new Window(new AppShell());
     }
 
+    /// <summary>
+    /// Waar de app heen gaat na de knipper.
+    ///
+    /// Alles zit in een try, en dat is hier belangrijker dan ergens anders: dit wordt aangeroepen
+    /// vanuit OnAppearing van het startscherm, en dat is een async void. Een fout die hier omhoog
+    /// komt is er dus een die niemand meer opvangt, en dan sluit de app zich op het logo. Struikelt
+    /// het verversen van het token, dan gaan we naar binnen met het token dat we al hadden; loopt
+    /// zelfs dat vast, dan belandt iemand op het inlogscherm in plaats van op een splash die blijft
+    /// staan.
+    /// </summary>
     private async Task RouteToStartAsync()
     {
-        var loggedIn = await _auth.IsLoggedInAsync();
-        if (loggedIn)
+        var loggedIn = false;
+        try
         {
-            await _auth.TryRefreshAsync();
-            await Shell.Current.GoToAsync(AppShell.Routes.Home);
-            // Eerst naar het scherm uit de aangetikte melding; aanmelden voor push mag daarna, op de achtergrond.
-            await PushService.OpenPendingRouteAsync();
-            _ = _push.RegisterAsync();
+            loggedIn = await _auth.IsLoggedInAsync();
+            if (loggedIn)
+            {
+                await _auth.TryRefreshAsync();
+            }
         }
-        else
+        catch (Exception)
         {
-            await Shell.Current.GoToAsync(AppShell.Routes.Login);
+            // Het token staat er nog; verder met wat we hebben.
+        }
+
+        try
+        {
+            await Shell.Current.GoToAsync(loggedIn ? AppShell.Routes.Home : AppShell.Routes.Login);
+            if (loggedIn)
+            {
+                // Eerst naar het scherm uit de aangetikte melding; aanmelden voor push mag daarna, op de achtergrond.
+                await PushService.OpenPendingRouteAsync();
+                _ = _push.RegisterAsync();
+            }
+        }
+        catch (Exception)
+        {
+            try
+            {
+                await Shell.Current.GoToAsync(AppShell.Routes.Login);
+            }
+            catch (Exception)
+            {
+                // Dan is er niets meer te doen; het startscherm blijft staan en is nog zichtbaar.
+            }
         }
     }
 

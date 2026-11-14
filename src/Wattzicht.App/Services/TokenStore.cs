@@ -27,13 +27,29 @@ public sealed class TokenStore
         return _expiresAt;
     }
 
+    /// <summary>
+    /// Het token bewaren. Lukt het opslaan niet, dan geldt het voor deze sessie.
+    ///
+    /// Waarom dat in een try staat: SecureStorage weigert op een toestel zonder schermvergrendeling
+    /// en op sommige emulators, en dat wisten we al (zie EnsureLoadedAsync). Zonder deze try kwam
+    /// die weigering als een gewone fout omhoog, precies op het moment dat het inloggen zelf net
+    /// gelukt was: je was binnen en kreeg "Er ging iets mis" te zien. Eén keer opnieuw inloggen na
+    /// een herstart is beter dan een geslaagde login die zich voordoet als een mislukte.
+    /// </summary>
     public async Task SetAsync(string token, DateTimeOffset expiresAt)
     {
         _token = token;
         _expiresAt = expiresAt;
         _loaded = true;
-        await SecureStorage.Default.SetAsync(TokenKey, token);
-        await SecureStorage.Default.SetAsync(ExpiresKey, expiresAt.ToString("O"));
+        try
+        {
+            await SecureStorage.Default.SetAsync(TokenKey, token);
+            await SecureStorage.Default.SetAsync(ExpiresKey, expiresAt.ToString("O"));
+        }
+        catch (Exception)
+        {
+            // Geen opslag. Het token staat in het geheugen, dus deze sessie werkt gewoon.
+        }
     }
 
     public void Clear()
@@ -41,8 +57,15 @@ public sealed class TokenStore
         _token = null;
         _expiresAt = null;
         _loaded = true;
-        SecureStorage.Default.Remove(TokenKey);
-        SecureStorage.Default.Remove(ExpiresKey);
+        try
+        {
+            SecureStorage.Default.Remove(TokenKey);
+            SecureStorage.Default.Remove(ExpiresKey);
+        }
+        catch (Exception)
+        {
+            // Uitloggen mag nooit stuklopen op de opslag: het token is hierboven al weg.
+        }
     }
 
     private async Task EnsureLoadedAsync()
