@@ -15,7 +15,8 @@
                     <Label Text="{t:T besparen.besparing}" Style="{StaticResource PageTitle}" />
 
                     <!-- Segment Dag/Week/Maand/Jaar -->
-                    <Border Style="{StaticResource Card}" Padding="4" StrokeShape="RoundRectangle 14">
+                    <Border Style="{StaticResource Card}" Padding="4" StrokeShape="RoundRectangle 14"
+                            IsVisible="{Binding ToonCijfers}">
                         <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="4">
                             <Button Grid.Column="0" Text="{t:T besparen.dag}" Command="{Binding SetPeriodCommand}" CommandParameter="Day">
                                 <Button.Style>
@@ -72,8 +73,21 @@
                         <Label Text="{Binding ErrorMessage}" />
                     </Border>
 
+                    <!--
+                        Niets gekoppeld. Dan staan hieronder vijf nullen en een vlakke grafiek, en
+                        dat leest als een app die niet werkt in plaats van als een woning waarvan we
+                        nog niets weten. Dus zeggen we wat er ontbreekt en blijven de cijfers weg.
+                    -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding GeenApparaten}" Padding="20">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{t:T besparen.niets-gekoppeld}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{t:T besparen.niets-gekoppeld-uitleg}"
+                                   Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                        </VerticalStackLayout>
+                    </Border>
+
                     <!-- Totaal + grafiek -->
-                    <Border Style="{StaticResource Card}">
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding ToonCijfers}">
                         <VerticalStackLayout Spacing="8">
                             <Label Text="{Binding PeriodTitle}" Style="{StaticResource SubtitleLabel}" />
                             <Label Text="{Binding PeriodeBereik}" Style="{StaticResource StatCaption}" />
@@ -85,7 +99,7 @@
                                           Drawable="{Binding Chart}"
                                           HeightRequest="160"
                                           Margin="0,8,0,0"
-                                          SemanticProperties.Description="Staafgrafiek van je besparing per dag" />
+                                          SemanticProperties.Description="{t:T schermlezer.besparingsgrafiek}" />
                             <BoxView Style="{StaticResource DividerLine}" Margin="0,8,0,0" />
                             <!-- Vier kolommen op een telefoonbreedte: "Teruggeleverd" past daar niet
                                  in en brak af als "Teruggelev erd". Kortere woorden en een regel
@@ -198,12 +212,13 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <Label Text="{t:T besparen.per-dag}" Style="{StaticResource SectionTitle}" />
+                    <Label Text="{t:T besparen.per-dag}" Style="{StaticResource SectionTitle}"
+                           IsVisible="{Binding ToonCijfers}" />
                 </VerticalStackLayout>
             </CollectionView.Header>
 
             <CollectionView.EmptyView>
-                <VerticalStackLayout Padding="32,24" Spacing="8" HorizontalOptions="Center" IsVisible="{Binding HasLoaded}">
+                <VerticalStackLayout Padding="32,24" Spacing="8" HorizontalOptions="Center" IsVisible="{Binding ToonGeenDagen}">
                     <Label Text="{t:T besparen.nog-geen-dagen}" Style="{StaticResource CardTitle}" HorizontalTextAlignment="Center" />
                     <Label Text="{t:T besparen.zodra-je-apparaten-een-dag}" Style="{StaticResource SubtitleLabel}" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
@@ -226,7 +241,8 @@
             </CollectionView.ItemTemplate>
 
             <CollectionView.Footer>
-                <Label Text="{t:T besparen.opgewekt-zelf-gebruikt-teruggeleverd}" Style="{StaticResource StatCaption}" HorizontalTextAlignment="Center" Padding="16,12,16,32" />
+                <Label Text="{t:T besparen.opgewekt-zelf-gebruikt-teruggeleverd}" Style="{StaticResource StatCaption}"
+                       HorizontalTextAlignment="Center" Padding="16,12,16,32" IsVisible="{Binding ToonCijfers}" />
             </CollectionView.Footer>
         </CollectionView>
     </RefreshView>

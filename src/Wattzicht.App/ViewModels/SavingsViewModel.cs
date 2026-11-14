@@ -15,9 +15,22 @@ public sealed class SummaryRow
 {
     private static readonly CultureInfo Nl = CultureInfo.GetCultureInfo("nl-NL");
 
+    /// <summary>
+    /// Of de netkant van deze woning gemeten wordt.
+    ///
+    /// Zelf gebruikt en teruggeleverd komen allebei uit de netmeting: de server rekent zelfverbruik
+    /// als zon min teruglevering. Zonder P1-meter staat er nul teruglevering, en dan zegt deze rij
+    /// dat alles zelf gebruikt is. Dat is geen afrondingsfout maar een verzonnen uitkomst.
+    /// </summary>
+    private readonly bool _meetNet;
 
     public DailySummaryDto Summary { get; }
-    public SummaryRow(DailySummaryDto summary) => Summary = summary;
+
+    public SummaryRow(DailySummaryDto summary, bool meetNet = true)
+    {
+        Summary = summary;
+        _meetNet = meetNet;
+    }
 
     public string DateText
     {
@@ -31,8 +44,8 @@ public sealed class SummaryRow
     }
 
     public string PvText => Kwh(Summary.PvKwh);
-    public string SelfUseText => Kwh(Summary.SelfUseKwh);
-    public string ExportText => Kwh(Summary.ExportKwh);
+    public string SelfUseText => _meetNet ? Kwh(Summary.SelfUseKwh) : Taal.T("besparen.niet-gemeten");
+    public string ExportText => _meetNet ? Kwh(Summary.ExportKwh) : Taal.T("besparen.niet-gemeten");
     public string SavedText => Convert.ToDecimal(Summary.SavedEur).ToString("C2", Nl);
 
     private static string Kwh(object? v) => Convert.ToDouble(v ?? 0d).ToString("N1", Nl) + " kWh";
@@ -108,7 +121,7 @@ public partial class SavingsViewModel : BaseViewModel
     private string BereikTekst(DateOnly van, DateOnly tot) => Period switch
     {
         SavingsPeriod.Day => Datum(tot, "d MMMM"),
-        SavingsPeriod.Week => $"{Datum(van, "d MMM")} t/m {Datum(tot, "d MMM")}",
+        SavingsPeriod.Week => string.Format(Taal.T("besparen.tot-en-met"), Datum(van, "d MMM"), Datum(tot, "d MMM")),
         SavingsPeriod.Month => Datum(tot, "MMMM yyyy"),
         _ => tot.Year.ToString(Nl),
     };
@@ -133,16 +146,38 @@ public partial class SavingsViewModel : BaseViewModel
     /// </summary>
     [ObservableProperty] private string _periodeBereik = string.Empty;
 
-    [ObservableProperty] private string _totalSavedText = "€ 0,00";
-    /// <summary>Wat deze woning werkelijk meet; bepaalt of er een getal of "niet gemeten" staat.</summary>
-    [ObservableProperty] private bool _meetGebruik = true;
+    /// <summary>
+    /// Hangt er al een apparaat? Zonder apparaat is elk totaal op dit scherm een leeg veld, en
+    /// "€ 0,00 bespaard" met een vlakke grafiek eronder leest als een app die niet werkt.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ToonCijfers))]
+    [NotifyPropertyChangedFor(nameof(ToonGeenDagen))]
+    private bool _geenApparaten;
+
+    public bool ToonCijfers => !GeenApparaten;
+
+    /// <summary>"Nog geen dagen" hoort alleen bij iemand die wel een apparaat heeft.</summary>
+    public bool ToonGeenDagen => HasLoaded && !GeenApparaten;
+
+    [ObservableProperty] private string _totalSavedText = Onbekend;
+    /// <summary>
+    /// Wat deze woning werkelijk meet; bepaalt of er een getal of "niet gemeten" staat.
+    ///
+    /// Alleen de netkant en de laadpaal staan hier, want dat zijn de twee waar de cijfers op dit
+    /// scherm vanaf hangen. Zelf gebruikt hoort bij de netkant en niet bij het huisverbruik: de
+    /// server rekent het als zon min teruglevering, dus zonder netmeting is het geen meting.
+    /// </summary>
     [ObservableProperty] private bool _meetNet = true;
     [ObservableProperty] private bool _meetLaden = true;
 
-    [ObservableProperty] private string _totalPvText = "0 kWh";
-    [ObservableProperty] private string _totalSelfUseText = "0 kWh";
-    [ObservableProperty] private string _totalExportText = "0 kWh";
-    [ObservableProperty] private string _totalChargedText = "0 kWh";
+    [ObservableProperty] private string _totalPvText = Onbekend;
+    [ObservableProperty] private string _totalSelfUseText = Onbekend;
+    [ObservableProperty] private string _totalExportText = Onbekend;
+    [ObservableProperty] private string _totalChargedText = Onbekend;
+
+    /// <summary>Wat er staat als we het niet weten; zelfde afspraak als op het beginscherm.</summary>
+    private const string Onbekend = "–";
     [ObservableProperty] private bool _isRefreshing;
 
     // ---- Vergelijking met de vorige periode ----
@@ -229,7 +264,10 @@ public partial class SavingsViewModel : BaseViewModel
     [ObservableProperty] private string _yearPvText = string.Empty;
     [ObservableProperty] private string _performanceText = string.Empty;
     [ObservableProperty] private bool _performanceLow;
-    [ObservableProperty] private bool _hasLoaded;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ToonGeenDagen))]
+    private bool _hasLoaded;
 
     /// <summary>Wordt verhoogd zodat de pagina de GraphicsView kan invalideren.</summary>
     [ObservableProperty] private int _chartVersion;
@@ -263,12 +301,23 @@ public partial class SavingsViewModel : BaseViewModel
                 _ => (new DateOnly(today.Year, 1, 1), today)
             };
 
+            // Hangt er iets? Zo niet, dan hoeven de totalen en de grafiek niet: die zouden allemaal
+            // nul zijn, en dat is op dit scherm geen uitkomst maar een ontbrekende koppeling.
+            try
+            {
+                GeenApparaten = (await _api.GetDevicesAsync()).Count == 0;
+            }
+            catch (ApiException)
+            {
+                // Weten we het niet, dan tonen we de cijfers gewoon; die kloppen dan of ze zijn leeg.
+                GeenApparaten = false;
+            }
+
             // Wat meten we eigenlijk? Dat staat in de momentopname, die weet welke soorten apparaat
             // er hangen en of we ooit een waarde voor huis en net gezien hebben.
             try
             {
                 var live = (await _api.GetDashboardAsync()).Live;
-                MeetGebruik = live?.HasLoadData ?? true;
                 MeetNet = live?.HasGridData ?? true;
                 MeetLaden = live?.HasCharger ?? true;
             }
@@ -276,7 +325,7 @@ public partial class SavingsViewModel : BaseViewModel
             {
                 // Lukt dat niet, dan tonen we gewoon de getallen; liever een nul te veel dan een
                 // scherm dat niets durft te zeggen.
-                MeetGebruik = MeetNet = MeetLaden = true;
+                MeetNet = MeetLaden = true;
             }
 
             var summaries = (await _api.GetDailySummariesAsync(from, to))
@@ -385,17 +434,18 @@ public partial class SavingsViewModel : BaseViewModel
         TotalSavedText = Sum(scope, s => s.SavedEur).ToString("C2", Nl);
         TotalPvText = KwhText(Sum(scope, s => s.PvKwh));
 
-        // Zonder P1-meter of CT-klemmen weten we niet wat het huis verbruikt en wat er naar het net
-        // gaat. Dan hoort daar niet 0,0 kWh te staan alsof het gemeten is en toevallig nul was: dat
-        // leest als een installatie die niets doet. Hetzelfde geldt voor laden zonder laadpaal.
-        TotalSelfUseText = MeetGebruik ? KwhText(Sum(scope, s => s.SelfUseKwh)) : Taal.T("besparen.niet-gemeten");
+        // Zonder netmeting weten we niet wat er naar het net ging, en dus ook niet wat er zelf
+        // gebruikt is: de server rekent zelfverbruik als zon min teruglevering. Zonder meting is
+        // die teruglevering nul, en dan zou hier staan dat alles zelf gebruikt is. Dat is geen nul
+        // te veel maar een verzonnen honderd procent. Hetzelfde geldt voor laden zonder laadpaal.
+        TotalSelfUseText = MeetNet ? KwhText(Sum(scope, s => s.SelfUseKwh)) : Taal.T("besparen.niet-gemeten");
         TotalExportText = MeetNet ? KwhText(Sum(scope, s => s.ExportKwh)) : Taal.T("besparen.niet-gemeten");
         TotalChargedText = MeetLaden ? KwhText(Sum(scope, s => s.ChargedKwh)) : Taal.T("besparen.niet-gemeten");
 
         // Lijst: nieuwste eerst
         Rows.Clear();
         foreach (var s in summaries.OrderByDescending(s => SummaryRow.ToDate(s.Date)))
-            Rows.Add(new SummaryRow(s));
+            Rows.Add(new SummaryRow(s, MeetNet));
 
         // Grafiek
         Chart.Bars = Period == SavingsPeriod.Year

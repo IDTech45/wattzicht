@@ -103,13 +103,16 @@ public partial class DashboardViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private Task OpenAdviceAsync() => Shell.Current.GoToAsync("//main/advice");
+    private Task OpenAdviceAsync() => Shell.Current.GoToAsync(AppShell.Routes.Advice);
     [ObservableProperty] private string _updatedAtText = string.Empty;
 
-    // Stat-tiles
-    [ObservableProperty] private string _savedTodayText = "€ 0,00";
-    [ObservableProperty] private string _selfUsePercentText = "0%";
-    [ObservableProperty] private string _pvTodayText = "0,0 kWh";
+    // Stat-tiles.
+    //
+    // Beginwaarde een streepje en geen nul: tot het eerste antwoord van de server weten we niets,
+    // en "€ 0,00 bespaard" is dan geen uitkomst maar een leeg veld dat zich voordoet als een getal.
+    [ObservableProperty] private string _savedTodayText = Onbekend;
+    [ObservableProperty] private string _selfUsePercentText = Onbekend;
+    [ObservableProperty] private string _pvTodayText = Onbekend;
 
     /// <summary>
     /// Dezelfde twee getallen als kale waarde, voor de zontegel bovenaan.
@@ -121,12 +124,12 @@ public partial class DashboardViewModel : BaseViewModel
     [ObservableProperty] private double _pvPeakKw;
 
     // Deze maand
-    [ObservableProperty] private string _monthSavedText = "€ 0,00";
-    [ObservableProperty] private string _monthPvText = "0 kWh";
-    [ObservableProperty] private string _monthSelfUseText = "0 kWh";
-    [ObservableProperty] private string _monthExportText = "0 kWh";
-    [ObservableProperty] private string _monthChargedText = "0 kWh";
-    [ObservableProperty] private string _yearSavedText = "€ 0,00";
+    [ObservableProperty] private string _monthSavedText = Onbekend;
+    [ObservableProperty] private string _monthPvText = Onbekend;
+    [ObservableProperty] private string _monthSelfUseText = Onbekend;
+    [ObservableProperty] private string _monthExportText = Onbekend;
+    [ObservableProperty] private string _monthChargedText = Onbekend;
+    [ObservableProperty] private string _yearSavedText = Onbekend;
 
     public ObservableCollection<AlertDto> Alerts { get; } = [];
 
@@ -135,7 +138,11 @@ public partial class DashboardViewModel : BaseViewModel
     private int _alertCount;
 
     public bool HasAlerts => AlertCount > 0;
-    public string AlertsSummary => AlertCount == 1 ? "1 storing" : $"{AlertCount} storingen";
+
+    /// <summary>Uit het taalpakket: dit stond als vaste Nederlandse tekst in de viewmodel.</summary>
+    public string AlertsSummary => AlertCount == 1
+        ? Taal.T("storing.aantal-een")
+        : string.Format(Taal.T("storing.aantal"), AlertCount);
 
     // ---- Maak je app af ----
     [ObservableProperty][NotifyPropertyChangedFor(nameof(ToonAfmaken))] private bool _plaatsOntbreekt;
@@ -171,7 +178,7 @@ public partial class DashboardViewModel : BaseViewModel
         _api = api;
         _auth = auth;
         _lokaal = lokaal;
-        Title = "Home";
+        Title = Taal.T("shell.home");
     }
 
     partial void OnAlertCountChanged(int value) => OnPropertyChanged(nameof(HasAlerts));
@@ -263,7 +270,7 @@ public partial class DashboardViewModel : BaseViewModel
 
     /// <summary>Naar het scherm waar die twee dingen staan.</summary>
     [RelayCommand]
-    private Task AfmakenAsync() => Shell.Current.GoToAsync("//settings");
+    private Task AfmakenAsync() => Shell.Current.GoToAsync(AppShell.Routes.Settings);
 
     /// <summary>
     /// Het weer in het scherm zetten.
@@ -332,16 +339,26 @@ public partial class DashboardViewModel : BaseViewModel
         var month = dashboard.ThisMonth;
         var year = dashboard.ThisYear;
 
+        // Wat deze woning werkelijk meet. Zelf gebruikt en teruggeleverd hangen allebei aan de
+        // netkant: de server rekent zelfverbruik als zon min teruglevering. Zonder P1-meter of
+        // CT-klemmen staat die teruglevering op nul, en dan zou hier "100% zelfverbruik" en
+        // "0 kWh teruggeleverd" staan bij iemand die de halve dag aan het net levert. Dat is geen
+        // nul te veel maar een verzonnen uitkomst, en het is precies het getal waar een
+        // zonnepaneeleigenaar naar kijkt.
+        var meetNet = dashboard.Live?.HasGridData ?? false;
+        var meetLaden = dashboard.Live?.HasCharger ?? false;
+        var nietGemeten = Taal.T("besparen.niet-gemeten");
+
         SavedTodayText = Eur(today?.SavedEur);
         PvTodayText = Kwh(today?.PvKwh, 1);
         PvTodayKwh = today?.PvKwh is { } vandaag ? Convert.ToDouble(vandaag) : 0;
-        SelfUsePercentText = SelfUsePercent(today);
+        SelfUsePercentText = meetNet ? SelfUsePercent(today) : nietGemeten;
 
         MonthSavedText = Eur(month?.SavedEur);
         MonthPvText = Kwh(month?.PvKwh, 0);
-        MonthSelfUseText = Kwh(month?.SelfUseKwh, 0);
-        MonthExportText = Kwh(month?.ExportKwh, 0);
-        MonthChargedText = Kwh(month?.ChargedKwh, 0);
+        MonthSelfUseText = meetNet ? Kwh(month?.SelfUseKwh, 0) : nietGemeten;
+        MonthExportText = meetNet ? Kwh(month?.ExportKwh, 0) : nietGemeten;
+        MonthChargedText = meetLaden ? Kwh(month?.ChargedKwh, 0) : nietGemeten;
         YearSavedText = Eur(year?.SavedEur);
 
         Alerts.Clear();
@@ -351,18 +368,34 @@ public partial class DashboardViewModel : BaseViewModel
         AlertCount = Alerts.Count;
     }
 
+    /// <summary>
+    /// Welk deel van de zon je zelf gebruikte.
+    ///
+    /// Geen dag en geen opwek betekent geen percentage. Daar stond 0%, en dat leest als "je hebt
+    /// alles teruggeleverd" terwijl er niets gemaakt is om te verdelen.
+    /// </summary>
     private static string SelfUsePercent(DailySummaryDto? d)
     {
-        if (d is null) return "0%";
+        if (d is null) return Onbekend;
         var pv = Convert.ToDouble(d.PvKwh);
         var self = Convert.ToDouble(d.SelfUseKwh);
-        if (pv <= 0) return "0%";
+        if (pv <= 0) return Onbekend;
         return $"{Math.Clamp(self / pv * 100, 0, 100):0}%";
     }
 
+    /// <summary>
+    /// Wat er staat als we het niet weten: een streepje.
+    ///
+    /// Zelfde afspraak als in de energiestroom. Nul is een uitkomst, en die hoort alleen te staan
+    /// als hij ook gemeten is.
+    /// </summary>
+    private const string Onbekend = "–";
+
     internal static string Eur(object? value) =>
-        Convert.ToDecimal(value ?? 0m).ToString("C2", Nl);
+        value is null ? Onbekend : Convert.ToDecimal(value).ToString("C2", Nl);
 
     internal static string Kwh(object? value, int decimals) =>
-        Convert.ToDouble(value ?? 0d).ToString(decimals == 0 ? "N0" : "N1", Nl) + " kWh";
+        value is null
+            ? Onbekend
+            : Convert.ToDouble(value).ToString(decimals == 0 ? "N0" : "N1", Nl) + " kWh";
 }

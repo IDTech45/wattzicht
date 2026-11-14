@@ -204,27 +204,36 @@
                             </VerticalStackLayout>
                         </Border>
 
-                        <!-- Stat-tiles -->
+                        <!--
+                            Stat-tiles. Drie getallen naast elkaar op een telefoonbreedte, en dat is
+                            krap: alle drie dus dezelfde maat, geen meeschalen met de systeemletter
+                            en geen afbreken. "8.036 kWh" werd eerder "8.036 k...", en dat gold net
+                            zo goed voor "€ 1.234,56" bij de eerste tegel; die had alleen nog nooit
+                            zo'n dag gehad.
+                        -->
                         <Label Text="{t:T home.vandaag}" Style="{StaticResource SectionTitle}" />
                         <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                             <Border Grid.Column="0" Style="{StaticResource Card}" Padding="12">
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="{t:T home.bespaard}" Style="{StaticResource StatCaption}" />
-                                    <Label Text="{Binding SavedTodayText}" Style="{StaticResource StatValue}" FontSize="20" TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
+                                    <Label Text="{Binding SavedTodayText}" Style="{StaticResource StatValue}"
+                                           FontSize="18" FontAutoScalingEnabled="False"
+                                           LineBreakMode="NoWrap" MaxLines="1"
+                                           TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
                                 </VerticalStackLayout>
                             </Border>
                             <Border Grid.Column="1" Style="{StaticResource Card}" Padding="12">
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="{t:T home.zelfverbruik}" Style="{StaticResource StatCaption}" />
-                                    <Label Text="{Binding SelfUsePercentText}" Style="{StaticResource StatValue}" FontSize="20" TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
+                                    <Label Text="{Binding SelfUsePercentText}" Style="{StaticResource StatValue}"
+                                           FontSize="18" FontAutoScalingEnabled="False"
+                                           LineBreakMode="NoWrap" MaxLines="1"
+                                           TextColor="{AppThemeBinding Light={StaticResource SuccessText}, Dark={StaticResource SuccessTextDark}}" />
                                 </VerticalStackLayout>
                             </Border>
                             <Border Grid.Column="2" Style="{StaticResource Card}" Padding="12">
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="{t:T home.opgewekt}" Style="{StaticResource StatCaption}" />
-                                    <!-- Kleiner en krimpend: "8.036 kWh" paste niet in een derde van
-                                         het scherm en werd afgekapt tot "8.036 k...". Een getal dat
-                                         je niet kunt lezen is geen getal. -->
                                     <Label Text="{Binding PvTodayText}" Style="{StaticResource StatValue}"
                                            FontSize="18" FontAutoScalingEnabled="False"
                                            LineBreakMode="NoWrap" MaxLines="1" />
