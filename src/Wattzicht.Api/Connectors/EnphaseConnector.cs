@@ -390,7 +390,8 @@ public sealed class EnphaseConnector(
     /// Eén aanroep voor de hele reeks: dat telt, want het developer-plan heeft een maandquotum.
     /// </summary>
     public async Task<IReadOnlyList<(DateOnly Dag, double Kwh)>> DagelijkseOpwekAsync(
-        Device device, DeviceCredentials credentials, DateOnly vanaf, CancellationToken ct)
+        Device device, DeviceCredentials credentials, DateOnly vanaf, CancellationToken ct,
+        DateOnly? tot = null)
     {
         var refreshToken = credentials.Get("refresh_token");
         if (string.IsNullOrWhiteSpace(refreshToken)) return [];
@@ -406,7 +407,8 @@ public sealed class EnphaseConnector(
         using var doc = await GetAsync(client,
             $"/api/v4/systems/{Uri.EscapeDataString(systemId)}/energy_lifetime"
             + $"?key={Uri.EscapeDataString(sleutels.Key)}"
-            + $"&start_date={vanaf:yyyy-MM-dd}",
+            + $"&start_date={vanaf:yyyy-MM-dd}"
+            + (tot is { } eind ? $"&end_date={eind:yyyy-MM-dd}" : string.Empty),
             sleutels.Id, ct);
 
         var root = doc.RootElement;

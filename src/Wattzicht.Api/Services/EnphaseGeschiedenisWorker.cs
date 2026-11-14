@@ -29,26 +29,53 @@ public sealed class EnphaseGeschiedenisWorker(
     /// <summary>Zo ver kijken we terug. Verder heeft niemand iets aan, en het is zo opgehaald.</summary>
     public static readonly int MaximaalDagen = 400;
 
+    /// <summary>
+    /// Hoeveel dagen we daarna elke dag opnieuw ophalen.
+    ///
+    /// Een week. Niet omdat er zo veel verandert, maar omdat er altijd iets mis kan gaan op een dag:
+    /// een app die dicht bleef, een gateway die stilstond, een meting die niet aankwam. Eenmaal per
+    /// dag een aanroep die de laatste week terugzet kost niets en haalt elk gaatje op.
+    /// </summary>
+    public const int VersDagen = 7;
+
+    /// <summary>Niet vaker dan dit per apparaat; het maandquotum van Enphase is niet groot.</summary>
+    public static readonly TimeSpan Tussenpoos = TimeSpan.FromHours(20);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
         {
             await Task.Delay(TimeSpan.FromSeconds(75), stoppingToken);
-            var dagen = await HaalAsync(stoppingToken);
-
-            if (dagen > 0)
-            {
-                logger.LogInformation("{Aantal} dag(en) opwek opgehaald bij Enphase", dagen);
-            }
         }
         catch (OperationCanceledException)
         {
-            // Afsluiten tijdens het ophalen is geen fout.
+            return;
         }
-        catch (Exception ex)
+
+        // Elke vier uur kijken of er iets te halen valt. Hoe vaak er werkelijk een aanroep uitgaat
+        // bepaalt de tussenpoos per apparaat, en die staat op twintig uur: zo blijft het binnen het
+        // maandquotum en wordt de laatste week toch elke dag nagelopen.
+        using var timer = new PeriodicTimer(TimeSpan.FromHours(4));
+        do
         {
-            logger.LogError(ex, "Geschiedenis bij Enphase ophalen mislukt");
+            try
+            {
+                var dagen = await HaalAsync(stoppingToken);
+                if (dagen > 0)
+                {
+                    logger.LogInformation("{Aantal} dag(en) opwek opgehaald bij Enphase", dagen);
+                }
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Geschiedenis bij Enphase ophalen mislukt");
+            }
         }
+        while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 
     /// <summary>Eén ronde; geeft terug hoeveel dagen er zijn gevuld.</summary>
@@ -61,14 +88,20 @@ public sealed class EnphaseGeschiedenisWorker(
 
         if (registry.Get(DeviceBrand.Enphase) is not EnphaseConnector enphase) return 0;
 
+        var nu = clock.GetUtcNow();
+        var grens = nu - Tussenpoos;
+
+        // Twee soorten werk in één ronde: wie nog nooit is opgehaald krijgt zijn hele geschiedenis,
+        // en wie dat al had krijgt de laatste week opnieuw. Dat tweede is wat een gat dichttrekt dat
+        // gisteren is ontstaan doordat er even niets binnenkwam.
         var apparaten = await db.Devices.IgnoreQueryFilters()
-            .Where(d => d.Brand == DeviceBrand.Enphase && d.PvHistorieOpgehaaldAt == null)
+            .Where(d => d.Brand == DeviceBrand.Enphase
+                        && (d.PvHistorieOpgehaaldAt == null || d.PvHistorieOpgehaaldAt < grens))
             .ToListAsync(ct);
 
         if (apparaten.Count == 0) return 0;
 
-        var nu = clock.GetUtcNow();
-        var vanaf = DutchTime.LocalDate(nu).AddDays(-MaximaalDagen);
+        var vandaag = DutchTime.LocalDate(nu);
         var gevuld = 0;
 
         foreach (var apparaat in apparaten)
@@ -76,6 +109,12 @@ public sealed class EnphaseGeschiedenisWorker(
             try
             {
                 var credentials = new DeviceCredentials(protector.Unprotect(apparaat.EncryptedCredentials));
+
+                var eersteKeer = apparaat.PvHistorieOpgehaaldAt is null;
+                var vanaf = eersteKeer
+                    ? vandaag.AddDays(-MaximaalDagen)
+                    : vandaag.AddDays(-VersDagen);
+
                 var reeks = await enphase.DagelijkseOpwekAsync(apparaat, credentials, vanaf, ct);
 
                 // Ook zonder reeks de datum zetten: een apparaat zonder cloudkoppeling hoeft niet bij
@@ -99,8 +138,14 @@ public sealed class EnphaseGeschiedenisWorker(
 
                     if (bestaand.TryGetValue(dag, out var rij))
                     {
-                        // Wat wij zelf gemeten hebben blijft staan; dat is verser.
-                        if (rij.PvKwh > 0) continue;
+                        // Vandaag laten we met rust: onze eigen meting loopt nog en die van Enphase
+                        // is van het laatste moment dat hun cloud iets binnenkreeg.
+                        if (dag == vandaag) continue;
+
+                        // Een dag die al een getal heeft blijft staan, tenzij Enphase meer weet. Een
+                        // dag waarop onze metingen half zijn binnengekomen staat te laag, en dan is
+                        // het antwoord van de omvormer zelf het betere.
+                        if (rij.PvKwh >= kwh) continue;
 
                         rij.PvKwh = kwh;
                         rij.UpdatedAt = nu;
