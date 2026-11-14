@@ -111,6 +111,15 @@ public sealed class Household
     public bool LaadcashOptOut { get; set; }
 
     /// <summary>
+    /// Wanneer we de geladen kilowatturen voor het laatst bij LaadCash hebben opgehaald.
+    ///
+    /// Wie zijn laadpaal bij LaadCash heeft hangen hoeft hem hier niet nog een keer te koppelen: wij
+    /// halen die kilowatturen daar op en zetten ze bij de dag. Eens per avond is genoeg, want het
+    /// gaat om dagtotalen en die zijn pas 's avonds af.
+    /// </summary>
+    public DateTimeOffset? LaadcashLaaddataAt { get; set; }
+
+    /// <summary>
     /// De energieleverancier van deze woning, zoals die in supplier_tariffs staat. Alleen Plus
     /// rekent hiermee; zonder Plus geldt het landelijke gemiddelde.
     /// </summary>

@@ -78,6 +78,8 @@ services:
       # woning zich heeft aangemeld. Zonder geheim staat dat endpoint dicht.
       Laadcash__RegisterUrl: ${LAADCASH_REGISTER_URL:-https://laadcash.nl/register}
       Laadcash__SharedSecret: ${LAADCASH_SHARED_SECRET:-}
+      # Waar we de geladen kilowatturen ophalen bij LaadCash.
+      Laadcash__ApiBase: ${LAADCASH_API_BASE:-https://api.laadcash.nl}
       TZ: Europe/Amsterdam
       # Pushmeldingen: eigen Firebase-project 'wattzicht'. De servicesleutel staat als bestand op de server
       # en wordt alleen-lezen ingehangen: niet in de repo, niet in een env-variabele. Zonder bestand: push uit.

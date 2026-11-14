@@ -196,6 +196,9 @@ public static class SchemaUpgrades
         )
         """,
         """CREATE UNIQUE INDEX IF NOT EXISTS ux_supplier_tariffs ON supplier_tariffs ("Supplier", "ValidFrom")""",
+
+        // 2026-11: wanneer we de geladen kilowatturen bij LaadCash hebben opgehaald.
+        """ALTER TABLE households ADD COLUMN IF NOT EXISTS "LaadcashLaaddataAt" timestamp with time zone NULL""",
     ];
 
     public static async Task ApplyAsync(AppDbContext db, CancellationToken ct = default)

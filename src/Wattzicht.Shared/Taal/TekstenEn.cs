@@ -517,7 +517,7 @@ public static class TekstenEn
 
         // ---- maandcijfers van de leverancier ----
         ["verbruik.maand"] = "According to your supplier {0}: {1} kWh from the grid.",
-        ["verbruik.wij-maten"] = "We measured {0} kWh.",
+        ["verbruik.wij-maten"] = "Our own reading that month: {0} kWh.",
         ["verbruik.en-meer"] = "{0} months imported in total.",
         ["contract.niets-gevonden"] = "We could not find any rates or monthly figures in this one. We keep the text of this document for thirty days so we can add this kind of statement.",
 
@@ -526,7 +526,7 @@ public static class TekstenEn
         ["verbruik.kop-maand"] = "Month",
         ["verbruik.kop-afname"] = "From grid",
         ["verbruik.kop-terug"] = "Fed back",
-        ["verbruik.kop-wij"] = "We measured",
+        ["verbruik.kop-wij"] = "Our reading",
 
         ["woning.schatting"] = "From your own measurements we estimate {0} kWp.",
         ["woning.schatting-overnemen"] = "Use this estimate",

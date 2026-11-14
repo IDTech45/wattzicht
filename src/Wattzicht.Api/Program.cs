@@ -150,6 +150,11 @@ builder.Services.AddHostedService<OpwekHerstelWorker>();
 // En wat daarvoor ligt bij de fabrikant ophalen: wie al een jaar panelen heeft, hoort geen lege
 // grafiek te zien omdat hij pas vorige week koppelde.
 builder.Services.AddHostedService<EnphaseGeschiedenisWorker>();
+
+// De geladen kilowatturen bij LaadCash ophalen, voor woningen die daar klant zijn.
+builder.Services.AddHttpClient(LaadcashLaaddata.HttpClientName);
+builder.Services.AddScoped<LaadcashLaaddata>();
+builder.Services.AddHostedService<LaadcashLaaddataWorker>();
 builder.Services.AddScoped<InsightsService>();
 builder.Services.AddScoped<AandachtService>();
 

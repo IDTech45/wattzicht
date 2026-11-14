@@ -525,16 +525,16 @@ public static class TekstenNl
 
         // ---- maandcijfers van de leverancier ----
         ["verbruik.maand"] = "Volgens je leverancier {0}: {1} kWh van het net.",
-        ["verbruik.wij-maten"] = "Wij maten {0} kWh.",
+        ["verbruik.wij-maten"] = "Onze eigen meting die maand: {0} kWh.",
         ["verbruik.en-meer"] = "In totaal {0} maanden ingelezen.",
         ["contract.niets-gevonden"] = "Hier konden we geen tarieven en geen maandcijfers in vinden. We bewaren de tekst van dit document dertig dagen, zodat we dit soort overzicht kunnen toevoegen.",
 
         ["verbruik.titel"] = "Volgens je leverancier",
-        ["verbruik.uitleg"] = "Uit de overzichten die je hebt ingelezen, met wat wij die maand zelf maten ernaast.",
+        ["verbruik.uitleg"] = "Uit de overzichten die je hebt ingelezen, met onze eigen meting van die maand ernaast.",
         ["verbruik.kop-maand"] = "Maand",
         ["verbruik.kop-afname"] = "Afname",
         ["verbruik.kop-terug"] = "Terug",
-        ["verbruik.kop-wij"] = "Wij maten",
+        ["verbruik.kop-wij"] = "Onze meting",
 
         ["woning.schatting"] = "Uit je eigen metingen schatten wij {0} kWp.",
         ["woning.schatting-overnemen"] = "Deze schatting overnemen",
