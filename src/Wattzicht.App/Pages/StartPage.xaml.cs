@@ -60,15 +60,11 @@ public partial class StartPage : ContentPage
     private async Task KnipperAsync()
     {
         Logo.AnchorY = 0.5;
-        Logo.Scale = 0.88;
 
-        // Opkomen duurt even: een logo dat er in tweehonderd milliseconden staat voelt als een
-        // plaatje dat aanknipt, niet als iets dat wakker wordt.
-        await Task.WhenAll(
-            Logo.FadeTo(1, 420, Easing.CubicOut),
-            Logo.ScaleTo(1, 420, Easing.CubicOut));
-
-        await Task.Delay(260);
+        // Geen opkomst meer. Het opstartscherm van Android liet ditzelfde logo al zien, dus een
+        // fade vanaf nul betekende: logo zien, logo weg, logo weer terug. Nu staat het er gewoon en
+        // knippert het, alsof het scherm van het systeem het onze is.
+        await Task.Delay(180);
 
         // Een echte knipper gaat snel dicht en langzamer open, met een korte rust ertussen. Twee
         // keer, want één keer leest als een storing in het beeld.

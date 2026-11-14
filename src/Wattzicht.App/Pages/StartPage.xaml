@@ -11,10 +11,12 @@
          gebeuren (token verversen, weten waar je heen moet). -->
     <Grid>
         <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="18">
+            <!-- Meteen zichtbaar en op ware grootte: Android laat vlak hiervoor zijn eigen
+                 opstartscherm zien met ditzelfde logo. Begonnen we hier op nul, dan zag je het
+                 logo staan, verdwijnen en opnieuw opkomen. Nu loopt het door. -->
             <Image x:Name="Logo"
                    Source="logo.png"
                    HeightRequest="112" WidthRequest="112"
-                   Opacity="0"
                    SemanticProperties.Description="Wattzicht" />
             <Label x:Name="Naam"
                    Text="wattzicht"

@@ -77,9 +77,19 @@ public sealed class OpwekHerstelWorker(
                 .Where(s => s.HouseholdId == woning)
                 .ToDictionaryAsync(s => s.Date, ct);
 
+            // Dagen die er al staan maar nergens op slaan, eerst opruimen. Een tellerwissel kon
+            // eerder een hele levensopbrengst als dagopbrengst opleveren, en zo'n getal blijft staan
+            // tot iemand het weghaalt.
+            foreach (var rij in bestaand.Values.Where(r => r.PvKwh > SummaryService.MaximumDagKwh))
+            {
+                rij.PvKwh = 0;
+                rij.UpdatedAt = nu;
+                ingevuld++;
+            }
+
             foreach (var (dag, kwh) in perDag)
             {
-                if (kwh <= 0) continue;
+                if (kwh <= 0 || kwh > SummaryService.MaximumDagKwh) continue;
 
                 if (bestaand.TryGetValue(dag, out var rij))
                 {

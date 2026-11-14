@@ -81,6 +81,17 @@ public sealed class SummaryService(AppDbContext db, SavingsCalculator calculator
     /// De teller wint van de optelling als hij er is. De verdeling eronder (zelf gebruikt,
     /// teruggeleverd) blijft uit de optelling komen; daarvoor is een teller alleen niet genoeg.
     /// </summary>
+    /// <summary>
+    /// Meer dan dit op een dag bestaat niet op een huisdak.
+    ///
+    /// Honderdvijftig kilowattuur is al een installatie van vijftien kilowattpiek op een perfecte
+    /// junidag. Komt er meer uit, dan is het geen opbrengst maar een sprong in de teller: een
+    /// vervangen omvormer, of een bron die wisselt. Dat overkwam ons op 14-11-2026, toen een
+    /// kapotte CT-klem plaatsmaakte voor de echte teller en de hele levensopbrengst van 8.036 kWh
+    /// als dagopbrengst in de app verscheen.
+    /// </summary>
+    public const double MaximumDagKwh = 150;
+
     public async Task ApplyPvCounterAsync(Device apparaat, double tellerWh, DateTimeOffset gemetenOp, CancellationToken ct)
     {
         if (tellerWh <= 0) return;
@@ -129,8 +140,21 @@ public sealed class SummaryService(AppDbContext db, SavingsCalculator calculator
         standen[apparaat.Id] = (apparaat.PvCounterStartWh, apparaat.PvCounterLastWh);
 
         var totaalWh = standen.Values.Sum(x => Verschil(x.Begin, x.Laatst));
+        var totaalKwh = totaalWh / 1000d;
 
-        summary.PvKwh = Math.Round(totaalWh / 1000d, 3);
+        // Een sprong die geen dag kan zijn: de teller is van bron gewisseld of het apparaat is
+        // vervangen. Dan beginnen we hier opnieuw in plaats van die sprong als opbrengst te boeken.
+        // De rest van de dag telt gewoon door; alleen het stuk tot nu toe is niet te achterhalen.
+        if (totaalKwh > MaximumDagKwh)
+        {
+            apparaat.PvCounterStartWh = tellerWh;
+            apparaat.PvCounterLastWh = tellerWh;
+            summary.PvKwh = 0;
+            summary.UpdatedAt = clock.GetUtcNow();
+            return;
+        }
+
+        summary.PvKwh = Math.Round(totaalKwh, 3);
         summary.UpdatedAt = clock.GetUtcNow();
 
         var rates = await GetRatesAsync(apparaat.HouseholdId, dag, ct);
