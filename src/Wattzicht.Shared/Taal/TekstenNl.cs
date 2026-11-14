@@ -687,5 +687,9 @@ public static class TekstenNl
         ["push.morgen-zon-titel"] = "Morgen is het zonnig",
         ["push.morgen-zon-tekst"] = "Morgen zon tussen {0} en {1}. Zet je auto dan aan de lader.",
 
+
+        // ---- wat we niet meten, zeggen we ----
+        ["besparen.niet-gemeten"] = "niet gemeten",
+
     }.ToFrozenDictionary();
 }

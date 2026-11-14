@@ -684,5 +684,9 @@ public static class TekstenTr
         ["push.morgen-zon-titel"] = "Yarın güneşli olacak",
         ["push.morgen-zon-tekst"] = "Yarın {0} ile {1} arasında güneş var. Arabanızı o saatte şarja takın.",
 
+
+        // ---- wat we niet meten, zeggen we ----
+        ["besparen.niet-gemeten"] = "ölçülmedi",
+
     }.ToFrozenDictionary();
 }

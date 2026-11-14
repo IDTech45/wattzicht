@@ -15,6 +15,7 @@ public sealed class SummaryRow
 {
     private static readonly CultureInfo Nl = CultureInfo.GetCultureInfo("nl-NL");
 
+
     public DailySummaryDto Summary { get; }
     public SummaryRow(DailySummaryDto summary) => Summary = summary;
 
@@ -107,6 +108,11 @@ public partial class SavingsViewModel : BaseViewModel
     };
 
     [ObservableProperty] private string _totalSavedText = "€ 0,00";
+    /// <summary>Wat deze woning werkelijk meet; bepaalt of er een getal of "niet gemeten" staat.</summary>
+    [ObservableProperty] private bool _meetGebruik = true;
+    [ObservableProperty] private bool _meetNet = true;
+    [ObservableProperty] private bool _meetLaden = true;
+
     [ObservableProperty] private string _totalPvText = "0 kWh";
     [ObservableProperty] private string _totalSelfUseText = "0 kWh";
     [ObservableProperty] private string _totalExportText = "0 kWh";
@@ -231,6 +237,22 @@ public partial class SavingsViewModel : BaseViewModel
                 _ => (new DateOnly(today.Year, 1, 1), today)
             };
 
+            // Wat meten we eigenlijk? Dat staat in de momentopname, die weet welke soorten apparaat
+            // er hangen en of we ooit een waarde voor huis en net gezien hebben.
+            try
+            {
+                var live = (await _api.GetDashboardAsync()).Live;
+                MeetGebruik = live?.HasLoadData ?? true;
+                MeetNet = live?.HasGridData ?? true;
+                MeetLaden = live?.HasCharger ?? true;
+            }
+            catch (ApiException)
+            {
+                // Lukt dat niet, dan tonen we gewoon de getallen; liever een nul te veel dan een
+                // scherm dat niets durft te zeggen.
+                MeetGebruik = MeetNet = MeetLaden = true;
+            }
+
             var summaries = (await _api.GetDailySummariesAsync(from, to))
                 .OrderBy(s => SummaryRow.ToDate(s.Date))
                 .ToList();
@@ -335,9 +357,13 @@ public partial class SavingsViewModel : BaseViewModel
 
         TotalSavedText = Sum(scope, s => s.SavedEur).ToString("C2", Nl);
         TotalPvText = KwhText(Sum(scope, s => s.PvKwh));
-        TotalSelfUseText = KwhText(Sum(scope, s => s.SelfUseKwh));
-        TotalExportText = KwhText(Sum(scope, s => s.ExportKwh));
-        TotalChargedText = KwhText(Sum(scope, s => s.ChargedKwh));
+
+        // Zonder P1-meter of CT-klemmen weten we niet wat het huis verbruikt en wat er naar het net
+        // gaat. Dan hoort daar niet 0,0 kWh te staan alsof het gemeten is en toevallig nul was: dat
+        // leest als een installatie die niets doet. Hetzelfde geldt voor laden zonder laadpaal.
+        TotalSelfUseText = MeetGebruik ? KwhText(Sum(scope, s => s.SelfUseKwh)) : Taal.T("besparen.niet-gemeten");
+        TotalExportText = MeetNet ? KwhText(Sum(scope, s => s.ExportKwh)) : Taal.T("besparen.niet-gemeten");
+        TotalChargedText = MeetLaden ? KwhText(Sum(scope, s => s.ChargedKwh)) : Taal.T("besparen.niet-gemeten");
 
         // Lijst: nieuwste eerst
         Rows.Clear();

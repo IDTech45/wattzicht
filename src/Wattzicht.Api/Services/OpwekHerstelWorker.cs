@@ -4,23 +4,27 @@ using Wattzicht.Api.Data;
 namespace Wattzicht.Api.Services;
 
 /// <summary>
-/// De dagen die op nul bleven staan alsnog invullen.
+/// De dagen die nooit zijn ingevuld alsnog invullen.
 ///
 /// De dagopbrengst werd opgeteld uit losse vermogensmetingen. Bij een kastje dat de app zelf
 /// uitleest komt er alleen een meting binnen als iemand thuis is en de app openmaakt, en bovendien
 /// werkte die optelling helemaal niet op die route. Gevolg: bewoners met een Enphase, HomeWizard,
-/// Sessy, Alfen of Peblar zagen maandenlang overal nul staan, terwijl hun panelen gewoon draaiden.
+/// Sessy, Alfen of Peblar zagen maandenlang overal nul, terwijl hun panelen gewoon draaiden.
 ///
 /// De metingen zelf zijn er wel, met de tellerstand van de omvormer erbij. Daaruit is per dag
 /// precies uit te rekenen wat er is opgewekt: de stand aan het eind van de dag min die van de dag
-/// ervoor. Deze eenmalige ronde doet dat voor elke dag die nu op nul staat.
+/// ervoor.
 ///
-/// Alleen nullen worden ingevuld. Een dag waar al een getal staat blijft zoals hij is, want dan is
-/// er iets wat we niet van een teller weten en dat hoort niet overschreven te worden door een
-/// berekening achteraf.
+/// Belangrijk, en hier ging het de eerste keer mis: er stonden voor die woningen vaak helemaal geen
+/// dagen in de database. Een ronde die alleen bestaande nullen invult vindt dan niets en doet niets.
+/// Daarom begint deze ronde bij de metingen en maakt hij de ontbrekende dagen zelf aan.
+///
+/// Een dag waar al een getal staat blijft zoals hij is. Dan is er iets wat we niet van een teller
+/// weten, en dat hoort niet overschreven te worden door een berekening achteraf.
 /// </summary>
 public sealed class OpwekHerstelWorker(
     IServiceScopeFactory scopeFactory,
+    TimeProvider clock,
     ILogger<OpwekHerstelWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -52,15 +56,16 @@ public sealed class OpwekHerstelWorker(
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        // Alleen woningen waar iets te herstellen valt: een dag op nul.
-        var legeDagen = await db.DailySummaries.IgnoreQueryFilters()
-            .Where(s => s.PvKwh == 0)
-            .Select(s => new { s.HouseholdId, s.Date })
+        // Begin bij de metingen: welke woningen hebben überhaupt een tellerstand doorgegeven?
+        var woningen = await db.Readings.IgnoreQueryFilters()
+            .Where(r => r.PvEnergyWh != null && r.PvEnergyWh > 0)
+            .Select(r => r.Device!.HouseholdId)
+            .Distinct()
             .ToListAsync(ct);
 
-        if (legeDagen.Count == 0) return 0;
+        if (woningen.Count == 0) return 0;
 
-        var woningen = legeDagen.Select(d => d.HouseholdId).Distinct().ToList();
+        var nu = clock.GetUtcNow();
         var ingevuld = 0;
 
         foreach (var woning in woningen)
@@ -68,21 +73,35 @@ public sealed class OpwekHerstelWorker(
             var perDag = await DagenUitTellersAsync(db, woning, ct);
             if (perDag.Count == 0) continue;
 
-            var dagen = legeDagen.Where(d => d.HouseholdId == woning).Select(d => d.Date).ToHashSet();
+            var bestaand = await db.DailySummaries.IgnoreQueryFilters()
+                .Where(s => s.HouseholdId == woning)
+                .ToDictionaryAsync(s => s.Date, ct);
 
-            var rijen = await db.DailySummaries.IgnoreQueryFilters()
-                .Where(s => s.HouseholdId == woning && s.PvKwh == 0)
-                .ToListAsync(ct);
-
-            foreach (var rij in rijen)
+            foreach (var (dag, kwh) in perDag)
             {
-                if (!perDag.TryGetValue(rij.Date, out var kwh) || kwh <= 0) continue;
+                if (kwh <= 0) continue;
 
-                rij.PvKwh = Math.Round(kwh, 3);
+                if (bestaand.TryGetValue(dag, out var rij))
+                {
+                    // Staat er al een getal, dan laten we het staan.
+                    if (rij.PvKwh > 0) continue;
+
+                    rij.PvKwh = Math.Round(kwh, 3);
+                    rij.UpdatedAt = nu;
+                    ingevuld++;
+                    continue;
+                }
+
+                db.DailySummaries.Add(new DailySummary
+                {
+                    Id = Guid.NewGuid(),
+                    HouseholdId = woning,
+                    Date = dag,
+                    PvKwh = Math.Round(kwh, 3),
+                    UpdatedAt = nu,
+                });
                 ingevuld++;
             }
-
-            _ = dagen;
         }
 
         if (ingevuld > 0)

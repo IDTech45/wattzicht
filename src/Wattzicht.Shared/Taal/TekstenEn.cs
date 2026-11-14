@@ -679,5 +679,9 @@ public static class TekstenEn
         ["push.morgen-zon-titel"] = "Tomorrow will be sunny",
         ["push.morgen-zon-tekst"] = "Sun tomorrow between {0} and {1}. Plug your car in then.",
 
+
+        // ---- wat we niet meten, zeggen we ----
+        ["besparen.niet-gemeten"] = "not measured",
+
     }.ToFrozenDictionary();
 }

@@ -29,6 +29,46 @@ public partial class AppShell : Shell
     }
 
     /// <summary>
+    /// De terugknop van Android.
+    ///
+    /// Zonder dit doet Shell op een tabblad het enige wat hij kent: de app afsluiten. Sta je op
+    /// Besparing en druk je op terug, dan ben je ineens buiten. Dat voelt als een crash, zeker omdat
+    /// er geen scherm tussen zit.
+    ///
+    /// Nu gaat terug eerst naar het beginscherm, zoals elke app die vijf tabbladen heeft. Sta je al
+    /// op het beginscherm, dan mag de app sluiten; dat is wel wat iemand daar bedoelt. Staat er een
+    /// scherm bovenop (je panelen, het koppelen), dan handelt Shell het zelf af en gaan we een stap
+    /// terug in plaats van naar huis.
+    /// </summary>
+    protected override bool OnBackButtonPressed()
+    {
+        try
+        {
+            if (Current?.Navigation?.NavigationStack.Count > 1
+                || Current?.Navigation?.ModalStack.Count > 0)
+            {
+                return base.OnBackButtonPressed();
+            }
+
+            var route = Current?.CurrentState?.Location?.OriginalString ?? string.Empty;
+            if (route.Contains("/home", StringComparison.OrdinalIgnoreCase)
+                || route.Contains("login", StringComparison.OrdinalIgnoreCase)
+                || route.Contains("start", StringComparison.OrdinalIgnoreCase))
+            {
+                return base.OnBackButtonPressed();
+            }
+
+            GoToAsync(Routes.Home);
+            return true;
+        }
+        catch (Exception)
+        {
+            // Nooit vastlopen op de terugknop: in het ergste geval doet hij wat hij altijd deed.
+            return base.OnBackButtonPressed();
+        }
+    }
+
+    /// <summary>
     /// Elk scherm komt rustig in beeld in plaats van er ineens te staan.
     ///
     /// Shell wisselt een pagina hard om: het ene moment staat er het een, het volgende het ander.
