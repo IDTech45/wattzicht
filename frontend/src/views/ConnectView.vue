@@ -53,6 +53,22 @@ const solaxSerienummer = ref('')
 
 const ingelogd = computed(() => !!token.value)
 
+/**
+ * Komt dit bezoek uit de app?
+ *
+ * Dan is deze pagina geen koppelscherm maar een landingsplek: Enphase stuurt hier naartoe, wij maken
+ * de koppeling af met het kaartje en daarna hoort hier niets anders te staan dan dat het klaar is.
+ * Een inlogformulier eronder is op dat moment een vraag te veel, en voor wie met Google inlogt zelfs
+ * een onmogelijke: dat formulier kent alleen een wachtwoord.
+ */
+const uitDeApp = computed(() => typeof route.query.state === 'string' && !!route.query.state)
+const klaarVoorApp = ref(false)
+
+/** Het tabblad sluiten als de browser dat toestaat; anders blijft de melding gewoon staan. */
+function sluitVenster() {
+  window.close()
+}
+
 function leesToken(): string | null {
   try {
     return localStorage.getItem(TOKEN_KEY)
@@ -295,6 +311,7 @@ async function enphaseAfrondenMetKaartje(code: string, kaartje: string) {
   bezig.value = true
   try {
     await enphaseCallback(code, kaartje)
+    klaarVoorApp.value = true
     gelukt.value = 'Enphase is gekoppeld. Je kunt dit venster sluiten en terug naar de app; '
       + 'je oude cijfers staan er binnen een paar minuten in.'
   } catch (e) {
@@ -345,7 +362,7 @@ onMounted(async () => {
     <div class="wz-wrap koppel">
       <h1>Apparaten koppelen</h1>
 
-      <p v-if="!ingelogd" class="wz-lead">
+      <p v-if="!ingelogd && !uitDeApp" class="wz-lead">
         {{
           nieuwAccount
             ? 'Maak een account aan voor je woning. Daarna koppel je je omvormer, batterij of laadpaal.'
@@ -356,9 +373,16 @@ onMounted(async () => {
       <p v-if="fout" class="melding melding--fout">{{ fout }}</p>
       <p v-if="gelukt" class="melding melding--goed">{{ gelukt }}</p>
 
+      <!-- Uit de app: hier valt verder niets te doen. Geen inlog, geen apparatenlijst, alleen de
+           uitkomst en de weg terug. -->
+      <p v-if="uitDeApp && !klaarVoorApp && !fout" class="wz-lead">Een moment, we maken het af…</p>
+      <button v-if="uitDeApp && klaarVoorApp" class="wz-btn" type="button" @click="sluitVenster">
+        Terug naar de app
+      </button>
+
       <!-- Inloggen of aanmelden -->
       <form
-        v-if="!ingelogd"
+        v-if="!ingelogd && !uitDeApp"
         class="wz-panel kaart"
         @submit.prevent="nieuwAccount ? aanmelden() : inloggen()"
       >

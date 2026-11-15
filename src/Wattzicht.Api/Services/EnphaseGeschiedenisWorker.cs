@@ -38,6 +38,27 @@ public sealed class EnphaseGeschiedenisWorker(
     /// </summary>
     public const int VersDagen = 7;
 
+    /// <summary>
+    /// Moet deze installatie nu opgehaald worden?
+    ///
+    /// Drie regels in één zin, en ze hebben elk een prijs toen ze ontbraken.
+    ///
+    /// Zonder cloudtoken nooit: er valt niets te halen. Zetten we de datum tóch, dan geldt die
+    /// geschiedenis voorgoed als opgehaald. Zo werd op 14-11-2026 mijn lokale gateway afgestempeld,
+    /// en toen ik de nacht erna de cloud koppelde bleef mijn jaar leeg met "al gedaan" ernaast.
+    ///
+    /// Nog nooit gehaald: meteen, niet wachten tot vanavond. Dat is het eerste wat iemand wil zien
+    /// nadat hij gekoppeld heeft.
+    ///
+    /// En daarna alleen in het avondvenster, als de dag voorbij is. Zie <see cref="AvondRonde"/>.
+    /// </summary>
+    internal static bool Nodig(DateTimeOffset nu, DateTimeOffset? opgehaaldOp, bool heeftToken)
+    {
+        if (!heeftToken) return false;
+        if (opgehaaldOp is null) return true;
+        return AvondRonde.IsTijd(nu, opgehaaldOp);
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
@@ -97,6 +118,8 @@ public sealed class EnphaseGeschiedenisWorker(
             .Where(d => d.Brand == DeviceBrand.Enphase)
             .ToListAsync(ct);
 
+        // Het token zit versleuteld bij het apparaat, dus de volgorde is: eerst grofweg filteren op
+        // het moment, dan per apparaat kijken of er wel iets te halen valt.
         var apparaten = alles
             .Where(d => d.PvHistorieOpgehaaldAt is null || AvondRonde.IsTijd(nu, d.PvHistorieOpgehaaldAt))
             .ToList();
@@ -117,10 +140,17 @@ public sealed class EnphaseGeschiedenisWorker(
                     ? vandaag.AddDays(-MaximaalDagen)
                     : vandaag.AddDays(-VersDagen);
 
-                var reeks = await enphase.DagelijkseOpwekAsync(apparaat, credentials, vanaf, ct);
+                // Zonder cloudtoken valt er niets te halen, en dan is er ook niets gebeurd. Dat
+                // onderscheid is wezenlijk: zetten we de datum toch, dan geldt die geschiedenis als
+                // opgehaald en komt hij er nooit meer. Bij mij werd op 14-11-2026 om 22:07 mijn
+                // lokale gateway afgestempeld; toen ik de nacht erna de cloud koppelde, stond er dus
+                // "al gedaan" en bleef mijn jaar leeg. Dit kost niets: zonder token doet de connector
+                // geen enkele aanroep.
+                var heeftToken = credentials.TryGetValue("refresh_token", out var token)
+                                 && !string.IsNullOrWhiteSpace(token);
+                if (!Nodig(nu, apparaat.PvHistorieOpgehaaldAt, heeftToken)) continue;
 
-                // Ook zonder reeks de datum zetten: een apparaat zonder cloudkoppeling hoeft niet bij
-                // elke herstart opnieuw geprobeerd te worden.
+                var reeks = await enphase.DagelijkseOpwekAsync(apparaat, credentials, vanaf, ct);
                 apparaat.PvHistorieOpgehaaldAt = nu;
 
                 if (credentials.Changed)

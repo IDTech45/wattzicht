@@ -1344,6 +1344,12 @@ public static class HouseholdEndpoints
                 bestaand.ExternalId = found.ExternalId;
                 bestaand.EncryptedCredentials = protector.Protect(merged);
                 bestaand.LastError = null;
+
+                // Opnieuw koppelen betekent: er kan een bron bij zijn gekomen. De geschiedenis gaat
+                // dus weer open, want wat er bij de vorige inloggegevens niet te halen viel, valt er
+                // nu misschien wel te halen. Zonder dit bleef mijn jaar leeg nadat ik de cloud eraan
+                // hing: de vlag stond al op gedaan van een poging die nooit iets kon opleveren.
+                bestaand.PvHistorieOpgehaaldAt = null;
                 if (single && !string.IsNullOrWhiteSpace(request.Name))
                 {
                     bestaand.Name = request.Name.Trim();
