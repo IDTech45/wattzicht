@@ -117,7 +117,10 @@
                                 IsVisible="{Binding HasLoaded}" />
                         <Button Text="{t:T apparaten.oude-cijfers}"
                                 Style="{StaticResource LinkButton}"
-                                Command="{Binding NaarInstellingenCommand}" />
+                                Command="{Binding OudeCijfersCommand}" />
+                        <Label Text="{Binding ImportResultaat}"
+                               Style="{StaticResource SubtitleLabel}" FontSize="13"
+                               IsVisible="{Binding HeeftImportResultaat}" />
                         <BoxView HeightRequest="96" Color="Transparent" />
                     </VerticalStackLayout>
                 </CollectionView.Footer>

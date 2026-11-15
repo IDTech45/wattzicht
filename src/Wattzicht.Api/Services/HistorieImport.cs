@@ -37,12 +37,25 @@ public static class HistorieImport
     /// <summary>Woorden die een datumkolom verraden.</summary>
     private static readonly string[] DatumWoorden = ["date", "datum", "time", "tijd", "dag", "day"];
 
-    /// <summary>Woorden die een kolom met opgewekte energie verraden.</summary>
+    /// <summary>
+    /// Woorden die een kolom met opgewekte energie verraden.
+    ///
+    /// "produ" vangt production, productie, produced én geproduceerde. Dat laatste is geen theorie:
+    /// de Nederlandse export van Enphase heeft de kop "Geproduceerde energie (Wh)", en daar paste
+    /// geen van de oudere woorden op. Het bestand werd dus geweigerd met "geen kolom met opgewekte
+    /// energie" terwijl die kolom er wel degelijk stond.
+    /// </summary>
     private static readonly string[] EnergieWoorden =
-        ["energy produced", "produced", "production", "productie", "opwek", "opbrengst", "yield", "generation", "pv"];
+        ["produ", "opwek", "opgewekt", "opbrengst", "yield", "generation", "pv"];
 
     /// <summary>Zonder bovengrens kan iemand met één bestand het halve geheugen opeten.</summary>
     public const int MaximumRegels = 200_000;
+
+    /// <summary>
+    /// Wat een dak op één dag hoogstens maakt. Daarboven is het geen dagopbrengst maar een teller.
+    /// Zelfde grens als bij onze eigen metingen, zodat één bestand niet iets kan wat een meting niet mag.
+    /// </summary>
+    public const double MaximumDagKwh = 150;
 
     /// <summary>Verder terug dan dit bewaren we niet: zonnepanelen bestaan, maar deze app niet.</summary>
     public static readonly DateOnly VroegsteDatum = new(2000, 1, 1);
@@ -129,6 +142,16 @@ public static class HistorieImport
 
             // Negatief bestaat niet bij opwek; dat is een leesfout of een andere kolom.
             if (kwh < 0)
+            {
+                overgeslagen++;
+                continue;
+            }
+
+            // En een dag die groter is dan een dak kan maken is geen dag. In de export van Enphase
+            // staat op de dag van de installatie de hele levensteller: bij één systeem 4.904.824 Wh
+            // op 14 oktober 2023, bijna vijf megawattuur op één dag. Die ene regel zou het hele
+            // jaaroverzicht platdrukken, want alle echte dagen vallen er in het niet bij.
+            if (kwh > MaximumDagKwh)
             {
                 overgeslagen++;
                 continue;

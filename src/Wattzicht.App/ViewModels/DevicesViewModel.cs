@@ -12,17 +12,19 @@ public partial class DevicesViewModel : BaseViewModel
     private readonly ApiClient _api;
     private readonly AuthService _auth;
     private readonly LokaleMeter _lokaal;
+    private readonly HistorieInlezer _historie;
 
     public ObservableCollection<DeviceItem> Devices { get; } = [];
 
     [ObservableProperty] private bool _isRefreshing;
     [ObservableProperty] private bool _hasLoaded;
 
-    public DevicesViewModel(ApiClient api, AuthService auth, LokaleMeter lokaal)
+    public DevicesViewModel(ApiClient api, AuthService auth, LokaleMeter lokaal, HistorieInlezer historie)
     {
         _api = api;
         _auth = auth;
         _lokaal = lokaal;
+        _historie = historie;
         Title = Taal.T("apparaten.apparaten");
     }
 
@@ -120,9 +122,24 @@ public partial class DevicesViewModel : BaseViewModel
         }, _auth);
     }
 
-    /// <summary>Naar het scherm waar je je oude cijfers kunt inlezen.</summary>
+    /// <summary>
+    /// Je oude cijfers inlezen, hier ter plekke.
+    ///
+    /// Deze knop stuurde je naar Instellingen, en daar moest je zelf naar beneden scrollen om het
+    /// blokje te vinden. Nu opent hij meteen de bestandskiezer en staat de uitkomst eronder.
+    /// </summary>
     [RelayCommand]
-    private Task NaarInstellingenAsync() => Shell.Current.GoToAsync(AppShell.Routes.Settings);
+    private async Task OudeCijfersAsync()
+    {
+        ImportResultaat = await _historie.KiesEnLeesAsync() ?? ImportResultaat;
+        if (!string.IsNullOrEmpty(ImportResultaat)) await LoadAsync();
+    }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HeeftImportResultaat))]
+    private string? _importResultaat;
+
+    public bool HeeftImportResultaat => !string.IsNullOrEmpty(ImportResultaat);
 
     /// <summary>
     /// Een apparaat hernoemen.

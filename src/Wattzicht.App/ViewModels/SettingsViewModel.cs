@@ -467,54 +467,11 @@ public partial class SettingsViewModel : BaseViewModel
     private async Task HistorieImporterenAsync()
     {
         ImportResultaat = null;
-
+        IsBusy = true;
         try
         {
-            var keuze = await FilePicker.Default.PickAsync(new PickOptions
-            {
-                PickerTitle = Taal.T("historie.kies-bestand"),
-                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-                {
-                    // Android kent geen bestandsextensies maar MIME-typen, en een CSV uit een
-                    // mailbijlage komt daar regelmatig binnen als text/plain of als octet-stream.
-                    [DevicePlatform.Android] = ["text/csv", "text/comma-separated-values", "text/plain", "application/vnd.ms-excel", "application/octet-stream"],
-                    [DevicePlatform.iOS] = ["public.comma-separated-values-text", "public.plain-text"],
-                    [DevicePlatform.WinUI] = [".csv", ".txt"],
-                }),
-            });
-
-            if (keuze is null) return;
-
-            IsBusy = true;
-            await using var stroom = await keuze.OpenReadAsync();
-            var uit = await _api.ImporteerHistorieAsync(stroom, keuze.FileName);
-
-            ImportResultaat = string.Format(
-                Taal.T("historie.gelukt"),
-                uit.Dagen,
-                uit.Van.ToString("d MMM yyyy", Nl),
-                uit.Tot.ToString("d MMM yyyy", Nl),
-                uit.TotaalKwh.ToString("0", Nl));
-
-            if (uit.Overgeslagen > 0)
-            {
-                ImportResultaat += " " + string.Format(Taal.T("historie.overgeslagen"), uit.Overgeslagen);
-            }
-
-            // Eerlijk erbij: een ingelezen dag heeft alleen opwek. Wat iemand die dag zelf gebruikte
-            // of terugleverde weten we niet, dus blijft de besparing van die dagen leeg. Dat is
-            // beter dan een aanname als bedrag neerzetten, maar je moet het wel weten.
-            ImportResultaat += " " + Taal.T("historie.alleen-opwek");
-        }
-        catch (ApiException ex)
-        {
-            // De server vertelt precies wat er niet klopte, inclusief welke kolommen hij zag staan.
-            // Dat is hier de hele winst: "ongeldig bestand" helpt niemand.
-            ImportResultaat = ex.Message;
-        }
-        catch (Exception)
-        {
-            ImportResultaat = Taal.T("historie.mislukt");
+            // Zelfde pad als de knop bij je apparaten; zie HistorieInlezer.
+            ImportResultaat = await _historie.KiesEnLeesAsync();
         }
         finally
         {
@@ -562,11 +519,14 @@ public partial class SettingsViewModel : BaseViewModel
     [ObservableProperty] private bool _notifyMonthly = true;
     private bool _syncingNotify;
 
-    public SettingsViewModel(ApiClient api, AuthService auth, PushService push)
+    private readonly HistorieInlezer _historie;
+
+    public SettingsViewModel(ApiClient api, AuthService auth, PushService push, HistorieInlezer historie)
     {
         _api = api;
         _auth = auth;
         _push = push;
+        _historie = historie;
         Title = Taal.T("meer.instellingen");
     }
 

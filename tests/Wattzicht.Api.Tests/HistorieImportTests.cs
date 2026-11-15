@@ -262,4 +262,44 @@ public sealed class HistorieImportTests
 
         Assert.Equal(13.5, Assert.Single(uit.Dagen).Kwh, 3);
     }
+
+    [Fact]
+    public void De_nederlandse_export_van_enphase_wordt_gelezen()
+    {
+        // Precies de kop en de opmaak uit het bestand dat Enphase hier teruggeeft: dag/maand/jaar,
+        // watturen, en onderaan een regel "Totaal". Hierop liep het stuk met "geen kolom met
+        // opgewekte energie", want geen van onze woorden paste op "Geproduceerde energie".
+        var inhoud = string.Join("\n",
+            "Datum/tijd,Geproduceerde energie (Wh)",
+            "08/10/2023,293",
+            "15/10/2023,6746",
+            "13/11/2026,13425",
+            "Totaal,16635429");
+
+        var uit = HistorieImport.Lees(inhoud, new DateOnly(2026, 11, 15));
+
+        Assert.True(uit.Gelukt);
+        Assert.Equal(3, uit.Dagen.Count);
+
+        // Watturen, dus delen door duizend.
+        Assert.Equal(0.293, uit.Dagen[0].Kwh, 3);
+        Assert.Equal(new DateOnly(2023, 10, 8), uit.Dagen[0].Datum);
+        Assert.Equal(13.425, uit.Dagen[2].Kwh, 3);
+    }
+
+    [Fact]
+    public void De_levensteller_op_de_installatiedag_telt_niet_mee()
+    {
+        // In deze export staat op 14 oktober 2023 de hele levensteller: 4.904.824 Wh, bijna vijf
+        // megawattuur op één dag. Eén zo'n regel drukt het hele jaaroverzicht plat.
+        var inhoud = string.Join("\n",
+            "Datum/tijd,Geproduceerde energie (Wh)",
+            "14/10/2023,4904824",
+            "15/10/2023,6746");
+
+        var uit = HistorieImport.Lees(inhoud, new DateOnly(2026, 11, 15));
+
+        var dag = Assert.Single(uit.Dagen);
+        Assert.Equal(new DateOnly(2023, 10, 15), dag.Datum);
+    }
 }
