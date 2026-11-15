@@ -410,7 +410,9 @@ public partial class SavingsViewModel : BaseViewModel
                 Co2Text = s.Co2AvoidedKg >= 1000
                     ? (s.Co2AvoidedKg / 1000).ToString("N1", Nl) + " " + Taal.T("besparen.ton")
                     : s.Co2AvoidedKg.ToString("N0", Nl) + " " + Taal.T("besparen.kg");
-                SelfSufficiencyText = s.SelfSufficiencyPercent + "%";
+                SelfSufficiencyText = s.SelfSufficiencyPercent is { } deel
+                    ? deel + "%"
+                    : Taal.T("besparen.niet-gemeten");
                 PerformanceLow = s.Performance.Status == PerformanceStatus.Low;
                 PerformanceText = s.Performance.Message;
             }

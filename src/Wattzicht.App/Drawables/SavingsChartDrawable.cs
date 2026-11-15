@@ -59,7 +59,11 @@ public sealed class SavingsChartDrawable : IDrawable
         // Max-waarde linksboven
         canvas.FontColor = TextColor;
         canvas.FontSize = 11;
-        canvas.DrawString($"{ValuePrefix}{max:0.00}{ValueSuffix}".Replace('.', ','),
+        // Centen bij euro's, hele kilowatturen bij kWh: "106,00 kWh" leest als een meetfout.
+        var maxTekst = ValueSuffix.Contains("kWh", StringComparison.OrdinalIgnoreCase)
+            ? $"{ValuePrefix}{max:0.#}{ValueSuffix}"
+            : $"{ValuePrefix}{max:0.00}{ValueSuffix}";
+        canvas.DrawString(maxTekst.Replace('.', ','),
             new RectF(plot.Left, dirtyRect.Y + 2, plot.Width, 14), HorizontalAlignment.Left, VerticalAlignment.Top);
 
         // Hulplijn op 50%

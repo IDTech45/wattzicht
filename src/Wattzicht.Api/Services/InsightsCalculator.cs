@@ -32,12 +32,27 @@ public static class InsightsCalculator
         var consumption = solarUsed + yearDays.Sum(d => d.ImportKwh);
         var export = yearDays.Sum(d => d.ExportKwh);
 
+        // Twee percentages die alleen iets betekenen als er aan de verbruikskant gemeten is.
+        //
+        // Zonder P1-meter of CT-klemmen staat zelfverbruik op nul en teruglevering ook, en dan rolt
+        // er "100% van je opwek zelf gebruikt" uit: je hebt immers niets teruggeleverd. Dat is geen
+        // uitkomst maar een gat in de meting. Bij een woning die zijn oude cijfers heeft ingelezen
+        // geldt hetzelfde: zo'n dag heeft alleen opwek.
+        //
+        // Daarom null in plaats van een getal. De app laat dan "niet gemeten" zien, en dat is wat we
+        // weten.
+        var gemetenVerbruik = consumption > 0 || export > 0;
+
         return new SustainabilityDto(
             year,
             Math.Round(pv, 0),
             Math.Round(pv * co2KgPerKwh, 0),
-            consumption > 0 ? (int)Math.Round(Math.Min(1, solarUsed / consumption) * 100) : 0,
-            pv > 0 ? (int)Math.Round(Math.Clamp((pv - export) / pv, 0, 1) * 100) : 0,
+            gemetenVerbruik && consumption > 0
+                ? (int)Math.Round(Math.Min(1, solarUsed / consumption) * 100)
+                : null,
+            gemetenVerbruik && pv > 0
+                ? (int)Math.Round(Math.Clamp((pv - export) / pv, 0, 1) * 100)
+                : null,
             performance);
     }
 

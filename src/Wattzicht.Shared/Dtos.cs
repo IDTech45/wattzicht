@@ -762,8 +762,8 @@ public sealed record SustainabilityDto(
     int Year,
     double PvKwh,
     double Co2AvoidedKg,
-    int SelfSufficiencyPercent,
-    int SelfConsumptionPercent,
+    int? SelfSufficiencyPercent,
+    int? SelfConsumptionPercent,
     PerformanceDto Performance);
 
 /// <summary>Een kans voor de installateur (en besparing voor de klant).</summary>
