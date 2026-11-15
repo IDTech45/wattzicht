@@ -1292,7 +1292,13 @@ public static class HouseholdEndpoints
         }
 
         var now = clock.GetUtcNow();
-        var existing = await db.Devices
+
+        // IgnoreQueryFilters, met de woning hier expliciet in de vraag. Het tenantfilter leunt op de
+        // ingelogde gebruiker, en de terugkeerpagina van Enphase heeft er geen: dan geeft deze vraag
+        // nul apparaten terug en denkt de koppeling dat er nog niets staat. Gevolg bij mij op
+        // 15-11-2026: mijn dak kwam er een tweede keer in, als apparaat "Ibo" naast "Zonnepanelen",
+        // precies de dubbeltelling die ZelfdeInstallatie hoort te voorkomen.
+        var existing = await db.Devices.IgnoreQueryFilters()
             .Where(d => d.HouseholdId == householdId && d.Brand == request.Brand)
             .ToListAsync(ct);
 

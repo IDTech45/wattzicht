@@ -82,7 +82,7 @@
                 <Border Style="{StaticResource Card}" IsVisible="{Binding ToonLeeg}" Padding="20">
                     <VerticalStackLayout Spacing="8">
                         <Label Text="{t:T panelen.nog-niets}" Style="{StaticResource CardTitle}" />
-                        <Label Text="{t:T panelen.nog-niets-uitleg}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                        <Label Text="{Binding NogNietsUitleg}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
                     </VerticalStackLayout>
                 </Border>
 

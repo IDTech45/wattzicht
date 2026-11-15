@@ -652,6 +652,7 @@ public static class TekstenNl
         ["panelen.te-donker"] = "Te weinig zon om panelen met elkaar te vergelijken.",
         ["panelen.nog-niets"] = "Nog geen panelen gezien",
         ["panelen.nog-niets-uitleg"] = "Je omvormer vertelt dit alleen aan iemand op je eigen wifi. Open de app een keer thuis, dan staan ze hier.",
+        ["panelen.nog-niets-cloud"] = "Je omvormer is net gekoppeld. De eerste uitlezing komt binnen een paar uur; daarna staan je panelen hier.",
 
 
         // ---- je eigen Enphase-sleutel ----

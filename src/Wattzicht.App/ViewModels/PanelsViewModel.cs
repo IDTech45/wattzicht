@@ -33,6 +33,21 @@ public partial class PanelsViewModel(ApiClient api, AuthService auth) : BaseView
     [NotifyPropertyChangedFor(nameof(ToonLeeg))]
     private bool _hasLoaded;
 
+    /// <summary>
+    /// Waarom er nog geen panelen staan, in de woorden die bij deze koppeling horen.
+    ///
+    /// Bij een gateway in huis klopt "open de app een keer thuis op je wifi". Bij een koppeling via
+    /// de cloud van Enphase slaat dat nergens op: daar hoeft niemand thuis te zijn, het duurt alleen
+    /// even voor de eerste uitlezing binnen is. Eén vaste zin voor allebei is dus voor de helft van
+    /// de mensen een verkeerde aanwijzing.
+    /// </summary>
+    public string NogNietsUitleg => Taal.T(ViaDeCloud ? "panelen.nog-niets-cloud" : "panelen.nog-niets-uitleg");
+
+    /// <summary>Of dit apparaat bij de fabrikant wordt uitgelezen in plaats van op het thuisnetwerk.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NogNietsUitleg))]
+    private bool _viaDeCloud;
+
     [ObservableProperty] private string _kop = string.Empty;
     [ObservableProperty] private string _bijgewerkt = string.Empty;
     [ObservableProperty] private string _oordeel = string.Empty;
@@ -73,6 +88,18 @@ public partial class PanelsViewModel(ApiClient api, AuthService auth) : BaseView
 
         await RunSafeAsync(async () =>
         {
+            // Welke weg dit apparaat binnenkomt bepaalt wat er staat als er nog niets is.
+            try
+            {
+                var apparaat = (await _api.GetDevicesAsync()).FirstOrDefault(d => d.Id == DeviceId);
+                ViaDeCloud = apparaat is not null
+                    && !(apparaat.ExternalId ?? string.Empty).Contains("-lokaal-", StringComparison.OrdinalIgnoreCase);
+            }
+            catch (ApiException)
+            {
+                ViaDeCloud = false;
+            }
+
             var uit = await _api.PanelenAsync(DeviceId);
 
             Panelen.Clear();

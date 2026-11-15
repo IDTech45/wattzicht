@@ -649,6 +649,7 @@ public static class TekstenTr
         ["panelen.te-donker"] = "Panelleri karşılaştırmak için güneş yetersiz.",
         ["panelen.nog-niets"] = "Henüz panel görülmedi",
         ["panelen.nog-niets-uitleg"] = "İnvertörünüz bunu yalnızca kendi wifinizdeki birine söyler. Uygulamayı evde bir kez açın, burada görünecekler.",
+        ["panelen.nog-niets-cloud"] = "İnvertörün az önce bağlandı. İlk okuma birkaç saat içinde gelir; panellerin ondan sonra burada görünür.",
 
 
         // ---- je eigen Enphase-sleutel ----

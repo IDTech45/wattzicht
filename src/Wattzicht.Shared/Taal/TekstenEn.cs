@@ -644,6 +644,7 @@ public static class TekstenEn
         ["panelen.te-donker"] = "Too little sun to compare panels.",
         ["panelen.nog-niets"] = "No panels seen yet",
         ["panelen.nog-niets-uitleg"] = "Your inverter only tells this to someone on your own wifi. Open the app at home once and they will be here.",
+        ["panelen.nog-niets-cloud"] = "Your inverter was just connected. The first reading arrives within a few hours; your panels show up here after that.",
 
 
         // ---- je eigen Enphase-sleutel ----
