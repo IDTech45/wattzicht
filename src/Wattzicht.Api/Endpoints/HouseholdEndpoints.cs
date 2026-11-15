@@ -120,6 +120,10 @@ public static class HouseholdEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
 
+        household.MapGet("/connectors/enphase/diagnose", EnphaseDiagnoseAsync)
+            .WithSummary("Welke Enphase-adressen dit abonnement vrijgeeft; één keer stellen, niet in een ronde.")
+            .Produces<IReadOnlyList<string>>();
+
         household.MapGet("/historie/maanden", MaandOpgaveAsync)
             .WithSummary("De eigen opgave per maand van één jaar.")
             .Produces<MaandOpgaveJaarDto>();
@@ -1592,6 +1596,36 @@ public static class HouseholdEndpoints
         db.Devices.Remove(device);
         await db.SaveChangesAsync(ct);
         return Results.NoContent();
+    }
+
+    private static async Task<IResult> EnphaseDiagnoseAsync(
+        HttpContext http,
+        AppDbContext db,
+        ConnectorRegistry registry,
+        CredentialProtector protector,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+
+        var apparaat = await db.Devices
+            .FirstOrDefaultAsync(d => d.HouseholdId == householdId && d.Brand == DeviceBrand.Enphase, ct);
+        if (apparaat is null) return Results.Ok(new[] { "geen Enphase in deze woning" });
+
+        if (registry.Get(DeviceBrand.Enphase) is not EnphaseConnector enphase)
+        {
+            return Results.Ok(new[] { "Enphase staat op deze server niet ingesteld" });
+        }
+
+        var credentials = new DeviceCredentials(protector.Unprotect(apparaat.EncryptedCredentials));
+        var uit = await enphase.DiagnoseAsync(apparaat, credentials, ct);
+
+        if (credentials.Changed)
+        {
+            apparaat.EncryptedCredentials = protector.Protect(credentials.ToDictionary());
+            await db.SaveChangesAsync(ct);
+        }
+
+        return Results.Ok(uit.Select(r => $"{r.Adres}: {r.Status}").ToList());
     }
 
     private static async Task<IResult> MaandOpgaveAsync(

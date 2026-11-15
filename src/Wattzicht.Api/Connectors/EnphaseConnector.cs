@@ -422,6 +422,61 @@ public sealed class EnphaseConnector(
     ///
     /// Eén aanroep voor de hele reeks: dat telt, want het developer-plan heeft een maandquotum.
     /// </summary>
+    /// <summary>
+    /// Wat dit Enphase-abonnement ons werkelijk laat ophalen.
+    ///
+    /// Nodig omdat het gokken was. De koppeling lukt, het token is geldig, en tóch komt er geen
+    /// geschiedenis binnen: het gratis Watt-plan geeft sommige adressen simpelweg niet vrij en
+    /// antwoordt met 401 "Not authorized to access this resource". Van buitenaf is dat niet te
+    /// onderscheiden van een verlopen toestemming, en dan ga je de verkeerde kant op zoeken.
+    ///
+    /// Deze probeert de adressen die ertoe doen en zegt per adres wat eruit kwam. Vier aanroepen,
+    /// dus niet iets om in een ronde te zetten; dit is een vraag die je één keer stelt.
+    /// </summary>
+    public async Task<IReadOnlyList<(string Adres, int Status)>> DiagnoseAsync(
+        Device device, DeviceCredentials credentials, CancellationToken ct)
+    {
+        var refreshToken = credentials.Get("refresh_token");
+        if (string.IsNullOrWhiteSpace(refreshToken)) return [("geen cloudkoppeling", 0)];
+
+        var sleutels = Sleutels(credentials);
+        var systemId = credentials.Get("system_id") ?? device.ExternalId;
+        if (string.IsNullOrWhiteSpace(systemId)) return [("geen systeemnummer", 0)];
+
+        var tokens = await VernieuwAsync(refreshToken, sleutels, ct);
+        credentials.Set("refresh_token", tokens.RefreshToken);
+        var client = Client(tokens.AccessToken);
+
+        var vandaag = DateOnly.FromDateTime(DateTime.UtcNow);
+        var paden = new[]
+        {
+            $"/api/v4/systems/{systemId}/summary",
+            $"/api/v4/systems/{systemId}/energy_lifetime?start_date={vandaag.AddDays(-7):yyyy-MM-dd}",
+            $"/api/v4/systems/{systemId}/telemetry/production_micro?granularity=day",
+            $"/api/v4/systems/{systemId}/rgm_stats",
+            $"/api/v4/systems/{systemId}/production_meter_readings",
+        };
+
+        var uitkomst = new List<(string, int)>();
+        foreach (var pad in paden)
+        {
+            var url = pad + (pad.Contains('?') ? "&" : "?") + "key=" + Uri.EscapeDataString(sleutels.Key);
+            try
+            {
+                using var antwoord = await client.GetAsync(url, ct);
+                uitkomst.Add((Naam(pad), (int)antwoord.StatusCode));
+            }
+            catch (Exception)
+            {
+                uitkomst.Add((Naam(pad), -1));
+            }
+        }
+
+        return uitkomst;
+
+        static string Naam(string pad) => pad.Split('/').Last().Split('?').First();
+    }
+
     /// <summary>Of we al een keer gemeld hebben dat de dagreeks niet in het plan zit; één keer is genoeg.</summary>
     private static bool NietInHetPlanGemeld;
 
