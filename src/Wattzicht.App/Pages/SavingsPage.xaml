@@ -95,6 +95,13 @@
                                 <Label Text="{Binding TotalSavedText}" Style="{StaticResource StatValueLarge}" TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
                                 <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
                             </Grid>
+                            <!-- Wisselen tussen euro's en kilowatturen. Wie zijn oude cijfers heeft
+                                 ingelezen heeft alleen opwek, en dan is een besparingsgrafiek leeg. -->
+                            <Button Text="{Binding GrafiekKnopTekst}"
+                                    Style="{StaticResource LinkButton}"
+                                    HorizontalOptions="End"
+                                    Padding="0"
+                                    Command="{Binding GrafiekWisselenCommand}" />
                             <GraphicsView x:Name="ChartView"
                                           Drawable="{Binding Chart}"
                                           HeightRequest="160"

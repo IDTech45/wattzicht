@@ -166,6 +166,34 @@ public partial class SavingsViewModel : BaseViewModel
     private bool _vandaag = true;
 
     /// <summary>
+    /// Wat de grafiek tekent: kilowatturen of euro's.
+    ///
+    /// Standaard kiest hij zelf: is er niets bespaard maar wel opgewekt, dan de opwek. Zodra de
+    /// bewoner er zelf aan draait blijft zijn keuze staan; een scherm dat jouw keuze bij de
+    /// volgende verversing terugzet is erger dan geen knop.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(GrafiekKnopTekst))]
+    private bool _grafiekInKwh;
+
+    private bool _grafiekHandmatig;
+
+    public string GrafiekKnopTekst => Taal.T(GrafiekInKwh ? "besparen.toon-euro" : "besparen.toon-kwh");
+
+    private List<DailySummaryDto> _laatsteSamenvattingen = [];
+    private DateOnly _laatsteVan;
+    private DateOnly _laatsteTot;
+
+    [RelayCommand]
+    private void GrafiekWisselen()
+    {
+        _grafiekHandmatig = true;
+        GrafiekInKwh = !GrafiekInKwh;
+        Apply(_laatsteSamenvattingen, _laatsteVan, _laatsteTot);
+        ChartVersion++;
+    }
+
+    /// <summary>
     /// Welke dagen je nu ziet, voluit.
     ///
     /// Boven de cijfers stond alleen "deze maand". Welke maand dat was moest je zelf bedenken, en
@@ -462,6 +490,10 @@ public partial class SavingsViewModel : BaseViewModel
 
     private void Apply(List<DailySummaryDto> summaries, DateOnly from, DateOnly to)
     {
+        _laatsteSamenvattingen = summaries;
+        _laatsteVan = from;
+        _laatsteTot = to;
+
         // Totalen: bij "Dag" alleen vandaag, anders de hele periode.
         var scope = Period == SavingsPeriod.Day
             ? summaries.Where(s => SummaryRow.ToDate(s.Date) == to).ToList()
@@ -489,18 +521,34 @@ public partial class SavingsViewModel : BaseViewModel
         foreach (var s in summaries.OrderByDescending(s => SummaryRow.ToDate(s.Date)))
             Rows.Add(new SummaryRow(s, MeetNet));
 
-        // Grafiek
+        // Grafiek: euro's of kilowatturen.
+        //
+        // Hij tekende altijd de besparing, en die is leeg voor wie zijn oude cijfers heeft ingelezen:
+        // zo'n dag heeft alleen opwek, want wat iemand toen zelf gebruikte weten we niet. Dan staat
+        // er 106 kWh opgewekt boven een lege grafiek, en dat leest als een app die niets doet.
+        //
+        // Dus: is er in deze periode niets bespaard maar wel opgewekt, dan tekenen we de opwek. En
+        // de bewoner kan zelf wisselen, want soms wil je juist het geld zien.
+        var besparingTotaal = (double)Sum(scope, s => s.SavedEur);
+        var opwekTotaal = Sum(scope, s => s.PvKwh);
+        if (!_grafiekHandmatig) GrafiekInKwh = besparingTotaal <= 0 && opwekTotaal > 0;
+
         Chart.Bars = Period == SavingsPeriod.Year
             ? summaries
                 .GroupBy(s => SummaryRow.ToDate(s.Date).Month)
                 .OrderBy(g => g.Key)
                 .Select(g => new ChartBar(
                     CultureInfo.GetCultureInfo("nl-NL").DateTimeFormat.GetAbbreviatedMonthName(g.Key).TrimEnd('.'),
-                    (double)Sum(g, s => s.SavedEur)))
+                    GrafiekInKwh ? Convert.ToDouble(Sum(g, s => s.PvKwh)) : Convert.ToDouble(Sum(g, s => s.SavedEur))))
                 .ToList()
             : summaries
-                .Select(s => new ChartBar(SummaryRow.ToDate(s.Date).Day.ToString(), Convert.ToDouble(s.SavedEur)))
+                .Select(s => new ChartBar(
+                    SummaryRow.ToDate(s.Date).Day.ToString(),
+                    GrafiekInKwh ? Convert.ToDouble(s.PvKwh) : Convert.ToDouble(s.SavedEur)))
                 .ToList();
+
+        Chart.ValuePrefix = GrafiekInKwh ? string.Empty : "€ ";
+        Chart.ValueSuffix = GrafiekInKwh ? " kWh" : string.Empty;
 
         ApplyChartTheme();
         ChartVersion++;

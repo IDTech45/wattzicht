@@ -244,6 +244,8 @@ public static class TekstenEn
         ["inlog.geen-geldig-e-mailadres"] = "This is not a valid email address.",
         ["inlog.vul-wachtwoord-in"] = "Enter your password.",
         ["besparen.gisteren"] = "Yesterday",
+        ["besparen.toon-kwh"] = "Show kilowatt-hours",
+        ["besparen.toon-euro"] = "Show euros",
         ["besparen.dag-loopt-nog"] = "Today is still running; this is where it stands so far.",
         ["besparen.dag-loopt-nog-avond"] = "Today is still running. Around ten tonight we complete the day with the figures from your inverter.",
         ["besparen.vandaag-bespaard"] = "Saved today",
