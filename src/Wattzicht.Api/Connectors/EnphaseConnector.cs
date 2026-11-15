@@ -422,6 +422,9 @@ public sealed class EnphaseConnector(
     ///
     /// Eén aanroep voor de hele reeks: dat telt, want het developer-plan heeft een maandquotum.
     /// </summary>
+    /// <summary>Of we al een keer gemeld hebben dat de dagreeks niet in het plan zit; één keer is genoeg.</summary>
+    private static bool NietInHetPlanGemeld;
+
     public async Task<IReadOnlyList<(DateOnly Dag, double Kwh)>> DagelijkseOpwekAsync(
         Device device, DeviceCredentials credentials, DateOnly vanaf, CancellationToken ct,
         DateOnly? tot = null)
@@ -437,13 +440,42 @@ public sealed class EnphaseConnector(
         credentials.Set("refresh_token", tokens.RefreshToken);
 
         var client = Client(tokens.AccessToken);
-        using var doc = await GetAsync(client,
-            $"/api/v4/systems/{Uri.EscapeDataString(systemId)}/energy_lifetime"
-            + $"?key={Uri.EscapeDataString(sleutels.Key)}"
-            + $"&start_date={vanaf:yyyy-MM-dd}"
-            + (tot is { } eind ? $"&end_date={eind:yyyy-MM-dd}" : string.Empty),
-            sleutels.Id, ct);
 
+        // De dagreeks zit niet in elk abonnement van Enphase.
+        //
+        // Op het gratis Watt-plan werkt het inloggen, werkt /systems, en antwoordt juist dit adres
+        // met 401 "Not authorized to access this resource". Dat is geen verlopen toestemming maar
+        // een plan dat dit niet geeft, en het verschil doet ertoe: met een foutmelding die zegt
+        // "verbind opnieuw met Enphase" stuurt iemand zichzelf eindeloos door dezelfde inlog.
+        //
+        // We geven dan een lege reeks terug, zodat de ronde hem als gedaan afstempelt en niet elk
+        // kwartier opnieuw een aanroep uit het maandbudget haalt. De weg naar die oude dagen is dan
+        // het CSV-bestand uit Enlighten, dat de app zelf kan inlezen.
+        JsonDocument doc;
+        try
+        {
+            doc = await GetAsync(client,
+                $"/api/v4/systems/{Uri.EscapeDataString(systemId)}/energy_lifetime"
+                + $"?key={Uri.EscapeDataString(sleutels.Key)}"
+                + $"&start_date={vanaf:yyyy-MM-dd}"
+                + (tot is { } eind ? $"&end_date={eind:yyyy-MM-dd}" : string.Empty),
+                sleutels.Id, ct);
+        }
+        catch (ConnectorException) when (!NietInHetPlanGemeld)
+        {
+            NietInHetPlanGemeld = true;
+            logger.LogWarning(
+                "Enphase geeft de dagreeks niet vrij voor systeem {Systeem}; waarschijnlijk het gratis "
+                + "Watt-plan. De oude cijfers kunnen wel met een CSV uit Enlighten worden ingelezen.",
+                systemId);
+            return [];
+        }
+        catch (ConnectorException)
+        {
+            return [];
+        }
+
+        using var _ = doc;
         var root = doc.RootElement;
         if (!root.TryGetPropertyIgnoreCase("production", out var reeks) || reeks.ValueKind != JsonValueKind.Array)
         {
