@@ -519,10 +519,24 @@ public sealed class EnphaseConnector(
         catch (ConnectorException) when (!NietInHetPlanGemeld)
         {
             NietInHetPlanGemeld = true;
-            logger.LogWarning(
-                "Enphase geeft de dagreeks niet vrij voor systeem {Systeem}; waarschijnlijk het gratis "
-                + "Watt-plan. De oude cijfers kunnen wel met een CSV uit Enlighten worden ingelezen.",
-                systemId);
+
+            // Eén keer uitzoeken wat dit abonnement dan wél vrijgeeft, en dat opschrijven. Anders
+            // blijft het gissen: de plannenpagina van Enphase noemt geen adressen, en "site-level
+            // production monitoring" zegt niet of de dagreeks erbij hoort. Dit kost vijf aanroepen,
+            // één keer per herstart, en bespaart een avond gokken.
+            try
+            {
+                var diagnose = await DiagnoseAsync(device, credentials, ct);
+                logger.LogWarning(
+                    "Enphase geeft de dagreeks niet vrij voor systeem {Systeem}. Wat dit abonnement wél "
+                    + "antwoordt: {Uitkomst}",
+                    systemId, string.Join(", ", diagnose.Select(r => $"{r.Adres}={r.Status}")));
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Enphase-diagnose mislukte voor systeem {Systeem}", systemId);
+            }
+
             return [];
         }
         catch (ConnectorException)
