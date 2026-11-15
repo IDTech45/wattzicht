@@ -86,7 +86,65 @@ public sealed class HouseholdQueries(AppDbContext db, TimeProvider clock, Connec
             .OrderBy(s => s.Date)
             .ToListAsync(ct);
 
-        return rows.Select(ToDto).ToList();
+        var dtos = rows.Select(ToDto).ToList();
+
+        // Maanden die de bewoner zelf heeft opgegeven erbij, maar alleen waar wij niets hebben
+        // gemeten. Wie geen export bij zijn fabrikant kan krijgen vult zijn jaargrafiek zo zelf; een
+        // meting van ons gaat daar altijd voor.
+        var opgaven = await db.MonthlyHistory
+            .Where(m => m.HouseholdId == householdId)
+            .ToListAsync(ct);
+        if (opgaven.Count == 0) return dtos;
+
+        var gemeten = dtos
+            .GroupBy(d => (d.Date.Year, d.Date.Month))
+            .Where(g => g.Sum(x => x.PvKwh) > 0)
+            .Select(g => g.Key)
+            .ToHashSet();
+
+        foreach (var opgave in opgaven)
+        {
+            if (opgave.PvKwh <= 0) continue;
+            if (gemeten.Contains((opgave.Year, opgave.Month))) continue;
+
+            // Midden in de maand, of de eerste dag die binnen het gevraagde bereik valt. De dag zelf
+            // zegt niets; het gaat erom dat de maand- en jaargrafiek hem op de goede plek zet.
+            var dag = new DateOnly(opgave.Year, opgave.Month,
+                Math.Min(15, DateTime.DaysInMonth(opgave.Year, opgave.Month)));
+            if (dag < from) dag = from;
+            if (dag > to) continue;
+            if (dag.Year != opgave.Year || dag.Month != opgave.Month) continue;
+
+            dtos.Add(new DailySummaryDto(dag, Math.Round(opgave.PvKwh, 2), 0, 0, 0, 0, 0, 0, 0m));
+        }
+
+        return dtos.OrderBy(d => d.Date).ToList();
+    }
+
+    /// <summary>De eigen opgave van één jaar, met per maand of wij die maand zelf gemeten hebben.</summary>
+    public async Task<MaandOpgaveJaarDto> MaandOpgaveAsync(Guid householdId, int jaar, CancellationToken ct)
+    {
+        var opgaven = await db.MonthlyHistory
+            .Where(m => m.HouseholdId == householdId && m.Year == jaar)
+            .ToDictionaryAsync(m => m.Month, ct);
+
+        var begin = new DateOnly(jaar, 1, 1);
+        var eind = new DateOnly(jaar, 12, 31);
+        var gemeten = (await db.DailySummaries
+                .Where(s => s.HouseholdId == householdId && s.Date >= begin && s.Date <= eind && s.PvKwh > 0)
+                .Select(s => s.Date)
+                .ToListAsync(ct))
+            .Select(d => d.Month)
+            .ToHashSet();
+
+        var maanden = Enumerable.Range(1, 12)
+            .Select(m => new MaandOpgaveDto(
+                m,
+                opgaven.TryGetValue(m, out var rij) ? Math.Round(rij.PvKwh, 1) : 0,
+                gemeten.Contains(m)))
+            .ToList();
+
+        return new MaandOpgaveJaarDto(jaar, maanden);
     }
 
     /// <summary>Telt een bereik op tot één samenvatting; <paramref name="label"/> wordt de datum van het resultaat.</summary>

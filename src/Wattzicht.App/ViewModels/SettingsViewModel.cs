@@ -579,6 +579,16 @@ public partial class SettingsViewModel : BaseViewModel
     // Weghalen moet kunnen vanuit de app zelf, en het moet echt weg zijn. Daarom twee keer vragen:
     // één keer wat het betekent, en daarna nog een keer of je het zeker weet. Niet om te pesten,
     // maar omdat dit het enige is in de app dat je niet terug kunt draaien.
+
+    /// <summary>
+    /// Naar het scherm waar je je maandopbrengsten zelf invult.
+    ///
+    /// Nodig voor wie geen export bij zijn fabrikant kan krijgen. Bij Enphase zit de dagreeks op het
+    /// gratis plan achter slot en staat er in hun eigen app nergens een exportknop, terwijl de
+    /// jaargrafiek met twaalf balkjes er wel staat.
+    /// </summary>
+    [RelayCommand]
+    private Task MaandOpgaveAsync() => Shell.Current.GoToAsync(nameof(Pages.MaandOpgavePage));
     [RelayCommand]
     private async Task AccountVerwijderenAsync()
     {

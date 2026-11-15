@@ -484,6 +484,13 @@ public static class TekstenTr
 
         // ---- oude cijfers uit het portaal van de fabrikant ----
         ["historie.titel"] = "Eski verileriniz",
+        ["maandopgave.titel"] = "Aylık verileri gir",
+        ["maandopgave.knop"] = "Aylık verileri kendin gir",
+        ["maandopgave.uitleg"] = "Üreticinden dışa aktarma alamıyor musun? Yıllık grafiğindeki aylık toplamları buraya gir. Ayın ve yılın böylece dolar; gün bazında boş kalır.",
+        ["maandopgave.opslaan"] = "Kaydet",
+        ["maandopgave.gemeten"] = "ölçüldü",
+        ["maandopgave.gelukt"] = "Kaydedildi. Bu yıl şimdi {0} kWh.",
+        ["maandopgave.waar"] = "Enphase uygulamasında bunlar Enerji bölümünde, Yıl sekmesinde.",
         ["historie.uitleg"] = "Biz bağlandığınız günden itibaren ölçüyoruz. Öncesindeki yıllar üreticinizin portalında duruyor; oradan CSV olarak indirip buraya ekleyin.",
         ["historie.stappen"] = "Enphase için: enlighten.enphaseenergy.com, Raporlar, günlük enerji üretimi, CSV olarak indirin.",
         ["historie.knop"] = "Dosya seç",

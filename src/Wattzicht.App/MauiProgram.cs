@@ -70,6 +70,8 @@ public static class MauiProgram
         builder.Services.AddTransient<DashboardPage>();
         builder.Services.AddTransient<DevicesPage>();
         builder.Services.AddTransient<ConnectDevicePage>();
+        builder.Services.AddTransient<MaandOpgavePage>();
+        builder.Services.AddTransient<MaandOpgaveViewModel>();
         builder.Services.AddTransient<AlertsPage>();
         builder.Services.AddTransient<PanelsPage>();
         builder.Services.AddTransient<EnphaseSleutelPage>();

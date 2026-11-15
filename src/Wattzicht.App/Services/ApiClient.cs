@@ -92,6 +92,13 @@ public sealed class ApiClient
     /// Het kaartje lost dat op: onze terugkeerpagina ziet daaraan bij welke woning het hoort en maakt
     /// de koppeling af, zonder dat er iemand op de website hoeft in te loggen.
     /// </summary>
+    /// <summary>De eigen maandopgave van een jaar.</summary>
+    public Task<MaandOpgaveJaarDto> MaandOpgaveAsync(int jaar, CancellationToken ct = default) =>
+        GetAsync<MaandOpgaveJaarDto>($"/historie/maanden?jaar={jaar}", ct);
+
+    public Task<MaandOpgaveJaarDto> MaandOpgaveOpslaanAsync(MaandOpgaveRequest request, CancellationToken ct = default) =>
+        PutAsync<MaandOpgaveRequest, MaandOpgaveJaarDto>("/historie/maanden", request, ct);
+
     public Task<EnphaseAuthorizeUrlDto> EnphaseAdresAsync(CancellationToken ct = default) =>
         GetAsync<EnphaseAuthorizeUrlDto>("/connectors/enphase/authorize-url", ct);
 

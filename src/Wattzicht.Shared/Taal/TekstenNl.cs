@@ -487,6 +487,13 @@ public static class TekstenNl
 
         // ---- oude cijfers uit het portaal van de fabrikant ----
         ["historie.titel"] = "Je oude cijfers",
+        ["maandopgave.titel"] = "Maandcijfers invullen",
+        ["maandopgave.knop"] = "Maandcijfers zelf invullen",
+        ["maandopgave.uitleg"] = "Krijg je bij je fabrikant geen export? Neem dan de maandtotalen over uit zijn jaargrafiek. Je maand en je jaar zijn daarmee gevuld; per dag blijft leeg.",
+        ["maandopgave.opslaan"] = "Opslaan",
+        ["maandopgave.gemeten"] = "zelf gemeten",
+        ["maandopgave.gelukt"] = "Opgeslagen. Dit jaar staat nu op {0} kWh.",
+        ["maandopgave.waar"] = "Bij Enphase vind je die getallen in de app onder Energie, tabblad Jaar.",
         ["historie.uitleg"] = "Wij meten vanaf de dag dat je koppelde. De jaren daarvoor staan nog in het portaal van je fabrikant; haal ze daar als CSV op en zet ze hier erbij.",
         ["historie.stappen"] = "Bij Enphase: enlighten.enphaseenergy.com, Rapporten, energieproductie per dag, downloaden als CSV.",
         ["historie.knop"] = "Bestand kiezen",

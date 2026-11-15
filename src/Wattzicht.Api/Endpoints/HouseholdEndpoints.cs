@@ -120,6 +120,15 @@ public static class HouseholdEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
 
+        household.MapGet("/historie/maanden", MaandOpgaveAsync)
+            .WithSummary("De eigen opgave per maand van één jaar.")
+            .Produces<MaandOpgaveJaarDto>();
+
+        household.MapPut("/historie/maanden", MaandOpgaveOpslaanAsync)
+            .WithSummary("Slaat de maandopbrengsten op die de bewoner zelf invult.")
+            .Produces<MaandOpgaveJaarDto>()
+            .ProducesValidationProblem();
+
         household.MapGet("/summaries", SummariesAsync)
             .WithSummary("Dagsamenvattingen tussen twee datums (standaard: afgelopen 30 dagen).")
             .Produces<List<DailySummaryDto>>();
@@ -1584,6 +1593,94 @@ public static class HouseholdEndpoints
         await db.SaveChangesAsync(ct);
         return Results.NoContent();
     }
+
+    private static async Task<IResult> MaandOpgaveAsync(
+        HttpContext http, HouseholdQueries queries, TimeProvider clock, int? jaar, CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var nu = DutchTime.LocalDate(clock.GetUtcNow()).Year;
+        return Results.Ok(await queries.MaandOpgaveAsync(householdId, Jaar(jaar, nu), ct));
+    }
+
+    /// <summary>
+    /// De maandopbrengsten die iemand zelf invult.
+    ///
+    /// Dit is er omdat de weg eromheen dicht zit: de dagreeks van Enphase zit op het gratis plan
+    /// achter slot en in hun eigen app staat geen export. Wat er wél staat is een jaargrafiek met
+    /// twaalf balkjes. Die overtypen is lelijk, maar een leeg jaar terwijl je dak vier megawattuur
+    /// heeft gemaakt is erger.
+    ///
+    /// Een maand op nul wist de opgave; zo haal je een typefout er ook weer uit.
+    /// </summary>
+    private static async Task<IResult> MaandOpgaveOpslaanAsync(
+        MaandOpgaveRequest request,
+        HttpContext http,
+        AppDbContext db,
+        HouseholdQueries queries,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var nu = clock.GetUtcNow();
+        var jaar = Jaar(request.Year, DutchTime.LocalDate(nu).Year);
+
+        if (request.Maanden.Any(m => m.Month is < 1 or > 12))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["maanden"] = ["Een maand loopt van 1 tot en met 12."],
+            });
+        }
+
+        // Een dak van duizend kilowattuur in één maand bestaat niet in Nederland; dat is een typefout
+        // of een getal in watturen. Weigeren is hier beter dan een grafiek die nergens meer op lijkt.
+        if (request.Maanden.Any(m => m.PvKwh > 5000))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["maanden"] = ["Dat lijkt geen maandopbrengst in kilowattuur."],
+            });
+        }
+
+        var bestaand = await db.MonthlyHistory
+            .Where(m => m.HouseholdId == householdId && m.Year == jaar)
+            .ToListAsync(ct);
+
+        foreach (var maand in request.Maanden)
+        {
+            var rij = bestaand.FirstOrDefault(b => b.Month == maand.Month);
+
+            if (maand.PvKwh <= 0)
+            {
+                if (rij is not null) db.MonthlyHistory.Remove(rij);
+                continue;
+            }
+
+            if (rij is null)
+            {
+                db.MonthlyHistory.Add(new MonthlyHistory
+                {
+                    Id = Guid.NewGuid(),
+                    HouseholdId = householdId,
+                    Year = jaar,
+                    Month = maand.Month,
+                    PvKwh = maand.PvKwh,
+                    UpdatedAt = nu,
+                });
+                continue;
+            }
+
+            rij.PvKwh = maand.PvKwh;
+            rij.UpdatedAt = nu;
+        }
+
+        await db.SaveChangesAsync(ct);
+        return Results.Ok(await queries.MaandOpgaveAsync(householdId, jaar, ct));
+    }
+
+    /// <summary>Een jaartal waar een zonnepaneel in kan staan; alles daarbuiten wordt dit jaar.</summary>
+    private static int Jaar(int? gevraagd, int nu) =>
+        gevraagd is { } j && j >= 2000 && j <= nu ? j : nu;
 
     private static async Task<IResult> SummariesAsync(
         HttpContext http,

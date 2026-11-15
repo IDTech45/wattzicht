@@ -297,6 +297,12 @@
                     <Button Text="{t:T historie.knop}"
                             Style="{StaticResource SecondaryButton}"
                             Command="{Binding HistorieImporterenCommand}" />
+                    <!-- Voor wie geen export bij zijn fabrikant kan krijgen. Bij Enphase zit de
+                         dagreeks op het gratis plan achter slot en staat er in hun app nergens een
+                         exportknop; de jaargrafiek met twaalf balkjes staat er wel. -->
+                    <Button Text="{t:T maandopgave.knop}"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding MaandOpgaveCommand}" />
                     <Label Text="{Binding ImportResultaat}"
                            Style="{StaticResource SubtitleLabel}"
                            FontSize="14"

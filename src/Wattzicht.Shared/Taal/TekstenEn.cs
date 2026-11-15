@@ -479,6 +479,13 @@ public static class TekstenEn
 
         // ---- oude cijfers uit het portaal van de fabrikant ----
         ["historie.titel"] = "Your older figures",
+        ["maandopgave.titel"] = "Enter monthly figures",
+        ["maandopgave.knop"] = "Enter monthly figures yourself",
+        ["maandopgave.uitleg"] = "Can't get an export from your manufacturer? Copy the monthly totals from their yearly chart. That fills your month and year; per day stays empty.",
+        ["maandopgave.opslaan"] = "Save",
+        ["maandopgave.gemeten"] = "measured",
+        ["maandopgave.gelukt"] = "Saved. This year now stands at {0} kWh.",
+        ["maandopgave.waar"] = "In the Enphase app you find these under Energy, Year tab.",
         ["historie.uitleg"] = "We measure from the day you connected. The years before that are still in your manufacturer portal; download them as CSV there and add them here.",
         ["historie.stappen"] = "With Enphase: enlighten.enphaseenergy.com, Reports, energy production per day, download as CSV.",
         ["historie.knop"] = "Choose a file",

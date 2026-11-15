@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             x:Class="Wattzicht.App.Pages.MaandOpgavePage"
+             x:DataType="vm:MaandOpgaveViewModel"
+             Title="{t:Ts maandopgave.titel}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+            <Label Text="{t:T maandopgave.uitleg}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <Button Text="‹" Style="{StaticResource SecondaryButton}" Command="{Binding VorigJaarCommand}" />
+                <Label Grid.Column="1" Text="{Binding Jaar}" Style="{StaticResource CardTitle}"
+                       HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                <Button Grid.Column="2" Text="›" Style="{StaticResource SecondaryButton}" Command="{Binding VolgendJaarCommand}" />
+            </Grid>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Maanden}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MaandRegel">
+                            <Grid ColumnDefinitions="*,120" ColumnSpacing="10">
+                                <Label Text="{Binding Naam}" VerticalOptions="Center"
+                                       Style="{StaticResource FieldLabel}" />
+                                <!-- Een maand die wij zelf gemeten hebben staat vast: daar is onze
+                                     meting het antwoord en zou een opgave alleen verwarring geven. -->
+                                <Border Grid.Column="1" Style="{StaticResource InputBorder}"
+                                        IsVisible="{Binding Gemeten, Converter={StaticResource InvertedBool}}">
+                                    <Entry Text="{Binding Waarde}" Keyboard="Numeric" Placeholder="kWh"
+                                           HorizontalTextAlignment="End" />
+                                </Border>
+                                <Label Grid.Column="1" Text="{t:T maandopgave.gemeten}"
+                                       Style="{StaticResource StatCaption}"
+                                       VerticalOptions="Center" HorizontalTextAlignment="End"
+                                       IsVisible="{Binding Gemeten}" />
+                            </Grid>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Text="{t:T maandopgave.opslaan}" Style="{StaticResource PrimaryButton}"
+                    Command="{Binding OpslaanCommand}" />
+
+            <Label Text="{Binding Resultaat}" Style="{StaticResource SubtitleLabel}" FontSize="14"
+                   IsVisible="{Binding HeeftResultaat}" />
+
+            <Label Text="{t:T maandopgave.waar}" Style="{StaticResource StatCaption}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

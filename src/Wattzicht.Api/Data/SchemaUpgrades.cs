@@ -197,6 +197,20 @@ public static class SchemaUpgrades
         """,
         """CREATE UNIQUE INDEX IF NOT EXISTS ux_supplier_tariffs ON supplier_tariffs ("Supplier", "ValidFrom")""",
 
+        // 2026-11: maandopbrengsten die de bewoner zelf invult, voor wie geen export bij zijn
+        // fabrikant kan krijgen.
+        """
+        CREATE TABLE IF NOT EXISTS monthly_history (
+            "Id" uuid NOT NULL PRIMARY KEY,
+            "HouseholdId" uuid NOT NULL REFERENCES households ("Id") ON DELETE CASCADE,
+            "Year" integer NOT NULL,
+            "Month" integer NOT NULL,
+            "PvKwh" double precision NOT NULL,
+            "UpdatedAt" timestamp with time zone NOT NULL
+        )
+        """,
+        """CREATE UNIQUE INDEX IF NOT EXISTS ux_monthly_history ON monthly_history ("HouseholdId", "Year", "Month")""",
+
         // 2026-11: wanneer we de geladen kilowatturen bij LaadCash hebben opgehaald.
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "LaadcashLaaddataAt" timestamp with time zone NULL""",
     ];

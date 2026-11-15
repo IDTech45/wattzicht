@@ -29,6 +29,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
     public DbSet<Reading> Readings => Set<Reading>();
     public DbSet<Tariff> Tariffs => Set<Tariff>();
     public DbSet<DailySummary> DailySummaries => Set<DailySummary>();
+    public DbSet<MonthlyHistory> MonthlyHistory => Set<MonthlyHistory>();
     public DbSet<SupplierUsage> SupplierUsages => Set<SupplierUsage>();
     public DbSet<FailedImport> FailedImports => Set<FailedImport>();
     public DbSet<Alert> Alerts => Set<Alert>();
@@ -223,6 +224,20 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
             e.HasQueryFilter(s => TenantBypass
                 || s.HouseholdId == TenantHouseholdId
                 || (s.Household.InstallerId == TenantInstallerId && s.Household.InstallerAccessGranted));
+        });
+
+        modelBuilder.Entity<MonthlyHistory>(e =>
+        {
+            e.ToTable("monthly_history");
+            e.HasKey(x => x.Id);
+            e.HasOne(x => x.Household)
+                .WithMany()
+                .HasForeignKey(x => x.HouseholdId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.HouseholdId, x.Year, x.Month }).IsUnique();
+            e.HasQueryFilter(m => TenantBypass
+                || m.HouseholdId == TenantHouseholdId
+                || (m.Household.InstallerId == TenantInstallerId && m.Household.InstallerAccessGranted));
         });
 
         modelBuilder.Entity<Alert>(e =>

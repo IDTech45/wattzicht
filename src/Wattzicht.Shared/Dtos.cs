@@ -326,6 +326,20 @@ public sealed record DailySummaryDto(
     double BatteryDischargedKwh,
     decimal SavedEur);
 
+/// <summary>Eén maand uit de eigen opgave van de bewoner.</summary>
+/// <param name="Month">1 tot en met 12.</param>
+/// <param name="PvKwh">Wat de panelen die maand maakten.</param>
+/// <param name="Gemeten">Of wij die maand zelf hebben gemeten; dan telt de opgave niet mee.</param>
+public sealed record MaandOpgaveDto(int Month, double PvKwh, bool Gemeten);
+
+/// <summary>Alle maanden van één jaar, met wat erbij hoort te staan.</summary>
+public sealed record MaandOpgaveJaarDto(int Year, IReadOnlyList<MaandOpgaveDto> Maanden);
+
+/// <summary>Maandopbrengsten opslaan. Een maand met 0 of minder wordt gewist.</summary>
+public sealed record MaandOpgaveRequest(int Year, IReadOnlyList<MaandOpgaveWaarde> Maanden);
+
+public sealed record MaandOpgaveWaarde(int Month, double PvKwh);
+
 /// <summary>Een storing of melding op een apparaat.</summary>
 /// <param name="Id">Unieke id.</param>
 /// <param name="DeviceId">Apparaat waar de melding bij hoort.</param>

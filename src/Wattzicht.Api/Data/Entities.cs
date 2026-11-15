@@ -425,6 +425,34 @@ public sealed class FailedImport
     public DateTimeOffset ExpiresAt { get; set; }
 }
 
+/// <summary>
+/// Een maandopbrengst die de bewoner zelf heeft ingevuld.
+///
+/// Waarom dit bestaat: de dagreeks van Enphase zit op het gratis plan achter slot, en in de app van
+/// Enphase zelf staat geen export. Wat er wél staat is een jaargrafiek met twaalf balkjes, en die
+/// getallen kun je overtypen. Elf getallen overnemen is lelijk, maar een leeg jaar terwijl je dak
+/// vier megawattuur heeft gemaakt is erger.
+///
+/// Apart van de dagen, want het is iets anders: een opgave en geen meting. Zodra er van een maand
+/// wél metingen zijn, winnen die; dan is deze rij een herinnering aan wat er ooit is ingevuld.
+/// </summary>
+public sealed class MonthlyHistory
+{
+    public Guid Id { get; set; }
+    public Guid HouseholdId { get; set; }
+    public Household Household { get; set; } = null!;
+
+    public int Year { get; set; }
+
+    /// <summary>1 tot en met 12.</summary>
+    public int Month { get; set; }
+
+    /// <summary>Wat de panelen die maand hebben gemaakt, volgens de bewoner.</summary>
+    public double PvKwh { get; set; }
+
+    public DateTimeOffset UpdatedAt { get; set; }
+}
+
 public sealed class DailySummary
 {
     public Guid Id { get; set; }
