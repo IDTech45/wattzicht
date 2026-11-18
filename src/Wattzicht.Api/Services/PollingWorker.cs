@@ -15,6 +15,7 @@ public sealed class PollingWorker(
     ConnectorRegistry registry,
     TimeProvider clock,
     IConfiguration configuration,
+    Hartslag hartslag,
     ILogger<PollingWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -93,6 +94,10 @@ public sealed class PollingWorker(
                 logger.LogError(ex, "Huishouden {HouseholdId} kon niet verwerkt worden", householdId);
             }
         }
+
+        // De hartslag hoort hier, aan het eind van een ronde die het heeft gehaald. Zet je hem aan
+        // het begin, dan blijft een ronde die halverwege omvalt zich melden als gezond.
+        hartslag.Rondeklaar(householdIds.Count, okCount, failCount);
 
         logger.LogInformation(
             "Pollronde klaar in {Duration:F1}s: {Households} huishoudens, {Ok} apparaten ok, {Fail} mislukt",

@@ -138,8 +138,54 @@ services:
       - traefik.http.routers.wz-site-websecure.service=wz-site
       - traefik.http.services.wz-site.loadbalancer.server.port=80
 
+  # Nachtelijke database-backup (pg_dump) met upload naar S3-compatibele opslag BUITEN de server.
+  # Zelfde recept als LaadCash, want het probleem is hetzelfde: valt deze VPS om, dan is zonder
+  # kopie buiten de deur alles weg wat bewoners hier hebben opgebouwd, en dat is niet te herstellen.
+  # Zonder BACKUP_S3_*-variabelen draait hij lokaal (dumps in het backups-volume) en waarschuwt hij
+  # in de logs; dat is beter dan niets maar helpt niet bij een crash van de server zelf.
+  backup:
+    build:
+      context: ./scripts/backup
+    container_name: wattzicht-backup
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-wattzicht}
+      PGUSER: ${POSTGRES_USER:-wattzicht}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD ontbreekt}
+      TZ: ${BACKUP_TZ:-Europe/Amsterdam}
+      # Niet om 03:30 zoals LaadCash: die twee zouden anders tegelijk dumpen op dezelfde server.
+      BACKUP_TIME: ${BACKUP_TIME:-04:15}
+      BACKUP_ON_START: ${BACKUP_ON_START:-true}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+      BACKUP_LOCAL_RETENTION_DAYS: ${BACKUP_LOCAL_RETENTION_DAYS:-3}
+      # Versleutel dumps vóór upload. Zonder passphrase geen herstel, dus bewaar hem in je
+      # wachtwoordmanager en niet alleen in Dokploy.
+      BACKUP_PASSPHRASE: ${BACKUP_PASSPHRASE:-}
+      # BACKUP_S3_PATH = "bucket/prefix", bijvoorbeeld "wattzicht-backups/db". Leeg = alleen lokaal.
+      BACKUP_S3_PATH: ${BACKUP_S3_PATH:-}
+      RCLONE_CONFIG_S3_TYPE: s3
+      RCLONE_CONFIG_S3_PROVIDER: ${BACKUP_S3_PROVIDER:-Other}
+      RCLONE_CONFIG_S3_ENDPOINT: ${BACKUP_S3_ENDPOINT:-}
+      RCLONE_CONFIG_S3_REGION: ${BACKUP_S3_REGION:-}
+      RCLONE_CONFIG_S3_ACCESS_KEY_ID: ${BACKUP_S3_ACCESS_KEY:-}
+      RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: ${BACKUP_S3_SECRET_KEY:-}
+      RCLONE_CONFIG_S3_ACL: private
+      # Ping-URL (healthchecks.io) na elke geslaagde backup: zo krijg je juist een alarm als de
+      # backup stilvalt, want een backup die niet draait meldt zichzelf nooit.
+      BACKUP_HEARTBEAT_URL: ${BACKUP_HEARTBEAT_URL:-}
+    volumes:
+      - wattzicht-backups:/backups
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
 volumes:
   wattzicht-postgres-data:
+  wattzicht-backups:
 
 # Eén netwerk voor alles: Traefik kiest anders soms het IP van het verkeerde netwerk (503).
 # Postgres publiceert geen poort en is alleen voor containers op dit netwerk bereikbaar.

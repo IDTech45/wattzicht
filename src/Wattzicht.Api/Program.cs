@@ -15,6 +15,25 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
 // ---------------------------------------------------------------------------
+// Foutmonitoring (Sentry). Opt-in: zonder DSN blijft de SDK helemaal uit, dus lokaal en in tests
+// gebeurt er niets. Waarom het er moet zijn: zonder dit hoor je pas dat er iets stuk is als een
+// bewoner klaagt, en de meesten klagen niet, die stoppen gewoon met kijken.
+// Geen persoonsgegevens mee: geen IP's, geen namen (AVG), en geen performance-tracing.
+// ---------------------------------------------------------------------------
+builder.WebHost.UseSentry(o =>
+{
+    o.Dsn = configuration["Sentry:Dsn"] ?? string.Empty;
+    o.Environment = configuration["Sentry:Environment"]
+        ?? (builder.Environment.IsDevelopment() ? "development" : "production");
+    o.SendDefaultPii = false;
+    o.TracesSampleRate = 0.0;
+    // Logregels van Error en hoger worden meldingen; de rest is context bij zo'n melding. Daardoor
+    // komt ook de rondewachter binnen, want die meldt stilte als een fout.
+    o.MinimumEventLevel = LogLevel.Error;
+    o.MinimumBreadcrumbLevel = LogLevel.Information;
+});
+
+// ---------------------------------------------------------------------------
 // Configuratie: env-variabelen overschrijven appsettings (JWT_SECRET, WZ_PROTECTION_KEY, ConnectionStrings__Default).
 // ---------------------------------------------------------------------------
 var connectionString = configuration.GetConnectionString("Default")
@@ -117,6 +136,15 @@ builder.Services.AddSingleton<IPriceProvider, EnergyZeroPriceProvider>();
 builder.Services.AddScoped<IPushSender, FcmPushSender>();
 builder.Services.AddSingleton<PollingWorker>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<PollingWorker>());
+// Hartslag van de uitleesronde, plus een wachter die alarm slaat als die stilvalt. Los van de ronde
+// zelf: een proces dat zichzelf bewaakt meldt niets meer zodra het niet meer start.
+builder.Services.AddSingleton<Hartslag>();
+builder.Services.AddHttpClient(RondeWachter.HttpClientName, client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(10);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Wattzicht/0.1");
+});
+builder.Services.AddHostedService<RondeWachter>();
 builder.Services.AddHttpClient(OpenMeteoWeatherProvider.HttpClientName, client =>
 {
     client.Timeout = TimeSpan.FromSeconds(15);
@@ -294,6 +322,21 @@ app.UseAuthorization();
 app.UseTaalBijhouden();
 
 app.MapHealthChecks("/health").AllowAnonymous();
+// Draait de uitleesronde nog? /health zegt alleen dat de webserver antwoordt, en dat bleef kloppen
+// terwijl de ronde stil kon liggen. Hier staat hoe lang geleden de laatste ronde klaar was, zodat
+// een bewakingsdienst (of een mens) het van buitenaf kan zien zonder in de logs te duiken.
+app.MapGet("/health/ronde", (Hartslag hartslag) =>
+{
+    var stand = hartslag.Stand();
+    return Results.Ok(new
+    {
+        laatsteRonde = stand.LaatsteRonde,
+        stilteMinuten = Math.Round(stand.Stilte.TotalMinutes, 1),
+        huishoudens = stand.Huishoudens,
+        apparatenOk = stand.ApparatenOk,
+        apparatenMislukt = stand.ApparatenMislukt,
+    });
+}).AllowAnonymous().ExcludeFromDescription();
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 
 app.MapAuthEndpoints();

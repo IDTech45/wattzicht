@@ -22,6 +22,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2" />
+    <PackageReference Include="Sentry.AspNetCore" Version="6.9.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.75.0" />
     <!-- Tekst uit een pdf halen, voor het inlezen van een energiecontract of jaarafrekening.

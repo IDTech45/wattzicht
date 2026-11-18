@@ -129,3 +129,50 @@ De app wijst naar `https://api.wattzicht.nl/api/` en dat adres werkt nu.
 - **Build faalt op npm/dotnet**: de code is nog niet lokaal gebouwd; stuur de laatste 30 regels van de Dokploy-log naar Claude, dan komt er een fix.
 - **502 op de website**: de API is nog aan het starten of de database-seed faalt; kijk in de logs van `wattzicht-api`.
 - **Certificaat werkt niet**: traefik.me-domeinen krijgen soms pas na een minuut een certificaat; herlaad. Blijft het rood, zet dan tijdelijk HTTPS uit op het domein en weer aan.
+
+## Back-ups
+
+Elke nacht om 04:15 maakt de container `wattzicht-backup` een `pg_dump`, versleutelt die en zet hem
+buiten de server. Zonder dat laatste heeft een back-up weinig zin: ligt de VPS eruit, dan ligt een
+kopie óp die VPS er ook uit.
+
+Vier variabelen in Dokploy → Environment, en dan draait het:
+
+```
+BACKUP_PASSPHRASE=<lange willekeurige zin>        # zonder deze zin geen herstel
+BACKUP_S3_PATH=wattzicht-backups/db               # bucket/prefix
+BACKUP_S3_ENDPOINT=<endpoint van Leaseweb Object Storage>
+BACKUP_S3_ACCESS_KEY=<sleutel>
+BACKUP_S3_SECRET_KEY=<geheim>
+```
+
+Bewaar `BACKUP_PASSPHRASE` ook in je wachtwoordmanager. Staat hij alleen in Dokploy en raak je die
+server kwijt, dan heb je straks een kluis vol back-ups zonder sleutel.
+
+Optioneel maar aan te raden: `BACKUP_HEARTBEAT_URL` van healthchecks.io. Die wordt na elke geslaagde
+back-up aangeroepen, zodat je een mail krijgt wanneer de back-up juist *niet* meer draait. Een
+back-up die stilvalt meldt zichzelf namelijk nooit.
+
+### Terugzetten
+
+```bash
+docker exec wattzicht-backup rclone lsl "s3:wattzicht-backups/db"
+docker exec wattzicht-backup rclone copyto "s3:wattzicht-backups/db/<bestand>" /backups/<bestand>
+docker exec wattzicht-backup restore.sh /backups/<bestand>
+```
+
+`restore.sh` ontsleutelt zelf als het bestand op `.enc` eindigt. Zet hem eerst eens terug naast de
+echte database (`restore.sh /backups/<bestand> wattzicht_restoretest`): een herstel dat je nooit hebt
+geoefend is een aanname, geen zekerheid.
+
+## Bewaking
+
+- `/health` zegt of de webserver antwoordt.
+- `/health/ronde` zegt hoe lang geleden de uitleesronde voor het laatst klaar was. Daar hoort een
+  externe controle op: de webserver kan prima antwoorden terwijl er al uren niets meer wordt
+  uitgelezen.
+- `Monitoring:RondeHeartbeatUrl` (env `Monitoring__RondeHeartbeatUrl`) wordt na elke gezonde ronde
+  geping'd; healthchecks.io mailt je als die ping uitblijft.
+- `Monitoring:StilteGrensMinuten` (standaard 30) bepaalt wanneer de wachter een fout logt. Staat er
+  een Sentry-DSN, dan komt die fout meteen binnen als melding.
+- `Sentry:Dsn` (env `Sentry__Dsn`) zet foutmonitoring aan. Zonder DSN blijft de SDK uit.
