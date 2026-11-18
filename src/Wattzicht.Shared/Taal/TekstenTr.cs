@@ -590,6 +590,8 @@ public static class TekstenTr
 
         ["algemeen.opslaan"] = "Kaydet",
         ["apparaten.hernoemen"] = "Adı değiştir",
+        ["apparaten.enphase-diagnose"] = "Enphase neye izin veriyor?",
+        ["apparaten.enphase-diagnose-knop"] = "Enphase aboneliğini kontrol et",
         ["apparaten.hernoemen-uitleg"] = "Bu cihaza ne ad vermek istersiniz?",
 
 

@@ -593,6 +593,8 @@ public static class TekstenNl
 
         ["algemeen.opslaan"] = "Opslaan",
         ["apparaten.hernoemen"] = "Naam wijzigen",
+        ["apparaten.enphase-diagnose"] = "Wat geeft Enphase vrij?",
+        ["apparaten.enphase-diagnose-knop"] = "Enphase-abonnement nakijken",
         ["apparaten.hernoemen-uitleg"] = "Hoe wil je dit apparaat noemen?",
 
 

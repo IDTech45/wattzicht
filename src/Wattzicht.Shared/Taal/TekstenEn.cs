@@ -585,6 +585,8 @@ public static class TekstenEn
 
         ["algemeen.opslaan"] = "Save",
         ["apparaten.hernoemen"] = "Rename",
+        ["apparaten.enphase-diagnose"] = "What does Enphase allow?",
+        ["apparaten.enphase-diagnose-knop"] = "Check Enphase plan",
         ["apparaten.hernoemen-uitleg"] = "What do you want to call this device?",
 
 

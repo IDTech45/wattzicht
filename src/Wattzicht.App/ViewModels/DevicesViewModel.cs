@@ -147,6 +147,25 @@ public partial class DevicesViewModel : BaseViewModel
     /// De fabrikant levert namen als "Demo omvormer 4,2 kWp". Wie twee strings heeft wil "voorkant"
     /// en "achterkant", en dat kon nergens.
     /// </summary>
+    /// <summary>
+    /// Vraagt Enphase wat dit abonnement vrijgeeft en laat het antwoord zien.
+    ///
+    /// Zonder dit blijft het gissen waarom de geschiedenis leeg is: inloggen lukt, het systeem wordt
+    /// gevonden, en tóch komt er niets. Het gratis plan geeft sommige adressen simpelweg niet vrij.
+    /// Staat er bij een adres 200, dan kunnen we de historie daaruit halen; staat er overal 401, dan
+    /// is een ander abonnement de enige weg.
+    /// </summary>
+    [RelayCommand]
+    private async Task EnphaseDiagnoseAsync()
+    {
+        await RunSafeAsync(async () =>
+        {
+            var regels = await _api.EnphaseDiagnoseAsync();
+            await ShowAlertAsync(Taal.T("apparaten.enphase-diagnose"), string.Join("
+", regels));
+        }, _auth);
+    }
+
     [RelayCommand]
     private async Task HernoemAsync(DeviceItem? item)
     {

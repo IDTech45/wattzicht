@@ -118,6 +118,12 @@
                         <Button Text="{t:T apparaten.oude-cijfers}"
                                 Style="{StaticResource LinkButton}"
                                 Command="{Binding OudeCijfersCommand}" />
+                        <!-- Blijft de geschiedenis leeg terwijl de koppeling werkt, dan ligt het aan
+                             het abonnement bij Enphase en niet aan ons. Deze knop vraagt het gewoon
+                             na, per adres met de statuscode, in plaats van erover te gissen. -->
+                        <Button Text="{t:T apparaten.enphase-diagnose-knop}"
+                                Style="{StaticResource LinkButton}"
+                                Command="{Binding EnphaseDiagnoseCommand}" />
                         <Label Text="{Binding ImportResultaat}"
                                Style="{StaticResource SubtitleLabel}" FontSize="13"
                                IsVisible="{Binding HeeftImportResultaat}" />

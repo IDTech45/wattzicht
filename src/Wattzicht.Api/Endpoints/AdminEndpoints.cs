@@ -54,6 +54,11 @@ public static class AdminEndpoints
             .WithSummary("Documenten waar het inlezen niets uit haalde, nieuwste eerst.")
             .Produces<List<AdminOnleesbaarDto>>();
 
+        group.MapGet("/households/{id:guid}/enphase-diagnose", EnphaseDiagnoseAsync)
+            .WithSummary("Welke Enphase-adressen het abonnement van deze woning vrijgeeft.")
+            .Produces<List<string>>()
+            .Produces(StatusCodes.Status404NotFound);
+
         group.MapGet("/access-log", AccessLogAsync)
             .WithSummary("Wie keek er bij wie mee: de laatste handelingen van installateurs bij klanten.")
             .Produces<List<AdminAccessLogDto>>();
@@ -259,6 +264,38 @@ public static class AdminEndpoints
                 r.Actief, facturabel, r.ZonderApparaat, r.Nieuw30,
                 r.ApprovedAt, r.ContactPerson, r.City, r.Phone, r.ContactEmail, r.CustomerCount);
         }).ToList();
+    }
+
+    /// <summary>
+    /// Wat dit Enphase-abonnement werkelijk vrijgeeft, voor één woning.
+    ///
+    /// Dezelfde vraag die een bewoner via zijn eigen woning kan stellen, maar dan vanaf de
+    /// beheerkant. Nodig omdat het antwoord bepaalt of we geld moeten uitgeven: het gratis
+    /// Watt-plan weigert de dagreeks (401 op energy_lifetime), en dan blijft de geschiedenis van een
+    /// huis leeg tot de bewoner met de hand een CSV exporteert. Geeft een van de andere adressen wél
+    /// antwoord, dan bouwen we de historie dááruit op en is een betaald plan niet nodig.
+    ///
+    /// Vier aanroepen bij Enphase, dus bewust iets wat je één keer stelt en niet in een ronde zet.
+    /// </summary>
+    private static async Task<IResult> EnphaseDiagnoseAsync(
+        Guid id, AppDbContext db, ConnectorRegistry registry, CredentialProtector protector, CancellationToken ct)
+    {
+        var apparaat = await db.Devices.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(d => d.HouseholdId == id && d.Brand == DeviceBrand.Enphase, ct);
+        if (apparaat is null) return Results.NotFound(new { melding = "Deze woning heeft geen Enphase." });
+
+        if (registry.Get(DeviceBrand.Enphase) is not EnphaseConnector enphase)
+            return Results.Ok(new[] { "Enphase staat op deze server niet ingesteld" });
+
+        var credentials = new DeviceCredentials(protector.Unprotect(apparaat.EncryptedCredentials));
+        var uit = await enphase.DiagnoseAsync(apparaat, credentials, ct);
+        if (credentials.Changed)
+        {
+            apparaat.EncryptedCredentials = protector.Protect(credentials.ToDictionary());
+            await db.SaveChangesAsync(ct);
+        }
+
+        return Results.Ok(uit.Select(r => $"{r.Adres}: {r.Status}").ToList());
     }
 
     private static async Task<IResult> HouseholdsAsync(

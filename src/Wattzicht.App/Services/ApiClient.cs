@@ -102,6 +102,16 @@ public sealed class ApiClient
     public Task<EnphaseAuthorizeUrlDto> EnphaseAdresAsync(CancellationToken ct = default) =>
         GetAsync<EnphaseAuthorizeUrlDto>("/connectors/enphase/authorize-url", ct);
 
+    /// <summary>
+    /// Wat het Enphase-abonnement van deze woning werkelijk vrijgeeft, per adres met de statuscode.
+    ///
+    /// Het gratis plan weigert de dagreeks, en van buitenaf is dat niet te onderscheiden van een
+    /// verlopen toestemming. Daarom vraag je het gewoon na in plaats van te gokken; vier aanroepen
+    /// bij Enphase, dus bedoeld om één keer op te vragen en niet bij elk scherm.
+    /// </summary>
+    public Task<List<string>> EnphaseDiagnoseAsync(CancellationToken ct = default) =>
+        GetAsync<List<string>>("/connectors/enphase/diagnose", ct);
+
     public Task<IReadOnlyList<DeviceDto>> ConnectDeviceAsync(ConnectDeviceRequest request, CancellationToken ct = default) =>
         PostAsync<ConnectDeviceRequest, IReadOnlyList<DeviceDto>>("/devices", request, authenticated: true, ct);
 
