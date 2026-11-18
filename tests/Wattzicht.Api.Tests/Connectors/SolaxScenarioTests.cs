@@ -177,6 +177,40 @@ public sealed class SolaxScenarioTests
         Assert.Equal(utcHour, r.Timestamp.UtcDateTime.Hour);
     }
 
+    /// <summary>
+    /// De klok van een datalogger loopt soms voor. Zo'n meting hoort niet in de dag van morgen te
+    /// landen, want dan mist vandaag hem en begint morgen met een waarde die er nog niet is. Growatt
+    /// deed dit al; SolaX niet, en dat verschil is 18-11-2026 rechtgezet.
+    /// </summary>
+    [Fact]
+    public void Uploadtijd_in_de_toekomst_wordt_nu()
+    {
+        var nu = new DateTimeOffset(2026, 11, 18, 12, 0, 0, TimeSpan.Zero);
+
+        var ts = SolaxConnector.ParseUploadTime("2026-11-19 14:00:00", nu);
+
+        Assert.Equal(nu, ts);
+    }
+
+    [Fact]
+    public void Uploadtijd_in_het_verleden_blijft_staan()
+    {
+        var nu = new DateTimeOffset(2026, 11, 18, 12, 0, 0, TimeSpan.Zero);
+
+        var ts = SolaxConnector.ParseUploadTime("2026-11-18 12:30:00", nu);
+
+        // 12:30 Nederlandse wintertijd is 11:30 UTC, dus ruim voor "nu".
+        Assert.Equal(11, ts!.Value.UtcDateTime.Hour);
+        Assert.Equal(30, ts.Value.UtcDateTime.Minute);
+    }
+
+    [Fact]
+    public void Onleesbare_uploadtijd_geeft_niets_terug()
+    {
+        Assert.Null(SolaxConnector.ParseUploadTime("gisteren"));
+        Assert.Null(SolaxConnector.ParseUploadTime(null));
+    }
+
     // --- Laadpaal -------------------------------------------------------------
 
     private static readonly Dictionary<string, string> ChargerCreds = new() { ["token"] = Token, ["charger_sn"] = "C3110000001" };

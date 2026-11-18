@@ -352,22 +352,24 @@ public sealed class SolaxConnector(IHttpClientFactory httpClientFactory, ILogger
 
     private static double? KwhToWh(double? kwh) => kwh is null ? null : Math.Round(kwh.Value * 1000);
 
-    /// <summary>SolaX geeft <c>yyyy-MM-dd HH:mm:ss</c> in de tijdzone van de installatie; voor NL nemen we Europe/Amsterdam.</summary>
-    private static DateTimeOffset? ParseUploadTime(string? value)
+    /// <summary>
+    /// SolaX geeft <c>yyyy-MM-dd HH:mm:ss</c> in de tijdzone van de installatie; voor NL nemen we
+    /// Europe/Amsterdam, via dezelfde zone als de rest van de app in plaats van een eigen opzoeking.
+    ///
+    /// Een tijd in de toekomst wordt "nu", net als bij Growatt. De klok van een datalogger loopt
+    /// soms voor, en een meting met een tijd van morgen landt dan in de dag van morgen: vandaag mist
+    /// hem en morgen begint met een waarde die er nog niet hoort te zijn. Publiek voor tests.
+    /// </summary>
+    internal static DateTimeOffset? ParseUploadTime(string? value, DateTimeOffset? now = null)
     {
         if (value is null || !DateTime.TryParseExact(value, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var local))
         {
             return null;
         }
 
-        try
-        {
-            var tz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Amsterdam");
-            return new DateTimeOffset(local, tz.GetUtcOffset(local));
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            return new DateTimeOffset(local, TimeSpan.Zero);
-        }
+        var zone = Services.DutchTime.Zone;
+        var ts = new DateTimeOffset(DateTime.SpecifyKind(local, DateTimeKind.Unspecified), zone.GetUtcOffset(local));
+        var utcNow = now ?? DateTimeOffset.UtcNow;
+        return ts > utcNow ? utcNow : ts;
     }
 }
