@@ -438,6 +438,22 @@ public static class TekstenNl
 
         // ---- inloggen met Google, netwerkfouten, grafiek ----
         ["besparen.nog-geen-gegevens"] = "Nog geen gegevens",
+        // ---- wat de grafiek je vertelt ----
+        // Aanleiding: "1 4 7 10 13, wat zijn dat, en wat vertelt dit dashboard mij?" (19-11-2026).
+        ["grafiek.niets-gemeten-dagen"] = "Deze dagen hebben we niets kunnen meten: {0}.",
+        ["grafiek.dagen-ontbreken"] = "Van {0} hebben we geen meting.",
+        ["grafiek.aantal-dagen"] = "{0} dagen",
+        ["grafiek.en"] = "en",
+        ["grafiek.niets-vandaag"] = "Vandaag is er nog niets opgewekt.",
+        ["grafiek.niets-deze-week"] = "Deze week is er nog niets gemeten.",
+        ["grafiek.niets-deze-maand"] = "Deze maand is er nog niets gemeten.",
+        ["grafiek.niets-dit-jaar"] = "Dit jaar is er nog niets gemeten.",
+        ["grafiek.totaal-dagen"] = "{0} in deze dagen, met {1} op de beste dag ({2}).",
+        ["grafiek.totaal-week"] = "{0} deze week, met {1} op de beste dag ({2}).",
+        ["grafiek.totaal-maand"] = "{0} deze maand, met {1} op de beste dag ({2}).",
+        ["grafiek.totaal-jaar"] = "{0} dit jaar, met {1} in de beste maand ({2}).",
+        ["grafiek.tik-uitleg"] = "Tik een staaf aan voor de dag en het aantal.",
+        ["grafiek.staaf-gekozen"] = "{0}: {1}",
         ["sociaal.manier-onbekend"] = "Deze manier van inloggen kent de app niet.",
         ["sociaal.scherm-niet-geopend"] = "De app kon het inlogscherm niet openen.",
         ["sociaal.geen-token"] = "Google gaf geen inlogtoken terug. Laat ons dit weten, dan zetten wij het recht.",

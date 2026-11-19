@@ -328,6 +328,52 @@ public partial class SavingsViewModel : BaseViewModel
     /// <summary>Wordt verhoogd zodat de pagina de GraphicsView kan invalideren.</summary>
     [ObservableProperty] private int _chartVersion;
 
+    /// <summary>
+    /// Wat de grafiek je vertelt, in een zin.
+    ///
+    /// Hier stond niets: een rij staven met kale dagnummers eronder, en daar moest de bewoner zelf
+    /// een conclusie uit trekken. De eerste gebruiker vroeg op 19-11-2026 letterlijk wat het scherm
+    /// hem nu vertelde. Een getal zonder zin is geen antwoord.
+    /// </summary>
+    [ObservableProperty] private string _grafiekSamenvatting = string.Empty;
+
+    /// <summary>
+    /// De aangetikte staaf, voluit: "woensdag 12 november: 7,5 kWh".
+    ///
+    /// Boven een staaf past geen datum, dus kon je nergens aflezen hoeveel er op een dag was. Nu tik
+    /// je hem aan en staat het eronder.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HeeftStaafGekozen))]
+    [NotifyPropertyChangedFor(nameof(ToonTikUitleg))]
+    private string _staafGekozen = string.Empty;
+
+    public bool HeeftStaafGekozen => !string.IsNullOrEmpty(StaafGekozen);
+
+    /// <summary>De hint "tik een staaf aan" verdwijnt zodra iemand dat gedaan heeft.</summary>
+    public bool ToonTikUitleg => !HeeftStaafGekozen;
+
+    /// <summary>De dagen die bij de staven horen; nodig om een tik terug te vertalen naar een datum.</summary>
+    private List<DateOnly> _staafDagen = [];
+
+    /// <summary>Een staaf is aangetikt. Buiten de staven tikken wist de keuze weer.</summary>
+    public void StaafAangetikt(int index)
+    {
+        if (index < 0 || index >= Chart.Bars.Count)
+        {
+            Chart.Gekozen = -1;
+            StaafGekozen = string.Empty;
+            ChartVersion++;
+            return;
+        }
+
+        Chart.Gekozen = index;
+        var staaf = Chart.Bars[index];
+        StaafGekozen = string.Format(Taal.T("grafiek.staaf-gekozen"),
+            staaf.Uitleg ?? staaf.Label, Chart.Waarde(staaf.Value));
+        ChartVersion++;
+    }
+
     public SavingsViewModel(ApiClient api, AuthService auth)
     {
         _api = api;
@@ -535,19 +581,47 @@ public partial class SavingsViewModel : BaseViewModel
         var opwekTotaal = Sum(scope, s => s.PvKwh);
         if (!_grafiekHandmatig) GrafiekInKwh = besparingTotaal <= 0 && opwekTotaal > 0;
 
-        Chart.Bars = Period == SavingsPeriod.Year
-            ? summaries
+        // De staven, met labels waaraan je ziet dat het dagen zijn. Kale getallen (1, 4, 7, 10, 13)
+        // zeiden niemand iets; zie GrafiekTekst voor wat er nu onder een staaf hoort te staan.
+        var periode = NaarGrafiekPeriode(Period);
+        double Waarde(DailySummaryDto s) =>
+            GrafiekInKwh ? Convert.ToDouble(s.PvKwh) : Convert.ToDouble(s.SavedEur);
+
+        if (Period == SavingsPeriod.Year)
+        {
+            var perMaand = summaries
                 .GroupBy(s => SummaryRow.ToDate(s.Date).Month)
                 .OrderBy(g => g.Key)
-                .Select(g => new ChartBar(
-                    CultureInfo.GetCultureInfo("nl-NL").DateTimeFormat.GetAbbreviatedMonthName(g.Key).TrimEnd('.'),
-                    GrafiekInKwh ? Convert.ToDouble(Sum(g, s => s.PvKwh)) : Convert.ToDouble(Sum(g, s => s.SavedEur))))
-                .ToList()
-            : summaries
-                .Select(s => new ChartBar(
-                    SummaryRow.ToDate(s.Date).Day.ToString(),
-                    GrafiekInKwh ? Convert.ToDouble(s.PvKwh) : Convert.ToDouble(s.SavedEur)))
                 .ToList();
+
+            _staafDagen = perMaand.Select(g => new DateOnly(to.Year, g.Key, 1)).ToList();
+            Chart.Bars = perMaand
+                .Select((g, i) => new ChartBar(
+                    GrafiekTekst.StaafLabel(_staafDagen[i], periode, false, Taal.Code),
+                    GrafiekInKwh ? Convert.ToDouble(Sum(g, s => s.PvKwh)) : Convert.ToDouble(Sum(g, s => s.SavedEur)),
+                    GrafiekTekst.VolleDatum(_staafDagen[i], periode, Taal.Code)))
+                .ToList();
+        }
+        else
+        {
+            _staafDagen = summaries.Select(s => SummaryRow.ToDate(s.Date)).ToList();
+            Chart.Bars = summaries
+                .Select((s, i) => new ChartBar(
+                    GrafiekTekst.StaafLabel(_staafDagen[i], periode,
+                        i == 0 || i == summaries.Count - 1, Taal.Code),
+                    Waarde(s),
+                    GrafiekTekst.VolleDatum(_staafDagen[i], periode, Taal.Code)))
+                .ToList();
+        }
+
+        // Een nieuwe periode betekent een nieuwe grafiek; een keuze uit de vorige slaat nergens meer op.
+        Chart.Gekozen = -1;
+        StaafGekozen = string.Empty;
+
+        GrafiekSamenvatting = GrafiekTekst.Samenvatting(
+            periode,
+            summaries.Select(s => new GrafiekDag(SummaryRow.ToDate(s.Date), Waarde(s))).ToList(),
+            from, to, GrafiekInKwh, Taal.Code);
 
         Chart.ValuePrefix = GrafiekInKwh ? string.Empty : "€ ";
         Chart.ValueSuffix = GrafiekInKwh ? " kWh" : string.Empty;
@@ -555,6 +629,16 @@ public partial class SavingsViewModel : BaseViewModel
         ApplyChartTheme();
         ChartVersion++;
     }
+
+    /// <summary>De periode zoals de tekstlaag hem kent. Twee opsommingen, want de app kiest ook
+    /// "dag" terwijl de grafiek dan veertien dagen toont; de woorden volgen de knop, niet de reeks.</summary>
+    private static GrafiekPeriode NaarGrafiekPeriode(SavingsPeriod p) => p switch
+    {
+        SavingsPeriod.Day => GrafiekPeriode.Dag,
+        SavingsPeriod.Week => GrafiekPeriode.Week,
+        SavingsPeriod.Month => GrafiekPeriode.Maand,
+        _ => GrafiekPeriode.Jaar,
+    };
 
     private void ApplyFeedIn(FeedInDto f)
     {

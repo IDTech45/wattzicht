@@ -435,6 +435,21 @@ public static class TekstenTr
 
         // ---- inloggen met Google, netwerkfouten, grafiek ----
         ["besparen.nog-geen-gegevens"] = "Henüz veri yok",
+        // ---- grafik sana ne anlatıyor ----
+        ["grafiek.niets-gemeten-dagen"] = "Bu günlerde ölçüm yapamadık: {0}.",
+        ["grafiek.dagen-ontbreken"] = "{0} için ölçümümüz yok.",
+        ["grafiek.aantal-dagen"] = "{0} gün",
+        ["grafiek.en"] = "ve",
+        ["grafiek.niets-vandaag"] = "Bugün henüz üretim yok.",
+        ["grafiek.niets-deze-week"] = "Bu hafta henüz ölçüm yok.",
+        ["grafiek.niets-deze-maand"] = "Bu ay henüz ölçüm yok.",
+        ["grafiek.niets-dit-jaar"] = "Bu yıl henüz ölçüm yok.",
+        ["grafiek.totaal-dagen"] = "Bu günlerde {0}, en iyi günde {1} ({2}).",
+        ["grafiek.totaal-week"] = "Bu hafta {0}, en iyi günde {1} ({2}).",
+        ["grafiek.totaal-maand"] = "Bu ay {0}, en iyi günde {1} ({2}).",
+        ["grafiek.totaal-jaar"] = "Bu yıl {0}, en iyi ayda {1} ({2}).",
+        ["grafiek.tik-uitleg"] = "Gün ve miktarı görmek için bir çubuğa dokun.",
+        ["grafiek.staaf-gekozen"] = "{0}: {1}",
         ["sociaal.manier-onbekend"] = "Uygulama bu giriş yöntemini tanımıyor.",
         ["sociaal.scherm-niet-geopend"] = "Uygulama giriş ekranını açamadı.",
         ["sociaal.geen-token"] = "Google giriş jetonu döndürmedi. Bize bildirin, düzeltiriz.",

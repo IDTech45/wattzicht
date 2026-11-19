@@ -430,6 +430,21 @@ public static class TekstenEn
 
         // ---- inloggen met Google, netwerkfouten, grafiek ----
         ["besparen.nog-geen-gegevens"] = "No data yet",
+        // ---- what the chart tells you ----
+        ["grafiek.niets-gemeten-dagen"] = "We could not measure anything on these days: {0}.",
+        ["grafiek.dagen-ontbreken"] = "We have no reading for {0}.",
+        ["grafiek.aantal-dagen"] = "{0} days",
+        ["grafiek.en"] = "and",
+        ["grafiek.niets-vandaag"] = "Nothing generated yet today.",
+        ["grafiek.niets-deze-week"] = "Nothing measured yet this week.",
+        ["grafiek.niets-deze-maand"] = "Nothing measured yet this month.",
+        ["grafiek.niets-dit-jaar"] = "Nothing measured yet this year.",
+        ["grafiek.totaal-dagen"] = "{0} over these days, with {1} on the best day ({2}).",
+        ["grafiek.totaal-week"] = "{0} this week, with {1} on the best day ({2}).",
+        ["grafiek.totaal-maand"] = "{0} this month, with {1} on the best day ({2}).",
+        ["grafiek.totaal-jaar"] = "{0} this year, with {1} in the best month ({2}).",
+        ["grafiek.tik-uitleg"] = "Tap a bar to see the day and the amount.",
+        ["grafiek.staaf-gekozen"] = "{0}: {1}",
         ["sociaal.manier-onbekend"] = "The app does not know this way of logging in.",
         ["sociaal.scherm-niet-geopend"] = "The app could not open the login screen.",
         ["sociaal.geen-token"] = "Google did not return a login token. Let us know and we will fix it.",

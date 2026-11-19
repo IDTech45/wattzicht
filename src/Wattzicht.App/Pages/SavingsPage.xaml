@@ -97,6 +97,11 @@
                             </Grid>
                             <!-- Wisselen tussen euro's en kilowatturen. Wie zijn oude cijfers heeft
                                  ingelezen heeft alleen opwek, en dan is een besparingsgrafiek leeg. -->
+                            <!-- Wat deze periode je vertelt, in woorden. Zonder deze regel moest
+                                 de bewoner zelf een conclusie trekken uit een rij blokjes. -->
+                            <Label Text="{Binding GrafiekSamenvatting}"
+                                   FontSize="14"
+                                   Margin="0,2,0,0" />
                             <Button Text="{Binding GrafiekKnopTekst}"
                                     Style="{StaticResource LinkButton}"
                                     HorizontalOptions="End"
@@ -107,6 +112,15 @@
                                           HeightRequest="160"
                                           Margin="0,8,0,0"
                                           SemanticProperties.Description="{t:T schermlezer.besparingsgrafiek}" />
+                            <!-- De aangetikte staaf, of de uitleg dat je kunt tikken. Boven een
+                                 staaf van acht pixels past geen datum; hieronder wel. -->
+                            <Label Text="{Binding StaafGekozen}"
+                                   IsVisible="{Binding HeeftStaafGekozen}"
+                                   Style="{StaticResource StatCaption}"
+                                   FontAttributes="Bold" />
+                            <Label Text="{t:T grafiek.tik-uitleg}"
+                                   IsVisible="{Binding ToonTikUitleg}"
+                                   Style="{StaticResource StatCaption}" />
                             <!-- Waarom vandaag laag staat. Een dag die nog loopt is geen dagtotaal, en
                                  zonder dat erbij is een lage stand 's middags niet te onderscheiden
                                  van een storing. -->

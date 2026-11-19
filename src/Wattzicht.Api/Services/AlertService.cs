@@ -25,12 +25,28 @@ public sealed class AlertService(AppDbContext db, TimeProvider clock, ILogger<Al
     public const int ProductionWindowStartHour = 10;
     public const int ProductionWindowEndHour = 16;
 
+    /// <summary>
+    /// Vanaf wanneer stilte een storing is, gegeven hoe vaak dit merk überhaupt uitgelezen mag worden.
+    ///
+    /// Een halfuur klopt voor een merk dat elke vijf minuten antwoordt, maar niet voor Enphase: daar
+    /// zit uren tussen twee uitlezingen, en dan staat er permanent een melding die niemand meer
+    /// leest. Drie gemiste beurten is het omslagpunt: één keer is ruis, drie keer is er iets stuk.
+    ///
+    /// Dit is geen theorie. Op 16, 17 en 18 november 2026 kwam er van een Enphase-omvormer drie
+    /// dagen lang niets binnen en ging er geen enkele melding af, omdat de controle alleen draaide
+    /// ná een echte uitlezing. De bewoner ontdekte het zelf, aan een lege weekgrafiek.
+    /// </summary>
+    public static TimeSpan Stiltedrempel(TimeSpan uitleesinterval) =>
+        uitleesinterval <= TimeSpan.Zero
+            ? NoDataThreshold
+            : TimeSpan.FromTicks(Math.Max(NoDataThreshold.Ticks, uitleesinterval.Ticks * 3));
+
     /// <summary>Werkt NoData bij op basis van <see cref="Device.LastSeenAt"/>.</summary>
-    public async Task CheckNoDataAsync(Device device, CancellationToken ct)
+    public async Task CheckNoDataAsync(Device device, CancellationToken ct, TimeSpan? uitleesinterval = null)
     {
         var now = clock.GetUtcNow();
         var reference = device.LastSeenAt ?? device.CreatedAt;
-        var stale = now - reference > NoDataThreshold;
+        var stale = now - reference > Stiltedrempel(uitleesinterval ?? TimeSpan.Zero);
 
         if (stale)
         {

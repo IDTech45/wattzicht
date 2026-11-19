@@ -12,6 +12,14 @@ public partial class SavingsPage : ContentPage
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+
+        // Tikken op een staaf. Een aanraking geeft hier de plek, en alleen de grafiek weet welke
+        // staaf daar getekend is; de omrekening staat dus in de drawable en niet hier.
+        ChartView.StartInteraction += (_, e) =>
+        {
+            var punt = e.Touches.FirstOrDefault();
+            _viewModel.StaafAangetikt(_viewModel.Chart.StaafBij(punt.X, (float)ChartView.Width));
+        };
     }
 
     protected override async void OnAppearing()

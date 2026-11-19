@@ -148,13 +148,19 @@ public sealed class PollingWorker(
     private const int EnphaseLaatsteUur = 21;
 
     /// <summary>
-    /// Wat wij van de maandlimiet voor onszelf houden. Het gratis plan geeft er 1.000, maar dat is
-    /// gedeeld met LaadCash en niemand wil erachter komen dat het op is doordat een klant belt. Honderd
-    /// is bewust ruim onder de grens: genoeg om een opbrengstgrafiek te vullen, te weinig om ooit een
-    /// rekening te veroorzaken. Te verhogen met Polling:EnphaseMaandbudget als de cloud ooit de
-    /// hoofdweg wordt in plaats van de achterdeur.
+    /// Wat wij van de maandlimiet voor onszelf houden. Het gratis plan geeft er 1.000.
+    ///
+    /// Stond op honderd omdat de sleutel gedeeld zou zijn met LaadCash. Op 19-11-2026 nagekeken in
+    /// de database daar: nul Enphase-koppelingen, dus die duizend zijn in de praktijk helemaal voor
+    /// Wattzicht. Honderd betekende bij twee huizen ruim zeven uur tussen twee uitlezingen, en dus
+    /// twee metingen op een dag. Een weekgrafiek is dan leeg en een dagtotaal klopt niet, want de
+    /// laatste meting van de dag valt dan midden in de middag.
+    ///
+    /// Zeshonderd geeft bij twee huizen ongeveer een uur tussen twee uitlezingen en blijft ruim
+    /// onder de grens. Het aantal wordt verdeeld over de huizen, dus hoe meer Enphase-woningen er
+    /// bij komen, hoe rustiger het vanzelf wordt. Te wijzigen met Polling:EnphaseMaandbudget.
     /// </summary>
-    internal static int EnphaseMaandbudget { get; private set; } = 100;
+    internal static int EnphaseMaandbudget { get; private set; } = 600;
 
     internal static TimeSpan EnphaseInterval(int apparaten)
     {
@@ -267,6 +273,12 @@ public sealed class PollingWorker(
             {
                 // Dit merk mag niet zo vaak. Overslaan is hier geen fout: het vorige antwoord staat nog
                 // in de database en de klant ziet gewoon de laatste meting.
+                //
+                // Wél eerst kijken of er nog iets binnenkomt. Deze controle stond alleen op het pad
+                // ná een geslaagde uitlezing, en juist een apparaat dat wekenlang wordt overgeslagen
+                // meldt zichzelf nooit: in november 2026 bleef een Enphase-omvormer drie dagen stil
+                // zonder dat er iets afging.
+                await alerts.CheckNoDataAsync(device, ct, KortsteInterval(device.Brand, _enphaseApparaten));
                 logger.LogDebug("Apparaat {DeviceId} ({Brand}) overgeslagen tot {WachtTot:HH:mm}", device.Id, device.Brand, wachtTot);
                 continue;
             }
@@ -345,7 +357,7 @@ public sealed class PollingWorker(
                 await alerts.SetOfflineAsync(device, message, ct);
             }
 
-            await alerts.CheckNoDataAsync(device, ct);
+            await alerts.CheckNoDataAsync(device, ct, KortsteInterval(device.Brand, _enphaseApparaten));
         }
 
         LiveSnapshotDto? snapshotForPush = null;
