@@ -161,8 +161,7 @@ public partial class DevicesViewModel : BaseViewModel
         await RunSafeAsync(async () =>
         {
             var regels = await _api.EnphaseDiagnoseAsync();
-            await ShowAlertAsync(Taal.T("apparaten.enphase-diagnose"), string.Join("
-", regels));
+            await ShowAlertAsync(Taal.T("apparaten.enphase-diagnose"), string.Join(Environment.NewLine, regels));
         }, _auth);
     }
 
