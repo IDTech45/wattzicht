@@ -32,6 +32,7 @@ public enum DeviceBrand
     Enphase = 7,
     Peblar = 8,
     Easee = 9,
+    SolarEdge = 10,
 
     /// <summary>Demo-apparaat met gesimuleerde data; geen echte verbinding.</summary>
     Demo = 99

@@ -53,6 +53,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         new(DeviceBrand.Growatt, "Growatt", Taal.T("merk.growatt"), "Accent500", DeviceType.Inverter),
         new(DeviceBrand.Solax, "SolaX", Taal.T("merk.solax"), "Accent500", DeviceType.Inverter),
         new(DeviceBrand.Solax, "SolaX laadpaal", Taal.T("merk.solax-laadpaal"), "EnergyCharger", DeviceType.Charger),
+        new(DeviceBrand.SolarEdge, "SolarEdge", Taal.T("merk.solaredge"), "Accent500", DeviceType.Inverter),
         new(DeviceBrand.Sessy, "Sessy", Taal.T("merk.sessy"), "EnergyBattery", DeviceType.Battery),
         new(DeviceBrand.Zaptec, "Zaptec", Taal.T("merk.zaptec"), "EnergyCharger", DeviceType.Charger),
         new(DeviceBrand.Easee, "Easee", Taal.T("merk.easee"), "EnergyCharger", DeviceType.Charger),
@@ -112,6 +113,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasBrand))]
     [NotifyPropertyChangedFor(nameof(IsGrowatt))]
+    [NotifyPropertyChangedFor(nameof(IsSolarEdge))]
     [NotifyPropertyChangedFor(nameof(IsSolax))]
     [NotifyPropertyChangedFor(nameof(IsSolaxCharger))]
     [NotifyPropertyChangedFor(nameof(IsSolaxInverter))]
@@ -133,6 +135,7 @@ public partial class ConnectDeviceViewModel : BaseViewModel
 
     public bool HasBrand => SelectedBrand is not null;
     public bool IsGrowatt => SelectedBrand?.Brand == DeviceBrand.Growatt;
+    public bool IsSolarEdge => SelectedBrand?.Brand == DeviceBrand.SolarEdge;
     public bool IsSolax => SelectedBrand?.Brand == DeviceBrand.Solax;
     public bool IsSolaxCharger => IsSolax && SelectedBrand?.DefaultType == DeviceType.Charger;
     public bool IsSolaxInverter => IsSolax && !IsSolaxCharger;
@@ -392,6 +395,11 @@ public partial class ConnectDeviceViewModel : BaseViewModel
         {
             case DeviceBrand.Growatt:
                 credentials["token"] = ApiToken.Trim();
+                break;
+            case DeviceBrand.SolarEdge:
+                // Alleen de sleutel vragen. Het site-id staat in de URL van zijn dashboard en is
+                // precies het soort ding waar iemand op afhaakt; de server zoekt het er zelf bij.
+                credentials["api_key"] = ApiToken.Trim();
                 break;
             case DeviceBrand.Solax:
                 credentials["token"] = ApiToken.Trim();

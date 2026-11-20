@@ -97,7 +97,16 @@ public static class ConnectorServiceCollectionExtensions
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Wattzicht/0.1");
         });
 
+        services.AddHttpClient(SolarEdgeConnector.HttpClientName, client =>
+        {
+            var baseUrl = configuration["Connectors:SolarEdge:BaseUrl"] ?? SolarEdgeConnector.DefaultBaseUrl;
+            client.BaseAddress = new Uri(baseUrl);
+            client.Timeout = TimeSpan.FromSeconds(20);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Wattzicht/0.1");
+        });
+
         services.AddSingleton<IDeviceConnector, GrowattConnector>();
+        services.AddSingleton<IDeviceConnector, SolarEdgeConnector>();
         services.AddSingleton<IDeviceConnector, SolaxConnector>();
         services.AddSingleton<IDeviceConnector, SessyConnector>();
         services.AddSingleton<IDeviceConnector, AlfenConnector>();

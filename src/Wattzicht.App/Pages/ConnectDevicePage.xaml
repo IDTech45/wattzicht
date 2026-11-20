@@ -107,6 +107,22 @@
                         </VerticalStackLayout>
                     </Border>
 
+                    <!-- SolarEdge: alleen de sleutel. Het site-id zoekt de server er zelf bij, want dat
+                         staat in de URL van zijn dashboard en daar haakt iemand op af. -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding IsSolarEdge}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="{t:T koppel.solaredge-uitleg}"
+                                   Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{t:T koppel.api-sleutel}" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputBorder}">
+                                    <Entry Text="{Binding ApiToken}" Placeholder="{t:T koppel.plak-hier-je-sleutel}" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" />
+                                </Border>
+                                <Label Text="{Binding ApiTokenError}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasApiTokenError}" />
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
                     <!-- SolaX -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding IsSolax}">
                         <VerticalStackLayout Spacing="12">

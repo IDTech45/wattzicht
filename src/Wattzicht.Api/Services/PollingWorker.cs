@@ -139,6 +139,11 @@ public sealed class PollingWorker(
         // Elke uitlezing is een login plus een state-aanroep, en Zaptec knijpt af op ons IP-adres en
         // niet op het account. Tien minuten is voor een laadpaal ruim genoeg: een laadbeurt duurt uren.
         DeviceBrand.Zaptec => TimeSpan.FromMinutes(10),
+        // SolarEdge laat 300 opvragingen per dag toe per sleutel, en wij doen er twee per uitlezing
+        // (de vermogensstroom en het overzicht). Twintig minuten komt neer op 144 per dag: ruim onder
+        // de grens, met lucht voor een handmatige verversing. Vaker kijken levert een opbrengst-
+        // grafiek niets op en kost de bewoner zijn sleutel voor de rest van de dag.
+        DeviceBrand.SolarEdge => TimeSpan.FromMinutes(20),
         _ => TimeSpan.Zero,
     };
 
