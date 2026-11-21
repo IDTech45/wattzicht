@@ -726,6 +726,13 @@ public static class TekstenEn
 
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "not measured",
+        ["meer.geen-installateur-gekoppeld"] = "No installer linked",
+        ["meer.heb-je-een-installateur"] = "Had solar panels or a charger installed? Enter that company's code and they can look along and help when something stops.",
+        ["meer.code-van-je-installateur"] = "Your installer's code",
+        ["meer.koppelen-is-toestemming"] = "Linking means this company may see your readings and alerts. One tap removes it again.",
+        ["meer.koppel-installateur"] = "Link",
+        ["meer.installateur-loskoppelen"] = "Unlink installer",
+        ["meer.weet-je-het-zeker-loskoppelen"] = "Your installer will no longer see your home. You can link them again later with their code.",
         ["shell.overzicht"] = "Overview",
         ["shell.woningen"] = "Homes",
         ["installateur.overzicht"] = "Overview",

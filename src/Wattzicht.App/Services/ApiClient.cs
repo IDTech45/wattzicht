@@ -162,6 +162,17 @@ public sealed class ApiClient
     public Task<InstallerAccessDto> GetInstallerAccessAsync(CancellationToken ct = default) =>
         GetAsync<InstallerAccessDto>("/household/installer-access", ct);
 
+    /// <summary>
+    /// De woning aan een installateur koppelen met zijn code. Dat kon alleen bij het aanmelden; wie zich
+    /// zelf aanmeldde en later panelen liet leggen kwam er daarna niet meer bij.
+    /// </summary>
+    public Task<InstallerAccessDto> KoppelInstallateurAsync(string code, CancellationToken ct = default) =>
+        PutAsync<KoppelInstallateurRequest, InstallerAccessDto>("/household/installer", new KoppelInstallateurRequest(code), ct);
+
+    /// <summary>De installateur eraf halen; de woning hoort daarna bij niemand.</summary>
+    public Task<InstallerAccessDto> OntkoppelInstallateurAsync(CancellationToken ct = default) =>
+        DeleteAsync<InstallerAccessDto>("/household/installer", ct);
+
     public Task<InstallerAccessDto> SetInstallerAccessAsync(bool granted, CancellationToken ct = default) =>
         PutAsync<UpdateInstallerAccessRequest, InstallerAccessDto>("/household/installer-access", new UpdateInstallerAccessRequest(granted), ct);
 
@@ -414,6 +425,14 @@ public sealed class ApiClient
         await AuthorizeAsync(req);
         using var res = await SendRawAsync(req, ct);
         await EnsureSuccessAsync(res, ct);
+    }
+
+    /// <summary>Verwijderen waarbij de server nog iets terugstuurt, zoals de nieuwe stand na ontkoppelen.</summary>
+    private async Task<T> DeleteAsync<T>(string path, CancellationToken ct)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Delete, Relative(path));
+        await AuthorizeAsync(req);
+        return await SendAsync<T>(req, ct);
     }
 
     private async Task DeleteAsync(string path, CancellationToken ct)

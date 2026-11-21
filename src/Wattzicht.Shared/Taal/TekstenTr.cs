@@ -731,6 +731,13 @@ public static class TekstenTr
 
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "ölçülmedi",
+        ["meer.geen-installateur-gekoppeld"] = "Bağlı tesisatçı yok",
+        ["meer.heb-je-een-installateur"] = "Güneş paneli veya şarj istasyonu mu kurduttunuz? O firmanın kodunu girin; böylece verilerinizi görebilir ve bir şey durduğunda yardım edebilir.",
+        ["meer.code-van-je-installateur"] = "Tesisatçınızın kodu",
+        ["meer.koppelen-is-toestemming"] = "Bağlamak, bu firmanın ölçümlerinizi ve uyarılarınızı görebilmesi demektir. Tek dokunuşla geri alırsınız.",
+        ["meer.koppel-installateur"] = "Bağla",
+        ["meer.installateur-loskoppelen"] = "Tesisatçının bağlantısını kes",
+        ["meer.weet-je-het-zeker-loskoppelen"] = "Tesisatçınız bundan sonra evinizi göremez. Daha sonra koduyla tekrar bağlayabilirsiniz.",
         ["shell.overzicht"] = "Genel bakış",
         ["shell.woningen"] = "Evler",
         ["installateur.overzicht"] = "Genel bakış",

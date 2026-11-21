@@ -661,7 +661,8 @@ public sealed record AdviceDto(
 /// <param name="Granted">Toestemming aan of uit.</param>
 /// <param name="ChangedAt">Laatst gewijzigd (UTC).</param>
 /// <param name="InstallerName">Naam van de installateur waar het om gaat.</param>
-public sealed record InstallerAccessDto(bool Granted, DateTimeOffset? ChangedAt, string InstallerName);
+public sealed record InstallerAccessDto(bool Granted, DateTimeOffset? ChangedAt, string InstallerName,
+    bool HeeftInstallateur = true);
 
 /// <summary>Waar de bewoner naartoe moet om Enphase toestemming te geven.</summary>
 /// <param name="Url">De toestemmingspagina van Enphase, met onze client-id en het terugkeeradres erin.</param>
@@ -683,6 +684,21 @@ public sealed record EnphaseAuthorizeUrlQuery(string? RedirectUri, string? Clien
 
 /// <summary>Toestemming aan- of uitzetten (PUT /household/installer-access).</summary>
 public sealed record UpdateInstallerAccessRequest(bool Granted);
+
+/// <summary>
+/// Je installateur koppelen met zijn code (PUT /household/installer).
+///
+/// Tot nu toe kon dat alleen op het moment van aanmelden. Wie zich zelf aanmeldde en pas later zonnepanelen
+/// liet leggen, of van installateur wisselde, zat daarna voorgoed vast aan wat er bij de aanmelding stond.
+/// </summary>
+/// <param name="Code">De code van de installateur, zoals hij hem op zijn offerte of sticker zet.</param>
+public sealed record KoppelInstallateurRequest(string Code);
+
+/// <summary>Wie er aan deze woning hangt en of de bewoner echt een installateur heeft (GET /household/installer-access).</summary>
+/// <param name="Granted">Of de installateur mag meekijken.</param>
+/// <param name="ChangedAt">Wanneer dat voor het laatst veranderde.</param>
+/// <param name="InstallerName">Naam van de installateur.</param>
+/// <param name="HeeftInstallateur">Onwaar bij een woning zonder installateur; dan hoort er geen naam op het scherm.</param>
 
 /// <summary>Eén keer dat de installateur gegevens bekeek.</summary>
 /// <param name="At">Moment (UTC).</param>

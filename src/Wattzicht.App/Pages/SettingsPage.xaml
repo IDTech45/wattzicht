@@ -251,8 +251,35 @@
 
                     <BoxView Style="{StaticResource DividerLine}" />
 
+                    <!-- Loskoppelen hoort hier, niet verstopt: alleen het meekijken uitzetten laat de
+                         naam van dat bedrijf in de app staan, en bij een verhuizing of een ruzie is dat
+                         precies wat iemand weg wil hebben. -->
+                    <Button Text="{t:T meer.installateur-loskoppelen}" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding OntkoppelInstallateurCommand}" IsEnabled="{Binding KoppelBezig, Converter={StaticResource InvertedBool}}" />
+
+                    <BoxView Style="{StaticResource DividerLine}" />
+
                     <Label Text="{t:T meer.nog-geen-thuisbatterij-sla-je}" FontSize="14" />
                     <Button Text="{t:T meer.vraag-offerte-voor-thuisbatterij}" Style="{StaticResource PrimaryButton}" Command="{Binding RequestQuoteCommand}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== Nog geen installateur =====
+                 Koppelen kon alleen bij het aanmelden, met een code in het formulier. Wie zich zelf
+                 aanmeldde en pas daarna panelen liet leggen, kwam er daarna nooit meer bij. -->
+            <Label Text="{t:T meer.je-installateur}" Style="{StaticResource SectionTitle}"
+                   IsVisible="{Binding HeeftInstallateur, Converter={StaticResource InvertedBool}}" />
+            <Border Style="{StaticResource Card}" IsVisible="{Binding HeeftInstallateur, Converter={StaticResource InvertedBool}}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{t:T meer.geen-installateur-gekoppeld}" Style="{StaticResource CardTitle}" />
+                    <Label Text="{t:T meer.heb-je-een-installateur}" Style="{StaticResource SubtitleLabel}" />
+                    <Entry Text="{Binding InstallateurCode}" Placeholder="{t:Ts meer.code-van-je-installateur}"
+                           ClearButtonVisibility="WhileEditing" />
+                    <Label Text="{Binding KoppelFout}" TextColor="{StaticResource ErrorDot}" FontSize="13"
+                           IsVisible="{Binding HeeftKoppelFout}" />
+                    <Label Text="{t:T meer.koppelen-is-toestemming}" Style="{StaticResource StatCaption}" />
+                    <Button Text="{t:T meer.koppel-installateur}" Style="{StaticResource PrimaryButton}"
+                            Command="{Binding KoppelInstallateurCommand}" IsEnabled="{Binding KoppelBezig, Converter={StaticResource InvertedBool}}" />
                 </VerticalStackLayout>
             </Border>
 

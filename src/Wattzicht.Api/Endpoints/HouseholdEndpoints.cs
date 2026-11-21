@@ -47,6 +47,15 @@ public static class HouseholdEndpoints
             .WithSummary("Zet meekijken door de installateur aan of uit. Uit = direct onzichtbaar in het portal.")
             .Produces<InstallerAccessDto>();
 
+        household.MapPut("/household/installer", KoppelInstallateurAsync)
+            .WithSummary("Koppelt de woning aan een installateur met zijn code en geeft hem meteen inzage.")
+            .Produces<InstallerAccessDto>()
+            .ProducesValidationProblem();
+
+        household.MapDelete("/household/installer", OntkoppelInstallateurAsync)
+            .WithSummary("Haalt de installateur eraf. De woning hoort daarna bij niemand en is nergens meer zichtbaar.")
+            .Produces<InstallerAccessDto>();
+
         household.MapDelete("/household", VerwijderAsync)
             .WithSummary("Verwijdert dit huishouden en alles wat eraan hangt. Onomkeerbaar.")
             .Produces(StatusCodes.Status204NoContent);
@@ -1042,7 +1051,7 @@ public static class HouseholdEndpoints
 
         return household is null
             ? Results.NotFound()
-            : Results.Ok(new InstallerAccessDto(household.InstallerAccessGranted, household.InstallerAccessChangedAt, household.Installer.Name));
+            : Results.Ok(new InstallerAccessDto(household.InstallerAccessGranted, household.InstallerAccessChangedAt, household.Installer.Name, HeeftInstallateur: household.InstallerId != SysteemInstallateur.Id));
     }
 
     private static async Task<IResult> SetInstallerAccessAsync(
@@ -1069,7 +1078,107 @@ public static class HouseholdEndpoints
             await db.SaveChangesAsync(ct);
         }
 
-        return Results.Ok(new InstallerAccessDto(household.InstallerAccessGranted, household.InstallerAccessChangedAt, household.Installer.Name));
+        return Results.Ok(new InstallerAccessDto(household.InstallerAccessGranted, household.InstallerAccessChangedAt, household.Installer.Name, HeeftInstallateur: household.InstallerId != SysteemInstallateur.Id));
+    }
+
+    /// <summary>
+    /// De bewoner koppelt zelf zijn installateur, met de code die op diens offerte of sticker staat.
+    ///
+    /// Dit kon alleen op het moment van aanmelden. Wie zich zelf aanmeldde en pas daarna panelen liet
+    /// leggen, kon zijn installateur nooit meer laten meekijken; en wie wisselde van bedrijf bleef aan
+    /// het oude hangen. De bewoner doet het dus zelf, niet de installateur: anders kan een bedrijf een
+    /// woning naar zich toe trekken door een e-mailadres in te typen.
+    ///
+    /// Koppelen is tegelijk toestemming geven. Dat is geen verstopte bijwerking maar de hele bedoeling:
+    /// een installateur koppelen die vervolgens niets mag zien heeft geen betekenis. Het staat zo ook
+    /// op het scherm, en met een tik is het weer weg.
+    /// </summary>
+    private static async Task<IResult> KoppelInstallateurAsync(
+        KoppelInstallateurRequest request,
+        HttpContext http,
+        AppDbContext db,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var code = (request.Code ?? string.Empty).Trim().ToLowerInvariant();
+        if (code.Length == 0)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["code"] = ["Vul de code van je installateur in."],
+            });
+        }
+
+        // Een installateur die nog op goedkeuring wacht, mag geen klanten binnenhalen. En de woning
+        // zonder installateur is geen bedrijf waar je je aan kunt koppelen.
+        var installateur = await db.Installers.FirstOrDefaultAsync(i => i.Slug == code, ct);
+        if (installateur is null || installateur.ApprovedAt is null || installateur.Id == SysteemInstallateur.Id)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["code"] = ["Deze code kennen we niet. Vraag je installateur naar zijn code."],
+            });
+        }
+
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var household = await db.Households.Include(h => h.Installer).FirstOrDefaultAsync(h => h.Id == householdId, ct);
+        if (household is null) return Results.NotFound();
+
+        var now = clock.GetUtcNow();
+        household.InstallerId = installateur.Id;
+        household.Installer = installateur;
+        household.InstallerAccessGranted = true;
+        household.InstallerAccessChangedAt = now;
+        db.InstallerAccessLogs.Add(new InstallerAccessLog
+        {
+            HouseholdId = household.Id,
+            InstallerId = installateur.Id,
+            UserId = http.User.GetUserId(),
+            Action = "gekoppeld",
+            At = now,
+        });
+        await db.SaveChangesAsync(ct);
+
+        return Results.Ok(new InstallerAccessDto(true, now, installateur.Name, HeeftInstallateur: true));
+    }
+
+    /// <summary>
+    /// De installateur eraf halen. De woning komt bij niemand te staan en verdwijnt uit elk portal.
+    ///
+    /// Alleen de inzage uitzetten is niet genoeg bij een verhuizing of een ruzie: dan blijft de naam van
+    /// dat bedrijf in de app staan en komt hij terug zodra iemand het vinkje weer aanzet.
+    /// </summary>
+    private static async Task<IResult> OntkoppelInstallateurAsync(
+        HttpContext http,
+        AppDbContext db,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var household = await db.Households.Include(h => h.Installer).FirstOrDefaultAsync(h => h.Id == householdId, ct);
+        if (household is null) return Results.NotFound();
+
+        var now = clock.GetUtcNow();
+        if (household.InstallerId != SysteemInstallateur.Id)
+        {
+            db.InstallerAccessLogs.Add(new InstallerAccessLog
+            {
+                HouseholdId = household.Id,
+                InstallerId = household.InstallerId,
+                UserId = http.User.GetUserId(),
+                Action = "ontkoppeld",
+                At = now,
+            });
+        }
+
+        await SysteemInstallateur.EnsureAsync(db, clock, ct);
+        household.InstallerId = SysteemInstallateur.Id;
+        household.Installer = null!;
+        household.InstallerAccessGranted = false;
+        household.InstallerAccessChangedAt = now;
+        await db.SaveChangesAsync(ct);
+
+        return Results.Ok(new InstallerAccessDto(false, now, "Wattzicht", HeeftInstallateur: false));
     }
 
     private static async Task<IResult> AccessLogAsync(HttpContext http, AppDbContext db, CancellationToken ct)

@@ -735,6 +735,13 @@ public static class TekstenNl
 
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "niet gemeten",
+        ["meer.geen-installateur-gekoppeld"] = "Je hebt geen installateur gekoppeld",
+        ["meer.heb-je-een-installateur"] = "Heb je zonnepanelen of een laadpaal laten leggen? Vul de code van dat bedrijf in, dan kan hij meekijken en helpen als er iets stilvalt.",
+        ["meer.code-van-je-installateur"] = "Code van je installateur",
+        ["meer.koppelen-is-toestemming"] = "Koppelen betekent dat dit bedrijf je metingen en storingen mag zien. Je haalt het er met één tik weer af.",
+        ["meer.koppel-installateur"] = "Koppelen",
+        ["meer.installateur-loskoppelen"] = "Installateur loskoppelen",
+        ["meer.weet-je-het-zeker-loskoppelen"] = "Je installateur ziet je woning daarna niet meer. Je kunt hem later opnieuw koppelen met zijn code.",
         ["shell.overzicht"] = "Overzicht",
         ["shell.woningen"] = "Woningen",
         ["installateur.overzicht"] = "Overzicht",

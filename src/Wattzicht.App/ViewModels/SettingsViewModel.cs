@@ -667,6 +667,10 @@ public partial class SettingsViewModel : BaseViewModel
             try
             {
                 var access = await _api.GetInstallerAccessAsync();
+                // De woning zonder installateur hangt onder Wattzicht zelf. Dat is geen bedrijf dat
+                // meekijkt, dus hoort het hele blok weg te blijven en komt in plaats daarvan de
+                // mogelijkheid om er alsnog een te koppelen.
+                HeeftInstallateur = access.HeeftInstallateur;
                 _syncingAccess = true;
                 InstallerAccess = access.Granted;
                 _syncingAccess = false;
@@ -723,6 +727,71 @@ public partial class SettingsViewModel : BaseViewModel
         catch (Exception)
         {
             ErrorMessage = Taal.T("algemeen.er-ging-iets-mis");
+        }
+    }
+
+    [ObservableProperty] private string _installateurCode = string.Empty;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftKoppelFout))] private string? _koppelFout;
+    [ObservableProperty] private bool _koppelBezig;
+
+    public bool HeeftKoppelFout => !string.IsNullOrWhiteSpace(KoppelFout);
+
+    /// <summary>
+    /// De bewoner koppelt zijn installateur met de code die op diens offerte of sticker staat.
+    ///
+    /// Dit kon alleen op het moment van aanmelden. Wie zich zelf aanmeldde en pas daarna panelen liet
+    /// leggen, of wisselde van bedrijf, kwam er nooit meer bij.
+    /// </summary>
+    [RelayCommand]
+    private async Task KoppelInstallateurAsync()
+    {
+        var code = InstallateurCode.Trim();
+        if (code.Length == 0) return;
+
+        KoppelFout = null;
+        KoppelBezig = true;
+        try
+        {
+            await _api.KoppelInstallateurAsync(code);
+            InstallateurCode = string.Empty;
+            await LoadAsync();
+        }
+        catch (ApiException ex)
+        {
+            KoppelFout = ex.Message;
+        }
+        finally
+        {
+            KoppelBezig = false;
+        }
+    }
+
+    /// <summary>
+    /// De installateur eraf halen. Alleen het meekijken uitzetten is niet genoeg bij een verhuizing of
+    /// een ruzie: dan blijft die naam in de app staan en komt hij terug zodra het vinkje weer aangaat.
+    /// </summary>
+    [RelayCommand]
+    private async Task OntkoppelInstallateurAsync()
+    {
+        var zeker = await ConfirmAsync(
+            Taal.T("meer.installateur-loskoppelen"),
+            Taal.T("meer.weet-je-het-zeker-loskoppelen"),
+            Taal.T("meer.installateur-loskoppelen"));
+        if (!zeker) return;
+
+        KoppelBezig = true;
+        try
+        {
+            await _api.OntkoppelInstallateurAsync();
+            await LoadAsync();
+        }
+        catch (ApiException ex)
+        {
+            KoppelFout = ex.Message;
+        }
+        finally
+        {
+            KoppelBezig = false;
         }
     }
 
