@@ -132,8 +132,13 @@ public static class SchemaUpgrades
         """ALTER TABLE installers ADD COLUMN IF NOT EXISTS "City" character varying(120) NULL""",
         """ALTER TABLE installers ADD COLUMN IF NOT EXISTS "CustomerCount" integer NULL""",
         """ALTER TABLE installers ADD COLUMN IF NOT EXISTS "ApprovedAt" timestamp with time zone NULL""",
-        // Wat er al stond is bestaand werk en dus goedgekeurd; alleen nieuwe aanmeldingen staan open.
-        """UPDATE installers SET "ApprovedAt" = "CreatedAt" WHERE "ApprovedAt" IS NULL""",
+        // Wat er al stond toen deze kolom erbij kwam is bestaand werk en dus goedgekeurd. De datum
+        // hoort hier bij: deze lijst draait bij ELKE start, en zonder die grens keurde hij elke
+        // wachtende aanmelding bij de eerstvolgende deploy stilletjes goed. Precies wat de
+        // goedkeuring moest tegenhouden: wie zich aanmeldt als installateur kon zo klanten naar
+        // zijn eigen portal trekken. Gevonden op 21-11-2026, toen een installateur die bewust niet
+        // goedgekeurd was er binnen een minuut een stempel bij had.
+        """UPDATE installers SET "ApprovedAt" = "CreatedAt" WHERE "ApprovedAt" IS NULL AND "CreatedAt" < '2026-11-01'""",
 
         // 2026-11: abonnementskeuze van de bewoner (alleen vastleggen; er wordt nog niets afgeschreven).
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "Plan" character varying(20) NOT NULL DEFAULT 'installer'""",
