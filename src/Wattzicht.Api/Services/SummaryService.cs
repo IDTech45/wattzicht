@@ -259,13 +259,24 @@ public sealed class SummaryService(AppDbContext db, SavingsCalculator calculator
         }
     }
 
-    /// <summary>Tarief dat op een dag geldt: het laatste tarief met <c>ValidFrom &lt;= date</c>, anders de standaard.</summary>
+    /// <summary>
+    /// Het tarief dat op een dag geldt: het laatste tarief met <c>ValidFrom &lt;= date</c>.
+    ///
+    /// Ligt de dag vóór het eerste tarief, dan rekenen we met dat eerste tarief. Dat speelt bij wie zijn
+    /// oude jaren inleest: die heeft drie jaar aan opwek en een tarief van vorige week. Een platformbrede
+    /// standaard van 28 cent maakte daar een bedrag van dat niets met zijn contract te maken had, en een
+    /// euro op het scherm hoort van hem te zijn. Pas als hij helemaal geen tarief heeft, geldt de standaard.
+    /// </summary>
     public async Task<TariffRates> GetRatesAsync(Guid householdId, DateOnly date, CancellationToken ct)
     {
         var tariff = await db.Tariffs
             .Where(t => t.HouseholdId == householdId && t.ValidFrom <= date)
             .OrderByDescending(t => t.ValidFrom)
-            .FirstOrDefaultAsync(ct);
+            .FirstOrDefaultAsync(ct)
+            ?? await db.Tariffs
+                .Where(t => t.HouseholdId == householdId)
+                .OrderBy(t => t.ValidFrom)
+                .FirstOrDefaultAsync(ct);
 
         return tariff is null
             ? TariffRates.Default
