@@ -735,6 +735,7 @@ public static class TekstenNl
 
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "niet gemeten",
+        ["besparen.zonder-meterkast"] = "Je meterkast wordt niet gemeten, dus we zien niet wat je direct zelf gebruikte en wat terugging naar het net. Tot en met 2026 wordt er gesaldeerd en is dat allebei evenveel waard, dus je bedrag klopt: het is je hele opwek maal je leveringstarief. Vanaf 2027 scheelt het wel, en dan is een meter in je meterkast nodig.",
 
 
         // ---- schermlezer: wat een knop of een schakelaar doet ----

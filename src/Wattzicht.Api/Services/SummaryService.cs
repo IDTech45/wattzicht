@@ -278,7 +278,8 @@ public sealed class SummaryService(AppDbContext db, SavingsCalculator calculator
         s.ExportKwh,
         s.ChargedKwh,
         s.BatteryDischargedKwh,
-        s.BatteryChargedFromGridKwh);
+        s.BatteryChargedFromGridKwh,
+        s.PvKwh);
 
     /// <summary>Watt × uren → kWh.</summary>
     private static double Wh(double watt, double hours) => watt * hours / 1000d;

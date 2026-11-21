@@ -726,6 +726,7 @@ public static class TekstenEn
 
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "not measured",
+        ["besparen.zonder-meterkast"] = "Your meter cupboard is not measured, so we cannot see what you used directly and what went back to the grid. Through 2026 both are worth the same under net metering, so your amount is right: it is your full production times your supply rate. From 2027 the split matters, and that needs a meter in your meter cupboard.",
 
 
         // ---- schermlezer: wat een knop of een schakelaar doet ----

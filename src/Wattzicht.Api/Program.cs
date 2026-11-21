@@ -286,6 +286,31 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Besparing van bestaande dagen opnieuw uitrekenen. Nodig na de regel voor woningen zonder meting in
+// de meterkast: die stonden op 0,00 euro terwijl de zon wel degelijk iets opleverde. Rekent alleen
+// opnieuw uit wat er al ligt en schrijft alleen als er iets verandert.
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var summaries = scope.ServiceProvider.GetRequiredService<SummaryService>();
+    var log = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Besparing");
+    try
+    {
+        var woningen = await db.Households.Select(h => h.Id).ToListAsync();
+        var gewijzigd = 0;
+        foreach (var woning in woningen)
+        {
+            await summaries.RecalculateSavingsAsync(woning, DateOnly.MinValue, CancellationToken.None);
+            gewijzigd += await db.SaveChangesAsync();
+        }
+        if (gewijzigd > 0) log.LogInformation("Besparing opnieuw uitgerekend over {Dagen} dagen.", gewijzigd);
+    }
+    catch (Exception ex)
+    {
+        log.LogError(ex, "Besparing opnieuw uitrekenen mislukt.");
+    }
+}
+
 if (configuration.GetValue("Seed:Enabled", true))
 {
     await DbSeeder.SeedAsync(app.Services);

@@ -56,6 +56,15 @@ public sealed class LokaleMeter(ApiClient api, ILogger<LokaleMeter> logger)
     /// </param>
     public async Task StuurDoorAsync(IEnumerable<DeviceDto> apparaten, bool forceer = false, CancellationToken ct = default)
     {
+        // Buiten de deur heeft dit geen zin: een kastje op 192.168.x.x is over mobiel internet
+        // onbereikbaar. Toch proberen kostte vier tellen per apparaat, achter elkaar, terwijl het
+        // startscherm stond te wachten. Dat is precies het trage gevoel buitenshuis.
+        if (!OpWifi())
+        {
+            logger.LogDebug("Geen wifi: lokale apparaten overgeslagen");
+            return;
+        }
+
         foreach (var apparaat in apparaten.Where(IsLokaal))
         {
             if (!forceer
@@ -87,6 +96,26 @@ public sealed class LokaleMeter(ApiClient api, ILogger<LokaleMeter> logger)
             {
                 logger.LogDebug(ex, "Lokale meter {Id} niet gelezen", apparaat.Id);
             }
+        }
+    }
+
+    /// <summary>
+    /// Zit de telefoon op wifi? Alleen dan kan hij bij een apparaat in huis.
+    ///
+    /// Ethernet telt mee voor een tablet in een dock. Weet het toestel het niet, dan proberen we het
+    /// gewoon: liever een keer vier tellen wachten dan een bewoner thuis zonder metingen.
+    /// </summary>
+    private static bool OpWifi()
+    {
+        try
+        {
+            var profielen = Connectivity.Current.ConnectionProfiles.ToList();
+            if (profielen.Count == 0) return true;
+            return profielen.Contains(ConnectionProfile.WiFi) || profielen.Contains(ConnectionProfile.Ethernet);
+        }
+        catch
+        {
+            return true;
         }
     }
 

@@ -731,6 +731,7 @@ public static class TekstenTr
 
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "ölçülmedi",
+        ["besparen.zonder-meterkast"] = "Sayaç panonuz ölçülmüyor, bu yüzden doğrudan kendi kullandığınızı ve şebekeye geri verdiğinizi ayıramıyoruz. 2026 sonuna kadar mahsuplaşma geçerli ve ikisi de aynı değerde, dolayısıyla tutarınız doğru: toplam üretiminiz çarpı tedarik tarifeniz. 2027'den itibaren fark eder ve bunun için panonuzda bir ölçer gerekir.",
 
 
         // ---- schermlezer: wat een knop of een schakelaar doet ----

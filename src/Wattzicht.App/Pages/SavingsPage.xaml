@@ -95,6 +95,13 @@
                                 <Label Text="{Binding TotalSavedText}" Style="{StaticResource StatValueLarge}" TextColor="{AppThemeBinding Light={StaticResource Navy900}, Dark={StaticResource Accent500}}" />
                                 <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
                             </Grid>
+                            <!-- Zonder meting in de meterkast weten we niet wat direct in huis bleef en wat
+                                 terugging. Tot eind 2026 maakt dat voor het bedrag niets uit, maar de bewoner
+                                 hoort te weten waar zijn getal op rust. -->
+                            <Label Text="{t:T besparen.zonder-meterkast}"
+                                   IsVisible="{Binding MeetNet, Converter={StaticResource InvertedBool}}"
+                                   Style="{StaticResource StatCaption}"
+                                   Margin="0,2,0,0" />
                             <!-- Wisselen tussen euro's en kilowatturen. Wie zijn oude cijfers heeft
                                  ingelezen heeft alleen opwek, en dan is een besparingsgrafiek leeg. -->
                             <!-- Wat deze periode je vertelt, in woorden. Zonder deze regel moest

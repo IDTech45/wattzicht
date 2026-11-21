@@ -22,13 +22,15 @@ public sealed record TariffRates(
 /// <param name="ChargedKwh">Geladen in de auto.</param>
 /// <param name="BatteryDischargedKwh">Uit de batterij ontladen.</param>
 /// <param name="BatteryChargedFromGridKwh">In de batterij geladen vanaf het net.</param>
+/// <param name="PvKwh">Opgewekt door de zon. Alleen nodig als de meterkast niet gemeten wordt; zie de rekenregels.</param>
 public sealed record SavingsInput(
     DateOnly Date,
     double SelfUseKwh,
     double ExportKwh,
     double ChargedKwh,
     double BatteryDischargedKwh,
-    double BatteryChargedFromGridKwh);
+    double BatteryChargedFromGridKwh,
+    double PvKwh = 0);
 
 /// <summary>Uitsplitsing van de besparing per onderdeel, in euro.</summary>
 public sealed record SavingsBreakdown(
@@ -69,6 +71,20 @@ public sealed class SavingsCalculator
         var import = rates.ImportPricePerKwh;
 
         var selfUse = Round((decimal)Math.Max(0, input.SelfUseKwh) * import);
+
+        // Zonder meting in de meterkast weten we niet wat direct in huis bleef en wat terugging: dan
+        // staan zelfverbruik en teruglevering allebei op nul en komt er nul besparing uit, terwijl de
+        // zon wel degelijk iets opleverde. Zolang gesaldeerd wordt en de leverancier geen
+        // terugleverkosten rekent hoeven we die verdeling ook niet te kennen: beide kilowatturen zijn
+        // dan exact even veel waard, dus de hele opbrengst telt tegen het leveringstarief.
+        //
+        // Vervalt de saldering of rekent de leverancier terugleverkosten, dan scheelt het wel degelijk
+        // waar de stroom heen ging en verzinnen we het niet: dan blijft het nul tot er gemeten wordt.
+        if (selfUse == 0 && input.ExportKwh <= 0 && input.PvKwh > 0
+            && IsSalderingActive(input.Date) && rates.FeedInCostPerKwh == 0)
+        {
+            selfUse = Round((decimal)input.PvKwh * import);
+        }
 
         var exportPrice = IsSalderingActive(input.Date) ? import : rates.ExportPricePerKwh;
         var export = Round((decimal)Math.Max(0, input.ExportKwh) * (exportPrice - rates.FeedInCostPerKwh));
