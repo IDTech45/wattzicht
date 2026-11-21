@@ -286,6 +286,25 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// De woning zonder installateur. Zie SysteemInstallateur: wie zich aanmeldt zonder code van een
+// installateur hoort bij niemand, en hing tot nu toe onder het eerste bedrijf in de lijst.
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var log = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Installateur");
+    try
+    {
+        await SysteemInstallateur.EnsureAsync(db, TimeProvider.System);
+        var losgekoppeld = await SysteemInstallateur.LosseWoningenAsync(db);
+        if (losgekoppeld > 0)
+            log.LogInformation("{Aantal} woningen zonder installateurscode losgekoppeld van hun installateur.", losgekoppeld);
+    }
+    catch (Exception ex)
+    {
+        log.LogError(ex, "Woningen zonder installateur losmaken mislukt.");
+    }
+}
+
 // Besparing van bestaande dagen opnieuw uitrekenen. Nodig na de regel voor woningen zonder meting in
 // de meterkast: die stonden op 0,00 euro terwijl de zon wel degelijk iets opleverde. Rekent alleen
 // opnieuw uit wat er al ligt en schrijft alleen als er iets verandert.

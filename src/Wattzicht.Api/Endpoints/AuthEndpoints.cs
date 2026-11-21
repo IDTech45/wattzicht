@@ -102,8 +102,9 @@ public static class AuthEndpoints
         Installer? installer;
         if (string.IsNullOrWhiteSpace(request.InstallerSlug))
         {
-            installer = await db.Installers.FirstOrDefaultAsync(i => i.Slug == DbSeeder.TripleEnergieSlug, ct)
-                        ?? await db.Installers.OrderBy(i => i.CreatedAt).FirstOrDefaultAsync(ct);
+            // Geen code betekent geen installateur. Dit stond op "de eerste de beste", en dat was in de
+            // praktijk Triple Energie: 144 woningen op hun naam van mensen die hen nooit gezien hadden.
+            installer = await db.Installers.FirstOrDefaultAsync(i => i.Id == SysteemInstallateur.Id, ct);
         }
         else
         {
