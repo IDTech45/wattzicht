@@ -139,6 +139,24 @@ public sealed class ApiClient
     public Task<NotificationSettingsDto> SetNotificationSettingsAsync(NotificationSettingsDto settings, CancellationToken ct = default) =>
         PutAsync<NotificationSettingsDto, NotificationSettingsDto>("/push/settings", settings, ct);
 
+    // ---------- Installateur: zijn eigen woningen ----------
+
+    /// <summary>
+    /// Het overzicht van de installateur: zijn woningen met status en de tellers erboven.
+    ///
+    /// Alleen een account met de rol installateur komt hier langs; de server kijkt naar het token en
+    /// geeft nooit meer dan de woningen van zijn eigen bedrijf die inzage hebben gegeven.
+    /// </summary>
+    public Task<InstallerOverviewDto> GetInstallerOverviewAsync(CancellationToken ct = default) =>
+        GetAsync<InstallerOverviewDto>("/installer/overview", ct);
+
+    /// <summary>Welke installaties aandacht nodig hebben: stil of te weinig opbrengst.</summary>
+    public Task<IReadOnlyList<AandachtDto>> GetInstallerAandachtAsync(CancellationToken ct = default) =>
+        GetAsync<IReadOnlyList<AandachtDto>>("/installer/attention", ct);
+
+    public Task<InstallerHouseholdDetailDto> GetInstallerHouseholdAsync(Guid id, CancellationToken ct = default) =>
+        GetAsync<InstallerHouseholdDetailDto>($"/installer/households/{id}", ct);
+
     // ---------- Meekijken door installateur ----------
 
     public Task<InstallerAccessDto> GetInstallerAccessAsync(CancellationToken ct = default) =>

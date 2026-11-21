@@ -58,4 +58,16 @@
         </Tab>
     </TabBar>
 
+    <!-- De installateur krijgt zijn eigen tabbalk. Hij heeft geen woning, dus de schermen van een
+         bewoner (apparaten koppelen, besparing, sturen) zeggen hem niets; hij wil weten welke
+         installatie aandacht nodig heeft en daarna de lijst met zijn woningen. -->
+    <TabBar Route="installateur">
+        <Tab Title="{t:Ts shell.overzicht}" Icon="home.png" Route="overzicht">
+            <ShellContent Shell.NavBarIsVisible="False" ContentTemplate="{DataTemplate pages:InstallateurPage}" />
+        </Tab>
+        <Tab Title="{t:Ts shell.woningen}" Icon="devices.png" Route="woningen">
+            <ShellContent Shell.NavBarIsVisible="False" ContentTemplate="{DataTemplate pages:InstallateurWoningenPage}" />
+        </Tab>
+    </TabBar>
+
 </Shell>

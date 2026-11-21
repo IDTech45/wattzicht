@@ -56,6 +56,10 @@ public static class MauiProgram
         // ---- ViewModels ----
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<DashboardViewModel>();
+        // Eén viewmodel voor de twee tabbladen van de installateur: overzicht en woningenlijst delen
+        // dezelfde gegevens, en twee keer hetzelfde ophalen is twee keer wachten.
+        builder.Services.AddSingleton<InstallateurViewModel>();
+        builder.Services.AddTransient<InstallateurWoningViewModel>();
         builder.Services.AddTransient<DevicesViewModel>();
         builder.Services.AddTransient<ConnectDeviceViewModel>();
         builder.Services.AddTransient<AlertsViewModel>();
@@ -68,6 +72,9 @@ public static class MauiProgram
         // ---- Pages ----
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<DashboardPage>();
+        builder.Services.AddTransient<InstallateurPage>();
+        builder.Services.AddTransient<InstallateurWoningenPage>();
+        builder.Services.AddTransient<InstallateurWoningPage>();
         builder.Services.AddTransient<DevicesPage>();
         builder.Services.AddTransient<ConnectDevicePage>();
         builder.Services.AddTransient<MaandOpgavePage>();

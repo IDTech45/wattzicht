@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             xmlns:shared="clr-namespace:Wattzicht.Shared;assembly=Wattzicht.Shared"
+             x:Class="Wattzicht.App.Pages.InstallateurWoningPage"
+             x:DataType="vm:InstallateurWoningViewModel"
+             Title="{Binding Naam}">
+
+    <RefreshView Command="{Binding VerversenCommand}" IsRefreshing="{Binding IsRefreshing}">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="12">
+
+                <Label Text="{Binding Naam}" Style="{StaticResource PageTitle}" />
+                <Label Text="{Binding Plaats}" Style="{StaticResource SubtitleLabel}" />
+                <Label Text="{Binding Email}" Style="{StaticResource StatCaption}" />
+
+                <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
+                    <Label Text="{Binding ErrorMessage}" />
+                </Border>
+
+                <!-- Eerst wat er mis is. Een installateur opent dit scherm omdat er iets aan de hand
+                     is, niet om de opbrengst van vandaag te bewonderen. -->
+                <Label Text="{t:T installateur.open-meldingen}" Style="{StaticResource SectionTitle}"
+                       IsVisible="{Binding HeeftMeldingen}" />
+
+                <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Meldingen}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="shared:AlertDto">
+                            <Border Style="{StaticResource DangerCard}">
+                                <VerticalStackLayout Spacing="2">
+                                    <Label Text="{Binding DeviceName}" FontAttributes="Bold" />
+                                    <Label Text="{Binding Message}" FontSize="14" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <Border Grid.Column="0" Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="{Binding VandaagTekst}" Style="{StaticResource StatValue}" />
+                            <Label Text="{t:T installateur.opwek-vandaag}" Style="{StaticResource StatCaption}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="1" Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="{Binding MaandTekst}" Style="{StaticResource StatValue}" />
+                            <Label Text="{t:T installateur.opwek-maand}" Style="{StaticResource StatCaption}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <Label Text="{t:T installateur.apparaten}" Style="{StaticResource SectionTitle}" />
+
+                <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Apparaten}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ApparaatRij">
+                            <Border Style="{StaticResource Card}">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12"
+                                             Fill="{Binding Kleur}" VerticalOptions="Start" Margin="0,5,0,0" />
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                        <Label Text="{Binding Naam}" FontAttributes="Bold" />
+                                        <Label Text="{Binding Merk}" Style="{StaticResource StatCaption}" />
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="2" Text="{Binding LaatstGezien}" Style="{StaticResource StatCaption}"
+                                           VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Label Text="{Binding LaatstGezien}" Style="{StaticResource StatCaption}" />
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+
+</ContentPage>

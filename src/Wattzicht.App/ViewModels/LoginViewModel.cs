@@ -117,7 +117,7 @@ public partial class LoginViewModel : BaseViewModel
             try
             {
                 await _auth.ExternalLoginAsync(provider, uitkomst.Token!);
-                await Shell.Current.GoToAsync(AppShell.Routes.Home);
+                await Shell.Current.GoToAsync(_auth.IsInstallateur ? AppShell.Routes.Installateur : AppShell.Routes.Home);
             }
             catch (ApiException ex) when (ex.IsUnauthorized)
             {
@@ -144,7 +144,7 @@ public partial class LoginViewModel : BaseViewModel
             {
                 await _auth.LoginAsync(Email, Password);
                 Password = string.Empty;
-                await Shell.Current.GoToAsync(AppShell.Routes.Home);
+                await Shell.Current.GoToAsync(_auth.IsInstallateur ? AppShell.Routes.Installateur : AppShell.Routes.Home);
             }
             catch (ApiException ex) when (ex.IsUnauthorized || ex.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
@@ -174,7 +174,7 @@ public partial class LoginViewModel : BaseViewModel
             {
                 await _auth.RegisterAsync(Email, Password, HouseholdName, InstallerCode);
                 Password = string.Empty;
-                await Shell.Current.GoToAsync(AppShell.Routes.Home);
+                await Shell.Current.GoToAsync(_auth.IsInstallateur ? AppShell.Routes.Installateur : AppShell.Routes.Home);
             }
             catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
             {

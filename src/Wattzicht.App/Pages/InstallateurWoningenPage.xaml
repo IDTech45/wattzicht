@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             x:Class="Wattzicht.App.Pages.InstallateurWoningenPage"
+             x:DataType="vm:InstallateurViewModel"
+             Title="{t:Ts installateur.woningen}">
+
+    <RefreshView Command="{Binding VerversenCommand}" IsRefreshing="{Binding IsRefreshing}">
+        <CollectionView ItemsSource="{Binding Woningen}" SelectionMode="None">
+
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="16,8" Spacing="8">
+                    <Label Text="{t:T installateur.woningen}" Style="{StaticResource PageTitle}" />
+                    <!-- Zoeken op naam of plaats. Bij veertig installaties scrol je nog; bij
+                         vierhonderd is een lijst zonder zoekveld onbruikbaar. -->
+                    <SearchBar Text="{Binding Zoek}" Placeholder="{t:Ts installateur.zoek-op-naam}" />
+                    <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
+                        <Label Text="{Binding ErrorMessage}" />
+                    </Border>
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="32,48" Spacing="12" HorizontalOptions="Center">
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+                    <Label Text="{t:T installateur.niets-gevonden}" Style="{StaticResource SubtitleLabel}"
+                           HorizontalTextAlignment="Center" IsVisible="{Binding IsNotBusy}" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:WoningRij">
+                    <Border Style="{StaticResource Card}" Margin="16,4">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:InstallateurViewModel}}, Path=OpenWoningCommand}"
+                                CommandParameter="{Binding Id}" />
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12"
+                                     Fill="{Binding StatusKleur}" VerticalOptions="Start" Margin="0,5,0,0" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="{Binding Naam}" FontAttributes="Bold" />
+                                <Label Text="{Binding Plaats}" Style="{StaticResource StatCaption}" />
+                                <Label Text="{Binding LaatstGezien}" FontSize="13" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="2" Spacing="2" HorizontalOptions="End">
+                                <Label Text="{Binding OpwekVandaag}" FontAttributes="Bold" HorizontalTextAlignment="End" />
+                                <Label Text="{Binding StatusTekst}" Style="{StaticResource StatCaption}" HorizontalTextAlignment="End" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+    </RefreshView>
+
+</ContentPage>

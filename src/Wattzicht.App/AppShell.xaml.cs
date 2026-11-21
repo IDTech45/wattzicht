@@ -14,6 +14,9 @@ public partial class AppShell : Shell
         public const string Devices = "//main/devices";
         public const string Savings = "//main/savings";
         public const string Settings = "//main/settings";
+
+        /// <summary>Het overzicht van de installateur; een bewoner komt hier nooit.</summary>
+        public const string Installateur = "//installateur/overzicht";
     }
 
     public AppShell()
@@ -26,6 +29,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(AlertsPage), typeof(AlertsPage));
         Routing.RegisterRoute(nameof(PanelsPage), typeof(PanelsPage));
         Routing.RegisterRoute(nameof(EnphaseSleutelPage), typeof(EnphaseSleutelPage));
+        Routing.RegisterRoute(nameof(InstallateurWoningPage), typeof(InstallateurWoningPage));
 
         Navigated += OpNieuwScherm;
     }
@@ -54,13 +58,18 @@ public partial class AppShell : Shell
 
             var route = Current?.CurrentState?.Location?.OriginalString ?? string.Empty;
             if (route.Contains("/home", StringComparison.OrdinalIgnoreCase)
+                || route.Contains("/overzicht", StringComparison.OrdinalIgnoreCase)
                 || route.Contains("login", StringComparison.OrdinalIgnoreCase)
                 || route.Contains("start", StringComparison.OrdinalIgnoreCase))
             {
                 return base.OnBackButtonPressed();
             }
 
-            GoToAsync(Routes.Home);
+            // Een installateur hoort niet op het dashboard van een bewoner te belanden; voor hem
+            // is zijn eigen overzicht het beginscherm.
+            GoToAsync(route.Contains("installateur", StringComparison.OrdinalIgnoreCase)
+                ? Routes.Installateur
+                : Routes.Home);
             return true;
         }
         catch (Exception)

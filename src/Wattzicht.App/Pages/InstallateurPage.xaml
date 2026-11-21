@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:t="clr-namespace:Wattzicht.App.Services"
+             xmlns:vm="clr-namespace:Wattzicht.App.ViewModels"
+             x:Class="Wattzicht.App.Pages.InstallateurPage"
+             x:DataType="vm:InstallateurViewModel"
+             Title="{t:Ts installateur.overzicht}">
+
+    <RefreshView Command="{Binding VerversenCommand}" IsRefreshing="{Binding IsRefreshing}">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="12">
+
+                <Label Text="{Binding Bedrijfsnaam}" Style="{StaticResource PageTitle}" />
+                <Label Text="{t:T installateur.jouw-installaties}" Style="{StaticResource SubtitleLabel}" />
+
+                <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
+                    <Label Text="{Binding ErrorMessage}" />
+                </Border>
+
+                <!-- Drie tellers: loopt het, is er een storing, of is het stil. Meer hoeft hier niet
+                     te staan; de details zitten een tik verder. -->
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <Border Grid.Column="0" Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="{Binding TotaalGoed}" Style="{StaticResource StatValue}" />
+                            <Label Text="{t:T installateur.status-goed}" Style="{StaticResource StatCaption}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="1" Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="{Binding TotaalStoring}" Style="{StaticResource StatValue}" />
+                            <Label Text="{t:T installateur.status-storing}" Style="{StaticResource StatCaption}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="2" Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="{Binding TotaalStil}" Style="{StaticResource StatValue}" />
+                            <Label Text="{t:T installateur.status-stil}" Style="{StaticResource StatCaption}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Wat aandacht nodig heeft staat bovenaan. Dat is de reden dat een installateur
+                     dit scherm opent; de lijst met al zijn woningen is daarna. -->
+                <Label Text="{t:T installateur.heeft-aandacht-nodig}" Style="{StaticResource SectionTitle}"
+                       IsVisible="{Binding HeeftAandacht}" />
+
+                <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Aandacht}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:AandachtRij">
+                            <Border Style="{StaticResource Card}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:InstallateurViewModel}}, Path=OpenWoningCommand}"
+                                        CommandParameter="{Binding Id}" />
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                    <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12"
+                                             Fill="{Binding SoortKleur}" VerticalOptions="Start" Margin="0,5,0,0" />
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                        <Label Text="{Binding Naam}" FontAttributes="Bold" />
+                                        <Label Text="{Binding Plaats}" Style="{StaticResource StatCaption}" />
+                                        <Label Text="{Binding Toelichting}" FontSize="14" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Border Style="{StaticResource Card}" IsVisible="{Binding AlleGoed}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="{t:T installateur.alles-loopt}" Style="{StaticResource SectionTitle}" Margin="0" />
+                        <Label Text="{t:T installateur.geen-installatie-vraagt}" Style="{StaticResource SubtitleLabel}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+
+                <Button Text="{t:T installateur.uitloggen}" Command="{Binding UitloggenCommand}"
+                        Style="{StaticResource SecondaryButton}" Margin="0,8,0,0" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+
+</ContentPage>

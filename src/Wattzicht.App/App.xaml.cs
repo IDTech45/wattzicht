@@ -74,11 +74,15 @@ public partial class App : Application
         // Het dashboard alvast ophalen terwijl het startscherm nog staat. Zo is het scherm gevuld op
         // het moment dat je het ziet, in plaats van dat je naar een lege balk kijkt die zelf nog moet
         // gaan laden. Het startscherm ademt door zolang dit duurt.
-        if (loggedIn) await VoorladenAsync();
+        // Een installateur heeft geen woning, dus het dashboard van een bewoner voorladen heeft
+        // voor hem geen zin en zou alleen een foutmelding opleveren.
+        if (loggedIn && !_auth.IsInstallateur) await VoorladenAsync();
 
         try
         {
-            await Shell.Current.GoToAsync(loggedIn ? AppShell.Routes.Home : AppShell.Routes.Login);
+            await Shell.Current.GoToAsync(loggedIn
+                ? _auth.IsInstallateur ? AppShell.Routes.Installateur : AppShell.Routes.Home
+                : AppShell.Routes.Login);
             if (loggedIn)
             {
                 // Eerst naar het scherm uit de aangetikte melding; aanmelden voor push mag daarna, op de achtergrond.

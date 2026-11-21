@@ -14,6 +14,23 @@ public sealed class AuthService
     public HouseholdDto? Household { get; private set; }
 
     /// <summary>
+    /// De rol van wie er is ingelogd. Nodig om na het inloggen naar het juiste scherm te gaan: een
+    /// installateur hoort niet op een dashboard van een woning die niet van hem is.
+    ///
+    /// Blijft op het toestel staan, want bij het opstarten weten we de rol anders pas na een
+    /// aanroep, en dan zou een installateur eerst een half bewonersscherm te zien krijgen.
+    /// </summary>
+    public UserRole Rol
+    {
+        get => (UserRole)Preferences.Default.Get(RolSleutel, (int)UserRole.Resident);
+        private set => Preferences.Default.Set(RolSleutel, (int)value);
+    }
+
+    private const string RolSleutel = "gebruiker-rol";
+
+    public bool IsInstallateur => Rol == UserRole.Installer;
+
+    /// <summary>
     /// Vervangt wat we van de woning weten na een wijziging door de bewoner.
     ///
     /// Zonder dit staat de oude naam nog in de app tot je opnieuw inlogt, en zou het instellingen-
@@ -38,6 +55,7 @@ public sealed class AuthService
         var response = await _api.LoginAsync(new LoginRequest(email.Trim(), password), ct);
         await _tokens.SetAsync(response.Token, response.ExpiresAt);
         Household = response.Household;
+        Rol = response.Role;
         LoggedIn?.Invoke(this, EventArgs.Empty);
     }
 
@@ -59,6 +77,7 @@ public sealed class AuthService
 
         await _tokens.SetAsync(response.Token, response.ExpiresAt);
         Household = response.Household;
+        Rol = response.Role;
         LoggedIn?.Invoke(this, EventArgs.Empty);
     }
 
@@ -73,6 +92,7 @@ public sealed class AuthService
         var response = await _api.ExternalLoginAsync(new ExternalLoginRequest(provider, idToken), ct);
         await _tokens.SetAsync(response.Token, response.ExpiresAt);
         Household = response.Household;
+        Rol = response.Role;
         LoggedIn?.Invoke(this, EventArgs.Empty);
     }
 
@@ -90,6 +110,7 @@ public sealed class AuthService
             var response = await _api.RefreshAsync(ct);
             await _tokens.SetAsync(response.Token, response.ExpiresAt);
             Household = response.Household;
+            Rol = response.Role;
         }
         catch (ApiException ex) when (ex.IsUnauthorized)
         {
@@ -108,6 +129,7 @@ public sealed class AuthService
         await _push.UnregisterAsync();
         _tokens.Clear();
         Household = null;
+        Rol = UserRole.Resident;
         LoggedOut?.Invoke(this, EventArgs.Empty);
     }
 }
