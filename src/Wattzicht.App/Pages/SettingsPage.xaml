@@ -308,6 +308,22 @@
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
                         <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="{t:T meer.laadmoment}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{t:T meer.laadmoment-uitleg}" Style="{StaticResource SubtitleLabel}" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" IsToggled="{Binding NotifySmartMoment}" VerticalOptions="Center"
+                                SemanticProperties.Description="{t:T schermlezer.melding-laadmoment}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="{t:T meer.zon-morgen}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{t:T meer.zon-morgen-uitleg}" Style="{StaticResource SubtitleLabel}" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" IsToggled="{Binding NotifyZonMorgen}" VerticalOptions="Center"
+                                SemanticProperties.Description="{t:T schermlezer.melding-zon-morgen}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="48">
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
                             <Label Text="{t:T meer.maandbericht}" Style="{StaticResource CardTitle}" />
                             <Label Text="{t:T meer.maandbericht-uitleg}" Style="{StaticResource SubtitleLabel}" />
                         </VerticalStackLayout>

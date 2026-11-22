@@ -591,6 +591,12 @@ public static class TekstenTr
         ["maand.titel"] = "{0} ayınız",
         ["maand.tekst"] = "Panelleriniz {0} kWh üretti, bunun {1} kadarını kendiniz kullandınız. Bu size {2} kazandırdı.",
         ["maand.leverancier"] = "Tedarikçiniz o ay şebekeden {0} kWh hesapladı.",
+        ["meer.laadmoment"] = "En iyi şarj saatinden önce",
+        ["meer.laadmoment-uitleg"] = "Şarj etmek o saatte daha ucuz veya daha yeşilse yarım saat önceden. Günde en fazla bir kez.",
+        ["meer.zon-morgen"] = "Yarın güneş",
+        ["meer.zon-morgen-uitleg"] = "Akşamları, yarın arabayı şarj edebileceğiniz güneşli bir aralık varsa",
+        ["schermlezer.melding-laadmoment"] = "En iyi şarj saati bildirimi",
+        ["schermlezer.melding-zon-morgen"] = "Yarın güneş bildirimi",
         ["meer.maandbericht"] = "Aylık özet",
         ["meer.maandbericht-uitleg"] = "O ayın ne yaptığını anlatan ayda bir mesaj",
 

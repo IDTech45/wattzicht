@@ -517,6 +517,12 @@ public partial class SettingsViewModel : BaseViewModel
 
     /// <summary>Eén bericht per maand met wat die maand heeft gedaan.</summary>
     [ObservableProperty] private bool _notifyMonthly = true;
+
+    /// <summary>Het bericht vlak voor het beste laaduur begint.</summary>
+    [ObservableProperty] private bool _notifySmartMoment = true;
+
+    /// <summary>Het bericht 's avonds dat morgen een zonnig blok heeft.</summary>
+    [ObservableProperty] private bool _notifyZonMorgen = true;
     private bool _syncingNotify;
 
     private readonly HistorieInlezer _historie;
@@ -690,6 +696,8 @@ public partial class SettingsViewModel : BaseViewModel
                 NotifyAlerts = notify.Alerts;
                 NotifySurplus = notify.Surplus;
                 NotifyMonthly = notify.Monthly;
+                NotifySmartMoment = notify.SmartMoment;
+                NotifyZonMorgen = notify.ZonMorgen;
             }
             catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
             finally { _syncingNotify = false; }
@@ -701,6 +709,8 @@ public partial class SettingsViewModel : BaseViewModel
     partial void OnNotifyAlertsChanged(bool value) => SaveNotifySettings();
     partial void OnNotifySurplusChanged(bool value) => SaveNotifySettings();
     partial void OnNotifyMonthlyChanged(bool value) => SaveNotifySettings();
+    partial void OnNotifySmartMomentChanged(bool value) => SaveNotifySettings();
+    partial void OnNotifyZonMorgenChanged(bool value) => SaveNotifySettings();
 
     /// <summary>
     /// Een schakelaar omzetten slaat meteen op.
@@ -715,9 +725,9 @@ public partial class SettingsViewModel : BaseViewModel
         if (_syncingNotify) return;
         try
         {
-            await _api.SetNotificationSettingsAsync(new NotificationSettingsDto(NotifyAlerts, NotifySurplus, NotifyMonthly));
+            await _api.SetNotificationSettingsAsync(new NotificationSettingsDto(NotifyAlerts, NotifySurplus, NotifyMonthly, NotifySmartMoment, NotifyZonMorgen));
             // Iemand die meldingen aanzet, wil ze ook ontvangen: toestel (opnieuw) aanmelden en toestemming vragen.
-            if (NotifyAlerts || NotifySurplus || NotifyMonthly)
+            if (NotifyAlerts || NotifySurplus || NotifyMonthly || NotifySmartMoment || NotifyZonMorgen)
                 await _push.RegisterAsync();
         }
         catch (ApiException ex)

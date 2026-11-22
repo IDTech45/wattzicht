@@ -111,7 +111,8 @@ public static class PushEndpoints
         var household = await db.Households.FirstOrDefaultAsync(h => h.Id == householdId, ct);
         return household is null
             ? Results.NotFound()
-            : Results.Ok(new NotificationSettingsDto(household.NotifyAlerts, household.NotifySurplus, household.NotifyMonthly));
+            : Results.Ok(new NotificationSettingsDto(household.NotifyAlerts, household.NotifySurplus, household.NotifyMonthly,
+                household.NotifySmartMoment, household.NotifyZonMorgen));
     }
 
     private static async Task<IResult> SetSettingsAsync(
@@ -130,7 +131,10 @@ public static class PushEndpoints
         household.NotifyAlerts = request.Alerts;
         household.NotifySurplus = request.Surplus;
         household.NotifyMonthly = request.Monthly;
+        household.NotifySmartMoment = request.SmartMoment;
+        household.NotifyZonMorgen = request.ZonMorgen;
         await db.SaveChangesAsync(ct);
-        return Results.Ok(new NotificationSettingsDto(household.NotifyAlerts, household.NotifySurplus, household.NotifyMonthly));
+        return Results.Ok(new NotificationSettingsDto(household.NotifyAlerts, household.NotifySurplus, household.NotifyMonthly,
+                household.NotifySmartMoment, household.NotifyZonMorgen));
     }
 }

@@ -595,6 +595,12 @@ public static class TekstenNl
         ["maand.titel"] = "Je maand {0}",
         ["maand.tekst"] = "Je panelen maakten {0} kWh, waarvan je er {1} zelf gebruikte. Dat scheelde {2}.",
         ["maand.leverancier"] = "Je leverancier rekende die maand {0} kWh afname.",
+        ["meer.laadmoment"] = "Voor het beste laaduur",
+        ["meer.laadmoment-uitleg"] = "Een half uur van tevoren, als laden dan goedkoper of groener is. Hooguit een keer per dag.",
+        ["meer.zon-morgen"] = "Zon morgen",
+        ["meer.zon-morgen-uitleg"] = "'s Avonds, als morgen een zonnig blok heeft waarin je de auto kunt laden",
+        ["schermlezer.melding-laadmoment"] = "Melding voor het beste laaduur",
+        ["schermlezer.melding-zon-morgen"] = "Melding over zon morgen",
         ["meer.maandbericht"] = "Maandbericht",
         ["meer.maandbericht-uitleg"] = "Eén bericht per maand met wat die maand heeft gedaan",
 

@@ -586,6 +586,12 @@ public static class TekstenEn
         ["maand.titel"] = "Your {0}",
         ["maand.tekst"] = "Your panels made {0} kWh, of which you used {1} yourself. That saved you {2}.",
         ["maand.leverancier"] = "Your supplier billed {0} kWh from the grid that month.",
+        ["meer.laadmoment"] = "Before the best charging hour",
+        ["meer.laadmoment-uitleg"] = "Half an hour ahead, when charging is cheaper or greener then. At most once a day.",
+        ["meer.zon-morgen"] = "Sun tomorrow",
+        ["meer.zon-morgen-uitleg"] = "In the evening, when tomorrow has a sunny stretch you can charge the car in",
+        ["schermlezer.melding-laadmoment"] = "Notification for the best charging hour",
+        ["schermlezer.melding-zon-morgen"] = "Notification about sun tomorrow",
         ["meer.maandbericht"] = "Monthly summary",
         ["meer.maandbericht-uitleg"] = "One message a month with what that month did",
 
