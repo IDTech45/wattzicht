@@ -10,6 +10,12 @@ name: release-android
 #   ANDROID_KEY_PASSWORD      wachtwoord van de sleutel
 #   PLAY_SERVICE_ACCOUNT_JSON JSON-sleutel van een serviceaccount met rechten in Play Console
 #
+# Een app die in Play Console nog nooit is uitgerold staat daar als concept, en Google weigert dan
+# elke release die meteen live wil: "Only releases with status draft may be created on draft app"
+# (22-11-2026, bij de eerste poging naar de open test). Kies daarom bij die allereerste keer
+# status=draft; de bundel komt dan als concept in de console te staan en je rolt hem daar met de
+# hand uit. Daarna kan het gewoon weer in een keer.
+#
 # Die namen zijn met opzet precies dezelfde als in de LaadCash-repo. Het Play-account, de keystore en
 # het serviceaccount mogen gedeeld worden met een tweede app, dus kun je daar dezelfde vier waarden
 # overnemen in plaats van nieuwe te maken. Alleen de app in Play Console is nieuw.
@@ -27,6 +33,12 @@ on:
         default: internal
         type: choice
         options: [internal, alpha, beta, production]
+      status:
+        description: 'Meteen uitrollen, of als concept klaarzetten'
+        required: true
+        default: completed
+        type: choice
+        options: [completed, draft]
   push:
     tags: ['android-v*']
 
@@ -112,7 +124,7 @@ jobs:
           releaseFiles: out/*-Signed.aab
           # Bij een tag is er geen keuzemenu, dan is intern het veilige standaardkanaal.
           track: ${{ github.event.inputs.track || 'internal' }}
-          status: completed
+          status: ${{ github.event.inputs.status || 'completed' }}
 
       - name: Wat er nog mist
         if: env.HEEFT_PLAY != 'true'
