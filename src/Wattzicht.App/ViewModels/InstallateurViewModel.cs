@@ -105,6 +105,15 @@ public sealed partial class InstallateurViewModel : BaseViewModel
     }
 
     [ObservableProperty] private string _bedrijfsnaam = string.Empty;
+
+    /// <summary>
+    /// De code waarmee een bewoner zich aan dit bedrijf koppelt.
+    ///
+    /// Die stond nergens in beeld, terwijl de hele koppeling eraan hangt: de bewoner typt hem in zijn
+    /// app en pas dan ziet de installateur die woning. Dus staat hij hier, met een knop om hem te
+    /// delen zoals je een adres deelt.
+    /// </summary>
+    [ObservableProperty] private string _code = string.Empty;
     [ObservableProperty] private int _totaalGoed;
     [ObservableProperty] private int _totaalStoring;
     [ObservableProperty] private int _totaalStil;
@@ -138,6 +147,7 @@ public sealed partial class InstallateurViewModel : BaseViewModel
             var overzicht = await _api.GetInstallerOverviewAsync(ct);
 
             Bedrijfsnaam = overzicht.Installer.Name;
+            Code = overzicht.Installer.Slug;
             TotaalGoed = overzicht.TotalOnline;
             TotaalStoring = overzicht.TotalFault;
             TotaalStil = overzicht.TotalNoData;
@@ -161,9 +171,12 @@ public sealed partial class InstallateurViewModel : BaseViewModel
                 Aandacht = [];
             }
 
-            OnPropertyChanged(nameof(AlleGoed));
         });
 
+        // Pas hierna: binnen RunSafeAsync staat IsBusy nog aan, en "alles loopt" hangt daarvan af.
+        // Zonder dit bleef die regel weg bij een installateur zonder problemen, en dat is nu juist
+        // de uitkomst die hij wil zien.
+        OnPropertyChanged(nameof(AlleGoed));
         IsRefreshing = false;
     }
 
@@ -181,6 +194,19 @@ public sealed partial class InstallateurViewModel : BaseViewModel
         Woningen.Clear();
         foreach (var rij in gefilterd) Woningen.Add(rij);
         OnPropertyChanged(nameof(GeenZoekresultaat));
+    }
+
+    /// <summary>De code delen: appje naar de klant, en hij typt hem over in zijn eigen app.</summary>
+    [RelayCommand]
+    private async Task DeelCode()
+    {
+        if (string.IsNullOrWhiteSpace(Code)) return;
+
+        await Share.Default.RequestAsync(new ShareTextRequest
+        {
+            Title = Taal.T("installateur.deel-je-code"),
+            Text = string.Format(Taal.T("installateur.deel-tekst"), Bedrijfsnaam, Code),
+        });
     }
 
     [RelayCommand]

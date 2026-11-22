@@ -16,7 +16,9 @@ public sealed class ApparaatRij
 
     public ApparaatRij(DeviceDto apparaat) => Apparaat = apparaat;
 
-    public string Naam => string.IsNullOrWhiteSpace(Apparaat.Name) ? Apparaat.Brand.ToString() : Apparaat.Name;
+    /// <summary>De naam, met de vier apparaten van een proefwoning in de taal van de app.</summary>
+    public string Naam => DemoNamen.Voor(Apparaat.ExternalId)
+                          ?? (string.IsNullOrWhiteSpace(Apparaat.Name) ? Apparaat.Brand.ToString() : Apparaat.Name);
     public string Merk => Apparaat.Brand.ToString();
 
     public string LaatstGezien => Apparaat.LastSeenAt is { } gezien
@@ -58,6 +60,11 @@ public sealed partial class InstallateurWoningViewModel : BaseViewModel
     public ObservableCollection<AlertDto> Meldingen { get; } = [];
 
     public bool HeeftMeldingen => Meldingen.Count > 0;
+
+    /// <summary>Een kale datum onderaan zegt niets; hier staat bij waar hij over gaat.</summary>
+    public string LaatstGezienRegel => string.Format(Taal.T("installateur.laatste-meting"), LaatstGezien);
+
+    partial void OnLaatstGezienChanged(string value) => OnPropertyChanged(nameof(LaatstGezienRegel));
 
     partial void OnWoningIdChanged(string value) => _ = LaadAsync();
 

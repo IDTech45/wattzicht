@@ -12,9 +12,12 @@
         <ScrollView>
             <VerticalStackLayout Padding="16" Spacing="12">
 
-                <Label Text="{Binding Naam}" Style="{StaticResource PageTitle}" />
-                <Label Text="{Binding Plaats}" Style="{StaticResource SubtitleLabel}" />
-                <Label Text="{Binding Email}" Style="{StaticResource StatCaption}" />
+                <!-- Niet elke woning heeft een plaats of een adres ingevuld; een lege regel laat een
+                     gat boven in het scherm staan. -->
+                <Label Text="{Binding Plaats}" Style="{StaticResource SubtitleLabel}"
+                       IsVisible="{Binding Plaats, Converter={StaticResource IsNotNullOrEmpty}}" />
+                <Label Text="{Binding Email}" Style="{StaticResource StatCaption}"
+                       IsVisible="{Binding Email, Converter={StaticResource IsNotNullOrEmpty}}" />
 
                 <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
                     <Label Text="{Binding ErrorMessage}" />
@@ -74,7 +77,7 @@
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
 
-                <Label Text="{Binding LaatstGezien}" Style="{StaticResource StatCaption}" />
+                <Label Text="{Binding LaatstGezienRegel}" Style="{StaticResource StatCaption}" />
 
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
 

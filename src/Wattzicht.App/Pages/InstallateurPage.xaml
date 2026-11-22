@@ -14,6 +14,20 @@
                 <Label Text="{Binding Bedrijfsnaam}" Style="{StaticResource PageTitle}" />
                 <Label Text="{t:T installateur.jouw-installaties}" Style="{StaticResource SubtitleLabel}" />
 
+                <!-- Zonder deze code kan geen enkele bewoner zich koppelen: hij typt hem in zijn eigen
+                     app en pas dan verschijnt die woning hier. Dus staat hij bovenaan en niet verstopt. -->
+                <Border Style="{StaticResource Card}">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="{t:T installateur.jouw-code}" Style="{StaticResource StatCaption}" />
+                            <Label Text="{Binding Code}" Style="{StaticResource CardTitle}" />
+                            <Label Text="{t:T installateur.code-uitleg}" Style="{StaticResource SubtitleLabel}" FontSize="13" />
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1" Text="{t:T installateur.deel}" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding DeelCodeCommand}" VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
                 <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
                     <Label Text="{Binding ErrorMessage}" />
                 </Border>
@@ -78,8 +92,11 @@
 
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
 
+                <!-- Uitloggen hoort niet pontificaal onder de tellers: het is de minst gebruikte knop
+                     op dit scherm. Klein, onderaan, en pas na alles wat hij wel komt doen. -->
                 <Button Text="{t:T installateur.uitloggen}" Command="{Binding UitloggenCommand}"
-                        Style="{StaticResource SecondaryButton}" Margin="0,8,0,0" />
+                        Style="{StaticResource SecondaryButton}" FontSize="13" HeightRequest="40"
+                        HorizontalOptions="Center" WidthRequest="170" Margin="0,24,0,0" Opacity="0.75" />
 
             </VerticalStackLayout>
         </ScrollView>

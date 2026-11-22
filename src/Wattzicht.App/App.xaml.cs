@@ -29,7 +29,13 @@ public partial class App : Application
         _push = push;
         _diensten = diensten;
         _auth.LoggedOut += OnLoggedOut;
-        _auth.LoggedIn += (_, _) => MainThread.BeginInvokeOnMainThread(async () => await _push.RegisterAsync());
+        // Alleen een bewoner krijgt meldingen: storingen en overschot gaan over zijn woning. Een
+        // installateur heeft er geen, dus vragen we hem ook niet om toestemming. Dat venster stond
+        // meteen na zijn inlog over zijn overzicht heen, voor meldingen die nooit zouden komen.
+        _auth.LoggedIn += (_, _) => MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            if (!_auth.IsInstallateur) await _push.RegisterAsync();
+        });
         PushService.TokenRefreshed += async (_, token) =>
         {
             if (await _auth.IsLoggedInAsync())
@@ -87,7 +93,7 @@ public partial class App : Application
             {
                 // Eerst naar het scherm uit de aangetikte melding; aanmelden voor push mag daarna, op de achtergrond.
                 await PushService.OpenPendingRouteAsync();
-                _ = _push.RegisterAsync();
+                if (!_auth.IsInstallateur) _ = _push.RegisterAsync();
             }
         }
         catch (Exception)

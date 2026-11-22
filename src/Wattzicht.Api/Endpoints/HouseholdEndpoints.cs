@@ -1209,8 +1209,12 @@ public static class HouseholdEndpoints
 
     private static async Task<IResult> InstallerAsync(HttpContext http, AppDbContext db, CancellationToken ct)
     {
-        var installerId = http.User.GetInstallerId();
-        var installer = await db.Installers.FirstOrDefaultAsync(i => i.Id == installerId, ct);
+        // Via de woning en niet via het token: koppelt een bewoner zijn installateur om, dan staat in
+        // zijn token nog het oude bedrijf tot hij opnieuw inlogt. Hij zag dan "Wattzicht" staan terwijl
+        // hij net "Zon en Zo" had gekoppeld.
+        var householdId = http.User.GetHouseholdId()!.Value;
+        var installer = await db.Households.Where(h => h.Id == householdId)
+            .Select(h => h.Installer).FirstOrDefaultAsync(ct);
         return installer is null ? Results.NotFound() : Results.Ok(HouseholdQueries.ToDto(installer));
     }
 

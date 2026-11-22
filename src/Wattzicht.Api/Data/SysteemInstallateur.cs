@@ -1,5 +1,6 @@
 using Wattzicht.Api.Services;
 using Microsoft.EntityFrameworkCore;
+using Wattzicht.Shared;
 
 namespace Wattzicht.Api.Data;
 
@@ -19,7 +20,8 @@ namespace Wattzicht.Api.Data;
 public static class SysteemInstallateur
 {
     public static readonly Guid Id = new("00000000-0000-4000-8000-000000000001");
-    public const string Slug = "wattzicht";
+    /// <summary>Dezelfde code als in Wattzicht.Shared; de app moet hem ook herkennen.</summary>
+    public const string Slug = Installateurs.GeenSlug;
 
     /// <summary>Maakt hem aan als hij er nog niet is. Draait bij elke start en schrijft daarna niets meer.</summary>
     public static async Task<Guid> EnsureAsync(AppDbContext db, TimeProvider clock, CancellationToken ct = default)

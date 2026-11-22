@@ -132,7 +132,7 @@ public static class TekstenNl
         ["advies.klaar-om"] = "Klaar om",
         ["advies.bereken"] = "Bereken",
         ["advies.nog-geen-tips"] = "Nog geen tips",
-        ["advies.koppel-je-zonnepanelen-batterij-of"] = "Koppel je zonnepanelen, batterij of laadpaal, of zet bij Instellingen een dynamisch contract aan.",
+        ["advies.koppel-je-zonnepanelen-batterij-of"] = "Tips komen zodra er iets te sturen valt: een dynamisch contract bij Meer, of een batterij of laadpaal die wij mogen aansturen.",
         ["advies.automatisch-sturen-komt-binnenkort-voor"] = "Automatisch sturen komt binnenkort voor laadpalen en batterijen.",
 
         // ---- besparen ----
@@ -735,6 +735,17 @@ public static class TekstenNl
 
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "niet gemeten",
+        ["installateur.laatste-meting"] = "Laatste meting: {0}",
+        ["meer.code-voorbeeld"] = "bijvoorbeeld zon-en-zo",
+        ["proef.omvormer"] = "Demo-omvormer 4,2 kWp",
+        ["proef.batterij"] = "Demo-thuisbatterij 5 kWh",
+        ["proef.laadpaal"] = "Demo-laadpaal 11 kW",
+        ["proef.meter"] = "Demo-slimme meter",
+        ["installateur.jouw-code"] = "Jouw koppelcode",
+        ["installateur.code-uitleg"] = "Je klant vult deze code in bij Meer in zijn app. Daarna zie je zijn woning hier staan.",
+        ["installateur.deel"] = "Delen",
+        ["installateur.deel-je-code"] = "Je koppelcode delen",
+        ["installateur.deel-tekst"] = "Koppel je woning aan {0} in de Wattzicht-app: ga naar Meer en vul de code {1} in. Daarna kunnen wij meekijken en helpen als er iets stilvalt.",
         ["home.eerst-even-rondkijken"] = "Nog geen apparaat bij de hand? Zet een proefwoning neer en kijk rond met echte cijfers.",
         ["home.zet-proefwoning-neer"] = "Proefwoning neerzetten",
         ["home.proefwoning-staat-er"] = "Proefwoning staat klaar",

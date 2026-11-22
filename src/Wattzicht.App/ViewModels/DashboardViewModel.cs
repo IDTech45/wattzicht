@@ -306,9 +306,16 @@ public partial class DashboardViewModel : BaseViewModel
             try
             {
                 var installer = await _api.GetInstallerAsync();
-                InstallerName = installer.Name;
-                InstallerLogo = installer.LogoDataUrl;
-                HasInstallerLogo = !string.IsNullOrWhiteSpace(installer.LogoDataUrl);
+
+                // Wie zich zelf aanmeldde hoort in de database bij Wattzicht zelf. Dat is geen
+                // installateur, dus hoort er ook geen "jouw installateur" rechtsboven te staan.
+                // Geen return hier: de rest van het laden hangt eronder, en die sloeg hij over.
+                if (Installateurs.IsEchteInstallateur(installer.Slug))
+                {
+                    InstallerName = installer.Name;
+                    InstallerLogo = installer.LogoDataUrl;
+                    HasInstallerLogo = !string.IsNullOrWhiteSpace(installer.LogoDataUrl);
+                }
             }
             catch (ApiException ex) when (!ex.IsUnauthorized)
             {
@@ -398,13 +405,16 @@ public partial class DashboardViewModel : BaseViewModel
     [RelayCommand]
     private async Task ProefwoningAsync()
     {
-        await RunSafeAsync(async () =>
-        {
-            var uitkomst = await _api.ProefwoningAanAsync();
-            await ShowAlertAsync(Taal.T("home.proefwoning-staat-er"),
-                string.Format(Taal.T("home.proefwoning-uitleg"), uitkomst.Dagen));
-            await LoadAsync(vers: true);
-        });
+        ProefwoningDto? uitkomst = null;
+        await RunSafeAsync(async () => uitkomst = await _api.ProefwoningAanAsync());
+        if (uitkomst is null) return;
+
+        // Eerst het scherm vullen, dan pas iets zeggen. Het verversen moet ook buiten RunSafeAsync:
+        // die staat tijdens de aanroep op bezig, en LoadAsync keert dan meteen terug zonder te laden.
+        // Gevolg was een lege beginstaat achter een melding dat alles klaarstond.
+        await LoadAsync(vers: true);
+        await ShowAlertAsync(Taal.T("home.proefwoning-staat-er"),
+            string.Format(Taal.T("home.proefwoning-uitleg"), uitkomst.Dagen));
     }
 
     [RelayCommand]

@@ -17,21 +17,42 @@ public sealed class DemoConnectorTests
     [Fact]
     public void Overdag_in_de_zomer_is_er_flinke_zonopwek()
     {
-        var reading = DemoConnector.Simulate(DeviceType.Inverter, ZomerMiddag);
+        var omvormer = DemoConnector.Simulate(DeviceType.Inverter, ZomerMiddag);
+        var meter = DemoConnector.Simulate(DeviceType.P1Meter, ZomerMiddag);
 
-        Assert.InRange(reading.PvPowerW, 2500, 4300);
-        Assert.True(reading.LoadPowerW > 0);
-        // Bij zoveel zon levert de demo-woning terug (grid negatief).
-        Assert.True(reading.GridPowerW < 0, $"Verwacht teruglevering, kreeg {reading.GridPowerW} W");
+        Assert.InRange(omvormer.PvPowerW, 2500, 4300);
+        Assert.True(meter.LoadPowerW > 0);
+        // Bij zoveel zon levert de demo-woning terug (netstand negatief).
+        Assert.True(meter.GridPowerW < 0, $"Verwacht teruglevering, kreeg {meter.GridPowerW} W");
+    }
+
+    /// <summary>
+    /// Een omvormer meet de zon en niets anders.
+    ///
+    /// Hij gaf hier ook verbruik en netstand terug, en dat liep mis zodra er een demo-slimme-meter naast
+    /// stond: allebei stuurden ze een netstand, de momentopname telt per veld op, en dan stond er 15 kW
+    /// afname waar 8 kW hoorde. Dezelfde regel als bij de echte connectors: elk apparaat vult alleen zijn
+    /// eigen velden.
+    /// </summary>
+    [Fact]
+    public void De_omvormer_meet_alleen_de_zon()
+    {
+        var omvormer = DemoConnector.Simulate(DeviceType.Inverter, ZomerMiddag);
+
+        Assert.Equal(0, omvormer.LoadPowerW);
+        Assert.Equal(0, omvormer.GridPowerW);
+        Assert.Equal(0, omvormer.BatteryPowerW);
+        Assert.Equal(0, omvormer.ChargerPowerW);
     }
 
     [Fact]
     public void S_nachts_is_er_geen_zonopwek()
     {
-        var reading = DemoConnector.Simulate(DeviceType.Inverter, ZomerNacht);
+        var omvormer = DemoConnector.Simulate(DeviceType.Inverter, ZomerNacht);
+        var meter = DemoConnector.Simulate(DeviceType.P1Meter, ZomerNacht);
 
-        Assert.Equal(0, reading.PvPowerW);
-        Assert.True(reading.GridPowerW > 0, "Zonder zon wordt van het net afgenomen");
+        Assert.Equal(0, omvormer.PvPowerW);
+        Assert.True(meter.GridPowerW > 0, "Zonder zon wordt van het net afgenomen");
     }
 
     [Fact]
@@ -58,14 +79,55 @@ public sealed class DemoConnectorTests
         Assert.Equal(0, reading.GridPowerW);
     }
 
+    /// <summary>
+    /// De auto laadt 's nachts, maar niet elke nacht en niet de hele nacht.
+    ///
+    /// Hij stond zes uur lang op 7,4 kW, elke nacht: 44 kWh per nacht en 267 kWh per week. Drie keer het
+    /// verbruik van een huishouden, en een auto die nooit vol raakt. In het besparingsscherm overstemde
+    /// die ene post al het andere en stond elke dag op precies hetzelfde bedrag.
+    /// </summary>
     [Fact]
     public void Laadpaal_laadt_alleen_s_nachts()
     {
-        var nacht = DemoConnector.Simulate(DeviceType.Charger, ZomerNacht);
-        var middag = DemoConnector.Simulate(DeviceType.Charger, ZomerMiddag);
+        var laadnacht = EersteLaadnacht();
+        var nacht = new DateTimeOffset(laadnacht.ToDateTime(new TimeOnly(23, 30)), TimeSpan.FromHours(2));
+        var middag = new DateTimeOffset(laadnacht.ToDateTime(new TimeOnly(13, 0)), TimeSpan.FromHours(2));
 
-        Assert.True(nacht.ChargerPowerW > 0);
-        Assert.Equal(0, middag.ChargerPowerW);
+        Assert.True(DemoConnector.Simulate(DeviceType.Charger, nacht).ChargerPowerW > 0);
+        Assert.Equal(0, DemoConnector.Simulate(DeviceType.Charger, middag).ChargerPowerW);
+    }
+
+    /// <summary>Niet elke nacht: over twee weken hoort er minstens één nacht zonder laadbeurt te zitten.</summary>
+    [Fact]
+    public void De_auto_laadt_niet_elke_nacht()
+    {
+        var start = new DateOnly(2026, 6, 1);
+        var nachten = Enumerable.Range(0, 14).Select(d => DemoConnector.LaadtDieNacht(start.AddDays(d))).ToList();
+
+        Assert.Contains(true, nachten);
+        Assert.Contains(false, nachten);
+    }
+
+    /// <summary>
+    /// Een sessie loopt door over middernacht. Zou de keuze per kalenderdag gaan, dan stopte hij om
+    /// twaalf uur 's nachts en begon er soms een halve beurt.
+    /// </summary>
+    [Fact]
+    public void Een_laadbeurt_valt_niet_stil_om_middernacht()
+    {
+        var nacht = EersteLaadnacht();
+        var voorMiddernacht = new DateTimeOffset(nacht.ToDateTime(new TimeOnly(23, 30)), TimeSpan.FromHours(2));
+        var naMiddernacht = new DateTimeOffset(nacht.AddDays(1).ToDateTime(new TimeOnly(1, 0)), TimeSpan.FromHours(2));
+
+        Assert.True(DemoConnector.Simulate(DeviceType.Charger, voorMiddernacht).ChargerPowerW > 0);
+        Assert.True(DemoConnector.Simulate(DeviceType.Charger, naMiddernacht).ChargerPowerW > 0);
+    }
+
+    private static DateOnly EersteLaadnacht()
+    {
+        var dag = new DateOnly(2026, 6, 1);
+        while (!DemoConnector.LaadtDieNacht(dag)) dag = dag.AddDays(1);
+        return dag;
     }
 
     [Fact]
@@ -115,9 +177,11 @@ public sealed class DemoConnectorTests
             var inv = DemoConnector.Simulate(DeviceType.Inverter, t);
             var bat = DemoConnector.Simulate(DeviceType.Battery, t);
             var chg = DemoConnector.Simulate(DeviceType.Charger, t);
+            // Verbruik en netstand komen van de slimme meter; de omvormer meet alleen de zon.
+            var meter = DemoConnector.Simulate(DeviceType.P1Meter, t);
 
-            var supply = inv.PvPowerW + bat.BatteryPowerW + inv.GridPowerW;
-            var demand = inv.LoadPowerW + chg.ChargerPowerW;
+            var supply = inv.PvPowerW + bat.BatteryPowerW + meter.GridPowerW;
+            var demand = meter.LoadPowerW + chg.ChargerPowerW;
 
             Assert.InRange(supply - demand, -3, 3);
         }

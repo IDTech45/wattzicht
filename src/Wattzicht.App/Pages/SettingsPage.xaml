@@ -273,7 +273,10 @@
                 <VerticalStackLayout Spacing="10">
                     <Label Text="{t:T meer.geen-installateur-gekoppeld}" Style="{StaticResource CardTitle}" />
                     <Label Text="{t:T meer.heb-je-een-installateur}" Style="{StaticResource SubtitleLabel}" />
-                    <Entry Text="{Binding InstallateurCode}" Placeholder="{t:Ts meer.code-van-je-installateur}"
+                    <!-- Een label boven het veld en niet alleen een grijze hint erin: zodra je typt is
+                         die hint weg, en dan staat er een kaal invulveld zonder te zeggen wat erin hoort. -->
+                    <Label Text="{t:T meer.code-van-je-installateur}" Style="{StaticResource StatCaption}" />
+                    <Entry Text="{Binding InstallateurCode}" Placeholder="{t:T meer.code-voorbeeld}"
                            ClearButtonVisibility="WhileEditing" />
                     <Label Text="{Binding KoppelFout}" TextColor="{StaticResource ErrorDot}" FontSize="13"
                            IsVisible="{Binding HeeftKoppelFout}" />

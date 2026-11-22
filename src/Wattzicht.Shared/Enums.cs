@@ -160,3 +160,22 @@ public sealed class LowerCaseNamingPolicy : JsonNamingPolicy
 
     public override string ConvertName(string name) => name.ToLowerInvariant();
 }
+
+/// <summary>
+/// De woning zonder installateur.
+///
+/// In de database hoort elke woning bij een installateur, ook wie zich zelf aanmeldde zonder code. Die
+/// komen bij Wattzicht zelf te staan. Voor de bewoner is dat geen installateur: er hoort geen naam
+/// rechtsboven in zijn app, geen offerteknop en geen aanbod van een bedrijf dat hij nooit zag.
+///
+/// Deze code staat hier omdat zowel de server als de app hem moet herkennen.
+/// </summary>
+public static class Installateurs
+{
+    /// <summary>Slug van de installateur die "geen installateur" betekent.</summary>
+    public const string GeenSlug = "wattzicht";
+
+    /// <summary>Of deze slug een echt installatiebedrijf is.</summary>
+    public static bool IsEchteInstallateur(string? slug) =>
+        !string.IsNullOrWhiteSpace(slug) && !slug.Equals(GeenSlug, StringComparison.OrdinalIgnoreCase);
+}

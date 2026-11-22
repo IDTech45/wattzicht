@@ -130,7 +130,7 @@ public static class TekstenTr
         ["advies.klaar-om"] = "Şu saate hazır",
         ["advies.bereken"] = "Hesapla",
         ["advies.nog-geen-tips"] = "Henüz öneri yok",
-        ["advies.koppel-je-zonnepanelen-batterij-of"] = "Güneş panellerinizi, bataryanızı veya şarj istasyonunuzu bağlayın ya da Ayarlar'da dinamik sözleşmeyi açın.",
+        ["advies.koppel-je-zonnepanelen-batterij-of"] = "İpuçları, yönetilecek bir şey olduğunda görünür: Daha fazla bölümünde dinamik bir sözleşme ya da kontrol etmemize izin verilen bir batarya veya şarj istasyonu.",
         ["advies.automatisch-sturen-komt-binnenkort-voor"] = "Şarj istasyonları ve bataryalar için otomatik yönetim yakında geliyor.",
 
         // ---- besparen ----
@@ -731,6 +731,17 @@ public static class TekstenTr
 
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "ölçülmedi",
+        ["installateur.laatste-meting"] = "Son ölçüm: {0}",
+        ["meer.code-voorbeeld"] = "örneğin gunes-ve-co",
+        ["proef.omvormer"] = "Demo invertör 4,2 kWp",
+        ["proef.batterij"] = "Demo ev bataryası 5 kWh",
+        ["proef.laadpaal"] = "Demo şarj istasyonu 11 kW",
+        ["proef.meter"] = "Demo akıllı sayaç",
+        ["installateur.jouw-code"] = "Bağlantı kodunuz",
+        ["installateur.code-uitleg"] = "Müşteriniz bu kodu uygulamasında Daha fazla bölümüne girer. Evi bundan sonra burada görünür.",
+        ["installateur.deel"] = "Paylaş",
+        ["installateur.deel-je-code"] = "Bağlantı kodunuzu paylaşın",
+        ["installateur.deel-tekst"] = "Evinizi Wattzicht uygulamasında {0} firmasına bağlayın: Daha fazla bölümüne gidin ve {1} kodunu girin. Böylece verilerinizi görebilir, bir şey durduğunda yardım edebiliriz.",
         ["home.eerst-even-rondkijken"] = "Elinizde cihaz yok mu? Bir deneme evi kurun ve gerçek sayılarla etrafa bakın.",
         ["home.zet-proefwoning-neer"] = "Deneme evi kur",
         ["home.proefwoning-staat-er"] = "Deneme evi hazır",

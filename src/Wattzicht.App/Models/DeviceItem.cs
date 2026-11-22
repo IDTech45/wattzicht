@@ -28,7 +28,16 @@ public sealed class DeviceItem
     }
 
     public Guid Id => Device.Id;
-    public string Name => string.IsNullOrWhiteSpace(Device.Name) ? BrandName : Device.Name;
+    /// <summary>
+    /// De naam van het apparaat.
+    ///
+    /// De vier apparaten van de proefwoning krijgen hun naam van de server en dus in één taal. Dat
+    /// las raar in een app die Engels of Turks staat: "Demo omvormer 4,2 kWp" onder het kopje
+    /// Inverter. Voor die vier vertalen we de naam hier alsnog; ze zijn te herkennen aan hun kenmerk.
+    /// </summary>
+    public string Name => DemoNamen.Voor(Device.ExternalId)
+                          ?? (string.IsNullOrWhiteSpace(Device.Name) ? BrandName : Device.Name);
+
     public DeviceBrand Brand => Device.Brand;
     public bool IsOnline => Device.IsOnline;
 

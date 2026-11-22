@@ -15,7 +15,7 @@
                     <Label Text="{t:T installateur.woningen}" Style="{StaticResource PageTitle}" />
                     <!-- Zoeken op naam of plaats. Bij veertig installaties scrol je nog; bij
                          vierhonderd is een lijst zonder zoekveld onbruikbaar. -->
-                    <SearchBar Text="{Binding Zoek}" Placeholder="{t:Ts installateur.zoek-op-naam}" />
+                    <SearchBar Text="{Binding Zoek}" Placeholder="{t:T installateur.zoek-op-naam}" />
                     <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
                         <Label Text="{Binding ErrorMessage}" />
                     </Border>

@@ -62,8 +62,14 @@ public sealed class DemoConnector(TimeProvider clock) : IDeviceConnector
                    + 1600 * Gauss(hour, 18.5, 1.2)
                    + 150 * Noise(seed, (int)(hour * 12));
 
-        // Laadpaal: 's nachts tussen 23:00 en 05:00 met 7,4 kW (1 fase 32 A).
-        var charger = hour is >= 23 or < 5 ? 7400 : 0;
+        // Laadpaal: niet elke nacht, en niet de hele nacht.
+        //
+        // Hij stond hier zes uur lang op 7,4 kW, elke nacht. Dat is 44 kWh per nacht en 267 kWh per
+        // week: drie keer het verbruik van een gemiddeld huishouden, en een auto die nooit vol is.
+        // In het besparingsscherm overstemde die ene post al het andere en stond elke dag op precies
+        // hetzelfde bedrag. Nu laadt hij drie nachten per week, drie uur per keer: ongeveer 22 kWh,
+        // wat een auto na een dag rijden opneemt.
+        var charger = LaadtNu(local) ? 7400 : 0;
 
         // Batterij: laadt bij zonoverschot (max 2,2 kW), ontlaadt 's avonds/nachts tot verbruik gedekt is (max 1,7 kW).
         var surplus = pv - load;
@@ -86,13 +92,36 @@ public sealed class DemoConnector(TimeProvider clock) : IDeviceConnector
 
         return type switch
         {
-            DeviceType.Inverter => new DeviceReading(ts, PvPowerW: Math.Round(pv), LoadPowerW: Math.Round(load), GridPowerW: Math.Round(grid)),
+            // Een omvormer meet de zon, en niets anders. Hij gaf hier ook verbruik en netstand terug, en
+            // dat liep mis zodra er een demo-slimme-meter naast stond: beide stuurden een netstand, de
+            // momentopname telt per veld op, en dan staat er 15 kW afname waar 8 kW hoort. Dezelfde
+            // regel als bij de echte connectors: elk apparaat vult alleen zijn eigen velden.
+            DeviceType.Inverter => new DeviceReading(ts, PvPowerW: Math.Round(pv)),
             DeviceType.Battery => new DeviceReading(ts, BatteryPowerW: Math.Round(battery), BatterySoc: Math.Round(soc, 1)),
             DeviceType.Charger => new DeviceReading(ts, ChargerPowerW: charger),
             DeviceType.P1Meter => new DeviceReading(ts, LoadPowerW: Math.Round(load), GridPowerW: Math.Round(grid)),
             _ => new DeviceReading(ts)
         };
     }
+
+    /// <summary>
+    /// Of de auto op dit moment laadt. Drie nachten per week, van 23:00 tot 02:00.
+    ///
+    /// De nacht hoort bij de avond waarop hij begon: wat om één uur 's nachts laadt, hoort bij gisteren.
+    /// Anders zou de keuze om middernacht omslaan en stopte een sessie halverwege.
+    /// </summary>
+    public static bool LaadtNu(DateTimeOffset lokaal)
+    {
+        var uur = lokaal.Hour;
+        if (uur is < 23 and >= 2) return false;
+
+        var nacht = DateOnly.FromDateTime(uur >= 23 ? lokaal.Date : lokaal.Date.AddDays(-1));
+        return LaadtDieNacht(nacht);
+    }
+
+    /// <summary>Of er die nacht geladen wordt. Deterministisch, dus dezelfde week geeft altijd hetzelfde beeld.</summary>
+    public static bool LaadtDieNacht(DateOnly nacht) =>
+        Noise($"laadpaal-{nacht:yyyy-MM-dd}", nacht.DayOfYear) < 0.45;
 
     /// <summary>Gauss-vorm met piek 1 op <paramref name="center"/>.</summary>
     private static double Gauss(double x, double center, double width)

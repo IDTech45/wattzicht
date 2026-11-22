@@ -125,7 +125,7 @@ public static class TekstenEn
         ["advies.klaar-om"] = "Ready by",
         ["advies.bereken"] = "Calculate",
         ["advies.nog-geen-tips"] = "No tips yet",
-        ["advies.koppel-je-zonnepanelen-batterij-of"] = "Connect your solar panels, battery or charger, or switch on a dynamic contract under Settings.",
+        ["advies.koppel-je-zonnepanelen-batterij-of"] = "Tips appear once there is something to steer: a dynamic contract under More, or a battery or charger we are allowed to control.",
         ["advies.automatisch-sturen-komt-binnenkort-voor"] = "Automatic control for chargers and batteries is coming.",
 
         // ---- besparen ----
@@ -726,6 +726,17 @@ public static class TekstenEn
 
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "not measured",
+        ["installateur.laatste-meting"] = "Last reading: {0}",
+        ["meer.code-voorbeeld"] = "for example sun-and-co",
+        ["proef.omvormer"] = "Demo inverter 4.2 kWp",
+        ["proef.batterij"] = "Demo home battery 5 kWh",
+        ["proef.laadpaal"] = "Demo charger 11 kW",
+        ["proef.meter"] = "Demo smart meter",
+        ["installateur.jouw-code"] = "Your link code",
+        ["installateur.code-uitleg"] = "Your customer enters this code under More in their app. Their home then appears here.",
+        ["installateur.deel"] = "Share",
+        ["installateur.deel-je-code"] = "Share your link code",
+        ["installateur.deel-tekst"] = "Link your home to {0} in the Wattzicht app: go to More and enter the code {1}. We can then look along and help when something stops.",
         ["home.eerst-even-rondkijken"] = "No device at hand? Set up a demo home and look around with real numbers.",
         ["home.zet-proefwoning-neer"] = "Set up demo home",
         ["home.proefwoning-staat-er"] = "Demo home is ready",

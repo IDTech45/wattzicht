@@ -560,9 +560,19 @@ public partial class SavingsViewModel : BaseViewModel
         // gebruikt is: de server rekent zelfverbruik als zon min teruglevering. Zonder meting is
         // die teruglevering nul, en dan zou hier staan dat alles zelf gebruikt is. Dat is geen nul
         // te veel maar een verzonnen honderd procent. Hetzelfde geldt voor laden zonder laadpaal.
-        TotalSelfUseText = !MeetNet ? nietGemeten : leeg ? Onbekend : KwhText(Sum(scope, s => s.SelfUseKwh));
-        TotalExportText = !MeetNet ? nietGemeten : leeg ? Onbekend : KwhText(Sum(scope, s => s.ExportKwh));
-        TotalChargedText = !MeetLaden ? nietGemeten : leeg ? Onbekend : KwhText(Sum(scope, s => s.ChargedKwh));
+        // Staat er wél iets in de dagen, dan is het gemeten, wat de momentopname ook zegt. Die
+        // momentopname gaat over nu en kan er even naast zitten (een koppeling die net is gezet, een
+        // server die herstart); de dagtotalen liegen niet. Zonder dit stond er "niet gemeten" boven
+        // een week waarin gewoon 59 kWh was geladen.
+        var zelfKwh = Sum(scope, s => s.SelfUseKwh);
+        var terugKwh = Sum(scope, s => s.ExportKwh);
+        var geladenKwh = Sum(scope, s => s.ChargedKwh);
+        var meetNet = MeetNet || zelfKwh > 0 || terugKwh > 0;
+        var meetLaden = MeetLaden || geladenKwh > 0;
+
+        TotalSelfUseText = !meetNet ? nietGemeten : leeg ? Onbekend : KwhText(zelfKwh);
+        TotalExportText = !meetNet ? nietGemeten : leeg ? Onbekend : KwhText(terugKwh);
+        TotalChargedText = !meetLaden ? nietGemeten : leeg ? Onbekend : KwhText(geladenKwh);
 
         // Lijst: nieuwste eerst
         Rows.Clear();
