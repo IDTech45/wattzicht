@@ -20,6 +20,11 @@ name: release-android
 # het serviceaccount mogen gedeeld worden met een tweede app, dus kun je daar dezelfde vier waarden
 # overnemen in plaats van nieuwe te maken. Alleen de app in Play Console is nieuw.
 #
+# Twee nummers, twee rollen. Het runnummer is de versiecode die Play gebruikt om te zien wat nieuwer
+# is; die loopt vanzelf op. De zichtbare versie (1.0.0) staat in het projectbestand en verandert
+# alleen als je dat wil: die zet je hier in het veld 'versie', of je past het projectbestand aan.
+# Tot 22-11-2026 kon dat niet en stond er in elke release 0.1.0, ook onderaan het Meer-scherm.
+#
 # Keystore base64 maken (Git Bash):  base64 -w0 wattzicht-upload.keystore
 #
 # Zonder PLAY_SERVICE_ACCOUNT_JSON stopt hij netjes na het bouwen: het bestand staat dan onder
@@ -33,6 +38,10 @@ on:
         default: internal
         type: choice
         options: [internal, alpha, beta, production]
+      versie:
+        description: 'Zichtbare versie, bijv. 1.0.1 (leeg = wat in het projectbestand staat)'
+        required: false
+        type: string
       status:
         description: 'Meteen uitrollen, of als concept klaarzetten'
         required: true
@@ -94,6 +103,7 @@ jobs:
           -p:AcceptAndroidSDKLicenses=true
           -p:AndroidPackageFormats=aab
           -p:ApplicationVersion=${{ github.run_number }}
+          ${{ github.event.inputs.versie && format('-p:ApplicationDisplayVersion={0}', github.event.inputs.versie) || '' }}
           -p:AndroidKeyStore=true
           -p:AndroidSigningKeyStore=$RUNNER_TEMP/upload.keystore
           -p:AndroidSigningKeyAlias=$KS_ALIAS
