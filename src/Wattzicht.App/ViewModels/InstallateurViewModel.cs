@@ -51,9 +51,9 @@ public sealed class WoningRij
     /// <summary>Rood bij een storing, grijs bij stilte, groen als het gewoon loopt.</summary>
     public Color StatusKleur => Woning.Status switch
     {
-        HouseholdStatus.Fault => Color.FromArgb("#DC2626"),
-        HouseholdStatus.NoData => Color.FromArgb("#94A3B8"),
-        _ => Color.FromArgb("#16A34A"),
+        HouseholdStatus.Fault => ThemeColors.Get("ErrorDot"),
+        HouseholdStatus.NoData => ThemeColors.Get("Placeholder"),
+        _ => ThemeColors.Get("SuccessDot"),
     };
 
     public bool HeeftMeldingen => Woning.OpenAlerts > 0;
@@ -77,8 +77,8 @@ public sealed class AandachtRij
         : Taal.T("installateur.soort-levert-te-weinig");
 
     public Color SoortKleur => Punt.Soort == AandachtSoort.Stil
-        ? Color.FromArgb("#94A3B8")
-        : Color.FromArgb("#F59E0B");
+        ? ThemeColors.Get("Placeholder")
+        : ThemeColors.Get("WarningDot");
 }
 
 /// <summary>

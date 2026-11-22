@@ -26,8 +26,8 @@ public sealed class ApparaatRij
         : Taal.T("installateur.nooit-gezien");
 
     public Color Kleur => Apparaat.LastSeenAt is { } gezien && DateTimeOffset.UtcNow - gezien < TimeSpan.FromHours(36)
-        ? Color.FromArgb("#16A34A")
-        : Color.FromArgb("#94A3B8");
+        ? ThemeColors.Get("SuccessDot")
+        : ThemeColors.Get("Placeholder");
 }
 
 /// <summary>
