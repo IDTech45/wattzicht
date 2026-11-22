@@ -1,5 +1,7 @@
+using System.Net;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
@@ -199,7 +201,30 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     .AllowAnyHeader()
     .AllowAnyMethod()));
 
+// Achter Traefik komt elk verzoek binnen vanaf het Docker-netwerk. Zonder deze regels is
+// RemoteIpAddress dus voor iedereen hetzelfde adres, en dan begrenst een limiet "per IP" in
+// werkelijkheid alle bezoekers bij elkaar: de ene bot verbruikt de beurten van een echte klant.
+builder.Services.Configure<ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    o.ForwardLimit = 1;
+    // .NET 9 heet dit KnownNetworks, met het IPNetwork uit HttpOverrides; in .NET 10 (LaadCash)
+    // heet dezelfde lijst KnownIPNetworks en komt het type uit System.Net. Niet verwisselen.
+    o.KnownNetworks.Clear();
+    o.KnownProxies.Clear();
+    o.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(IPAddress.Parse("10.0.0.0"), 8));
+    o.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(IPAddress.Parse("172.16.0.0"), 12));
+    o.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(IPAddress.Parse("192.168.0.0"), 16));
+    o.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(IPAddress.Parse("127.0.0.0"), 8));
+    o.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(IPAddress.IPv6Loopback, 128));
+});
+
 // Rate limiting voor anonieme formulieren (leads): 5 per minuut per IP.
+//
+// En voor aanmelden en inloggen, want die stonden helemaal open. Tussen 12 en 15 november zijn er
+// zo 139 huishoudens aangemaakt: Engelse namen, een gmail-adres met vijf cijfers erachter, geen
+// plaats, geen apparaat, de klok rond, ook om vier uur 's nachts. Aanmelden mag een mens best een
+// paar keer proberen, maar niet twintig keer per uur.
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -209,6 +234,28 @@ builder.Services.AddRateLimiter(options =>
             _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    options.AddPolicy(AuthEndpoints.AanmeldLimiet, http =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromHours(1),
+                QueueLimit = 0
+            }));
+
+    // Inloggen mag vaker: een typefout in je wachtwoord is geen misbruik. Tien per minuut houdt
+    // het raden tegen zonder iemand buiten te sluiten die zich zijn wachtwoord herinnert.
+    options.AddPolicy(AuthEndpoints.InlogLimiet, http =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));
@@ -357,6 +404,7 @@ if (app.Environment.IsDevelopment() || configuration.GetValue("Swagger:Enabled",
     });
 }
 
+app.UseForwardedHeaders();
 app.UseCors();
 app.UseRateLimiter();
 app.UseAuthentication();

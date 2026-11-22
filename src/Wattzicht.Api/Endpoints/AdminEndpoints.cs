@@ -94,7 +94,11 @@ public static class AdminEndpoints
         var appAndroid = await db.PushDevices.IgnoreQueryFilters().CountAsync(d => d.Platform == "android", ct);
         var appIos = await db.PushDevices.IgnoreQueryFilters().CountAsync(d => d.Platform == "ios", ct);
         var accounts = await db.Users.IgnoreQueryFilters().CountAsync(ct);
-        var openAanmeldingen = await db.Installers.IgnoreQueryFilters().CountAsync(i => i.ApprovedAt == null, ct);
+        // De woning-zonder-installateur telt hier niet mee. Die staat met opzet niet goedgekeurd,
+        // zodat niemand "wattzicht" als code kan invullen, maar hij hoort niet in een rij waar
+        // iemand iets mee moet: dan went die 1 en mis je de aanmelding die er wel toe doet.
+        var openAanmeldingen = await db.Installers.IgnoreQueryFilters()
+            .CountAsync(i => i.ApprovedAt == null && i.Id != SysteemInstallateur.Id, ct);
 
         var planViaInstallateur = await db.Households.IgnoreQueryFilters()
             .CountAsync(h => h.Plan == Plans.ViaInstaller, ct);
@@ -227,6 +231,7 @@ public static class AdminEndpoints
         // Eén vraag voor alle installateurs: met een telling per installateur erbij blijft dit ook
         // bij honderden installateurs één rondje naar de database.
         var rijen = await db.Installers.IgnoreQueryFilters()
+            .Where(i => i.Id != SysteemInstallateur.Id)
             // Openstaande aanmeldingen eerst: daar moet iemand iets mee.
             .OrderBy(i => i.ApprovedAt != null).ThenBy(i => i.Name)
             .Select(i => new

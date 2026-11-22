@@ -8,6 +8,12 @@ namespace Wattzicht.Api.Endpoints;
 /// <summary>Registreren, inloggen en token vernieuwen.</summary>
 public static class AuthEndpoints
 {
+    /// <summary>Aanmelden: vijf per uur per IP. Zie de toelichting in Program.cs.</summary>
+    public const string AanmeldLimiet = "aanmelden";
+
+    /// <summary>Inloggen: tien per minuut per IP, tegen het raden van wachtwoorden.</summary>
+    public const string InlogLimiet = "inloggen";
+
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/auth").WithTags("Auth");
@@ -16,18 +22,21 @@ public static class AuthEndpoints
             .WithSummary("Maakt een huishouden met eerste gebruiker aan en logt direct in.")
             .Produces<AuthResponse>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
-            .Produces(StatusCodes.Status409Conflict);
+            .Produces(StatusCodes.Status409Conflict)
+            .RequireRateLimiting(AanmeldLimiet);
 
         group.MapPost("/register-installer", RegisterInstallerAsync)
             .WithSummary("Meldt een installateur aan: bedrijf plus eerste gebruiker, in afwachting van goedkeuring.")
             .Produces<AuthResponse>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
-            .Produces(StatusCodes.Status409Conflict);
+            .Produces(StatusCodes.Status409Conflict)
+            .RequireRateLimiting(AanmeldLimiet);
 
         group.MapPost("/login", LoginAsync)
             .WithSummary("Logt in met e-mail en wachtwoord.")
             .Produces<AuthResponse>()
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .RequireRateLimiting(InlogLimiet);
 
         group.MapPost("/external", ExternalAsync)
             .WithSummary("Logt in of meldt aan met een token van Google of Apple.")
