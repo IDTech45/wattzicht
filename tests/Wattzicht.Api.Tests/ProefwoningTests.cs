@@ -75,23 +75,50 @@ public sealed class ProefwoningTests
         await Dienst(db).ZetNeerAsync(Woning);
 
         var dagen = await db.DailySummaries.IgnoreQueryFilters().Where(s => s.HouseholdId == Woning).ToListAsync();
-        Assert.Equal(Proefwoning.Dagen, dagen.Count);
+        // Zestig volle dagen plus het stuk van vandaag dat al voorbij is.
+        Assert.Equal(Proefwoning.Dagen + 1, dagen.Count);
         Assert.All(dagen, d => Assert.True(d.PvKwh >= 0));
         Assert.Contains(dagen, d => d.ChargedKwh > 0);
         Assert.Contains(dagen, d => d.ExportKwh > 0);
     }
 
-    /// <summary>Vandaag loopt nog; die dag wordt door de gewone metingen gevuld.</summary>
+    /// <summary>
+    /// Vandaag loopt mee tot nu, en niet verder.
+    ///
+    /// Allebei de kanten zijn fout. Een hele dag neerzetten laat om acht uur 's ochtends een avond
+    /// zien die nog moet komen. Vandaag helemaal overslaan is net zo verkeerd: dan staat het
+    /// beginscherm op nul terwijl de maand ernaast 180 kilowattuur zegt, en dat leest als kapot.
+    /// De gewone metingen vullen de rest van de dag vanzelf aan.
+    /// </summary>
     [Fact]
-    public async Task Vandaag_blijft_leeg()
+    public async Task Vandaag_loopt_tot_nu_en_niet_verder()
     {
         await using var db = await MetWoningAsync();
 
         await Dienst(db).ZetNeerAsync(Woning);
 
         var vandaag = DutchTime.LocalDate(Nu);
-        Assert.DoesNotContain(await db.DailySummaries.IgnoreQueryFilters().Select(s => s.Date).ToListAsync(),
-            d => d == vandaag);
+        var dag = await db.DailySummaries.IgnoreQueryFilters().SingleAsync(s => s.Date == vandaag);
+        var heleDag = Proefwoning.RekenDag(vandaag);
+
+        Assert.True(dag.PvKwh < heleDag.PvKwh, "de rest van de dag moet nog komen");
+        Assert.True(dag.PvKwh > 0 || DutchTime.ToLocal(Nu).Hour < 9, "overdag hoort er al iets te staan");
+    }
+
+    /// <summary>
+    /// De apparaten staan meteen op "zojuist gezien". Anders zegt het apparatenscherm vier keer
+    /// "nooit gezien" tot de eerste pollronde langskomt, en dat leest als een proefwoning die het
+    /// niet doet.
+    /// </summary>
+    [Fact]
+    public async Task De_apparaten_zijn_meteen_gezien()
+    {
+        await using var db = await MetWoningAsync();
+
+        await Dienst(db).ZetNeerAsync(Woning);
+
+        var apparaten = await db.Devices.IgnoreQueryFilters().Where(d => d.HouseholdId == Woning).ToListAsync();
+        Assert.All(apparaten, d => Assert.NotNull(d.LastSeenAt));
     }
 
     /// <summary>
@@ -160,7 +187,7 @@ public sealed class ProefwoningTests
 
         await proef.HaalWegAsync(Woning);
 
-        Assert.Equal(Proefwoning.Dagen, await db.DailySummaries.IgnoreQueryFilters().CountAsync(s => s.HouseholdId == Woning));
+        Assert.Equal(Proefwoning.Dagen + 1, await db.DailySummaries.IgnoreQueryFilters().CountAsync(s => s.HouseholdId == Woning));
         Assert.Equal(1, await db.Devices.IgnoreQueryFilters().CountAsync(d => d.HouseholdId == Woning));
     }
 

@@ -75,6 +75,9 @@ public sealed class Proefwoning(
                 ExternalId = id,
                 EncryptedCredentials = leeg,
                 CreatedAt = nu,
+                // Meteen gezien. Anders staat er bij alle vier "nooit gezien" tot de eerste
+                // pollronde langskomt, en dat leest als een proefwoning die stuk is.
+                LastSeenAt = nu,
             });
         }
 
@@ -120,8 +123,10 @@ public sealed class Proefwoning(
     /// <summary>
     /// De afgelopen dagen vullen door de curve van elke dag na te rekenen en op te tellen.
     ///
-    /// Vandaag slaan we over: die dag loopt nog en wordt gevuld door de gewone metingen, anders staat
-    /// er om acht uur 's ochtends al een hele dag zon.
+    /// Van vandaag nemen we alleen het stuk dat al voorbij is. Een hele dag zou om acht uur 's
+    /// ochtends een avond laten zien die nog moet komen, en niets invullen is net zo verkeerd: dan
+    /// staat het beginscherm op nul terwijl de maand ernaast 180 kilowattuur zegt, en denkt iemand
+    /// dat het niet werkt. De gewone metingen vullen de rest van de dag vanzelf aan.
     /// </summary>
     private async Task<int> VulGeschiedenisAsync(Guid woning, DateTimeOffset nu, CancellationToken ct)
     {
@@ -133,12 +138,16 @@ public sealed class Proefwoning(
         var bekend = bestaandeDagen.ToHashSet();
 
         var geschreven = 0;
-        for (var terug = Dagen; terug >= 1; terug--)
+        for (var terug = Dagen; terug >= 0; terug--)
         {
             var dag = vandaag.AddDays(-terug);
             if (!bekend.Add(dag)) continue;
 
-            var totaal = RekenDag(dag);
+            // Vandaag loopt nog: alleen tot het kwartier waar we nu in zitten.
+            var lokaalNu = DutchTime.ToLocal(nu);
+            var totaal = dag == vandaag
+                ? RekenDag(dag, (lokaalNu.Hour * 60) + lokaalNu.Minute)
+                : RekenDag(dag);
             var tarieven = await summaries.GetRatesAsync(woning, dag, ct);
             totaal.HouseholdId = woning;
             totaal.Id = Guid.NewGuid();
@@ -158,13 +167,13 @@ public sealed class Proefwoning(
     /// min wat van de zon de batterij in ging. Zo reageert de proefwoning op precies dezelfde manier
     /// op het besparingsscherm als een echte woning.
     /// </summary>
-    public static DailySummary RekenDag(DateOnly dag)
+    public static DailySummary RekenDag(DateOnly dag, int totMinuut = 24 * 60)
     {
         var totaal = new DailySummary { Date = dag };
         var uren = StapMinuten / 60d;
         var begin = new DateTimeOffset(dag.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
 
-        for (var minuut = 0; minuut < 24 * 60; minuut += StapMinuten)
+        for (var minuut = 0; minuut < Math.Min(totMinuut, 24 * 60); minuut += StapMinuten)
         {
             var moment = begin.AddMinutes(minuut);
             var zon = DemoConnector.Simulate(DeviceType.Inverter, moment, "DEMO-INV-001");
