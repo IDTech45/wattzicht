@@ -694,6 +694,11 @@ public sealed record UpdateInstallerAccessRequest(bool Granted);
 /// <param name="Code">De code van de installateur, zoals hij hem op zijn offerte of sticker zet.</param>
 public sealed record KoppelInstallateurRequest(string Code);
 
+/// <summary>Uitkomst van de proefwoning aan- of uitzetten (POST/DELETE /devices/proefwoning).</summary>
+/// <param name="Aan">Of de proefopstelling er nu staat.</param>
+/// <param name="Dagen">Aantal dagen geschiedenis dat is neergezet of weggehaald.</param>
+public sealed record ProefwoningDto(bool Aan, int Dagen);
+
 /// <summary>Wie er aan deze woning hangt en of de bewoner echt een installateur heeft (GET /household/installer-access).</summary>
 /// <param name="Granted">Of de installateur mag meekijken.</param>
 /// <param name="ChangedAt">Wanneer dat voor het laatst veranderde.</param>

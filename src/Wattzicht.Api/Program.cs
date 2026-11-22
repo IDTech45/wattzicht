@@ -125,6 +125,7 @@ builder.Services.AddDeviceConnectors(configuration);
 builder.Services.AddSingleton<SavingsCalculator>();
 builder.Services.AddScoped<AlertService>();
 builder.Services.AddScoped<SummaryService>();
+builder.Services.AddScoped<Proefwoning>();
 builder.Services.AddScoped<HouseholdQueries>();
 builder.Services.AddHttpClient(EnergyZeroPriceProvider.HttpClientName, client =>
 {

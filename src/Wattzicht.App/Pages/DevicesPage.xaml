@@ -20,6 +20,16 @@
                         <Border Style="{StaticResource DangerCard}" IsVisible="{Binding HasError}">
                             <Label Text="{Binding ErrorMessage}" />
                         </Border>
+                        <!-- De proefopstelling hoort zichtbaar tijdelijk te zijn. Staat hij er, dan zie je
+                             hier meteen waarom je cijfers er zo netjes uitzien en hoe je hem weghaalt. -->
+                        <Border Style="{StaticResource Card}" IsVisible="{Binding HeeftProefwoning}">
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="{t:T apparaten.proefwoning-staat-aan}" Style="{StaticResource CardTitle}" />
+                                <Label Text="{t:T apparaten.proefwoning-uitleg-kort}" Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                                <Button Text="{t:T apparaten.proefwoning-weghalen}" Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding ProefwoningWegCommand}" />
+                            </VerticalStackLayout>
+                        </Border>
                     </VerticalStackLayout>
                 </CollectionView.Header>
 

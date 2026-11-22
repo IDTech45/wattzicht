@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Wattzicht.App.Models;
 using Wattzicht.App.Pages;
 using Wattzicht.App.Services;
+using Wattzicht.Shared;
 
 namespace Wattzicht.App.ViewModels;
 
@@ -62,6 +63,7 @@ public partial class DevicesViewModel : BaseViewModel
             Devices.Clear();
             foreach (var d in devices.OrderBy(d => d.Type).ThenBy(d => d.Name))
                 Devices.Add(new DeviceItem(d, piek, panelen));
+            HeeftProefwoning = devices.Any(d => d.Brand == DeviceBrand.Demo);
             HasLoaded = true;
         }, _auth);
         IsRefreshing = false;
@@ -86,6 +88,28 @@ public partial class DevicesViewModel : BaseViewModel
         }
 
         await HernoemAsync(item);
+    }
+
+    /// <summary>
+    /// Staat de proefopstelling hier? Dan hoort er een knop te zijn om hem in één keer weg te halen,
+    /// op de plek waar je die vier demo-apparaten ziet staan.
+    /// </summary>
+    [ObservableProperty] private bool _heeftProefwoning;
+
+    [RelayCommand]
+    private async Task ProefwoningWegAsync()
+    {
+        var zeker = await ConfirmAsync(
+            Taal.T("apparaten.proefwoning-weghalen"),
+            Taal.T("apparaten.proefwoning-weghalen-vraag"),
+            Taal.T("apparaten.proefwoning-weghalen"));
+        if (!zeker) return;
+
+        await RunSafeAsync(async () =>
+        {
+            await _api.ProefwoningUitAsync();
+            await LoadAsync();
+        }, _auth);
     }
 
     [RelayCommand]

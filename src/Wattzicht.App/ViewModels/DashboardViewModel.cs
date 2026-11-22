@@ -388,6 +388,25 @@ public partial class DashboardViewModel : BaseViewModel
     [RelayCommand]
     private Task ConnectDeviceAsync() => Shell.Current.GoToAsync(nameof(ConnectDevicePage));
 
+    /// <summary>
+    /// De proefwoning neerzetten: zon, batterij, laadpaal en slimme meter met twee maanden geschiedenis.
+    ///
+    /// Zonder apparaat is er niets te zien en weet een nieuwe gebruiker niet waarvoor hij hier is. Dit
+    /// vult elk scherm in één tik met een realistische week, en staat onder de koppelknop zodat niemand
+    /// denkt dat dit de bedoelde weg is.
+    /// </summary>
+    [RelayCommand]
+    private async Task ProefwoningAsync()
+    {
+        await RunSafeAsync(async () =>
+        {
+            var uitkomst = await _api.ProefwoningAanAsync();
+            await ShowAlertAsync(Taal.T("home.proefwoning-staat-er"),
+                string.Format(Taal.T("home.proefwoning-uitleg"), uitkomst.Dagen));
+            await LoadAsync(vers: true);
+        });
+    }
+
     [RelayCommand]
     private Task OpenAlertsAsync() => Shell.Current.GoToAsync(nameof(AlertsPage));
 

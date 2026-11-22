@@ -731,6 +731,14 @@ public static class TekstenTr
 
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "ölçülmedi",
+        ["home.eerst-even-rondkijken"] = "Elinizde cihaz yok mu? Bir deneme evi kurun ve gerçek sayılarla etrafa bakın.",
+        ["home.zet-proefwoning-neer"] = "Deneme evi kur",
+        ["home.proefwoning-staat-er"] = "Deneme evi hazır",
+        ["home.proefwoning-uitleg"] = "Güneş, ev bataryası, şarj istasyonu ve akıllı sayaç yerinde; {0} günlük geçmişiyle. Cihazlar bölümünden kaldırabilirsiniz.",
+        ["apparaten.proefwoning-staat-aan"] = "Bu bir deneme evi",
+        ["apparaten.proefwoning-uitleg-kort"] = "Bu dört cihaz, arkalarındaki günlerle birlikte simüle edildi. Etrafa bakmak için pratik, ama sizin eviniz değil.",
+        ["apparaten.proefwoning-weghalen"] = "Deneme evini kaldır",
+        ["apparaten.proefwoning-weghalen-vraag"] = "Dört deneme cihazı ve simüle edilen günler silinecek. Gerçek cihazlarınız ve ölçümleri olduğu gibi kalır.",
         ["meer.geen-installateur-gekoppeld"] = "Bağlı tesisatçı yok",
         ["meer.heb-je-een-installateur"] = "Güneş paneli veya şarj istasyonu mu kurduttunuz? O firmanın kodunu girin; böylece verilerinizi görebilir ve bir şey durduğunda yardım edebilir.",
         ["meer.code-van-je-installateur"] = "Tesisatçınızın kodu",

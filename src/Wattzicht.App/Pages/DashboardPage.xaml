@@ -59,6 +59,15 @@
                             <Label Text="{t:T home.verbind-je-omvormer-thuisbatterij-of}"
                                    Style="{StaticResource SubtitleLabel}" FontSize="14" HorizontalTextAlignment="Center" />
                             <Button Text="{t:T home.apparaat-koppelen}" Style="{StaticResource PrimaryButton}" Command="{Binding ConnectDeviceCommand}" Margin="0,8,0,0" />
+                            <BoxView Style="{StaticResource DividerLine}" Margin="0,12,0,4" />
+                            <!-- Wie nog geen apparaat heeft kan de app niet beoordelen: hij ziet vier lege
+                                 schermen en weet niet waarvoor hij komt. Met een proefwoning staat alles er
+                                 in tien seconden in, met twee maanden geschiedenis, en is het met een tik
+                                 weer weg. -->
+                            <Label Text="{t:T home.eerst-even-rondkijken}" Style="{StaticResource SubtitleLabel}"
+                                   FontSize="14" HorizontalTextAlignment="Center" />
+                            <Button Text="{t:T home.zet-proefwoning-neer}" Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding ProefwoningCommand}" IsEnabled="{Binding IsNotBusy}" />
                         </VerticalStackLayout>
                     </Border>
 

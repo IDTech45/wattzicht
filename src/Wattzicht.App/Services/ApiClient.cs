@@ -139,6 +139,19 @@ public sealed class ApiClient
     public Task<NotificationSettingsDto> SetNotificationSettingsAsync(NotificationSettingsDto settings, CancellationToken ct = default) =>
         PutAsync<NotificationSettingsDto, NotificationSettingsDto>("/push/settings", settings, ct);
 
+    // ---------- Proefwoning ----------
+
+    /// <summary>
+    /// Zon, batterij, laadpaal en slimme meter neerzetten met twee maanden geschiedenis, zodat elk scherm
+    /// iets laat zien zonder dat er een apparaat in huis hangt.
+    /// </summary>
+    public Task<ProefwoningDto> ProefwoningAanAsync(CancellationToken ct = default) =>
+        PostAsync<object, ProefwoningDto>("/devices/proefwoning", null, authenticated: true, ct);
+
+    /// <summary>De proefopstelling en de verzonnen dagen weer weghalen.</summary>
+    public Task<ProefwoningDto> ProefwoningUitAsync(CancellationToken ct = default) =>
+        DeleteAsync<ProefwoningDto>("/devices/proefwoning", ct);
+
     // ---------- Installateur: zijn eigen woningen ----------
 
     /// <summary>

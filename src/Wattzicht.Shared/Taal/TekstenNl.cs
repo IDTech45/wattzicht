@@ -735,6 +735,14 @@ public static class TekstenNl
 
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "niet gemeten",
+        ["home.eerst-even-rondkijken"] = "Nog geen apparaat bij de hand? Zet een proefwoning neer en kijk rond met echte cijfers.",
+        ["home.zet-proefwoning-neer"] = "Proefwoning neerzetten",
+        ["home.proefwoning-staat-er"] = "Proefwoning staat klaar",
+        ["home.proefwoning-uitleg"] = "Zon, thuisbatterij, laadpaal en slimme meter staan erin, met {0} dagen geschiedenis. Je haalt het weg bij Apparaten.",
+        ["apparaten.proefwoning-staat-aan"] = "Dit is een proefwoning",
+        ["apparaten.proefwoning-uitleg-kort"] = "Deze vier apparaten zijn nagemaakt, inclusief de dagen erachter. Handig om rond te kijken, maar het is niet jouw huis.",
+        ["apparaten.proefwoning-weghalen"] = "Proefwoning weghalen",
+        ["apparaten.proefwoning-weghalen-vraag"] = "De vier demo-apparaten en de verzonnen dagen gaan weg. Heb je ook echte apparaten, dan blijven die en hun metingen gewoon staan.",
         ["meer.geen-installateur-gekoppeld"] = "Je hebt geen installateur gekoppeld",
         ["meer.heb-je-een-installateur"] = "Heb je zonnepanelen of een laadpaal laten leggen? Vul de code van dat bedrijf in, dan kan hij meekijken en helpen als er iets stilvalt.",
         ["meer.code-van-je-installateur"] = "Code van je installateur",

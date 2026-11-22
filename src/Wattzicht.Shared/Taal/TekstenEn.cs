@@ -726,6 +726,14 @@ public static class TekstenEn
 
         // ---- wat we niet meten, zeggen we ----
         ["besparen.niet-gemeten"] = "not measured",
+        ["home.eerst-even-rondkijken"] = "No device at hand? Set up a demo home and look around with real numbers.",
+        ["home.zet-proefwoning-neer"] = "Set up demo home",
+        ["home.proefwoning-staat-er"] = "Demo home is ready",
+        ["home.proefwoning-uitleg"] = "Solar, home battery, charger and smart meter are in place, with {0} days of history. You can remove it under Devices.",
+        ["apparaten.proefwoning-staat-aan"] = "This is a demo home",
+        ["apparaten.proefwoning-uitleg-kort"] = "These four devices are simulated, including the days behind them. Handy to look around, but it is not your house.",
+        ["apparaten.proefwoning-weghalen"] = "Remove demo home",
+        ["apparaten.proefwoning-weghalen-vraag"] = "The four demo devices and the simulated days will go. Real devices and their readings stay exactly as they are.",
         ["meer.geen-installateur-gekoppeld"] = "No installer linked",
         ["meer.heb-je-een-installateur"] = "Had solar panels or a charger installed? Enter that company's code and they can look along and help when something stops.",
         ["meer.code-van-je-installateur"] = "Your installer's code",

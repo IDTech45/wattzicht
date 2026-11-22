@@ -120,6 +120,14 @@ public static class HouseholdEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .ProducesValidationProblem();
 
+        household.MapPost("/devices/proefwoning", ProefwoningAanAsync)
+            .WithSummary("Zet zon, batterij, laadpaal en slimme meter neer met twee maanden geschiedenis.")
+            .Produces<ProefwoningDto>();
+
+        household.MapDelete("/devices/proefwoning", ProefwoningUitAsync)
+            .WithSummary("Haalt de proefopstelling en de verzonnen dagen weer weg.")
+            .Produces<ProefwoningDto>();
+
         household.MapPost("/devices/refresh", NuUitlezenAsync)
             .WithSummary("Leest de apparaten van deze woning nu uit (alleen de merken die de server kan bereiken).")
             .Produces<UitleesResultaatDto>();
@@ -1337,6 +1345,28 @@ public static class HouseholdEndpoints
         return await KoppelAsync(
             new ConnectDeviceRequest(DeviceBrand.Enphase, DeviceType.Inverter, inlog),
             sessie.Woning, db, registry, protector, subscriptions, clock, loggerFactory, ct);
+    }
+
+    /// <summary>
+    /// De proefwoning aanzetten: vier apparaten en twee maanden geschiedenis in één handeling.
+    ///
+    /// Zonder dit is de app pas te beoordelen als er een echt apparaat hangt, en laat één demo-omvormer
+    /// zonder meterkast precies de helft van de schermen zien.
+    /// </summary>
+    private static async Task<IResult> ProefwoningAanAsync(
+        HttpContext http, Proefwoning proef, CancellationToken ct)
+    {
+        var woning = http.User.GetHouseholdId()!.Value;
+        var dagen = await proef.ZetNeerAsync(woning, ct);
+        return Results.Ok(new ProefwoningDto(true, dagen));
+    }
+
+    private static async Task<IResult> ProefwoningUitAsync(
+        HttpContext http, Proefwoning proef, CancellationToken ct)
+    {
+        var woning = http.User.GetHouseholdId()!.Value;
+        var dagen = await proef.HaalWegAsync(woning, ct);
+        return Results.Ok(new ProefwoningDto(false, dagen));
     }
 
     private static async Task<IResult> ConnectDeviceAsync(
