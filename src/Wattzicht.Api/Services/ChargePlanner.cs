@@ -134,9 +134,16 @@ public static class ChargePlanner
     /// <summary>Elk heel uur tussen nu en de deadline, met de prijs en de verwachte zon erbij.</summary>
     private static IEnumerable<Uur> BeschikbareUren(ChargePlanInput input)
     {
-        var start = new DateTimeOffset(input.NowUtc.UtcDateTime, TimeSpan.Zero)
-            .AddMinutes(-input.NowUtc.Minute).AddSeconds(-input.NowUtc.Second)
-            .AddMilliseconds(-input.NowUtc.Millisecond);
+        // Afronden naar het hele uur, en dan ook echt helemaal.
+        //
+        // Dit stond er eerst als minuten, seconden en milliseconden eraf halen. Een DateTimeOffset
+        // telt in ticks van honderd nanoseconden, dus bleef er 18:00:00.000942 over in plaats van
+        // 18:00:00. Elke prijs wordt gezocht met StartUtc == dit uur, en die vergelijking faalde
+        // daardoor altijd. Gevolg: geen enkel uur had een prijs, alles viel terug op het gemiddelde,
+        // en dan zijn alle uren even duur en begint de planner altijd nu. Precies het advies dat hij
+        // niet hoort te geven (22-11-2026).
+        var utc = input.NowUtc.UtcDateTime;
+        var start = new DateTimeOffset(utc.AddTicks(-(utc.Ticks % TimeSpan.TicksPerHour)), TimeSpan.Zero);
 
         for (var uur = start; uur < input.DeadlineUtc; uur = uur.AddHours(1))
         {

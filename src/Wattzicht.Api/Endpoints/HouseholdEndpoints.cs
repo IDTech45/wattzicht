@@ -1994,6 +1994,21 @@ public static class HouseholdEndpoints
             ? pub
             : SavingsCalculator.DefaultPublicChargingPrice;
 
+        // Vanaf welke dag opnieuw rekenen.
+        //
+        // Normaal vanaf de ingangsdatum: een prijswijziging van vorige maand hoort het jaar ervoor
+        // niet te herschrijven. Maar is dit het oudste tarief dat deze woning heeft, dan ligt het
+        // anders. Alles wat daarvoor ligt werd tot nu toe gerekend met de platformstandaard van 28
+        // cent, en die standaard geldt alleen zolang iemand niets heeft ingevuld. Vanaf nu rekent
+        // GetRatesAsync die oude dagen met dít tarief, dus moeten de opgeslagen bedragen mee.
+        //
+        // Zonder dit zag iemand die zijn contract inlaadde zijn besparing niet veranderen: het
+        // nieuwe tarief gold vanaf vandaag en vandaag was nog leeg. Precies de klacht "ik heb mijn
+        // contract ingeladen maar ik zie niet wat ik bespaar" (22-11-2026).
+        var ouderTarief = await db.Tariffs
+            .AnyAsync(t => t.HouseholdId == householdId && t.ValidFrom < validFrom, ct);
+        var vanaf = ouderTarief ? validFrom : DateOnly.MinValue;
+
         // Tarief en herberekende besparing samen opslaan, of allebei niet.
         // Eerst opslaan binnen de transactie: een nieuw tarief komt anders niet terug uit de query in RecalculateSavingsAsync.
         var strategy = db.Database.CreateExecutionStrategy();
@@ -2001,7 +2016,7 @@ public static class HouseholdEndpoints
         {
             await using var transaction = await db.Database.BeginTransactionAsync(ct);
             await db.SaveChangesAsync(ct);
-            await summaries.RecalculateSavingsAsync(householdId, validFrom, ct);
+            await summaries.RecalculateSavingsAsync(householdId, vanaf, ct);
             await db.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
         });

@@ -131,7 +131,13 @@ public sealed class LaadsessieWorker(
             .ToListAsync(ct);
 
         return [.. rijen
-            .GroupBy(r => new DateTimeOffset(r.Timestamp.UtcDateTime.AddSeconds(-r.Timestamp.Second), TimeSpan.Zero))
+            // Op de hele minuut, en dan ook echt helemaal: alleen de seconden eraf halen laat de
+            // ticks staan, en dan krijgt elke meting zijn eigen groep. De laadpaal en de P1-meter
+            // komen daardoor nooit naast elkaar te liggen en de herkomst van de geladen stroom
+            // blijft onbekend. Zelfde val als in ChargePlanner (22-11-2026).
+            .GroupBy(r => new DateTimeOffset(
+                r.Timestamp.UtcDateTime.AddTicks(-(r.Timestamp.UtcDateTime.Ticks % TimeSpan.TicksPerMinute)),
+                TimeSpan.Zero))
             .OrderBy(g => g.Key)
             .Select(g => new Meetpunt(
                 g.Key,

@@ -92,7 +92,7 @@ public static class VerbruikLezer
             }
 
             var eigenMaand = Maandvan(regel, vandaag);
-            var kwh = Kilowatturen(regel);
+            var kwh = Kilowatturen(regel, kolomVolgordeBekend);
 
             if (eigenMaand is { } kop && kwh.Count == 0)
             {
@@ -201,7 +201,7 @@ public static class VerbruikLezer
     }
 
     /// <summary>De getallen die in kilowatturen staan, op volgorde van voorkomen.</summary>
-    private static List<double> Kilowatturen(string regel)
+    private static List<double> Kilowatturen(string regel, bool onderKopregel = false)
     {
         var gevonden = new List<double>();
 
@@ -216,7 +216,11 @@ public static class VerbruikLezer
         // Staat de eenheid in een kolomkop in plaats van achter elk getal, dan nemen we de getallen
         // die als maandverbruik kunnen doorgaan. Een jaartal valt daar niet onder: dat zou 2026 kWh
         // zijn en dat ligt boven onze grens voor één maand.
-        if (gevonden.Count == 0 && regel.Contains("kwh", StringComparison.OrdinalIgnoreCase))
+        // Of de eenheid staat één keer boven de kolom en helemaal niet meer op de rijen eronder.
+        // Zo ziet een jaaroverzicht er vaak uit: "Maand | Verbruik (kWh) | Teruglevering (kWh)" en
+        // daaronder "januari 412 18". Tot 22-11-2026 leverde zo'n overzicht nul maanden op, met de
+        // melding dat er geen kilowatturen in stonden. Die stonden er wel, alleen zonder eenheid.
+        if (gevonden.Count == 0 && (onderKopregel || regel.Contains("kwh", StringComparison.OrdinalIgnoreCase)))
         {
             foreach (Match m in Regex.Matches(regel, @"\b\d{1,3}(?:[.,]\d{1,3})?\b"))
             {
