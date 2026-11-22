@@ -562,6 +562,9 @@ public static class TekstenEn
 
         ["verbruik.titel"] = "According to your supplier",
         ["verbruik.uitleg"] = "From the overviews you imported, with what we measured that month next to it.",
+        ["verbruik.totaal-jaar"] = "Per year",
+        ["verbruik.totaal-maanden"] = "Over {0} months",
+        ["verbruik.netto"] = "Net from the grid: {0} kWh. That is what you draw minus what you feed back, and at LaadCash it caps how much of your charging may be registered.",
         ["verbruik.kop-maand"] = "Month",
         ["verbruik.kop-afname"] = "From grid",
         ["verbruik.kop-terug"] = "Fed back",

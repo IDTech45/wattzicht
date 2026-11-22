@@ -567,6 +567,9 @@ public static class TekstenTr
 
         ["verbruik.titel"] = "Tedarikçinize göre",
         ["verbruik.uitleg"] = "İçe aktardığınız özetlerden, o ay bizim ölçtüğümüzle birlikte.",
+        ["verbruik.totaal-jaar"] = "Yılda",
+        ["verbruik.totaal-maanden"] = "{0} ay boyunca",
+        ["verbruik.netto"] = "Şebekeden net: {0} kWh. Bu, çektiğiniz enerjiden geri verdiğinizin çıkarılmasıdır ve LaadCash'te şarjınızın ne kadarının tescil edilebileceğinin üst sınırıdır.",
         ["verbruik.kop-maand"] = "Ay",
         ["verbruik.kop-afname"] = "Çekilen",
         ["verbruik.kop-terug"] = "Verilen",

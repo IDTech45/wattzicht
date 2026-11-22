@@ -244,6 +244,19 @@
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
                             </VerticalStackLayout>
+
+                            <!-- De optelsom. Twaalf losse maanden beantwoorden de vraag niet die
+                                 iemand stelt, namelijk wat hij in een jaar verbruikt. -->
+                            <BoxView HeightRequest="1" Margin="0,4"
+                                     Color="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource DividerDark}}" />
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+                                <Label Text="{Binding TotaalKopTekst}" Style="{StaticResource CardTitle}" FontSize="14" />
+                                <Label Grid.Column="1" Text="{Binding TotaalAfnameTekst}" Style="{StaticResource CardTitle}" FontSize="14" />
+                                <Label Grid.Column="2" Text="{Binding TotaalTerugTekst}" Style="{StaticResource CardTitle}" FontSize="14" />
+                                <Label Grid.Column="3" Text="" Style="{StaticResource StatCaption}" />
+                            </Grid>
+                            <Label Text="{Binding NettoAfnameTekst}" Style="{StaticResource StatCaption}"
+                                   IsVisible="{Binding HeeftNetto}" />
                         </VerticalStackLayout>
                     </Border>
 

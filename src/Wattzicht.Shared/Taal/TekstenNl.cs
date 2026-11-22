@@ -571,6 +571,9 @@ public static class TekstenNl
 
         ["verbruik.titel"] = "Volgens je leverancier",
         ["verbruik.uitleg"] = "Uit de overzichten die je hebt ingelezen, met onze eigen meting van die maand ernaast.",
+        ["verbruik.totaal-jaar"] = "Per jaar",
+        ["verbruik.totaal-maanden"] = "Over {0} maanden",
+        ["verbruik.netto"] = "Netto van het net: {0} kWh. Dat is je afname min wat je teruglevert, en bij LaadCash het plafond voor wat er van je laadpaal ingeboekt mag worden.",
         ["verbruik.kop-maand"] = "Maand",
         ["verbruik.kop-afname"] = "Afname",
         ["verbruik.kop-terug"] = "Terug",

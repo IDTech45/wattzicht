@@ -306,6 +306,20 @@ public partial class SavingsViewModel : BaseViewModel
 
     public bool HeeftLeverancierCijfers => AantalLeverancierMaanden > 0;
 
+    // ---- De optelsom onder die tabel ----
+    //
+    // Twaalf maandregels zijn twaalf losse getallen; wat iemand wil weten is wat hij in een jaar
+    // verbruikt. En die onderste regel is meer dan een optelsom: afname min teruglevering is precies
+    // het getal waarop de NEa het inboeken van laadstroom aftopt, dus wie zonnepanelen heeft ziet
+    // hier waar zijn plafond ligt.
+    //
+    // Staan er minder dan twaalf maanden, dan noemen we het geen jaar. Een half jaar verdubbelen is
+    // een gok, en een gok hoort hier niet.
+    [ObservableProperty] private string _totaalKopTekst = string.Empty;
+    [ObservableProperty] private string _totaalAfnameTekst = string.Empty;
+    [ObservableProperty] private string _totaalTerugTekst = string.Empty;
+    [ObservableProperty] private string _nettoAfnameTekst = string.Empty;
+
     // Terugleveren: wat kost het, wat scheelt zelf gebruiken
     [ObservableProperty] private bool _hasFeedIn;
     [ObservableProperty] private string _feedInMonthText = string.Empty;
@@ -520,6 +534,7 @@ public partial class SavingsViewModel : BaseViewModel
                 }
 
                 AantalLeverancierMaanden = LeverancierMaanden.Count;
+                BerekenTotaal();
             }
             catch (ApiException ex) when (!ex.IsUnauthorized)
             {
@@ -689,4 +704,34 @@ public partial class SavingsViewModel : BaseViewModel
         int diff = ((int)date.DayOfWeek + 6) % 7; // maandag = 0
         return date.AddDays(-diff);
     }
+
+    /// <summary>De regel onder de maandtabel: wat er in die periode van het net kwam en wat erheen ging.</summary>
+    private void BerekenTotaal()
+    {
+        if (LeverancierMaanden.Count == 0)
+        {
+            TotaalKopTekst = TotaalAfnameTekst = TotaalTerugTekst = NettoAfnameTekst = string.Empty;
+            return;
+        }
+
+        var maanden = LeverancierMaanden.Count;
+        var afname = LeverancierMaanden.Sum(r => r.Maand.AfnameKwh);
+        var terug = LeverancierMaanden.Sum(r => r.Maand.TerugleveringKwh ?? 0);
+        var heeftTerug = LeverancierMaanden.Any(r => r.Maand.TerugleveringKwh is not null);
+
+        TotaalKopTekst = maanden >= 12
+            ? Taal.T("verbruik.totaal-jaar")
+            : string.Format(Taal.T("verbruik.totaal-maanden"), maanden);
+        TotaalAfnameTekst = afname.ToString("N0", Nl) + " kWh";
+        TotaalTerugTekst = heeftTerug ? terug.ToString("N0", Nl) + " kWh" : "–";
+
+        // Zonder teruglevering is netto hetzelfde als afname, en dan is die regel alleen maar ruis.
+        NettoAfnameTekst = heeftTerug
+            ? string.Format(Taal.T("verbruik.netto"), (afname - terug).ToString("N0", Nl))
+            : string.Empty;
+    }
+
+    public bool HeeftNetto => !string.IsNullOrEmpty(NettoAfnameTekst);
+
+    partial void OnNettoAfnameTekstChanged(string value) => OnPropertyChanged(nameof(HeeftNetto));
 }
