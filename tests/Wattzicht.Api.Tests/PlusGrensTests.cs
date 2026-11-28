@@ -114,6 +114,70 @@ public sealed class PlusGrensTests
         Assert.True(mag);
     }
 
+    // ---- De proefperiode van voor de opening telt niet --------------------
+
+    [Fact]
+    public async Task Een_proef_die_afliep_voor_plus_openging_blokkeert_geen_nieuwe()
+    {
+        var woning = await WoningAsync();
+        await VerlopenProefAsync(woning, eindigdeOp: new DateTimeOffset(2026, 11, 21, 0, 0, 0, TimeSpan.Zero));
+
+        await using var db = Db();
+        var nieuw = await Writer(db).StartTrialIfFirstAsync(woning);
+
+        Assert.NotNull(nieuw);
+    }
+
+    [Fact]
+    public async Task Een_proef_van_na_de_opening_blokkeert_wel()
+    {
+        var woning = await WoningAsync();
+        await VerlopenProefAsync(woning, eindigdeOp: EntitlementService.PlusOpenVanaf.AddDays(14));
+
+        await using var db = Db();
+        var nieuw = await Writer(db).StartTrialIfFirstAsync(woning);
+
+        Assert.Null(nieuw);
+    }
+
+    [Fact]
+    public async Task Een_betaald_abonnement_van_voor_de_opening_blokkeert_ook()
+    {
+        var woning = await WoningAsync();
+        await using (var db = Db())
+        {
+            db.Subscriptions.Add(new Subscription
+            {
+                Id = Guid.NewGuid(), HouseholdId = woning, Source = SubscriptionSource.Apple,
+                Status = SubscriptionStatus.Expired,
+                StartsAt = new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero),
+                EndsAt = new DateTimeOffset(2026, 11, 21, 0, 0, 0, TimeSpan.Zero),
+                CreatedAt = Nu,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        await using var db2 = Db();
+        var nieuw = await Writer(db2).StartTrialIfFirstAsync(woning);
+
+        Assert.Null(nieuw);
+    }
+
+    private async Task VerlopenProefAsync(Guid woning, DateTimeOffset eindigdeOp)
+    {
+        await using var db = Db();
+        db.Subscriptions.Add(new Subscription
+        {
+            Id = Guid.NewGuid(), HouseholdId = woning, Source = SubscriptionSource.Trial,
+            Status = SubscriptionStatus.Expired,
+            StartsAt = eindigdeOp.AddDays(-7), EndsAt = eindigdeOp, CreatedAt = Nu,
+        });
+        await db.SaveChangesAsync();
+    }
+
+    private SubscriptionWriter Writer(AppDbContext db) =>
+        new(db, _klok, Microsoft.Extensions.Logging.Abstractions.NullLogger<SubscriptionWriter>.Instance);
+
     // ---- Hulpjes ----------------------------------------------------------
 
     private async Task<Guid> WoningAsync()

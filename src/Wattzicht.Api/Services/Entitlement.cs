@@ -122,6 +122,15 @@ public sealed class EntitlementService(AppDbContext db, TimeProvider clock, ICon
     }
 
     /// <summary>
+    /// De dag waarop Plus opengaat: 1 januari 2027, de dag dat de saldering stopt. Alles daarvóór is
+    /// gratis, en een proefperiode die toen liep telt niet mee: er viel niets te proeven.
+    ///
+    /// Static omdat ook <c>SubscriptionWriter</c> hem nodig heeft, en die krijgt geen configuratie
+    /// mee. Verschuift die datum ooit, dan verschuift hij hier voor iedereen tegelijk.
+    /// </summary>
+    public static readonly DateTimeOffset PlusOpenVanaf = new(2027, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+    /// <summary>
     /// Mag deze woning een Plus-functie gebruiken?
     ///
     /// Dit is iets anders dan <see cref="EntitlementDto.Plus"/>. Zolang Plus nog niet open staat is

@@ -142,8 +142,21 @@ public sealed class SubscriptionWriter(AppDbContext db, TimeProvider clock, ILog
     /// </summary>
     public async Task<Subscription?> StartTrialIfFirstAsync(Guid homeId, CancellationToken ct = default)
     {
+        // Een proefperiode die afliep voordat Plus openging telt niet mee. De eerste gebruikers
+        // koppelden hun apparaat in november 2026, kregen keurig hun zeven dagen, en in die week was
+        // alles toch al gratis: er viel niets te proeven. Zonder deze uitzondering zien juist zij op
+        // de dag dat Plus opengaat meteen een betaalmuur, zonder ooit gezien te hebben waar ze voor
+        // zouden betalen. Dat zijn de mensen die er als eerste waren.
+        //
+        // Let op de tweede voorwaarde: de proef moet ook écht al afgelopen zijn. Zonder die eis telt
+        // een proef die nu loopt en in december eindigt ook niet mee, en kan iemand ze stapelen zolang
+        // Plus nog niet open is.
+        var open = EntitlementService.PlusOpenVanaf;
+        var nu = clock.GetUtcNow();
         var alEens = await db.Subscriptions.IgnoreQueryFilters()
-            .AnyAsync(s => s.HouseholdId == homeId, ct);
+            .AnyAsync(s => s.HouseholdId == homeId
+                           && !(s.Source == SubscriptionSource.Trial
+                                && s.EndsAt != null && s.EndsAt < open && s.EndsAt <= nu), ct);
         if (alEens) return null;
 
         var change = await StartAsync(homeId, SubscriptionSource.Trial, EntitlementService.TrialDuur, ct: ct);

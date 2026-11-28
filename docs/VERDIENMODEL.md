@@ -100,7 +100,13 @@ niet voor betaald, dus er gaat niets verloren.
 ### Proefperiode
 
 Zeven dagen bij de eerste koppeling van een woning, één keer. Hier stond dertig; de code doet zeven
-en de prijstabel hierboven zegt zeven. De reden staat bij `EntitlementService.TrialDuur`: in een week
+en de prijstabel hierboven zegt zeven.
+
+**Een proef die afliep voordat Plus openging telt niet mee.** De eerste gebruikers koppelden in
+november 2026 en kregen keurig hun zeven dagen, maar in die week was alles toch al gratis: er viel
+niets te proeven. Zonder die uitzondering zien juist zij op 1 januari 2027 meteen een betaalmuur,
+zonder ooit gezien te hebben waar ze voor zouden betalen. De proef moet dan wel écht afgelopen zijn,
+anders kun je ze in december stapelen. De reden staat bij `EntitlementService.TrialDuur`: in een week
 zie je een weekend en een paar grijze dagen, in een maand kijk je twee keer en ben je vergeten waarom
 je zou betalen. Opnieuw koppelen geeft geen tweede
 proef. Zeven dagen voor het einde één pushmelding, nooit meer dan één.
