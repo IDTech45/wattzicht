@@ -88,7 +88,10 @@ niet voor betaald, dus er gaat niets verloren.
 
 ### Proefperiode
 
-Dertig dagen bij de eerste koppeling van een woning, één keer. Opnieuw koppelen geeft geen tweede
+Zeven dagen bij de eerste koppeling van een woning, één keer. Hier stond dertig; de code doet zeven
+en de prijstabel hierboven zegt zeven. De reden staat bij `EntitlementService.TrialDuur`: in een week
+zie je een weekend en een paar grijze dagen, in een maand kijk je twee keer en ben je vergeten waarom
+je zou betalen. Opnieuw koppelen geeft geen tweede
 proef. Zeven dagen voor het einde één pushmelding, nooit meer dan één.
 
 ### Dagelijkse controle
