@@ -63,6 +63,17 @@ De regel: **zien is gratis, begrijpen en besparen is Plus.**
 
 Zet nooit iets achter Plus dat nu gratis is zonder het hier te veranderen.
 
+**Waar die grens in de code staat:** `Services/PlusGrens.cs` voor de getallen, en
+`EntitlementService.MagPlusFunctieAsync` voor de vraag "mag deze woning dit?". Die tweede is
+belangrijk: zolang `Plus:Enabled` uit staat geeft hij altijd ja, want tot 1 januari 2027 is alles
+gratis. Zonder dat onderscheid raken de huidige gebruikers hun laadplan en hun export vandaag al
+kwijt, maanden voordat ze iets kunnen kopen.
+
+Tot 28-11-2026 stond deze tabel alleen hier en was er in de code twee van afgedwongen: de
+aanbiedingen-tegel en het eigen tarief. Al het andere kreeg iedereen gratis, dus op de dag dat Plus
+opengaat viel er niets te verkopen. Nu afgedwongen: historie (30 dagen), CSV-export, het laadplan en
+de jaarcijfers. Nog niet: de slimme storingsmeldingen en de grens van één woning.
+
 Elke Plus-controle in app en web gaat via één vraag aan de server:
 `GET /api/homes/{id}/entitlement` → `{ plus, source, until, reason }`. Nooit via een vlag in de app
 of een bonnetje van de store: die staan op het toestel van de klant.

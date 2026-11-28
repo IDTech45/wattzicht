@@ -43,8 +43,19 @@ public static class AdviceEndpoints
             .Produces<ChargePlanDto>()
             .ProducesValidationProblem();
 
-        app.MapGet("/sustainability", async (HttpContext http, InsightsService insights, TimeProvider clock, CancellationToken ct) =>
-                Results.Ok(await insights.SustainabilityAsync(http.User.GetHouseholdId()!.Value, DutchTime.LocalDate(clock.GetUtcNow()), ct)))
+        app.MapGet("/sustainability", async (HttpContext http, InsightsService insights,
+                EntitlementService entitlement, TimeProvider clock, CancellationToken ct) =>
+            {
+                var homeId = http.User.GetHouseholdId()!.Value;
+                if (!await entitlement.MagPlusFunctieAsync(homeId, ct))
+                {
+                    return Results.Json(
+                        new { reden = PlusGrens.Reden("Je jaarcijfers, CO₂ en zelfvoorziening") },
+                        statusCode: StatusCodes.Status402PaymentRequired);
+                }
+
+                return Results.Ok(await insights.SustainabilityAsync(homeId, DutchTime.LocalDate(clock.GetUtcNow()), ct));
+            })
             .RequireAuthorization(AuthPolicies.Resident)
             .WithTags("Slim sturen")
             .WithSummary("Dit jaar: opwek, vermeden CO₂, zelfvoorziening en de prestatiecheck van de panelen.")
@@ -303,6 +314,7 @@ public static class AdviceEndpoints
         SummaryService summaries,
         IPriceProvider prices,
         IWeatherProvider weather,
+        EntitlementService entitlement,
         IConfiguration configuration,
         TimeProvider clock,
         CancellationToken ct,
@@ -311,6 +323,17 @@ public static class AdviceEndpoints
         double? chargerKw = null)
     {
         var householdId = http.User.GetHouseholdId()!.Value;
+
+        // Het laadplan weegt uurprijzen tegen de zon op dit dak. Dat is het verschil tussen zien dat
+        // stroom duur is en weten wanneer je moet laden, en dus precies waar "begrijpen en besparen
+        // is Plus" over gaat. Zie PlusGrens.
+        if (!await entitlement.MagPlusFunctieAsync(householdId, ct))
+        {
+            return Results.Json(
+                new { reden = PlusGrens.Reden("Weten wanneer laden het voordeligst is") },
+                statusCode: StatusCodes.Status402PaymentRequired);
+        }
+
         var now = clock.GetUtcNow();
         var today = DutchTime.LocalDate(now);
 

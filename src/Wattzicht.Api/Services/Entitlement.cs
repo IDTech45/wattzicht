@@ -8,7 +8,7 @@ namespace Wattzicht.Api.Services;
 /// </summary>
 public static class SubscriptionSource
 {
-    /// <summary>Dertig dagen Plus bij de eerste koppeling, één keer per woning, zonder betaalgegevens.</summary>
+    /// <summary>Zeven dagen Plus bij de eerste koppeling, één keer per woning, zonder betaalgegevens.</summary>
     public const string Trial = "trial";
 
     /// <summary>De installateur betaalt (of geeft het gratis weg, zoals Triple Energie).</summary>
@@ -119,6 +119,22 @@ public sealed class EntitlementService(AppDbContext db, TimeProvider clock, ICon
         }
 
         return new EntitlementDto(true, rij.Source, rij.EndsAt, Uitleg(rij, now));
+    }
+
+    /// <summary>
+    /// Mag deze woning een Plus-functie gebruiken?
+    ///
+    /// Dit is iets anders dan <see cref="EntitlementDto.Plus"/>. Zolang Plus nog niet open staat is
+    /// <b>alles gratis</b>, dus dan mag iedereen alles. Pas als Plus opengaat telt het abonnement.
+    ///
+    /// Zonder dit verschil zou het aanzetten van de grenzen betekenen dat de huidige gebruikers hun
+    /// laadplan en hun export vandaag al kwijt zijn, maanden voordat ze iets kunnen kopen. Dat is de
+    /// snelste manier om de mensen te verliezen die er als eerste waren.
+    /// </summary>
+    public async Task<bool> MagPlusFunctieAsync(Guid homeId, CancellationToken ct = default)
+    {
+        if (!PlusEnabled) return true;
+        return (await GetForHomeAsync(homeId, ct)).Plus;
     }
 
     /// <summary>De rij die nu geldt, of <c>null</c>. Gebruikt door de verwerking van store-meldingen.</summary>

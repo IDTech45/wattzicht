@@ -303,9 +303,19 @@ public static class HouseholdEndpoints
     /// Excel zonder dat alles in één kolom staat.
     /// </summary>
     private static async Task<IResult> ExportAsync(
-        HttpContext http, AppDbContext db, TimeProvider clock, CancellationToken ct)
+        HttpContext http, AppDbContext db, EntitlementService entitlement, TimeProvider clock, CancellationToken ct)
     {
         var householdId = http.User.GetHouseholdId()!.Value;
+
+        // Je eigen cijfers meenemen naar een spreadsheet is precies het soort ding waar iemand die
+        // het serieus gebruikt voor betaalt, en waar de rest nooit op klikt.
+        if (!await entitlement.MagPlusFunctieAsync(householdId, ct))
+        {
+            return Results.Json(
+                new { reden = PlusGrens.Reden("Je cijfers downloaden als bestand") },
+                statusCode: StatusCodes.Status402PaymentRequired);
+        }
+
         var nl = System.Globalization.CultureInfo.GetCultureInfo("nl-NL");
 
         var dagen = await db.DailySummaries
@@ -1862,6 +1872,7 @@ public static class HouseholdEndpoints
     private static async Task<IResult> SummariesAsync(
         HttpContext http,
         HouseholdQueries queries,
+        EntitlementService entitlement,
         TimeProvider clock,
         DateOnly? from,
         DateOnly? to,
@@ -1882,7 +1893,17 @@ public static class HouseholdEndpoints
             return Results.ValidationProblem(new Dictionary<string, string[]> { ["to"] = ["Maximaal 1 jaar per verzoek."] });
         }
 
-        return Results.Ok(await queries.SummariesAsync(householdId, start, end, ct));
+        // Zonder Plus dertig dagen terug. Bewust inkorten en niet weigeren: een lege grafiek met een
+        // foutmelding erboven laat niets zien, dertig dagen mét uitleg wel. Zie PlusGrens.
+        var magAlles = await entitlement.MagPlusFunctieAsync(householdId, ct);
+        var (vanaf, ingekort) = PlusGrens.HistorieVanaf(start, today, magAlles);
+        var rijen = await queries.SummariesAsync(householdId, vanaf, end, ct);
+        if (ingekort)
+        {
+            http.Response.Headers["X-Wattzicht-Ingekort"] = PlusGrens.GratisHistorieDagen.ToString();
+        }
+
+        return Results.Ok(rijen);
     }
 
     private static async Task<IResult> AlertsAsync(HttpContext http, AppDbContext db, CancellationToken ct, bool all = false)
