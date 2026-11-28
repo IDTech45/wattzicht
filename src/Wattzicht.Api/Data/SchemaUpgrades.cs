@@ -218,6 +218,18 @@ public static class SchemaUpgrades
 
         // 2026-11: wanneer we de geladen kilowatturen bij LaadCash hebben opgehaald.
         """ALTER TABLE households ADD COLUMN IF NOT EXISTS "LaadcashLaaddataAt" timestamp with time zone NULL""",
+
+        // 2026-11: bevestiging van het e-mailadres.
+        """ALTER TABLE users ADD COLUMN IF NOT EXISTS "EmailVerifiedAt" timestamp with time zone NULL""",
+        """ALTER TABLE users ADD COLUMN IF NOT EXISTS "VerifyTokenHash" character varying(64) NULL""",
+        """ALTER TABLE users ADD COLUMN IF NOT EXISTS "VerifyTokenExpiresAt" timestamp with time zone NULL""",
+        """ALTER TABLE users ADD COLUMN IF NOT EXISTS "VerifyMailSentAt" timestamp with time zone NULL""",
+        """CREATE INDEX IF NOT EXISTS ix_users_verify_token ON users ("VerifyTokenHash")""",
+
+        // Iedereen die er op de dag van invoeren al was telt als bevestigd. Zij hebben nooit een
+        // mail kunnen krijgen, en wie bestaat mag niet buitengesloten of opgeruimd raken door een
+        // eis die pas daarna is bedacht.
+        """UPDATE users SET "EmailVerifiedAt" = "CreatedAt" WHERE "EmailVerifiedAt" IS NULL""",
     ];
 
     public static async Task ApplyAsync(AppDbContext db, CancellationToken ct = default)

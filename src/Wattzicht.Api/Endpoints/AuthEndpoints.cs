@@ -1,7 +1,9 @@
+using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Wattzicht.Api.Data;
 using Wattzicht.Api.Services;
 using Wattzicht.Shared;
+using Wattzicht.Shared.Taal;
 
 namespace Wattzicht.Api.Endpoints;
 
@@ -59,15 +61,109 @@ public static class AuthEndpoints
             .WithSummary("Geeft een nieuw token op basis van een nog geldig token.")
             .Produces<AuthResponse>();
 
+        // Geen RequireAuthorization: dit is de link uit de mail. Die opent in de mailclient of in
+        // een browser waar niemand is ingelogd, dus de sleutel in de link is het hele bewijs.
+        group.MapGet("/verify", BevestigAsync)
+            .WithSummary("Bevestigt een e-mailadres met de sleutel uit de bevestigingsmail.")
+            .Produces(StatusCodes.Status200OK, contentType: "text/html")
+            .ExcludeFromDescription();
+
+        group.MapPost("/verify/resend", OpnieuwVersturenAsync)
+            .RequireAuthorization()
+            .WithSummary("Stuurt de bevestigingsmail opnieuw naar de ingelogde gebruiker.")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status429TooManyRequests)
+            .RequireRateLimiting(AanmeldLimiet);
+
         return app;
+    }
+
+    /// <summary>
+    /// Het webadres waarop deze API bereikbaar is, zoals het in een mail mag staan.
+    ///
+    /// Uit het verzoek zelf, want we draaien op twee plekken (de server en een ontwikkelmachine) en
+    /// een vast ingetypt adres is er altijd op één daarvan verkeerd. Achter de proxy staat het
+    /// echte adres in de X-Forwarded-kopregels, en die worden in Program.cs al verwerkt.
+    /// </summary>
+    private static string BasisUrl(HttpRequest request) => $"{request.Scheme}://{request.Host}";
+
+    /// <summary>
+    /// De klik op de link uit de bevestigingsmail.
+    ///
+    /// Geeft een pagina terug en geen JSON: hier komt een mens binnen via zijn mailprogramma, niet
+    /// de app. Twee zinnen, geen opmaakbestanden van buiten, en in de taal van zijn browser.
+    /// </summary>
+    private static async Task<IResult> BevestigAsync(
+        string? token,
+        HttpRequest request,
+        Emailbevestiging bevestiging,
+        CancellationToken ct)
+    {
+        var taal = request.Taal();
+        var gelukt = await bevestiging.BevestigAsync(token, ct);
+        var titel = Teksten.T(taal, gelukt ? "bevestig.gelukt-titel" : "bevestig.mislukt-titel");
+        var tekst = Teksten.T(taal, gelukt ? "bevestig.gelukt-tekst" : "bevestig.mislukt-tekst");
+
+        // $$ en {{ }}: de stijlregels hieronder staan vol accolades, en met één dollarteken zou C#
+        // die voor invulplekken aanzien.
+        var html = $$"""
+            <!doctype html>
+            <html lang="{{WebUtility.HtmlEncode(taal)}}">
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>{{WebUtility.HtmlEncode(titel)}}</title>
+            <style>
+              body { font: 16px/1.6 system-ui, sans-serif; margin: 0; padding: 48px 24px;
+                     color: #16281f; background: #f6f8f6; }
+              main { max-width: 420px; margin: 0 auto; background: #fff; border-radius: 14px;
+                     padding: 28px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+              h1 { font-size: 20px; margin: 0 0 8px; }
+              p { margin: 0; color: #4a5a52; }
+            </style>
+            <main>
+              <h1>{{WebUtility.HtmlEncode(titel)}}</h1>
+              <p>{{WebUtility.HtmlEncode(tekst)}}</p>
+            </main>
+            </html>
+            """;
+
+        // Altijd 200, ook bij een verlopen link. De pagina zegt zelf wat er aan de hand is, en een
+        // foutcode levert in sommige mailclients een lege foutpagina op in plaats van onze tekst.
+        return Results.Content(html, "text/html; charset=utf-8");
+    }
+
+    /// <summary>De bevestigingsmail nog een keer, voor wie hem kwijt is of nooit zag.</summary>
+    private static async Task<IResult> OpnieuwVersturenAsync(
+        HttpContext http,
+        AppDbContext db,
+        Emailbevestiging bevestiging,
+        CancellationToken ct)
+    {
+        var request = http.Request;
+        var id = http.User.GetUserId();
+        var gebruiker = await db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id, ct);
+        if (gebruiker is null) return Results.Unauthorized();
+
+        // Al bevestigd is geen fout: de app hoeft niet te weten of de knop zinvol was.
+        if (gebruiker.EmailVerifiedAt is not null) return Results.NoContent();
+
+        if (!bevestiging.MagOpnieuw(gebruiker))
+        {
+            return Results.StatusCode(StatusCodes.Status429TooManyRequests);
+        }
+
+        await bevestiging.VerstuurAsync(gebruiker, BasisUrl(request), request.Taal(), ct);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> RegisterAsync(
         RegisterRequest request,
+        HttpRequest http,
         AppDbContext db,
         PasswordHasher hasher,
         TokenService tokens,
         SubscriptionWriter subscriptions,
+        Emailbevestiging bevestiging,
         TimeProvider clock,
         CancellationToken ct)
     {
@@ -180,6 +276,11 @@ public static class AuthEndpoints
                 household.Id, SubscriptionSource.Installer, duur, installerId: installer.Id, ct: ct);
         }
 
+        // De bevestigingsmail gaat hierna de deur uit. Mislukt dat, dan is het account er nog
+        // steeds: hij kan de mail vanuit Account opnieuw laten sturen. Aanmelden laten stuklopen op
+        // een mailserver die even niet bereikbaar is zou de slechtste ruil zijn.
+        await bevestiging.VerstuurAsync(user, BasisUrl(http), http.Taal(), ct);
+
         var (token, expires) = tokens.CreateToken(user);
         return Results.Created("/me", new AuthResponse(token, expires, HouseholdQueries.ToDto(household), HouseholdQueries.ToDto(installer)));
     }
@@ -250,8 +351,12 @@ public static class AuthEndpoints
             if (Naamgeving.MagOvernemen(bestaand.Household?.Name, info.FullName))
             {
                 bestaand.Household!.Name = info.FullName!.Trim();
-                await db.SaveChangesAsync(ct);
             }
+
+            // Google en Apple hebben het adres zelf gecontroleerd, en hierboven weigeren we een
+            // token waarbij dat niet zo is. Dan hoeven wij er geen tweede mail achteraan te sturen.
+            bestaand.EmailVerifiedAt ??= clock.GetUtcNow();
+            await db.SaveChangesAsync(ct);
 
             var (bestaandToken, bestaandTot) = tokens.CreateToken(bestaand);
             return Results.Ok(new AuthResponse(bestaandToken, bestaandTot,
@@ -295,7 +400,8 @@ public static class AuthEndpoints
             Household = woning,
             InstallerId = installer.Id,
             Installer = installer,
-            CreatedAt = nu
+            CreatedAt = nu,
+            EmailVerifiedAt = nu
         };
 
         db.Households.Add(woning);
@@ -315,9 +421,11 @@ public static class AuthEndpoints
     /// </summary>
     private static async Task<IResult> RegisterInstallerAsync(
         RegisterInstallerRequest request,
+        HttpRequest http,
         AppDbContext db,
         PasswordHasher hasher,
         TokenService tokens,
+        Emailbevestiging bevestiging,
         TimeProvider clock,
         CancellationToken ct)
     {
@@ -374,6 +482,10 @@ public static class AuthEndpoints
         db.Installers.Add(installer);
         db.Users.Add(user);
         await db.SaveChangesAsync(ct);
+
+        // Ook een installateur bevestigt zijn adres. Juist bij hem: wij beoordelen die aanmelding
+        // met de hand en moeten het bedrijf kunnen bereiken over de goedkeuring.
+        await bevestiging.VerstuurAsync(user, BasisUrl(http), http.Taal(), ct);
 
         var (token, expires) = tokens.CreateToken(user);
         return Results.Created("/me", new AuthResponse(token, expires, null, HouseholdQueries.ToDto(installer),

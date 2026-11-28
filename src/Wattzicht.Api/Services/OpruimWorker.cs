@@ -5,9 +5,10 @@ namespace Wattzicht.Api.Services;
 /// <summary>
 /// Ruimt op wat een bewaartermijn heeft.
 ///
-/// Voorlopig alleen de documenten waar het inlezen niets uit haalde. Een bewaartermijn die alleen
-/// in een toelichting staat en nergens draait, is geen bewaartermijn; daarom is dit een eigen
-/// worker en geen regel die ergens achteraan een andere taak hangt.
+/// Twee dingen: de documenten waar het inlezen niets uit haalde, en accounts waarvan het
+/// e-mailadres nooit is bevestigd. Een bewaartermijn die alleen in een toelichting staat en
+/// nergens draait, is geen bewaartermijn; daarom is dit een eigen worker en geen regel die ergens
+/// achteraan een andere taak hangt.
 /// </summary>
 public sealed class OpruimWorker(
     IServiceScopeFactory scopeFactory,
@@ -50,12 +51,20 @@ public sealed class OpruimWorker(
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var weg = await ImportDagboek.OpruimenAsync(db, clock.GetUtcNow(), ct);
+        var nu = clock.GetUtcNow();
+
+        var weg = await ImportDagboek.OpruimenAsync(db, nu, ct);
         if (weg > 0)
         {
             logger.LogInformation("{Aantal} onleesbare document(en) verlopen en verwijderd", weg);
         }
 
-        return weg;
+        var onbevestigd = await OnbevestigdOpruimen.UitvoerenAsync(db, nu, ct);
+        if (onbevestigd > 0)
+        {
+            logger.LogInformation("{Aantal} account(s) zonder bevestigd e-mailadres verwijderd", onbevestigd);
+        }
+
+        return weg + onbevestigd;
     }
 }

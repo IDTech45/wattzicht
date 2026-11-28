@@ -614,6 +614,33 @@ public partial class SettingsViewModel : BaseViewModel
         }
     }
 
+    // ---- Bevestiging van het e-mailadres ----
+    //
+    // Staat standaard op "bevestigd", zodat er niets knippert zolang we het nog niet weten. Pas als
+    // /me zegt van niet komt de melding tevoorschijn.
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(ToonMailBevestigen))] private bool _mailBevestigd = true;
+
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(HeeftMailBericht))] private string? _mailBericht;
+
+    public bool ToonMailBevestigen => !MailBevestigd;
+    public bool HeeftMailBericht => !string.IsNullOrEmpty(MailBericht);
+
+    /// <summary>Vraagt om een nieuwe bevestigingsmail en zegt wat eruit kwam.</summary>
+    [RelayCommand]
+    public async Task BevestigingsmailOpnieuwAsync()
+    {
+        MailBericht = null;
+        try
+        {
+            var verstuurd = await _api.BevestigingsmailOpnieuwAsync();
+            MailBericht = Taal.T(verstuurd ? "account.mail-verstuurd" : "account.even-wachten");
+        }
+        catch (ApiException ex)
+        {
+            MailBericht = ex.Message;
+        }
+    }
+
     public async Task LaadcashLadenAsync()
     {
         try { Laadcash = await _api.LaadcashPromoAsync(); }
@@ -639,6 +666,17 @@ public partial class SettingsViewModel : BaseViewModel
         }
 
         await LaadcashLadenAsync();
+
+        try
+        {
+            MailBevestigd = (await _api.GetMeAsync()).EmailVerified;
+        }
+        catch (ApiException)
+        {
+            // Weten we het niet, dan geen melding. Een waarschuwing tonen omdat een aanroep
+            // mislukte zou mensen laten denken dat er iets mis is met hun account.
+            MailBevestigd = true;
+        }
 
         await RunSafeAsync(async () =>
         {

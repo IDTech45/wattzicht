@@ -113,6 +113,11 @@ builder.Services.AddSingleton(sp =>
     };
 });
 builder.Services.AddSingleton<ExternalAuthService>();
+
+// Post. Zonder MAIL_HOST wordt er niets verstuurd maar alleen gelogd; dat is de stand op een
+// ontwikkelmachine, en aanmelden hoort daar niet stuk te lopen op een ontbrekend postvak.
+builder.Services.AddSingleton<IMailVerzender, SmtpMailVerzender>();
+builder.Services.AddScoped<Emailbevestiging>();
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

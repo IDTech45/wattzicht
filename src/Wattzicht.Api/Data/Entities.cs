@@ -227,6 +227,31 @@ public sealed class User
     public Guid InstallerId { get; set; }
     public Installer Installer { get; set; } = null!;
     public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>
+    /// Wanneer dit adres is bevestigd, of null zolang dat niet is gebeurd.
+    ///
+    /// Bevestigen doet twee dingen. Het eerste is het gewone: wie zijn adres verkeerd typt merkt
+    /// dat meteen, en niet pas als hij zijn wachtwoord kwijt is. Het tweede was dringender: in
+    /// november meldden zich 145 woningen aan waarvan er 139 van een bot waren. Een bot vult een
+    /// adres in dat hij niet kan lezen, en een niet-bevestigd account wordt na een week opgeruimd.
+    /// </summary>
+    public DateTimeOffset? EmailVerifiedAt { get; set; }
+
+    /// <summary>
+    /// De sleutel uit de bevestigingsmail, als SHA-256.
+    ///
+    /// De sleutel zelf staat alleen in die ene mail. Komt iemand ooit bij de database, dan heeft
+    /// hij hier niets aan: uit een hash valt geen werkende link te maken. Dezelfde reden waarom een
+    /// wachtwoord er niet leesbaar in staat.
+    /// </summary>
+    public string? VerifyTokenHash { get; set; }
+
+    /// <summary>Tot wanneer die sleutel werkt. Daarna moet er een nieuwe mail komen.</summary>
+    public DateTimeOffset? VerifyTokenExpiresAt { get; set; }
+
+    /// <summary>Wanneer de laatste bevestigingsmail is verstuurd, zodat opnieuw sturen niet eindeloos kan.</summary>
+    public DateTimeOffset? VerifyMailSentAt { get; set; }
 }
 
 /// <summary>Gekoppeld apparaat met versleutelde toegangsgegevens.</summary>

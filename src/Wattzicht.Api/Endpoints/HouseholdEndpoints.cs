@@ -1253,7 +1253,8 @@ public static class HouseholdEndpoints
             user.Email,
             user.Role,
             user.Household is null ? null : HouseholdQueries.ToDto(user.Household),
-            HouseholdQueries.ToDto(user.Installer)));
+            HouseholdQueries.ToDto(user.Installer),
+            user.EmailVerifiedAt is not null));
     }
 
     private static async Task<IResult> DashboardAsync(HttpContext http, HouseholdQueries queries, CancellationToken ct)

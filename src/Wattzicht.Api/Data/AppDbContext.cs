@@ -126,6 +126,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, TenantC
             e.HasIndex(x => x.Email).IsUnique();
             e.Property(x => x.PasswordHash).IsRequired();
             e.Property(x => x.Role).HasConversion<int>();
+
+            // Een SHA-256 in hex is altijd 64 tekens. Een index erop, want de bevestigingslink
+            // zoekt de gebruiker hierop op en op niets anders.
+            e.Property(x => x.VerifyTokenHash).HasMaxLength(64);
+            e.HasIndex(x => x.VerifyTokenHash);
             e.HasOne(x => x.Household)
                 .WithMany(h => h.Users)
                 .HasForeignKey(x => x.HouseholdId)

@@ -821,5 +821,17 @@ public static class TekstenNl
         ["besparen.niets-gekoppeld"] = "Nog niets gekoppeld",
         ["besparen.niets-gekoppeld-uitleg"] = "Koppel je omvormer, batterij of laadpaal. Vanaf die dag rekenen we je besparing uit.",
 
+        // ---- bevestiging van het e-mailadres ----
+        ["mail.bevestig.onderwerp"] = "Bevestig je e-mailadres voor Wattzicht",
+        ["mail.bevestig.tekst"] = "Hoi,\n\nJe hebt een Wattzicht-account aangemaakt. Bevestig je e-mailadres via onderstaande link, dan weten we zeker dat we je kunnen bereiken.\n\n{0}\n\nDe link werkt zeven dagen. Heb je je niet aangemeld? Doe dan niets. Zonder bevestiging verdwijnt het account vanzelf.\n\nWattzicht",
+        ["bevestig.gelukt-titel"] = "Je e-mailadres is bevestigd",
+        ["bevestig.gelukt-tekst"] = "Dat was het. Je kunt dit tabblad sluiten en verder in de app.",
+        ["bevestig.mislukt-titel"] = "Deze link werkt niet meer",
+        ["bevestig.mislukt-tekst"] = "De link is verlopen of al gebruikt. Vraag in de app bij Account om een nieuwe bevestigingsmail.",
+        ["account.nog-niet-bevestigd"] = "Je e-mailadres is nog niet bevestigd.",
+        ["account.stuur-opnieuw"] = "Stuur de mail opnieuw",
+        ["account.mail-verstuurd"] = "We hebben de bevestigingsmail verstuurd. Kijk ook even in je ongewenste post.",
+        ["account.even-wachten"] = "Er is net een mail verstuurd. Wacht een paar minuten voordat je het opnieuw probeert.",
+
     }.ToFrozenDictionary();
 }

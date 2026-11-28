@@ -75,7 +75,11 @@ public sealed record MeDto(
     string Email,
     UserRole Role,
     HouseholdDto? Household,
-    InstallerBrandingDto? Installer);
+    InstallerBrandingDto? Installer,
+    // Of het e-mailadres is bevestigd. Staat hier zodat de app de melding kan tonen en de knop om
+    // de mail opnieuw te laten sturen. Standaard true, zodat een oudere app niet opeens bij
+    // iedereen een waarschuwing laat zien.
+    bool EmailVerified = true);
 
 // ---------------------------------------------------------------------------
 // Huishouden, installateur, apparaten

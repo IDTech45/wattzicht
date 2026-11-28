@@ -810,5 +810,17 @@ public static class TekstenEn
         ["besparen.niets-gekoppeld"] = "Nothing connected yet",
         ["besparen.niets-gekoppeld-uitleg"] = "Connect your inverter, battery or charger. From that day on we work out your savings.",
 
+        // ---- bevestiging van het e-mailadres ----
+        ["mail.bevestig.onderwerp"] = "Confirm your email address for Wattzicht",
+        ["mail.bevestig.tekst"] = "Hi,\n\nYou created a Wattzicht account. Confirm your email address using the link below, so we know we can reach you.\n\n{0}\n\nThe link works for seven days. Did you not sign up? Then do nothing. Without confirmation the account disappears on its own.\n\nWattzicht",
+        ["bevestig.gelukt-titel"] = "Your email address is confirmed",
+        ["bevestig.gelukt-tekst"] = "That was it. You can close this tab and carry on in the app.",
+        ["bevestig.mislukt-titel"] = "This link no longer works",
+        ["bevestig.mislukt-tekst"] = "The link has expired or was already used. Ask for a new confirmation email under Account in the app.",
+        ["account.nog-niet-bevestigd"] = "Your email address is not confirmed yet.",
+        ["account.stuur-opnieuw"] = "Send the email again",
+        ["account.mail-verstuurd"] = "We have sent the confirmation email. Do check your junk folder as well.",
+        ["account.even-wachten"] = "An email was just sent. Wait a few minutes before trying again.",
+
     }.ToFrozenDictionary();
 }

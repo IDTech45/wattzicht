@@ -80,6 +80,17 @@ services:
       Laadcash__SharedSecret: ${LAADCASH_SHARED_SECRET:-}
       # Waar we de geladen kilowatturen ophalen bij LaadCash.
       Laadcash__ApiBase: ${LAADCASH_API_BASE:-https://api.laadcash.nl}
+
+      # Post. Zonder MAIL_HOST verstuurt de server niets en logt hij alleen; dan komt er dus ook
+      # geen bevestigingsmail aan en blijft elk nieuw account onbevestigd staan.
+      Mail__Host: ${MAIL_HOST:-}
+      Mail__Port: ${MAIL_PORT:-587}
+      Mail__User: ${MAIL_USER:-}
+      Mail__Password: ${MAIL_PASSWORD:-}
+      Mail__From: ${MAIL_FROM:-noreply@wattzicht.nl}
+      Mail__FromName: ${MAIL_FROM_NAME:-Wattzicht}
+      Mail__StartTls: ${MAIL_STARTTLS:-true}
+
       TZ: Europe/Amsterdam
       # Pushmeldingen: eigen Firebase-project 'wattzicht'. De servicesleutel staat als bestand op de server
       # en wordt alleen-lezen ingehangen: niet in de repo, niet in een env-variabele. Zonder bestand: push uit.

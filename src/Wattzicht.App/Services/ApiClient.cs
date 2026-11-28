@@ -260,6 +260,28 @@ public sealed class ApiClient
     public Task<InstallerBrandingDto> GetInstallerAsync(CancellationToken ct = default) =>
         GetAsync<InstallerBrandingDto>("/installer", ct);
 
+    /// <summary>De ingelogde gebruiker, met onder meer of zijn e-mailadres bevestigd is.</summary>
+    public Task<MeDto> GetMeAsync(CancellationToken ct = default) =>
+        GetAsync<MeDto>("/me", ct);
+
+    /// <summary>
+    /// Vraagt om een nieuwe bevestigingsmail. Geeft false als er net al een mail is verstuurd.
+    /// </summary>
+    public async Task<bool> BevestigingsmailOpnieuwAsync(CancellationToken ct = default)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Post, Relative("/auth/verify/resend"));
+        await AuthorizeAsync(req);
+        using var antwoord = await _http.SendAsync(req, ct);
+
+        if (antwoord.StatusCode == System.Net.HttpStatusCode.TooManyRequests) return false;
+        if (!antwoord.IsSuccessStatusCode)
+        {
+            throw new ApiException(Taal.T("fout.serverfout"), antwoord.StatusCode);
+        }
+
+        return true;
+    }
+
     /// <summary>Verwijdert het eigen huishouden met alles wat eraan hangt. Onomkeerbaar.</summary>
     public async Task VerwijderHuishoudenAsync(CancellationToken ct = default)
     {

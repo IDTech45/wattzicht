@@ -371,6 +371,19 @@
                             Command="{Binding GegevensDelenCommand}" />
                     <Label Text="{t:T gegevens.uitleg}" Style="{StaticResource StatCaption}" />
 
+                    <!-- Alleen zichtbaar zolang het adres niet bevestigd is. Hier en niet op het
+                         dashboard: wie hem wegklikt is hem kwijt, en dit is de plek waar je naar
+                         je account gaat kijken. -->
+                    <VerticalStackLayout Spacing="8" IsVisible="{Binding ToonMailBevestigen}">
+                        <Label Text="{t:T account.nog-niet-bevestigd}" Style="{StaticResource StatCaption}" />
+                        <Button Text="{t:T account.stuur-opnieuw}"
+                                Style="{StaticResource SecondaryButton}"
+                                Command="{Binding BevestigingsmailOpnieuwCommand}" />
+                    </VerticalStackLayout>
+
+                    <Label Text="{Binding MailBericht}" Style="{StaticResource SubtitleLabel}" FontSize="14"
+                           IsVisible="{Binding HeeftMailBericht}" />
+
                     <!-- Wachtwoord wijzigen. Dichtgeklapt, want het is iets wat je een keer doet. -->
                     <Button Text="{t:T wachtwoord.knop}"
                             Style="{StaticResource SecondaryButton}"

@@ -815,5 +815,17 @@ public static class TekstenTr
         ["besparen.niets-gekoppeld"] = "Henüz hiçbir şey bağlı değil",
         ["besparen.niets-gekoppeld-uitleg"] = "İnvertörünüzu, bataryanızı veya şarj istasyonunuzu bağlayın. O günden itibaren tasarrufunuzu hesaplarız.",
 
+        // ---- bevestiging van het e-mailadres ----
+        ["mail.bevestig.onderwerp"] = "Wattzicht için e-posta adresinizi onaylayın",
+        ["mail.bevestig.tekst"] = "Merhaba,\n\nBir Wattzicht hesabı oluşturdunuz. Size ulaşabildiğimizden emin olmak için aşağıdaki bağlantıyla e-posta adresinizi onaylayın.\n\n{0}\n\nBağlantı yedi gün geçerlidir. Kaydolmadıysanız hiçbir şey yapmayın. Onaylanmayan hesap kendiliğinden silinir.\n\nWattzicht",
+        ["bevestig.gelukt-titel"] = "E-posta adresiniz onaylandı",
+        ["bevestig.gelukt-tekst"] = "Hepsi bu. Bu sekmeyi kapatıp uygulamadan devam edebilirsiniz.",
+        ["bevestig.mislukt-titel"] = "Bu bağlantı artık çalışmıyor",
+        ["bevestig.mislukt-tekst"] = "Bağlantının süresi dolmuş veya daha önce kullanılmış. Uygulamada Hesap bölümünden yeni bir onay e-postası isteyin.",
+        ["account.nog-niet-bevestigd"] = "E-posta adresiniz henüz onaylanmadı.",
+        ["account.stuur-opnieuw"] = "E-postayı tekrar gönder",
+        ["account.mail-verstuurd"] = "Onay e-postasını gönderdik. Gereksiz posta klasörünüze de bakın.",
+        ["account.even-wachten"] = "Az önce bir e-posta gönderildi. Tekrar denemeden önce birkaç dakika bekleyin.",
+
     }.ToFrozenDictionary();
 }
